@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../NuGetTools.vsct">
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">管理解决方案的 NuGet 程序包(&amp;N)...</target>
+        <target state="translated">τ«íτÉåΦºúσå│µû╣µíêτÜä NuGet τ¿ïσ║Åσîà(&amp;N)...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="cmdidAddPackages|ButtonText">
         <source>Manage &amp;NuGet Packages...</source>
-        <target state="translated">管理 NuGet 包(&amp;N)...</target>
+        <target state="translated">τ«íτÉå NuGet σîà(&amp;N)...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackages|CommandName">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="cmdidClearHost|ButtonText">
         <source>&amp;Clear Console</source>
-        <target state="translated">清除控制台(&amp;C)</target>
+        <target state="translated">µ╕àΘÖñµÄºσê╢σÅ░(&amp;C)</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidClearNuGetLocalResources|ButtonText">
@@ -39,17 +39,17 @@
       </trans-unit>
       <trans-unit id="cmdidPowerConsole|ButtonText">
         <source>Package Manager C&amp;onsole</source>
-        <target state="translated">程序包管理器控制台(&amp;O)</target>
+        <target state="translated">τ¿ïσ║Åσîàτ«íτÉåσÖ¿µÄºσê╢σÅ░(&amp;O)</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidProjects|ButtonText">
         <source>Default pro&amp;ject:</source>
-        <target state="translated">默认项目(&amp;J):</target>
+        <target state="translated">Θ╗ÿΦ«ñΘí╣τ¢«(&amp;J):</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|ButtonText">
         <source>Restore NuGet Packa&amp;ges</source>
-        <target state="translated">还原 NuGet 包(&amp;G)</target>
+        <target state="translated">Φ┐ÿσÄƒ NuGet σîà(&amp;G)</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|CommandName">
@@ -59,22 +59,22 @@
       </trans-unit>
       <trans-unit id="cmdidSourceSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">程序包管理器设置(&amp;P)</target>
+        <target state="translated">τ¿ïσ║Åσîàτ«íτÉåσÖ¿Φ«╛τ╜«(&amp;P)</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidSources|ButtonText">
         <source>Pac&amp;kage source:</source>
-        <target state="translated">程序包源(&amp;K):</target>
+        <target state="translated">τ¿ïσ║Åσîàµ║É(&amp;K):</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidStopHost|ButtonText">
         <source>&amp;Stop command execution</source>
-        <target state="translated">停止执行命令(&amp;S)</target>
+        <target state="translated">σü£µ¡óµëºΦíîσæ╜Σ╗ñ(&amp;S)</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|ButtonText">
         <source>U&amp;pdate...</source>
-        <target state="translated">更新(&amp;P)...</target>
+        <target state="translated">µ¢┤µû░(&amp;P)...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|CommandName">
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpdatePackage|ButtonText">
         <source>U&amp;pdate...</source>
-        <target state="translated">更新(&amp;P)...</target>
+        <target state="translated">µ¢┤µû░(&amp;P)...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackage|CommandName">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradeNuGetProject|ButtonText">
         <source>&amp;Migrate packages.config to PackageReference...</source>
-        <target state="translated">将 packages.config 迁移到 PackageReference(&amp;M)...</target>
+        <target state="translated">σ░å packages.config Φ┐üτº╗σê░ PackageReference(&amp;M)...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradeNuGetProject|CommandName">
@@ -104,7 +104,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradePackagesConfig|ButtonText">
         <source>&amp;Migrate packages.config to PackageReference...</source>
-        <target state="translated">将 packages.config 迁移到 PackageReference(&amp;M)...</target>
+        <target state="translated">σ░å packages.config Φ┐üτº╗σê░ PackageReference(&amp;M)...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradePackagesConfig|CommandName">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradeProjectJsonNuGetProject|ButtonText">
         <source>&amp;Migrate project.json to PackageReference...</source>
-        <target state="translated">将 project.json 迁移(&amp;M)到 PackageReference...</target>
+        <target state="translated">σ░å project.json Φ┐üτº╗(&amp;M)σê░ PackageReference...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradeProjectJsonNuGetProject|CommandName">
@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="idGeneralSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">程序包管理器设置(&amp;P)</target>
+        <target state="translated">τ¿ïσ║Åσîàτ«íτÉåσÖ¿Φ«╛τ╜«(&amp;P)</target>
         <note />
       </trans-unit>
       <trans-unit id="idGeneralSettings|CommandName">
@@ -134,12 +134,12 @@
       </trans-unit>
       <trans-unit id="idLibraryPackageManager|ButtonText">
         <source>NuGet Package Ma&amp;nager</source>
-        <target state="translated">NuGet 包管理器(&amp;N)</target>
+        <target state="translated">NuGet σîàτ«íτÉåσÖ¿(&amp;N)</target>
         <note />
       </trans-unit>
       <trans-unit id="idToolbar|ButtonText">
         <source>Package Manager Console</source>
-        <target state="translated">程序包管理器控制台</target>
+        <target state="translated">τ¿ïσ║Åσîàτ«íτÉåσÖ¿µÄºσê╢σÅ░</target>
         <note />
       </trans-unit>
     </body>

@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../NuGetTools.vsct">
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">Spravovat balíčky &amp;NuGet pro řešení...</target>
+        <target state="translated">Spravovat bal├¡─ìky &amp;NuGet pro ┼Öe┼íen├¡...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="cmdidAddPackages|ButtonText">
         <source>Manage &amp;NuGet Packages...</source>
-        <target state="translated">Spravovat balíčky &amp;NuGet...</target>
+        <target state="translated">Spravovat bal├¡─ìky &amp;NuGet...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackages|CommandName">
@@ -39,17 +39,17 @@
       </trans-unit>
       <trans-unit id="cmdidPowerConsole|ButtonText">
         <source>Package Manager C&amp;onsole</source>
-        <target state="translated">K&amp;onzola Správce balíčků</target>
+        <target state="translated">K&amp;onzola Spr├ívce bal├¡─ìk┼»</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidProjects|ButtonText">
         <source>Default pro&amp;ject:</source>
-        <target state="translated">Výchozí pro&amp;jekt:</target>
+        <target state="translated">V├╜choz├¡ pro&amp;jekt:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|ButtonText">
         <source>Restore NuGet Packa&amp;ges</source>
-        <target state="translated">Ob&amp;novit balíčky NuGet</target>
+        <target state="translated">Ob&amp;novit bal├¡─ìky NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|CommandName">
@@ -59,17 +59,17 @@
       </trans-unit>
       <trans-unit id="cmdidSourceSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">N&amp;astavení Správce balíčků</target>
+        <target state="translated">N&amp;astaven├¡ Spr├ívce bal├¡─ìk┼»</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidSources|ButtonText">
         <source>Pac&amp;kage source:</source>
-        <target state="translated">Zdroj &amp;balíčku:</target>
+        <target state="translated">Zdroj &amp;bal├¡─ìku:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidStopHost|ButtonText">
         <source>&amp;Stop command execution</source>
-        <target state="translated">&amp;Zastavit provádění příkazu</target>
+        <target state="translated">&amp;Zastavit prov├íd─¢n├¡ p┼Ö├¡kazu</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|ButtonText">
@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="idGeneralSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">N&amp;astavení Správce balíčků</target>
+        <target state="translated">N&amp;astaven├¡ Spr├ívce bal├¡─ìk┼»</target>
         <note />
       </trans-unit>
       <trans-unit id="idGeneralSettings|CommandName">
@@ -134,12 +134,12 @@
       </trans-unit>
       <trans-unit id="idLibraryPackageManager|ButtonText">
         <source>NuGet Package Ma&amp;nager</source>
-        <target state="translated">Správce balíčků &amp;NuGet</target>
+        <target state="translated">Spr├ívce bal├¡─ìk┼» &amp;NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="idToolbar|ButtonText">
         <source>Package Manager Console</source>
-        <target state="translated">Konzola Správce balíčků</target>
+        <target state="translated">Konzola Spr├ívce bal├¡─ìk┼»</target>
         <note />
       </trans-unit>
     </body>

@@ -1,45 +1,45 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
     <body>
       <trans-unit id="ArgumentCannotBeNullOrEmpty">
         <source>The argument cannot be null or empty.</source>
-        <target state="translated">引数を null または空にすることはできません。</target>
+        <target state="translated">σ╝òµò░πéÆ null πü╛πüƒπü»τ⌐║πü½πüÖπéïπüôπü¿πü»πüºπüìπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkDoesNotSupportProfiles">
         <source>.NET 5.0 and above does not support profiles.</source>
-        <target state="translated">.NET 5.0 以降はプロファイルをサポートしていません。</target>
+        <target state="translated">.NET 5.0 Σ╗ÑΘÖìπü»πâùπâ¡πâòπéíπéñπâ½πéÆπé╡πâ¥πâ╝πâêπüùπüªπüäπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkMismatch">
         <source>Frameworks must have the same identifier, profile, and platform.</source>
-        <target state="translated">フレームワークの識別子、プロファイル、プラットフォームは同じでなければなりません。</target>
+        <target state="translated">πâòπâ¼πâ╝πâáπâ»πâ╝πé»πü«Φ¡ÿσêÑσ¡ÉπÇüπâùπâ¡πâòπéíπéñπâ½πÇüπâùπâ⌐πââπâêπâòπé⌐πâ╝πâáπü»σÉîπüÿπüºπü¬πüæπéîπü░πü¬πéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidFrameworkIdentifier">
         <source>Invalid framework identifier '{0}'.</source>
-        <target state="translated">無効なフレームワーク識別子 '{0}'。</target>
+        <target state="translated">τäíσè╣πü¬πâòπâ¼πâ╝πâáπâ»πâ╝πé»Φ¡ÿσêÑσ¡É '{0}'πÇé</target>
         <note>{0} is the invalid framework identifier.</note>
       </trans-unit>
       <trans-unit id="InvalidFrameworkVersion">
         <source>Invalid framework version '{0}'.</source>
-        <target state="translated">無効なフレームワークのバージョン '{0}'。</target>
+        <target state="translated">τäíσè╣πü¬πâòπâ¼πâ╝πâáπâ»πâ╝πé»πü«πâÉπâ╝πé╕πâºπâ│ '{0}'πÇé</target>
         <note>{0} is the invalid framework version.</note>
       </trans-unit>
       <trans-unit id="InvalidPlatformVersion">
         <source>Invalid platform version '{0}'.</source>
-        <target state="translated">プラットフォーム バージョン '{0}' が無効です。</target>
+        <target state="translated">πâùπâ⌐πââπâêπâòπé⌐πâ╝πâá πâÉπâ╝πé╕πâºπâ│ '{0}' πüîτäíσè╣πüºπüÖπÇé</target>
         <note>{0} is the invalid platform version.</note>
       </trans-unit>
       <trans-unit id="InvalidPortableFrameworksDueToHyphen">
         <source>Invalid portable frameworks '{0}'. A hyphen may not be in any of the portable framework names.</source>
-        <target state="translated">無効なポータブル フレームワーク '{0}'。ポータブル フレームワーク名にハイフンは使用できません。</target>
+        <target state="translated">τäíσè╣πü¬πâ¥πâ╝πé┐πâûπâ½ πâòπâ¼πâ╝πâáπâ»πâ╝πé» '{0}'πÇéπâ¥πâ╝πé┐πâûπâ½ πâòπâ¼πâ╝πâáπâ»πâ╝πé»σÉìπü½πâÅπéñπâòπâ│πü»Σ╜┐τö¿πüºπüìπü╛πü¢πéôπÇé</target>
         <note>{0} is the invalid portable framework string.</note>
       </trans-unit>
       <trans-unit id="MissingPortableFrameworks">
         <source>Invalid portable frameworks for '{0}'. A portable framework must have at least one framework in the profile.</source>
-        <target state="translated">'{0}' の無効なポータブル フレームワーク。ポータブル フレームワークには、プロファイルに少なくとも 1 つのフレームワークが必要です。</target>
+        <target state="translated">'{0}' πü«τäíσè╣πü¬πâ¥πâ╝πé┐πâûπâ½ πâòπâ¼πâ╝πâáπâ»πâ╝πé»πÇéπâ¥πâ╝πé┐πâûπâ½ πâòπâ¼πâ╝πâáπâ»πâ╝πé»πü½πü»πÇüπâùπâ¡πâòπéíπéñπâ½πü½σ░æπü¬πüÅπü¿πéé 1 πüñπü«πâòπâ¼πâ╝πâáπâ»πâ╝πé»πüîσ┐àΦªüπüºπüÖπÇé</target>
         <note>{0} is the invalid portable framework string.</note>
       </trans-unit>
     </body>

@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pt-BR" original="../Strings.resx">
     <body>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty</source>
-        <target state="translated">O argumento não pode ser nulo ou vazio</target>
+        <target state="translated">O argumento n├úo pode ser nulo ou vazio</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Must_Be_GreaterThanOrEqualTo">
@@ -14,12 +14,12 @@
       </trans-unit>
       <trans-unit id="MissingRequiredEnvVar">
         <source>Required environment variable '{0}' is not set. Try setting '{0}' and running the operation again.</source>
-        <target state="translated">A variável de ambiente necessária '{0}' não está definida. Tente definir '{0}' e executar a operação novamente.</target>
+        <target state="translated">A vari├ível de ambiente necess├íria '{0}' n├úo est├í definida. Tente definir '{0}' e executar a opera├º├úo novamente.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingRequiredEnvVarsDotnet">
         <source>Required environment variable '{0}' is not set. Try setting '{1}' or '{0}' and running the operation</source>
-        <target state="translated">A variável de ambiente necessária '{0}' não está definida. Tente definir '{1}' ou '{0}' e executar a operação</target>
+        <target state="translated">A vari├ível de ambiente necess├íria '{0}' n├úo est├í definida. Tente definir '{1}' ou '{0}' e executar a opera├º├úo</target>
         <note />
       </trans-unit>
       <trans-unit id="TimeUnits_Hour">
@@ -44,32 +44,32 @@
       </trans-unit>
       <trans-unit id="UnableToDetemineClientVersion">
         <source>Unable to determine the current NuGet client version.</source>
-        <target state="translated">Não foi possível determinar a versão de cliente do NuGet atual.</target>
+        <target state="translated">N├úo foi poss├¡vel determinar a vers├úo de cliente do NuGet atual.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToSetNuGetTempFolderPermission">
         <source>User is unable to set permission to 700 while creating {0}, errno={1}.</source>
-        <target state="translated">Não é possível definir a permissão do usuário para 700 ao criar {0}, errno={1}.</target>
+        <target state="translated">N├úo ├⌐ poss├¡vel definir a permiss├úo do usu├írio para 700 ao criar {0}, errno={1}.</target>
         <note>{0} is a file path; {1} is an error code.</note>
       </trans-unit>
       <trans-unit id="UnauthorizedLockFail">
         <source>Unable to obtain lock file access on '{0}' for operations on '{1}'. This may mean that a different user or administrator is holding this lock and that this process does not have permission to access it. If no other process is currently performing an operation on this file it may mean that an earlier NuGet process crashed and left an inaccessible lock file, in this case removing the file '{0}' will allow NuGet to continue.</source>
-        <target state="translated">Não foi possível obter acesso ao arquivo de bloqueio em '{0}' para operações em '{1}'. Isso pode significar que um usuário ou administrador diferente esteja retendo esse bloqueio e esse processo não tem permissão para acessá-lo. Se nenhum outro processo estiver executando uma operação nesse arquivo atualmente, isso pode significar que um processo anterior do NuGet tenha falhado e tornado um arquivo de bloqueio inacessível, nesse caso a remoção do arquivo '{0}' permitirá que o NuGet continue.</target>
+        <target state="translated">N├úo foi poss├¡vel obter acesso ao arquivo de bloqueio em '{0}' para opera├º├╡es em '{1}'. Isso pode significar que um usu├írio ou administrador diferente esteja retendo esse bloqueio e esse processo n├úo tem permiss├úo para acess├í-lo. Se nenhum outro processo estiver executando uma opera├º├úo nesse arquivo atualmente, isso pode significar que um processo anterior do NuGet tenha falhado e tornado um arquivo de bloqueio inacess├¡vel, nesse caso a remo├º├úo do arquivo '{0}' permitir├í que o NuGet continue.</target>
         <note>{0} and {1} are both file paths.</note>
       </trans-unit>
       <trans-unit id="UnsupportedHashAlgorithm">
         <source>Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.</source>
-        <target state="translated">O algoritmo de hash '{0}' não é suportado. Os algoritmos suportados são: SHA512 e SHA256.</target>
+        <target state="translated">O algoritmo de hash '{0}' n├úo ├⌐ suportado. Os algoritmos suportados s├úo: SHA512 e SHA256.</target>
         <note>{0} is an algorithm identifier</note>
       </trans-unit>
       <trans-unit id="UnsupportedHashAlgorithmName">
         <source>Hash algorithm '{0}' is unsupported.</source>
-        <target state="translated">O algoritmo de hash '{0}' não tem suporte.</target>
+        <target state="translated">O algoritmo de hash '{0}' n├úo tem suporte.</target>
         <note>{0} is an algorithm identifier</note>
       </trans-unit>
       <trans-unit id="UnsupportedSignatureAlgorithmName">
         <source>Signature algorithm '{0}' is unsupported.</source>
-        <target state="translated">O algoritmo de assinatura '{0}' não tem suporte.</target>
+        <target state="translated">O algoritmo de assinatura '{0}' n├úo tem suporte.</target>
         <note>{0} is an algorithm identifier</note>
       </trans-unit>
     </body>

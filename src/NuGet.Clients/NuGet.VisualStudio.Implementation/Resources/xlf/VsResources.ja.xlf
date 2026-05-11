@@ -1,391 +1,391 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../VsResources.resx">
     <body>
       <trans-unit id="CouldNotGetShortFrameworkName">
         <source>The framework name '{0}' cannot be converted to a short framework name.</source>
-        <target state="translated">フレームワーク名 '{0}' を短いフレームワーク名に変換できません。</target>
+        <target state="translated">πâòπâ¼πâ╝πâáπâ»πâ╝πé»σÉì '{0}' πéÆτƒ¡πüäπâòπâ¼πâ╝πâáπâ»πâ╝πé»σÉìπü½σñëµÅ¢πüºπüìπü╛πü¢πéôπÇé</target>
         <note>Arguments in order:
 The string representation of the user's input framework name.</note>
       </trans-unit>
       <trans-unit id="DiagnosticBrowseObjectClassName">
         <source>Diagnostic</source>
-        <target state="translated">診断</target>
+        <target state="translated">Φ¿║µû¡</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticCodeDescription">
         <source>The diagnostic's identifying code.</source>
-        <target state="translated">診断の識別コードです。</target>
+        <target state="translated">Φ¿║µû¡πü«Φ¡ÿσêÑπé│πâ╝πâëπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticCodeDisplayName">
         <source>Code</source>
-        <target state="translated">コード</target>
+        <target state="translated">πé│πâ╝πâë</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLevelDescription">
         <source>The diagnostic's level.</source>
-        <target state="translated">診断のレベルです。</target>
+        <target state="translated">Φ¿║µû¡πü«πâ¼πâÖπâ½πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLevelDisplayName">
         <source>Level</source>
-        <target state="translated">レベル</target>
+        <target state="translated">πâ¼πâÖπâ½</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLibraryNameDescription">
         <source>The name of the package or project this diagnostic applies to.</source>
-        <target state="translated">この診断が適用されるパッケージまたはプロジェクトの名前です。</target>
+        <target state="translated">πüôπü«Φ¿║µû¡πüîΘü⌐τö¿πüòπéîπéïπâæπââπé▒πâ╝πé╕πü╛πüƒπü»πâùπâ¡πé╕πéºπé»πâêπü«σÉìσëìπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticLibraryNameDisplayName">
         <source>Library</source>
-        <target state="translated">ライブラリ</target>
+        <target state="translated">πâ⌐πéñπâûπâ⌐πâ¬</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticMessageDescription">
         <source>The diagnostic's descriptive message.</source>
-        <target state="translated">診断の説明メッセージです。</target>
+        <target state="translated">Φ¿║µû¡πü«Φ¬¼µÿÄπâíπââπé╗πâ╝πé╕πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticMessageDisplayName">
         <source>Message</source>
-        <target state="translated">メッセージ</target>
+        <target state="translated">πâíπââπé╗πâ╝πé╕</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticWarningLevelDescription">
         <source>The diagnostic's warning level. Only applies to warnings.</source>
-        <target state="translated">診断の警告レベルです。警告にのみ適用されます。</target>
+        <target state="translated">Φ¿║µû¡πü«Φ¡ªσæèπâ¼πâÖπâ½πüºπüÖπÇéΦ¡ªσæèπü½πü«πü┐Θü⌐τö¿πüòπéîπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="DiagnosticWarningLevelDisplayName">
         <source>Warning Level</source>
-        <target state="translated">警告レベル</target>
+        <target state="translated">Φ¡ªσæèπâ¼πâÖπâ½</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_FileNotExists">
         <source>The project file '{0}' does not exist on disk.</source>
-        <target state="translated">プロジェクト ファイル '{0}' がディスクに存在しません。</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâê πâòπéíπéñπâ½ '{0}' πüîπâçπéúπé╣πé»πü½σ¡ÿσ£¿πüùπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_ProjectNotInCache">
         <source>Project {0} does not exist in the project system cache.</source>
-        <target state="translated">プロジェクト {0} がプロジェクト システム キャッシュに存在しません。</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâê {0} πüîπâùπâ¡πé╕πéºπé»πâê πé╖πé╣πâåπâá πé¡πâúπââπé╖πâÑπü½σ¡ÿσ£¿πüùπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNetStandardFramework">
         <source>The specified framework name '{0}' must be .NETStandard.</source>
-        <target state="translated">指定されたフレームワーク名 '{0}' は、.NETStandard でなければなりません。</target>
+        <target state="translated">µîçσ«Üπüòπéîπüƒπâòπâ¼πâ╝πâáπâ»πâ╝πé»σÉì '{0}' πü»πÇü.NETStandard πüºπü¬πüæπéîπü░πü¬πéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNuGetVersionString">
         <source>The provided version string is not a valid nuget version.</source>
-        <target state="translated">指定したバージョン文字列は、有効な NuGet バージョンではありません。</target>
+        <target state="translated">µîçσ«ÜπüùπüƒπâÉπâ╝πé╕πâºπâ│µûçσ¡ùσêùπü»πÇüµ£ëσè╣πü¬ NuGet πâÉπâ╝πé╕πâºπâ│πüºπü»πüéπéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidSource">
         <source>The specified source '{0}' is invalid. Please provide a valid source.</source>
-        <target state="translated">指定されたソース '{0}' が正しくありません。有効なソースを指定してください。</target>
+        <target state="translated">µîçσ«Üπüòπéîπüƒπé╜πâ╝πé╣ '{0}' πüîµ¡úπüùπüÅπüéπéèπü╛πü¢πéôπÇéµ£ëσè╣πü¬πé╜πâ╝πé╣πéÆµîçσ«ÜπüùπüªπüÅπüáπüòπüäπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyBrowseObjectClassName">
         <source>Assembly</source>
-        <target state="translated">アセンブリ</target>
+        <target state="translated">πéóπé╗πâ│πâûπâ¬</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyNameDescription">
         <source>The assembly's name.</source>
-        <target state="translated">アセンブリの名前です。</target>
+        <target state="translated">πéóπé╗πâ│πâûπâ¬πü«σÉìσëìπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyNameDisplayName">
         <source>Name</source>
-        <target state="translated">名前</target>
+        <target state="translated">σÉìσëì</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyPathDescription">
         <source>The assembly's path.</source>
-        <target state="translated">アセンブリのパスです。</target>
+        <target state="translated">πéóπé╗πâ│πâûπâ¬πü«πâæπé╣πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAssemblyPathDisplayName">
         <source>Path</source>
-        <target state="translated">パス</target>
+        <target state="translated">πâæπé╣</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileBrowseObjectClassName">
         <source>Build File</source>
-        <target state="translated">ビルド ファイル</target>
+        <target state="translated">πâôπâ½πâë πâòπéíπéñπâ½</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileGroupName">
         <source>Build Files</source>
-        <target state="translated">ビルド ファイル</target>
+        <target state="translated">πâôπâ½πâë πâòπéíπéñπâ½</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileNameDescription">
         <source>The build file's name.</source>
-        <target state="translated">ビルド ファイルの名前です。</target>
+        <target state="translated">πâôπâ½πâë πâòπéíπéñπâ½πü«σÉìσëìπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFileNameDisplayName">
         <source>Name</source>
-        <target state="translated">名前</target>
+        <target state="translated">σÉìσëì</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFilePathDescription">
         <source>The build file's path.</source>
-        <target state="translated">ビルド ファイルのパスです。</target>
+        <target state="translated">πâôπâ½πâë πâòπéíπéñπâ½πü«πâæπé╣πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildFilePathDisplayName">
         <source>Path</source>
-        <target state="translated">パス</target>
+        <target state="translated">πâæπé╣</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageBuildMultiTargetingFileGroupName">
         <source>Build Files (Multi-targeting)</source>
-        <target state="translated">ビルド ファイル (マルチターゲット)</target>
+        <target state="translated">πâôπâ½πâë πâòπéíπéñπâ½ (πâ₧πâ½πâüπé┐πâ╝πé▓πââπâê)</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCompileTimeAssemblyGroupName">
         <source>Compile Time Assemblies</source>
-        <target state="translated">コンパイル時のアセンブリ</target>
+        <target state="translated">πé│πâ│πâæπéñπâ½µÖéπü«πéóπé╗πâ│πâûπâ¬</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileBrowseObjectClassName">
         <source>Content File</source>
-        <target state="translated">コンテンツ ファイル</target>
+        <target state="translated">πé│πâ│πâåπâ│πâä πâòπéíπéñπâ½</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileBuildActionDescription">
         <source>The content file's build action.</source>
-        <target state="translated">コンテンツ ファイルのビルド アクションです。</target>
+        <target state="translated">πé│πâ│πâåπâ│πâä πâòπéíπéñπâ½πü«πâôπâ½πâë πéóπé»πé╖πâºπâ│πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileBuildActionDisplayName">
         <source>Build Action</source>
-        <target state="translated">ビルド アクション</target>
+        <target state="translated">πâôπâ½πâë πéóπé»πé╖πâºπâ│</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCodeLanguageDescription">
         <source>Controls whether this file should be included in the referencing project based on that project's language.</source>
-        <target state="translated">プロジェクトの言語に基づいて、このファイルを参照元のプロジェクトに含めるかどうかを制御します。</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâêπü«Φ¿ÇΦ¬₧πü½σƒ║πüÑπüäπüªπÇüπüôπü«πâòπéíπéñπâ½πéÆσÅéτàºσàâπü«πâùπâ¡πé╕πéºπé»πâêπü½σÉ½πéüπéïπüïπü⌐πüåπüïπéÆσê╢σ╛íπüùπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCodeLanguageDisplayName">
         <source>Code Language</source>
-        <target state="translated">コード言語</target>
+        <target state="translated">πé│πâ╝πâëΦ¿ÇΦ¬₧</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCopyToOutputDescription">
         <source>Whether the content file is copied to the output directory during build.</source>
-        <target state="translated">ビルド中にコンテンツ ファイルを出力ディレクトリにコピーするかどうかを指定します。</target>
+        <target state="translated">πâôπâ½πâëΣ╕¡πü½πé│πâ│πâåπâ│πâä πâòπéíπéñπâ½πéÆσç║σè¢πâçπéúπâ¼πé»πâêπâ¬πü½πé│πâöπâ╝πüÖπéïπüïπü⌐πüåπüïπéÆµîçσ«Üπüùπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileCopyToOutputDisplayName">
         <source>Copy to Output</source>
-        <target state="translated">出力にコピー</target>
+        <target state="translated">σç║σè¢πü½πé│πâöπâ╝</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileOutputPathDescription">
         <source>The content file's output path.</source>
-        <target state="translated">コンテンツ ファイルの出力パスです。</target>
+        <target state="translated">πé│πâ│πâåπâ│πâä πâòπéíπéñπâ½πü«σç║σè¢πâæπé╣πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFileOutputPathDisplayName">
         <source>Output Path</source>
-        <target state="translated">出力パス</target>
+        <target state="translated">σç║σè¢πâæπé╣</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePPOutputPathDescription">
         <source>The content file's preprocessed output path.</source>
-        <target state="translated">コンテンツ ファイルの前処理された出力パスです。</target>
+        <target state="translated">πé│πâ│πâåπâ│πâä πâòπéíπéñπâ½πü«σëìσçªτÉåπüòπéîπüƒσç║σè¢πâæπé╣πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePPOutputPathDisplayName">
         <source>Preprocessed Output Path</source>
-        <target state="translated">前処理済みの出力パス</target>
+        <target state="translated">σëìσçªτÉåµ╕êπü┐πü«σç║σè¢πâæπé╣</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePathDescription">
         <source>The content file's path.</source>
-        <target state="translated">コンテンツ ファイルのパスです。</target>
+        <target state="translated">πé│πâ│πâåπâ│πâä πâòπéíπéñπâ½πü«πâæπé╣πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilePathDisplayName">
         <source>Path</source>
-        <target state="translated">パス</target>
+        <target state="translated">πâæπé╣</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageContentFilesGroupName">
         <source>Content Files</source>
-        <target state="translated">コンテンツ ファイル</target>
+        <target state="translated">πé│πâ│πâåπâ│πâä πâòπéíπéñπâ½</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentBrowseObjectClassName">
         <source>Package Document</source>
-        <target state="translated">パッケージ ドキュメント</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕ πâëπé¡πâÑπâíπâ│πâê</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentGroupName">
         <source>Documents</source>
-        <target state="translated">ドキュメント</target>
+        <target state="translated">πâëπé¡πâÑπâíπâ│πâê</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentPathDescription">
         <source>The document's path.</source>
-        <target state="translated">ドキュメントのパス。</target>
+        <target state="translated">πâëπé¡πâÑπâíπâ│πâêπü«πâæπé╣πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageDocumentPathDisplayName">
         <source>Path</source>
-        <target state="translated">パス</target>
+        <target state="translated">πâæπé╣</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageFrameworkAssemblyGroupName">
         <source>Framework Assemblies</source>
-        <target state="translated">フレームワーク アセンブリ</target>
+        <target state="translated">πâòπâ¼πâ╝πâáπâ»πâ╝πé» πéóπé╗πâ│πâûπâ¬</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceBrowseObjectClassName">
         <source>Package Reference</source>
-        <target state="translated">パッケージ参照</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕σÅéτàº</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceNameDescription">
         <source>The package's name.</source>
-        <target state="translated">パッケージの名前です。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕πü«σÉìσëìπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceNameDisplayName">
         <source>Name</source>
-        <target state="translated">名前</target>
+        <target state="translated">σÉìσëì</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferencePathDescription">
         <source>The package's resolved full path.</source>
-        <target state="translated">パッケージの解決された完全なパスです。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕πü«Φºúµ▒║πüòπéîπüƒσ«îσà¿πü¬πâæπé╣πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferencePathDisplayName">
         <source>Path</source>
-        <target state="translated">パス</target>
+        <target state="translated">πâæπé╣</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceVersionDescription">
         <source>The package's version.</source>
-        <target state="translated">パッケージのバージョンです。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕πü«πâÉπâ╝πé╕πâºπâ│πüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReferenceVersionDisplayName">
         <source>Version</source>
-        <target state="translated">バージョン</target>
+        <target state="translated">πâÉπâ╝πé╕πâºπâ│</target>
         <note />
       </trans-unit>
       <trans-unit id="PathContext_CreateContextError">
         <source>Failed creating a path context for "{0}". Reason: {1}</source>
-        <target state="translated">"{0}" のパス コンテキストの作成に失敗しました。理由: {1}</target>
+        <target state="translated">"{0}" πü«πâæπé╣ πé│πâ│πâåπé¡πé╣πâêπü«Σ╜£µêÉπü½σñ▒µòùπüùπü╛πüùπüƒπÇéτÉåτö▒: {1}</target>
         <note>{0} is the project name or full path, {1} is the error message generated earlier</note>
       </trans-unit>
       <trans-unit id="PathContext_LockFileError">
         <source>The lock file doesn't exist or it's an older format that doesn't have the package folders property persisted.</source>
-        <target state="translated">ロック ファイルは存在しないか、パッケージ フォルダーが正しく保持されていない古い形式です。</target>
+        <target state="translated">πâ¡πââπé» πâòπéíπéñπâ½πü»σ¡ÿσ£¿πüùπü¬πüäπüïπÇüπâæπââπé▒πâ╝πé╕ πâòπé⌐πâ½πâÇπâ╝πüîµ¡úπüùπüÅΣ┐¥µîüπüòπéîπüªπüäπü¬πüäσÅñπüäσ╜óσ╝ÅπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PathContext_PackageDirectoryNotFound">
         <source>Package directory for "{0}" is not found.</source>
-        <target state="translated">"{0}" のパッケージ ディレクトリが見つかりません。</target>
+        <target state="translated">"{0}" πü«πâæπââπé▒πâ╝πé╕ πâçπéúπâ¼πé»πâêπâ¬πüîΦªïπüñπüïπéèπü╛πü¢πéôπÇé</target>
         <note>{0} is the package ID</note>
       </trans-unit>
       <trans-unit id="PreinstalledPackages_ExtensionManagerError">
         <source>Error accessing Extension Manager.</source>
-        <target state="translated">拡張機能マネージャーへのアクセス中にエラーが発生しました。</target>
+        <target state="translated">µïíσ╝╡µ⌐ƒΦâ╜πâ₧πâìπâ╝πé╕πâúπâ╝πü╕πü«πéóπé»πé╗πé╣Σ╕¡πü½πé¿πâ⌐πâ╝πüîτÖ║τöƒπüùπü╛πüùπüƒπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_FailedToInstallPackage">
         <source>Could not add all required packages to the project. The following packages failed to install from '{0}':</source>
-        <target state="translated">必要なすべてのパッケージをプロジェクトに追加できませんでした。次のパッケージを '{0}' からインストールできませんでした:</target>
+        <target state="translated">σ┐àΦªüπü¬πüÖπü╣πüªπü«πâæπââπé▒πâ╝πé╕πéÆπâùπâ¡πé╕πéºπé»πâêπü½Φ┐╜σèáπüºπüìπü╛πü¢πéôπüºπüùπüƒπÇéµ¼íπü«πâæπââπé▒πâ╝πé╕πéÆ '{0}' πüïπéëπéñπâ│πé╣πâêπâ╝πâ½πüºπüìπü╛πü¢πéôπüºπüùπüƒ:</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_InvalidExtensionId">
         <source>The preinstalled packages have a reference to a missing Extension. Could not find an Extension with ID '{0}'.</source>
-        <target state="translated">プレインストールされたパッケージに、見つからない拡張機能への参照が含まれています。ID '{0}' の拡張機能が見つかりませんでした。</target>
+        <target state="translated">πâùπâ¼πéñπâ│πé╣πâêπâ╝πâ½πüòπéîπüƒπâæπââπé▒πâ╝πé╕πü½πÇüΦªïπüñπüïπéëπü¬πüäµïíσ╝╡µ⌐ƒΦâ╜πü╕πü«σÅéτàºπüîσÉ½πü╛πéîπüªπüäπü╛πüÖπÇéID '{0}' πü«µïíσ╝╡µ⌐ƒΦâ╜πüîΦªïπüñπüïπéèπü╛πü¢πéôπüºπüùπüƒπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_InvalidRegistryValue">
         <source>The preinstalled packages have a reference to a missing Registry value. Could not find a Registry key with name '{0}' under '{1}'.</source>
-        <target state="translated">プレインストールされたパッケージに、見つからないレジストリ値への参照が含まれています。名前 '{0}' のレジストリ キーが '{1}' で見つかりませんでした。</target>
+        <target state="translated">πâùπâ¼πéñπâ│πé╣πâêπâ╝πâ½πüòπéîπüƒπâæπââπé▒πâ╝πé╕πü½πÇüΦªïπüñπüïπéëπü¬πüäπâ¼πé╕πé╣πâêπâ¬σÇñπü╕πü«σÅéτàºπüîσÉ½πü╛πéîπüªπüäπü╛πüÖπÇéσÉìσëì '{0}' πü«πâ¼πé╕πé╣πâêπâ¬ πé¡πâ╝πüî '{1}' πüºΦªïπüñπüïπéèπü╛πü¢πéôπüºπüùπüƒπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_PackageInstallStatus">
         <source>Adding {0}.{1} to project...</source>
-        <target state="translated">{0}.{1} をプロジェクトに追加しています...</target>
+        <target state="translated">{0}.{1} πéÆπâùπâ¡πé╕πéºπé»πâêπü½Φ┐╜σèáπüùπüªπüäπü╛πüÖ...</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_RegistryKeyError">
         <source>The preinstalled packages are configured to use a Registry-provided package repository but there was an error accessing Registry key '{0}'.</source>
-        <target state="translated">プレインストールされたパッケージは、レジストリで指定されたパッケージ リポジトリを使用するように構成されていますが、レジストリ キー '{0}' へのアクセス中にエラーが発生しました。</target>
+        <target state="translated">πâùπâ¼πéñπâ│πé╣πâêπâ╝πâ½πüòπéîπüƒπâæπââπé▒πâ╝πé╕πü»πÇüπâ¼πé╕πé╣πâêπâ¬πüºµîçσ«Üπüòπéîπüƒπâæπââπé▒πâ╝πé╕ πâ¬πâ¥πé╕πâêπâ¬πéÆΣ╜┐τö¿πüÖπéïπéêπüåπü½µºïµêÉπüòπéîπüªπüäπü╛πüÖπüîπÇüπâ¼πé╕πé╣πâêπâ¬ πé¡πâ╝ '{0}' πü╕πü«πéóπé»πé╗πé╣Σ╕¡πü½πé¿πâ⌐πâ╝πüîτÖ║τöƒπüùπü╛πüùπüƒπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="PreinstalledPackages_VersionConflict">
         <source>Attempting to install version '{1}' of '{0}' but the project already includes a different version. Skipping...</source>
-        <target state="translated">'{0}' のバージョン '{1}' をインストールしようとしていますが、プロジェクトには既に別のバージョンが含まれています。スキップしています...</target>
+        <target state="translated">'{0}' πü«πâÉπâ╝πé╕πâºπâ│ '{1}' πéÆπéñπâ│πé╣πâêπâ╝πâ½πüùπéêπüåπü¿πüùπüªπüäπü╛πüÖπüîπÇüπâùπâ¡πé╕πéºπé»πâêπü½πü»µùóπü½σêÑπü«πâÉπâ╝πé╕πâºπâ│πüîσÉ½πü╛πéîπüªπüäπü╛πüÖπÇéπé╣πé¡πââπâùπüùπüªπüäπü╛πüÖ...</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceBrowseObjectClassName">
         <source>Project Reference</source>
-        <target state="translated">プロジェクト参照</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâêσÅéτàº</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceNameDescription">
         <source>The project's name.</source>
-        <target state="translated">プロジェクトの名前です。</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâêπü«σÉìσëìπüºπüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceNameDisplayName">
         <source>Name</source>
-        <target state="translated">名前</target>
+        <target state="translated">σÉìσëì</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="translated">'{0}' を null 値にはできません。</target>
+        <target state="translated">'{0}' πéÆ null σÇñπü½πü»πüºπüìπü╛πü¢πéôπÇé</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="TemplateWizard_ErrorDialogTitle">
         <source>Package Installation Error</source>
-        <target state="translated">パッケージのインストール エラー</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕πü«πéñπâ│πé╣πâêπâ╝πâ½ πé¿πâ⌐πâ╝</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_InvalidPackageElementAttributes">
         <source>The project template lists one or more packages with missing, empty, or invalid values for the "id" or "version" attributes. Both attributes are required and must have valid values.</source>
-        <target state="translated">プロジェクト テンプレートの一覧に含まれる 1 つ以上のパッケージで、"id" または "version" 属性の値が見つからないか、空であるか、または無効です。両方の属性が必須で、有効な値を指定する必要があります。</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâê πâåπâ│πâùπâ¼πâ╝πâêπü«Σ╕ÇΦªºπü½σÉ½πü╛πéîπéï 1 πüñΣ╗ÑΣ╕èπü«πâæπââπé▒πâ╝πé╕πüºπÇü"id" πü╛πüƒπü» "version" σ▒₧µÇºπü«σÇñπüîΦªïπüñπüïπéëπü¬πüäπüïπÇüτ⌐║πüºπüéπéïπüïπÇüπü╛πüƒπü»τäíσè╣πüºπüÖπÇéΣ╕íµû╣πü«σ▒₧µÇºπüîσ┐àΘáêπüºπÇüµ£ëσè╣πü¬σÇñπéÆµîçσ«ÜπüÖπéïσ┐àΦªüπüîπüéπéèπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_InvalidRepositoryAttribute">
         <source>The "repository" attribute of the package element has an invalid value: '{0}'. Valid values are: 'template' or 'extension'.</source>
-        <target state="translated">パッケージ要素の "repository" 属性に無効な値が含まれています: '{0}'。有効な値: 'template' または 'extension'。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕Φªüτ┤áπü« "repository" σ▒₧µÇºπü½τäíσè╣πü¬σÇñπüîσÉ½πü╛πéîπüªπüäπü╛πüÖ: '{0}'πÇéµ£ëσè╣πü¬σÇñ: 'template' πü╛πüƒπü» 'extension'πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_InvalidWizardRunKind">
         <source>This template wizard can only be applied to single-project or project-item templates.</source>
-        <target state="translated">このテンプレート ウィザードは、単一のプロジェクトまたはプロジェクトアイテム テンプレートにのみ適用できます。</target>
+        <target state="translated">πüôπü«πâåπâ│πâùπâ¼πâ╝πâê πéªπéúπé╢πâ╝πâëπü»πÇüσìÿΣ╕Çπü«πâùπâ¡πé╕πéºπé»πâêπü╛πüƒπü»πâùπâ¡πé╕πéºπé»πâêπéóπéñπâåπâá πâåπâ│πâùπâ¼πâ╝πâêπü½πü«πü┐Θü⌐τö¿πüºπüìπü╛πüÖπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_MissingExtensionId">
         <source>The project template is configured to use an Extension-specific package repository but the Extension ID has not been specified. Use the "repositoryId" attribute to specify the Extension ID.</source>
-        <target state="translated">プロジェクト テンプレートは拡張機能に固有のパッケージ リポジトリを使用するように構成されていますが、拡張機能 ID が指定されていません。"repositoryId" 属性を使用して、拡張機能 ID を指定してください。</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâê πâåπâ│πâùπâ¼πâ╝πâêπü»µïíσ╝╡µ⌐ƒΦâ╜πü½σ¢║µ£ëπü«πâæπââπé▒πâ╝πé╕ πâ¬πâ¥πé╕πâêπâ¬πéÆΣ╜┐τö¿πüÖπéïπéêπüåπü½µºïµêÉπüòπéîπüªπüäπü╛πüÖπüîπÇüµïíσ╝╡µ⌐ƒΦâ╜ ID πüîµîçσ«Üπüòπéîπüªπüäπü╛πü¢πéôπÇé"repositoryId" σ▒₧µÇºπéÆΣ╜┐τö¿πüùπüªπÇüµïíσ╝╡µ⌐ƒΦâ╜ ID πéÆµîçσ«ÜπüùπüªπüÅπüáπüòπüäπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateWizard_MissingRegistryKeyName">
         <source>The project template is configured to use a Registry-provided package repository but the Registry value name has not been specified. Use the "keyName" attribute to specify the Registry value.</source>
-        <target state="translated">プロジェクト テンプレートはレジストリで指定されたパッケージ リポジトリを使用するように構成されていますが、レジストリ値の名前が指定されていません。"keyName" 属性を使用して、レジストリ値を指定してください。</target>
+        <target state="translated">πâùπâ¡πé╕πéºπé»πâê πâåπâ│πâùπâ¼πâ╝πâêπü»πâ¼πé╕πé╣πâêπâ¬πüºµîçσ«Üπüòπéîπüƒπâæπââπé▒πâ╝πé╕ πâ¬πâ¥πé╕πâêπâ¬πéÆΣ╜┐τö¿πüÖπéïπéêπüåπü½µºïµêÉπüòπéîπüªπüäπü╛πüÖπüîπÇüπâ¼πé╕πé╣πâêπâ¬σÇñπü«σÉìσëìπüîµîçσ«Üπüòπéîπüªπüäπü╛πü¢πéôπÇé"keyName" σ▒₧µÇºπéÆΣ╜┐τö¿πüùπüªπÇüπâ¼πé╕πé╣πâêπâ¬σÇñπéÆµîçσ«ÜπüùπüªπüÅπüáπüòπüäπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownPackage">
         <source>Unable to find package '{0}'.</source>
-        <target state="translated">パッケージ '{0}' が見つかりません。</target>
+        <target state="translated">πâæπââπé▒πâ╝πé╕ '{0}' πüîΦªïπüñπüïπéèπü╛πü¢πéôπÇé</target>
         <note />
       </trans-unit>
     </body>

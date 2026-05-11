@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../NuGetTools.vsct">
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">Zarzą&amp;dzaj pakietami NuGet rozwiązania...</target>
+        <target state="translated">Zarz─à&amp;dzaj pakietami NuGet rozwi─àzania...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="cmdidAddPackages|ButtonText">
         <source>Manage &amp;NuGet Packages...</source>
-        <target state="translated">Zarządzaj pakietami &amp;NuGet...</target>
+        <target state="translated">Zarz─àdzaj pakietami &amp;NuGet...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackages|CommandName">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="cmdidClearHost|ButtonText">
         <source>&amp;Clear Console</source>
-        <target state="translated">Wy&amp;czyść konsolę</target>
+        <target state="translated">Wy&amp;czy┼¢─ç konsol─Ö</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidClearNuGetLocalResources|ButtonText">
@@ -39,17 +39,17 @@
       </trans-unit>
       <trans-unit id="cmdidPowerConsole|ButtonText">
         <source>Package Manager C&amp;onsole</source>
-        <target state="translated">K&amp;onsola menedżera pakietów</target>
+        <target state="translated">K&amp;onsola mened┼╝era pakiet├│w</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidProjects|ButtonText">
         <source>Default pro&amp;ject:</source>
-        <target state="translated">Pro&amp;jekt domyślny:</target>
+        <target state="translated">Pro&amp;jekt domy┼¢lny:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|ButtonText">
         <source>Restore NuGet Packa&amp;ges</source>
-        <target state="translated">Przywróć pakiety Nu&amp;Get</target>
+        <target state="translated">Przywr├│─ç pakiety Nu&amp;Get</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|CommandName">
@@ -59,12 +59,12 @@
       </trans-unit>
       <trans-unit id="cmdidSourceSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">&amp;Ustawienia menedżera pakietów</target>
+        <target state="translated">&amp;Ustawienia mened┼╝era pakiet├│w</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidSources|ButtonText">
         <source>Pac&amp;kage source:</source>
-        <target state="translated">Źródło pa&amp;kietów:</target>
+        <target state="translated">┼╣r├│d┼éo pa&amp;kiet├│w:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidStopHost|ButtonText">
@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="idGeneralSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">&amp;Ustawienia menedżera pakietów</target>
+        <target state="translated">&amp;Ustawienia mened┼╝era pakiet├│w</target>
         <note />
       </trans-unit>
       <trans-unit id="idGeneralSettings|CommandName">
@@ -134,12 +134,12 @@
       </trans-unit>
       <trans-unit id="idLibraryPackageManager|ButtonText">
         <source>NuGet Package Ma&amp;nager</source>
-        <target state="translated">Me&amp;nedżer pakietów NuGet</target>
+        <target state="translated">Me&amp;ned┼╝er pakiet├│w NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="idToolbar|ButtonText">
         <source>Package Manager Console</source>
-        <target state="translated">Konsola menedżera pakietów</target>
+        <target state="translated">Konsola mened┼╝era pakiet├│w</target>
         <note />
       </trans-unit>
     </body>

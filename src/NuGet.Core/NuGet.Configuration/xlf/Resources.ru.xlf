@@ -1,110 +1,110 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../Resources.resx">
     <body>
       <trans-unit id="Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly">
         <source>Argument cannot be null, empty, or whitespace only.</source>
-        <target state="translated">Аргумент не может быть пустым, символом-разделителем или иметь значение null.</target>
+        <target state="translated">╨É╤Ç╨│╤â╨╝╨╡╨╜╤é ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝, ╤ü╨╕╨╝╨▓╨╛╨╗╨╛╨╝-╤Ç╨░╨╖╨┤╨╡╨╗╨╕╤é╨╡╨╗╨╡╨╝ ╨╕╨╗╨╕ ╨╕╨╝╨╡╤é╤î ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ null.</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Cannot_Be_Null_Or_Empty">
         <source>Value cannot be null or empty string.</source>
-        <target state="translated">Значение не может быть равно NULL или быть пустой строкой.</target>
+        <target state="translated">╨ù╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╤Ç╨░╨▓╨╜╨╛ NULL ╨╕╨╗╨╕ ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╨╛╨╣ ╤ü╤é╤Ç╨╛╨║╨╛╨╣.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeNotAllowed">
         <source>Attribute '{0}' is not allowed in element '{1}'.</source>
-        <target state="translated">Атрибут "{0}" недопустим в элементе "{1}".</target>
+        <target state="translated">╨É╤é╤Ç╨╕╨▒╤â╤é "{0}" ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝ ╨▓ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╨╡ "{1}".</target>
         <note>0 - attribute name
 1 - element name</note>
       </trans-unit>
       <trans-unit id="AttributeValueNotAllowed">
         <source>The attribute '{0}' has an unallowed value '{1}' in element '{2}'.</source>
-        <target state="translated">Атрибут "{0}" имеет недопустимое значение "{1}" в элементе "{2}".</target>
+        <target state="translated">╨É╤é╤Ç╨╕╨▒╤â╤é "{0}" ╨╕╨╝╨╡╨╡╤é ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ "{1}" ╨▓ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╨╡ "{2}".</target>
         <note>0 - attribute name
 1 - attribute value
 2 - element name</note>
       </trans-unit>
       <trans-unit id="CannotUpdateDifferentItems">
         <source>The item passed to the Update method cannot refer to a different item than the one being updated.</source>
-        <target state="translated">Элемент, переданный в метод обновления, не может ссылаться на элемент, отличный от обновляемого.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é, ╨┐╨╡╤Ç╨╡╨┤╨░╨╜╨╜╤ï╨╣ ╨▓ ╨╝╨╡╤é╨╛╨┤ ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å, ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╤ü╤ü╤ï╨╗╨░╤é╤î╤ü╤Å ╨╜╨░ ╤ì╨╗╨╡╨╝╨╡╨╜╤é, ╨╛╤é╨╗╨╕╤ç╨╜╤ï╨╣ ╨╛╤é ╨╛╨▒╨╜╨╛╨▓╨╗╤Å╨╡╨╝╨╛╨│╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotUpdateMachineWide">
         <source>Unable to update setting since it is in a machine-wide NuGet.Config.</source>
-        <target state="translated">Невозможно обновить параметр, так как это NuGet.Config компьютера.</target>
+        <target state="translated">╨¥╨╡╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛ ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç, ╤é╨░╨║ ╨║╨░╨║ ╤ì╤é╨╛ NuGet.Config ╨║╨╛╨╝╨┐╤î╤Ä╤é╨╡╤Ç╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotUpdateNode">
         <source>Cannot update the node of a setting.</source>
-        <target state="translated">Невозможно обновить узел параметра.</target>
+        <target state="translated">╨¥╨╡╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛ ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î ╤â╨╖╨╡╨╗ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotUpdateReadOnlyConfig">
         <source>Unable to update setting since it is in an uneditable config file.</source>
-        <target state="translated">Не удалось обновить параметр, так как он находится в нередактируемом файле конфигурации.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç, ╤é╨░╨║ ╨║╨░╨║ ╨╛╨╜ ╨╜╨░╤à╨╛╨┤╨╕╤é╤ü╤Å ╨▓ ╨╜╨╡╤Ç╨╡╨┤╨░╨║╤é╨╕╤Ç╤â╨╡╨╝╨╛╨╝ ╤ä╨░╨╣╨╗╨╡ ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╨╕.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientCertificateDuplicateConfiguration">
         <source>There are multiple client certificate configurations associated with the same package source(s): {0}</source>
-        <target state="translated">С одними и теми же источниками пакетов связано несколько конфигураций сертификатов клиента: {0}.</target>
+        <target state="translated">╨í ╨╛╨┤╨╜╨╕╨╝╨╕ ╨╕ ╤é╨╡╨╝╨╕ ╨╢╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░╨╝╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╤ü╨▓╤Å╨╖╨░╨╜╨╛ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╨╣ ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨╛╨▓ ╨║╨╗╨╕╨╡╨╜╤é╨░: {0}.</target>
         <note>0 - Package sources separated with comma</note>
       </trans-unit>
       <trans-unit id="CredentialsItemMustHaveUsernamePassword">
         <source>Credentials item must have username and password.</source>
-        <target state="translated">Элемент учетных данных должен иметь имя пользователя и пароль.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╨┤╨╛╨╗╨╢╨╡╨╜ ╨╕╨╝╨╡╤é╤î ╨╕╨╝╤Å ╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╨╡╨╗╤Å ╨╕ ╨┐╨░╤Ç╨╛╨╗╤î.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_DuplicatePackageSource">
         <source>PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}</source>
-        <target state="translated">PackageSourceMapping включен, и с одинаковыми ключами связано несколько источников пакетов: {0}. Путь: {1}</target>
+        <target state="translated">PackageSourceMapping ╨▓╨║╨╗╤Ä╤ç╨╡╨╜, ╨╕ ╤ü ╨╛╨┤╨╕╨╜╨░╨║╨╛╨▓╤ï╨╝╨╕ ╨║╨╗╤Ä╤ç╨░╨╝╨╕ ╤ü╨▓╤Å╨╖╨░╨╜╨╛ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓ ╨┐╨░╨║╨╡╤é╨╛╨▓: {0}. ╨ƒ╤â╤é╤î: {1}</target>
         <note>0 - package sources separated with comma 1 - path</note>
       </trans-unit>
       <trans-unit id="Error_EncryptionUnsupported">
         <source>Encryption is not supported on non-Windows platforms.</source>
-        <target state="translated">Шифрование не поддерживается на платформах, отличных от Windows.</target>
+        <target state="translated">╨¿╨╕╤ä╤Ç╨╛╨▓╨░╨╜╨╕╨╡ ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å ╨╜╨░ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╨░╤à, ╨╛╤é╨╗╨╕╤ç╨╜╤ï╤à ╨╛╤é Windows.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidAttribute">
         <source>The attribute {0}-{1} is not valid.</source>
-        <target state="translated">Атрибут {0}-{1} недопустим.</target>
+        <target state="translated">╨É╤é╤Ç╨╕╨▒╤â╤é {0}-{1} ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝.</target>
         <note>0 - attribute name
 1 - attribute value</note>
       </trans-unit>
       <trans-unit id="Error_ItemNeedsAtLeastOnePackagePattern">
         <source>Package source '{0}' must have at least one package pattern.</source>
-        <target state="translated">Источник пакета "{0}" должен иметь по крайней мере один шаблон пакета.</target>
+        <target state="translated">╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║ ╨┐╨░╨║╨╡╤é╨░ "{0}" ╨┤╨╛╨╗╨╢╨╡╨╜ ╨╕╨╝╨╡╤é╤î ╨┐╨╛ ╨║╤Ç╨░╨╣╨╜╨╡╨╣ ╨╝╨╡╤Ç╨╡ ╨╛╨┤╨╕╨╜ ╤ê╨░╨▒╨╗╨╛╨╜ ╨┐╨░╨║╨╡╤é╨░.</target>
         <note>0 - The name of the item.</note>
       </trans-unit>
       <trans-unit id="Error_ItemNeedsAtLeastOnePackagePatternWithPath">
         <source>Package source '{0}' must have at least one package pattern. Path: '{1}'</source>
-        <target state="translated">Источник пакета "{0}" должен иметь по крайней мере один шаблон пакета. Путь: "{1}"</target>
+        <target state="translated">╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║ ╨┐╨░╨║╨╡╤é╨░ "{0}" ╨┤╨╛╨╗╨╢╨╡╨╜ ╨╕╨╝╨╡╤é╤î ╨┐╨╛ ╨║╤Ç╨░╨╣╨╜╨╡╨╣ ╨╝╨╡╤Ç╨╡ ╨╛╨┤╨╕╨╜ ╤ê╨░╨▒╨╗╨╛╨╜ ╨┐╨░╨║╨╡╤é╨░. ╨ƒ╤â╤é╤î: "{1}"</target>
         <note>0 - The name of the item
 1 - file path</note>
       </trans-unit>
       <trans-unit id="Error_MergeTwoDifferentSections">
         <source>Cannot merge two different sections.</source>
-        <target state="translated">Невозможно объединить два разных раздела.</target>
+        <target state="translated">╨¥╨╡╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛ ╨╛╨▒╤è╨╡╨┤╨╕╨╜╨╕╤é╤î ╨┤╨▓╨░ ╤Ç╨░╨╖╨╜╤ï╤à ╤Ç╨░╨╖╨┤╨╡╨╗╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MoreThanOnePassword">
         <source>A credentials item must have only one Password or ClearTextPassword entry.</source>
-        <target state="translated">Элемент учетных данных должен иметь только одну запись: Password или ClearTextPassword.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╨┤╨╛╨╗╨╢╨╡╨╜ ╨╕╨╝╨╡╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╨╛╨┤╨╜╤â ╨╖╨░╨┐╨╕╤ü╤î: Password ╨╕╨╗╨╕ ClearTextPassword.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MoreThanOneUsername">
         <source>A credentials item must have only one Username entry.</source>
-        <target state="translated">Элемент учетных данных должен иметь только одну запись Username.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╨┤╨╛╨╗╨╢╨╡╨╜ ╨╕╨╝╨╡╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╨╛╨┤╨╜╤â ╨╖╨░╨┐╨╕╤ü╤î Username.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MoreThanOneValidAuthenticationTypes">
         <source>A credentials item must have only one ValidAuthenticationTypes entry.</source>
-        <target state="translated">Элемент учетных данных должен иметь только одну запись ValidAuthenticationTypes.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╨┤╨╛╨╗╨╢╨╡╨╜ ╨╕╨╝╨╡╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╨╛╨┤╨╜╤â ╨╖╨░╨┐╨╕╤ü╤î ValidAuthenticationTypes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_StoreCertCertificateNotFound">
         <source>Certificate for the package source '{0}' was not found in '{1}.{2}' storage by '{3}' criteria with '{4}' value.</source>
-        <target state="translated">Сертификат для источника пакетов "{0}" не найден в хранилище "{1}.{2}" при использовании критериев "{3}" со значением "{4}".</target>
+        <target state="translated">╨í╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é ╨┤╨╗╤Å ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓ "{0}" ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜ ╨▓ ╤à╤Ç╨░╨╜╨╕╨╗╨╕╤ë╨╡ "{1}.{2}" ╨┐╤Ç╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╨╕ ╨║╤Ç╨╕╤é╨╡╤Ç╨╕╨╡╨▓ "{3}" ╤ü╨╛ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡╨╝ "{4}".</target>
         <note>0 - Package source name
 1 - Store location
 2 - Store name
@@ -113,174 +113,174 @@
       </trans-unit>
       <trans-unit id="FileCertItemPasswordAndClearTextPasswordAtSameTime">
         <source>Password and ClearTextPassword cannot be used at the same time.</source>
-        <target state="translated">Password и ClearTextPassword не могут быть использованы одновременно.</target>
+        <target state="translated">Password ╨╕ ClearTextPassword ╨╜╨╡ ╨╝╨╛╨│╤â╤é ╨▒╤ï╤é╤î ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╤ï ╨╛╨┤╨╜╨╛╨▓╤Ç╨╡╨╝╨╡╨╜╨╜╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileCertItemPasswordCannotBeDecrypted">
         <source>Client certificate configuration password for the package source '{0}' cannot be decrypted</source>
-        <target state="translated">Не удается расшифровать пароль конфигурации сертификата клиента для источника пакетов "{0}"</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╤Ç╨░╤ü╤ê╨╕╤ä╤Ç╨╛╨▓╨░╤é╤î ╨┐╨░╤Ç╨╛╨╗╤î ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╨╕ ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨░ ╨║╨╗╨╕╨╡╨╜╤é╨░ ╨┤╨╗╤Å ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓ "{0}"</target>
         <note>0 - Package name</note>
       </trans-unit>
       <trans-unit id="FileCertItemPathFileNotExist">
         <source>A fileCert path specified a file that does not exist.</source>
-        <target state="translated">В пути fileCert указан несуществующий файл.</target>
+        <target state="translated">╨Æ ╨┐╤â╤é╨╕ fileCert ╤â╨║╨░╨╖╨░╨╜ ╨╜╨╡╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╤Ä╤ë╨╕╨╣ ╤ä╨░╨╣╨╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileCertItemPathFileNotSet">
         <source>A fileCert item path was not set.</source>
-        <target state="translated">Не задан путь к элементу fileCert.</target>
+        <target state="translated">╨¥╨╡ ╨╖╨░╨┤╨░╨╜ ╨┐╤â╤é╤î ╨║ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╤â fileCert.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileDoesNotExist">
         <source>File '{0}' does not exist.</source>
-        <target state="translated">Файл «{0}» не существует.</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ┬½{0}┬╗ ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNullSettingsOperation">
         <source>"{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".</source>
-        <target state="translated">«{0}» невозможно вызывать для NullSettings. Возможно, причина этого в том, что у учетной записи недостаточно разрешений на чтение и запись в %AppData%\NuGet\NuGet.config.</target>
+        <target state="translated">┬½{0}┬╗ ╨╜╨╡╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛ ╨▓╤ï╨╖╤ï╨▓╨░╤é╤î ╨┤╨╗╤Å NullSettings. ╨Æ╨╛╨╖╨╝╨╛╨╢╨╜╨╛, ╨┐╤Ç╨╕╤ç╨╕╨╜╨░ ╤ì╤é╨╛╨│╨╛ ╨▓ ╤é╨╛╨╝, ╤ç╤é╨╛ ╤â ╤â╤ç╨╡╤é╨╜╨╛╨╣ ╨╖╨░╨┐╨╕╤ü╨╕ ╨╜╨╡╨┤╨╛╤ü╤é╨░╤é╨╛╤ç╨╜╨╛ ╤Ç╨░╨╖╤Ç╨╡╤ê╨╡╨╜╨╕╨╣ ╨╜╨░ ╤ç╤é╨╡╨╜╨╕╨╡ ╨╕ ╨╖╨░╨┐╨╕╤ü╤î ╨▓ %AppData%\NuGet\NuGet.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="ItemDoesNotExist">
         <source>The item does not exist in the {0} section.</source>
-        <target state="translated">Элемент не существует в разделе {0}.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨▓ ╤Ç╨░╨╖╨┤╨╡╨╗╨╡ {0}.</target>
         <note>0 - section name</note>
       </trans-unit>
       <trans-unit id="MissingRequiredAttribute">
         <source>Missing required attribute '{0}' in element '{1}'.</source>
-        <target state="translated">Отсутствует обязательный атрибут "{0}" в элементе "{1}".</target>
+        <target state="translated">╨₧╤é╤ü╤â╤é╤ü╤é╨▓╤â╨╡╤é ╨╛╨▒╤Å╨╖╨░╤é╨╡╨╗╤î╨╜╤ï╨╣ ╨░╤é╤Ç╨╕╨▒╤â╤é "{0}" ╨▓ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╨╡ "{1}".</target>
         <note>0 - attribute name
 1 - element name</note>
       </trans-unit>
       <trans-unit id="MustContainAbsolutePath">
         <source>'{0}' must contain an absolute path '{1}'.</source>
-        <target state="translated">"{0}" должен содержать абсолютный путь "{1}".</target>
+        <target state="translated">"{0}" ╨┤╨╛╨╗╨╢╨╡╨╜ ╤ü╨╛╨┤╨╡╤Ç╨╢╨░╤é╤î ╨░╨▒╤ü╨╛╨╗╤Ä╤é╨╜╤ï╨╣ ╨┐╤â╤é╤î "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NoAttributesAllowed">
         <source>The {0} item should not have any attributes and it was found with {1}.</source>
-        <target state="translated">Элемент {0} не должен иметь атрибуты, но в нем найдено {1}.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é {0} ╨╜╨╡ ╨┤╨╛╨╗╨╢╨╡╨╜ ╨╕╨╝╨╡╤é╤î ╨░╤é╤Ç╨╕╨▒╤â╤é╤ï, ╨╜╨╛ ╨▓ ╨╜╨╡╨╝ ╨╜╨░╨╣╨┤╨╡╨╜╨╛ {1}.</target>
         <note>0 - item name
 1- attributes count</note>
       </trans-unit>
       <trans-unit id="NoWritteableConfig">
         <source>There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client.</source>
-        <target state="translated">Отсутствует NuGet.Config для записи параметров. Создайте конфигурацию в нужном расположении и перезапустите клиент.</target>
+        <target state="translated">╨₧╤é╤ü╤â╤é╤ü╤é╨▓╤â╨╡╤é NuGet.Config ╨┤╨╗╤Å ╨╖╨░╨┐╨╕╤ü╨╕ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨╛╨▓. ╨í╨╛╨╖╨┤╨░╨╣╤é╨╡ ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╤Ä ╨▓ ╨╜╤â╨╢╨╜╨╛╨╝ ╤Ç╨░╤ü╨┐╨╛╨╗╨╛╨╢╨╡╨╜╨╕╨╕ ╨╕ ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╤â╤ü╤é╨╕╤é╨╡ ╨║╨╗╨╕╨╡╨╜╤é.</target>
         <note />
       </trans-unit>
       <trans-unit id="OwnersItemMustHaveAtLeastOneOwner">
         <source>Owners item must have at least one owner.</source>
-        <target state="translated">У элемента "Владельцы" должен быть хотя бы один владелец.</target>
+        <target state="translated">╨ú ╤ì╨╗╨╡╨╝╨╡╨╜╤é╨░ "╨Æ╨╗╨░╨┤╨╡╨╗╤î╤å╤ï" ╨┤╨╛╨╗╨╢╨╡╨╜ ╨▒╤ï╤é╤î ╤à╨╛╤é╤Å ╨▒╤ï ╨╛╨┤╨╕╨╜ ╨▓╨╗╨░╨┤╨╡╨╗╨╡╤å.</target>
         <note />
       </trans-unit>
       <trans-unit id="OwnersMustOnlyHaveContent">
         <source>Owners item must only have text content and cannot be empty.</source>
-        <target state="translated">Элемент "Владельцы" должен включать только текстовое содержимое и не может быть пустым.</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é "╨Æ╨╗╨░╨┤╨╡╨╗╤î╤å╤ï" ╨┤╨╛╨╗╨╢╨╡╨╜ ╨▓╨║╨╗╤Ä╤ç╨░╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╤é╨╡╨║╤ü╤é╨╛╨▓╨╛╨╡ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╨╝╨╛╨╡ ╨╕ ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyCannotBeNullOrEmpty">
         <source>{0} cannot be null or empty.</source>
-        <target state="translated">{0} не может быть пустым или равным NULL.</target>
+        <target state="translated">{0} ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝ ╨╕╨╗╨╕ ╤Ç╨░╨▓╨╜╤ï╨╝ NULL.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="RepositoryMustHaveOneOwners">
         <source>The repository item with name '{0}' and service index '{1}' has more than one owners item in it.</source>
-        <target state="translated">Элемент репозитория с именем "{0}" и индексом службы "{1}" содержит несколько элементов "Владельцы".</target>
+        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é ╤Ç╨╡╨┐╨╛╨╖╨╕╤é╨╛╤Ç╨╕╤Å ╤ü ╨╕╨╝╨╡╨╜╨╡╨╝ "{0}" ╨╕ ╨╕╨╜╨┤╨╡╨║╤ü╨╛╨╝ ╤ü╨╗╤â╨╢╨▒╤ï "{1}" ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╨╛╨▓ "╨Æ╨╗╨░╨┤╨╡╨╗╤î╤å╤ï".</target>
         <note>0 - repository name
 1 - service index</note>
       </trans-unit>
       <trans-unit id="SectionDoesNotExist">
         <source>The section '{0}' does not exist in the settings.</source>
-        <target state="translated">Раздел "{0}" не существует в параметрах.</target>
+        <target state="translated">╨á╨░╨╖╨┤╨╡╨╗ "{0}" ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨▓ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç╨░╤à.</target>
         <note>0 - section name</note>
       </trans-unit>
       <trans-unit id="Settings_FileName_Cannot_Be_A_Path">
         <source>Parameter 'fileName' to Settings must be just a file name and not a path.</source>
-        <target state="translated">Параметр "fileName" должен содержать только имя файла, а не путь.</target>
+        <target state="translated">╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç "fileName" ╨┤╨╛╨╗╨╢╨╡╨╜ ╤ü╨╛╨┤╨╡╤Ç╨╢╨░╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╨╕╨╝╤Å ╤ä╨░╨╣╨╗╨░, ╨░ ╨╜╨╡ ╨┐╤â╤é╤î.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_CannotHaveChildren">
         <source>Error parsing NuGet.Config. Element '{0}' cannot have descendant elements. Path: '{1}'.</source>
-        <target state="translated">Ошибка при анализе NuGet.Config. Элемент "{0}" не может иметь дочерние элементы. Путь: "{1}".</target>
+        <target state="translated">╨₧╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ NuGet.Config. ╨¡╨╗╨╡╨╝╨╡╨╜╤é "{0}" ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨╕╨╝╨╡╤é╤î ╨┤╨╛╤ç╨╡╤Ç╨╜╨╕╨╡ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╤ï. ╨ƒ╤â╤é╤î: "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigDuplicateDisabledSources">
         <source>Cannot update package sources, config file contains a duplicated key '{0}' in the disabled package sources section. Path: '{1}'</source>
-        <target state="translated">Не удается обновить источники пакетов, так как файл конфигурации содержит повторяющийся ключ '{0}' в разделе "Отключенные источники пакетов". Путь: '{1}'</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓, ╤é╨░╨║ ╨║╨░╨║ ╤ä╨░╨╣╨╗ ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╨╕ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨┐╨╛╨▓╤é╨╛╤Ç╤Å╤Ä╤ë╨╕╨╣╤ü╤Å ╨║╨╗╤Ä╤ç '{0}' ╨▓ ╤Ç╨░╨╖╨┤╨╡╨╗╨╡ "╨₧╤é╨║╨╗╤Ä╤ç╨╡╨╜╨╜╤ï╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓". ╨ƒ╤â╤é╤î: '{1}'</target>
         <note>0 - key 
 1 - config file path
 </note>
       </trans-unit>
       <trans-unit id="ShowError_ConfigHasInvalidPackageSource">
         <source>{0}: NuGet.Config has an invalid package source value '{1}'. Reason: {2}</source>
-        <target state="translated">{0}: NuGet.Config имеет недопустимое значение источника пакета "{1}". Причина: {2}</target>
+        <target state="translated">{0}: NuGet.Config ╨╕╨╝╨╡╨╡╤é ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨░ ╨┐╨░╨║╨╡╤é╨░ "{1}". ╨ƒ╤Ç╨╕╤ç╨╕╨╜╨░: {2}</target>
         <note>0 - NU log code
 1 - package source value
 2 - original exception message</note>
       </trans-unit>
       <trans-unit id="ShowError_ConfigInvalidOperation">
         <source>NuGet.Config is malformed. Path: '{0}'.</source>
-        <target state="translated">Неверный формат NuGet.Config. Путь: "{0}".</target>
+        <target state="translated">╨¥╨╡╨▓╨╡╤Ç╨╜╤ï╨╣ ╤ä╨╛╤Ç╨╝╨░╤é NuGet.Config. ╨ƒ╤â╤é╤î: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigInvalidXml">
         <source>NuGet.Config is not valid XML. Path: '{0}'.</source>
-        <target state="translated">Недомустимый код XML в NuGet.Config. Путь: "{0}".</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨╝╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨║╨╛╨┤ XML ╨▓ NuGet.Config. ╨ƒ╤â╤é╤î: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigRootInvalid">
         <source>NuGet.Config does not contain the expected root element: 'configuration'. Path: '{0}'.</source>
-        <target state="translated">NuGet.Config не содержит ожидаемый корневой элемент: "configuration". Путь: "{0}".</target>
+        <target state="translated">NuGet.Config ╨╜╨╡ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ╨╛╨╢╨╕╨┤╨░╨╡╨╝╤ï╨╣ ╨║╨╛╤Ç╨╜╨╡╨▓╨╛╨╣ ╤ì╨╗╨╡╨╝╨╡╨╜╤é: "configuration". ╨ƒ╤â╤é╤î: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigUnauthorizedAccess">
         <source>Failed to read NuGet.Config due to unauthorized access. Path: '{0}'.</source>
-        <target state="translated">Не удалось прочитать NuGet.Config из-за несанкционированного доступа. Путь: "{0}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┐╤Ç╨╛╤ç╨╕╤é╨░╤é╤î NuGet.Config ╨╕╨╖-╨╖╨░ ╨╜╨╡╤ü╨░╨╜╨║╤å╨╕╨╛╨╜╨╕╤Ç╨╛╨▓╨░╨╜╨╜╨╛╨│╨╛ ╨┤╨╛╤ü╤é╤â╨┐╨░. ╨ƒ╤â╤é╤î: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_UnknownOrigin">
         <source>File location not known</source>
-        <target state="translated">Неизвестное расположение файла</target>
+        <target state="translated">╨¥╨╡╨╕╨╖╨▓╨╡╤ü╤é╨╜╨╛╨╡ ╤Ç╨░╤ü╨┐╨╛╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ╤ä╨░╨╣╨╗╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="TextShouldNotBeEmpty">
         <source>Text elements should not be empty.</source>
-        <target state="translated">Текстовые элементы не должны быть пустыми.</target>
+        <target state="translated">╨ó╨╡╨║╤ü╤é╨╛╨▓╤ï╨╡ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╤ï ╨╜╨╡ ╨┤╨╛╨╗╨╢╨╜╤ï ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝╨╕.</target>
         <note />
       </trans-unit>
       <trans-unit id="TrustedSignerMustHaveCertificates">
         <source>A trusted signer entry must have at least one certificate entry.</source>
-        <target state="translated">Запись доверенного подписывающего должна включать хотя бы одну запись сертификата.</target>
+        <target state="translated">╨ù╨░╨┐╨╕╤ü╤î ╨┤╨╛╨▓╨╡╤Ç╨╡╨╜╨╜╨╛╨│╨╛ ╨┐╨╛╨┤╨┐╨╕╤ü╤ï╨▓╨░╤Ä╤ë╨╡╨│╨╛ ╨┤╨╛╨╗╨╢╨╜╨░ ╨▓╨║╨╗╤Ä╤ç╨░╤é╤î ╤à╨╛╤é╤Å ╨▒╤ï ╨╛╨┤╨╜╤â ╨╖╨░╨┐╨╕╤ü╤î ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownHashAlgorithmNotSupported">
         <source>Unknown hash algorithm is not supported.</source>
-        <target state="translated">Неизвестный алгоритм хэширования не поддерживается.</target>
+        <target state="translated">╨¥╨╡╨╕╨╖╨▓╨╡╤ü╤é╨╜╤ï╨╣ ╨░╨╗╨│╨╛╤Ç╨╕╤é╨╝ ╤à╤ì╤ê╨╕╤Ç╨╛╨▓╨░╨╜╨╕╤Å ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unknown_Config_Exception">
         <source>Unexpected failure reading NuGet.Config. Path: '{0}'.</source>
-        <target state="translated">Непредвиденная ошибка при чтении NuGet.Config. Путь: "{0}".</target>
+        <target state="translated">╨¥╨╡╨┐╤Ç╨╡╨┤╨▓╨╕╨┤╨╡╨╜╨╜╨░╤Å ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╤ç╤é╨╡╨╜╨╕╨╕ NuGet.Config. ╨ƒ╤â╤é╤î: "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedDecryptPassword">
         <source>Password decryption is not supported on .NET Core for this platform. The following feed uses an encrypted password: '{0}'. You can use a clear text password as a workaround.</source>
-        <target state="translated">Расшифровка пароля не поддерживается в .NET Core для этой платформы. Зашифрованный пароль используется для следующего канала: "{0}". Вместо этого можно использовать открытый пароль.</target>
+        <target state="translated">╨á╨░╤ü╤ê╨╕╤ä╤Ç╨╛╨▓╨║╨░ ╨┐╨░╤Ç╨╛╨╗╤Å ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å ╨▓ .NET Core ╨┤╨╗╤Å ╤ì╤é╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤ï. ╨ù╨░╤ê╨╕╤ä╤Ç╨╛╨▓╨░╨╜╨╜╤ï╨╣ ╨┐╨░╤Ç╨╛╨╗╤î ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╤é╤ü╤Å ╨┤╨╗╤Å ╤ü╨╗╨╡╨┤╤â╤Ä╤ë╨╡╨│╨╛ ╨║╨░╨╜╨░╨╗╨░: "{0}". ╨Æ╨╝╨╡╤ü╤é╨╛ ╤ì╤é╨╛╨│╨╛ ╨╝╨╛╨╢╨╜╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╨╛╤é╨║╤Ç╤ï╤é╤ï╨╣ ╨┐╨░╤Ç╨╛╨╗╤î.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedEncryptPassword">
         <source>Password encryption is not supported on .NET Core for this platform. The following feed try to use an encrypted password: '{0}'. You can use a clear text password as a workaround.</source>
-        <target state="translated">Шифрование пароля не поддерживается в .NET Core для этой платформы. Следующий канал пытается использовать зашифрованный пароль: "{0}". Вместо этого можно использовать открытый пароль.</target>
+        <target state="translated">╨¿╨╕╤ä╤Ç╨╛╨▓╨░╨╜╨╕╨╡ ╨┐╨░╤Ç╨╛╨╗╤Å ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å ╨▓ .NET Core ╨┤╨╗╤Å ╤ì╤é╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤ï. ╨í╨╗╨╡╨┤╤â╤Ä╤ë╨╕╨╣ ╨║╨░╨╜╨░╨╗ ╨┐╤ï╤é╨░╨╡╤é╤ü╤Å ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╨╖╨░╤ê╨╕╤ä╤Ç╨╛╨▓╨░╨╜╨╜╤ï╨╣ ╨┐╨░╤Ç╨╛╨╗╤î: "{0}". ╨Æ╨╝╨╡╤ü╤é╨╛ ╤ì╤é╨╛╨│╨╛ ╨╝╨╛╨╢╨╜╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╨╛╤é╨║╤Ç╤ï╤é╤ï╨╣ ╨┐╨░╤Ç╨╛╨╗╤î.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedHashAlgorithm">
         <source>Certificate entry has an unsupported hash algorithm: '{0}'.</source>
-        <target state="translated">Запись сертификата использует неподдерживаемый алгоритм хеширования: "{0}".</target>
+        <target state="translated">╨ù╨░╨┐╨╕╤ü╤î ╤ü╨╡╤Ç╤é╨╕╤ä╨╕╨║╨░╤é╨░ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╡╤é ╨╜╨╡╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╨╝╤ï╨╣ ╨░╨╗╨│╨╛╤Ç╨╕╤é╨╝ ╤à╨╡╤ê╨╕╤Ç╨╛╨▓╨░╨╜╨╕╤Å: "{0}".</target>
         <note>0 - hash algorithm</note>
       </trans-unit>
       <trans-unit id="UserSettings_UnableToParseConfigFile">
         <source>Unable to parse config file because: {0} Path: '{1}'.</source>
-        <target state="translated">Не удалось проанализировать файл конфигурации по следующей причине: {0}. Путь: "{1}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┐╤Ç╨╛╨░╨╜╨░╨╗╨╕╨╖╨╕╤Ç╨╛╨▓╨░╤é╤î ╤ä╨░╨╣╨╗ ╨║╨╛╨╜╤ä╨╕╨│╤â╤Ç╨░╤å╨╕╨╕ ╨┐╨╛ ╤ü╨╗╨╡╨┤╤â╤Ä╤ë╨╡╨╣ ╨┐╤Ç╨╕╤ç╨╕╨╜╨╡: {0}. ╨ƒ╤â╤é╤î: "{1}".</target>
         <note>0 - reason
 1- config file path</note>
       </trans-unit>

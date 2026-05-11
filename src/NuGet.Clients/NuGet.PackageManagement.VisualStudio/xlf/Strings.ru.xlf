@@ -1,70 +1,70 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../Strings.resx">
     <body>
       <trans-unit id="AggregateSourceName">
         <source>All</source>
-        <target state="translated">Все</target>
+        <target state="translated">╨Æ╤ü╨╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Cannot_Be_Null_Or_Empty">
         <source>Argument cannot be null or empty</source>
-        <target state="translated">Аргумент не может быть равен NULL или быть пустым</target>
+        <target state="translated">╨É╤Ç╨│╤â╨╝╨╡╨╜╤é ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╤Ç╨░╨▓╨╡╨╜ NULL ╨╕╨╗╨╕ ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Must_Be_GreaterThanOrEqualTo">
         <source>Value must be greater than or equal to {0}.</source>
-        <target state="translated">Значение должно быть больше или равно {0}.</target>
+        <target state="translated">╨ù╨╜╨░╤ç╨╡╨╜╨╕╨╡ ╨┤╨╛╨╗╨╢╨╜╨╛ ╨▒╤ï╤é╤î ╨▒╨╛╨╗╤î╤ê╨╡ ╨╕╨╗╨╕ ╤Ç╨░╨▓╨╜╨╛ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfigErrorDialogBoxTitle">
         <source>NuGet operation failed</source>
-        <target state="translated">Сбой операции NuGet</target>
+        <target state="translated">╨í╨▒╨╛╨╣ ╨╛╨┐╨╡╤Ç╨░╤å╨╕╨╕ NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="CredentialProviderFailed_DefaultCredentialsCredentialProvider">
         <source>The default credentials credential provider failed to load.</source>
-        <target state="translated">Не удалось загрузить поставщик учетных данных с учетными данными по умолчанию.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╨┐╨╛╤ü╤é╨░╨▓╤ë╨╕╨║ ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╤ü ╤â╤ç╨╡╤é╨╜╤ï╨╝╨╕ ╨┤╨░╨╜╨╜╤ï╨╝╨╕ ╨┐╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä.</target>
         <note />
       </trans-unit>
       <trans-unit id="CredentialProviderFailed_ImportedProvider">
         <source>Failed to load credential provider from assembly {0}.</source>
-        <target state="translated">Не удалось загрузить поставщик учетных данных из сборки {0}.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╨┐╨╛╤ü╤é╨░╨▓╤ë╨╕╨║ ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╨╕╨╖ ╤ü╨▒╨╛╤Ç╨║╨╕ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CredentialProviderFailed_PluginCredentialProvider">
         <source>The plugin credential providers could not be loaded.</source>
-        <target state="translated">Не удалось загрузить поставщики учетных данных подключаемого модуля.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╨┐╨╛╤ü╤é╨░╨▓╤ë╨╕╨║╨╕ ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à ╨┐╨╛╨┤╨║╨╗╤Ä╤ç╨░╨╡╨╝╨╛╨│╨╛ ╨╝╨╛╨┤╤â╨╗╤Å.</target>
         <note />
       </trans-unit>
       <trans-unit id="CredentialProviderFailed_VisualStudioAccountProvider">
         <source>The Visual Studio or VSTS account provider failed to load.</source>
-        <target state="translated">Не удалось загрузить поставщик учетных данных Visual Studio или VSTS.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╨┐╨╛╤ü╤é╨░╨▓╤ë╨╕╨║ ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à Visual Studio ╨╕╨╗╨╕ VSTS.</target>
         <note />
       </trans-unit>
       <trans-unit id="CredentialProviderFailed_VisualStudioCredentialProvider">
         <source>The Visual Studio credential provider failed to load.</source>
-        <target state="translated">Не удалось загрузить поставщик учетных данных Visual Studio.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╨┐╨╛╤ü╤é╨░╨▓╤ë╨╕╨║ ╤â╤ç╨╡╤é╨╜╤ï╤à ╨┤╨░╨╜╨╜╤ï╤à Visual Studio.</target>
         <note />
       </trans-unit>
       <trans-unit id="DTE_ProjectUnsupported">
         <source>The project '{0}' is unsupported</source>
-        <target state="translated">Проект «{0}» не поддерживается</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é ┬½{0}┬╗ ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å</target>
         <note />
       </trans-unit>
       <trans-unit id="Debug_AddGacReference">
         <source>Added reference '{0}' in the Global Assembly Cache to project '{1}'</source>
-        <target state="translated">Ссылка «{0}» в глобальном кэше сборок добавлена в проект «{1}»</target>
+        <target state="translated">╨í╤ü╤ï╨╗╨║╨░ ┬½{0}┬╗ ╨▓ ╨│╨╗╨╛╨▒╨░╨╗╤î╨╜╨╛╨╝ ╨║╤ì╤ê╨╡ ╤ü╨▒╨╛╤Ç╨╛╨║ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜╨░ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é ┬½{1}┬╗</target>
         <note />
       </trans-unit>
       <trans-unit id="Debug_AddedFileToProject">
         <source>Added file '{0}' to project '{1}'.</source>
-        <target state="translated">Файл «{0}» добавлен в проект «{1}».</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ┬½{0}┬╗ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é ┬½{1}┬╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="Debug_AddedReferenceToProject">
         <source>Added reference '{0}' to project:'{1}'. The Reference was Resolved To Package (resolvedToPackage):'{2}', where Reference Path from DTE(dteOriginalPath):'{3}' and Reference Path from package reference(assemblyFullPath):'{4}'.</source>
-        <target state="translated">Добавлена ссылка "{0}" на проект "{1}". Ссылка была разрешена на пакет (resolvedToPackage): "{2}". Путь ссылки из DTE (dteOriginalPath): "{3}"; путь ссылки из ссылки на пакет (assemblyFullPath): "{4}".</target>
+        <target state="translated">╨ö╨╛╨▒╨░╨▓╨╗╨╡╨╜╨░ ╤ü╤ü╤ï╨╗╨║╨░ "{0}" ╨╜╨░ ╨┐╤Ç╨╛╨╡╨║╤é "{1}". ╨í╤ü╤ï╨╗╨║╨░ ╨▒╤ï╨╗╨░ ╤Ç╨░╨╖╤Ç╨╡╤ê╨╡╨╜╨░ ╨╜╨░ ╨┐╨░╨║╨╡╤é (resolvedToPackage): "{2}". ╨ƒ╤â╤é╤î ╤ü╤ü╤ï╨╗╨║╨╕ ╨╕╨╖ DTE (dteOriginalPath): "{3}"; ╨┐╤â╤é╤î ╤ü╤ü╤ï╨╗╨║╨╕ ╨╕╨╖ ╤ü╤ü╤ï╨╗╨║╨╕ ╨╜╨░ ╨┐╨░╨║╨╡╤é (assemblyFullPath): "{4}".</target>
         <note>{0} is the reference name
 {1} is the project name
 {2} is boolean flag (true or false)
@@ -73,158 +73,158 @@
       </trans-unit>
       <trans-unit id="Debug_RemoveReference">
         <source>Removed reference '{0}' from project '{1}'</source>
-        <target state="translated">Ссылка «{0}» удалена из проекта «{1}»</target>
+        <target state="translated">╨í╤ü╤ï╨╗╨║╨░ ┬½{0}┬╗ ╤â╨┤╨░╨╗╨╡╨╜╨░ ╨╕╨╖ ╨┐╤Ç╨╛╨╡╨║╤é╨░ ┬½{1}┬╗</target>
         <note />
       </trans-unit>
       <trans-unit id="Debug_RemovedFile">
         <source>Removed file '{0}'</source>
-        <target state="translated">Файл «{0}» удален</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ┬½{0}┬╗ ╤â╨┤╨░╨╗╨╡╨╜</target>
         <note />
       </trans-unit>
       <trans-unit id="Debug_RemovedFileFromFolder">
         <source>Removed file '{0}' from folder '{1}'</source>
-        <target state="translated">Файл «{0}» удален из папки «{1}»</target>
+        <target state="translated">╨ñ╨░╨╣╨╗ ┬½{0}┬╗ ╤â╨┤╨░╨╗╨╡╨╜ ╨╕╨╖ ╨┐╨░╨┐╨║╨╕ ┬½{1}┬╗</target>
         <note />
       </trans-unit>
       <trans-unit id="Debug_RemovedFolder">
         <source>Removed folder '{0}'.</source>
-        <target state="translated">Папка «{0}» удалена.</target>
+        <target state="translated">╨ƒ╨░╨┐╨║╨░ ┬½{0}┬╗ ╤â╨┤╨░╨╗╨╡╨╜╨░.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_FailedToCreateParentFolder">
         <source>Failed to create parent folder for file '{0}' in project {1}.</source>
-        <target state="translated">Не удалось создать родительскую папку для файла «{0}» в проекте {1}.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤ü╨╛╨╖╨┤╨░╤é╤î ╤Ç╨╛╨┤╨╕╤é╨╡╨╗╤î╤ü╨║╤â╤Ä ╨┐╨░╨┐╨║╤â ╨┤╨╗╤Å ╤ä╨░╨╣╨╗╨░ ┬½{0}┬╗ ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é╨╡ {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_FileNotExists">
         <source>File '{0}' does not exist on disk. </source>
-        <target state="translated">Файл "{0}" не существует на диске. </target>
+        <target state="translated">╨ñ╨░╨╣╨╗ "{0}" ╨╜╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é ╨╜╨░ ╨┤╨╕╤ü╨║╨╡. </target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidJson">
         <source>'{0}' is an invalid json file.</source>
-        <target state="translated">"{0}" — недопустимый JSON-файл.</target>
+        <target state="translated">"{0}" ΓÇö ╨╜╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ JSON-╤ä╨░╨╣╨╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MultipleFrameworks">
         <source>Failed to migrate project '{0}'. The project may only contain one target framework.</source>
-        <target state="translated">Не удалось перенести проект "{0}". В проекте может быть только одна целевая платформа.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┐╨╡╤Ç╨╡╨╜╨╡╤ü╤é╨╕ ╨┐╤Ç╨╛╨╡╨║╤é "{0}". ╨Æ ╨┐╤Ç╨╛╨╡╨║╤é╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╨╛╨┤╨╜╨░ ╤å╨╡╨╗╨╡╨▓╨░╤Å ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╨░.</target>
         <note>{0} is the full path to the project.</note>
       </trans-unit>
       <trans-unit id="Error_NuGetConfig_InvalidState">
         <source>One or more NuGet.Config files contain an error.</source>
-        <target state="translated">Один или несколько файлов NuGet.Config содержат ошибку.</target>
+        <target state="translated">╨₧╨┤╨╕╨╜ ╨╕╨╗╨╕ ╨╜╨╡╤ü╨║╨╛╨╗╤î╨║╨╛ ╤ä╨░╨╣╨╗╨╛╨▓ NuGet.Config ╤ü╨╛╨┤╨╡╤Ç╨╢╨░╤é ╨╛╤ê╨╕╨▒╨║╤â.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_InvalidSource">
         <source>A valid local or remote path must be specified.</source>
-        <target state="translated">Необходимо указать допустимый локальный или удаленный путь.</target>
+        <target state="translated">╨¥╨╡╨╛╨▒╤à╨╛╨┤╨╕╨╝╨╛ ╤â╨║╨░╨╖╨░╤é╤î ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨╗╨╛╨║╨░╨╗╤î╨╜╤ï╨╣ ╨╕╨╗╨╕ ╤â╨┤╨░╨╗╨╡╨╜╨╜╤ï╨╣ ╨┐╤â╤é╤î.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_UniqueName">
         <source>The name specified has already been added to the list of available package sources.</source>
-        <target state="translated">Указанное имя уже было добавлено в список доступных источников пакетов.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╜╨╛╨╡ ╨╕╨╝╤Å ╤â╨╢╨╡ ╨▒╤ï╨╗╨╛ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜╨╛ ╨▓ ╤ü╨┐╨╕╤ü╨╛╨║ ╨┤╨╛╤ü╤é╤â╨┐╨╜╤ï╤à ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓ ╨┐╨░╨║╨╡╤é╨╛╨▓.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageSource_UniqueSource">
         <source>The source specified has already been added to the list of available package sources.</source>
-        <target state="translated">Указанный источник уже был добавлен в список доступных источников пакетов.</target>
+        <target state="translated">╨ú╨║╨░╨╖╨░╨╜╨╜╤ï╨╣ ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║ ╤â╨╢╨╡ ╨▒╤ï╨╗ ╨┤╨╛╨▒╨░╨▓╨╗╨╡╨╜ ╨▓ ╤ü╨┐╨╕╤ü╨╛╨║ ╨┤╨╛╤ü╤é╤â╨┐╨╜╤ï╤à ╨╕╤ü╤é╨╛╤ç╨╜╨╕╨║╨╛╨▓ ╨┐╨░╨║╨╡╤é╨╛╨▓.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_VulnerabilityDataFetch">
         <source>Error occurred while getting package vulnerability data: {0}</source>
-        <target state="translated">Произошла ошибка при получении данных уязвимости пакета: {0}</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨┐╨╛╨╗╤â╤ç╨╡╨╜╨╕╨╕ ╨┤╨░╨╜╨╜╤ï╤à ╤â╤Å╨╖╨▓╨╕╨╝╨╛╤ü╤é╨╕ ╨┐╨░╨║╨╡╤é╨░: {0}</target>
         <note>{0} is an error message</note>
       </trans-unit>
       <trans-unit id="Error_WhileLoadingConfigForBindingRedirects">
         <source>Failed to load '{0}', while updating binding redirects. {1}</source>
-        <target state="translated">Не удалось загрузить файл "{0}" во время обновления перенаправления привязок. {1}</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╤ä╨░╨╣╨╗ "{0}" ╨▓╨╛ ╨▓╤Ç╨╡╨╝╤Å ╨╛╨▒╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╨╡╤Ç╨╡╨╜╨░╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╤Ç╨╕╨▓╤Å╨╖╨╛╨║. {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Exception_InvalidContinuationToken">
         <source>Invalid token</source>
-        <target state="translated">Недопустимый маркер</target>
+        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╣ ╨╝╨░╤Ç╨║╨╡╤Ç</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToAddFacadeReference">
         <source>Failed to add reference to '{0}'. The package '{1}' tried to add a framework reference to '{0}'. This reference is not required to be explicitly added by a package.</source>
-        <target state="translated">Не удалось добавить ссылку на "{0}". Пакет "{1}" попытался добавить ссылку на платформу в "{0}". Ему необязательно явно добавлять эту ссылку.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┤╨╛╨▒╨░╨▓╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╤â ╨╜╨░ "{0}". ╨ƒ╨░╨║╨╡╤é "{1}" ╨┐╨╛╨┐╤ï╤é╨░╨╗╤ü╤Å ╨┤╨╛╨▒╨░╨▓╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╤â ╨╜╨░ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤â ╨▓ "{0}". ╨ò╨╝╤â ╨╜╨╡╨╛╨▒╤Å╨╖╨░╤é╨╡╨╗╤î╨╜╨╛ ╤Å╨▓╨╜╨╛ ╨┤╨╛╨▒╨░╨▓╨╗╤Å╤é╤î ╤ì╤é╤â ╤ü╤ü╤ï╨╗╨║╤â.</target>
         <note>{0} is the framework facade reference name
 {1} is the package name</note>
       </trans-unit>
       <trans-unit id="FailedToAddGacReference">
         <source>Failed to add reference. The package '{0}' tried to add a framework reference to '{1}' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance.</source>
-        <target state="translated">Не удалось добавить ссылку. Пакет "{0}" пытался добавить ссылку на платформу для объекта "{1}", который не найден в глобальном кэше сборок (GAC). Возможно, произошла ошибка в пакете. Обратитесь к владельцам пакета для получения помощи.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┤╨╛╨▒╨░╨▓╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╤â. ╨ƒ╨░╨║╨╡╤é "{0}" ╨┐╤ï╤é╨░╨╗╤ü╤Å ╨┤╨╛╨▒╨░╨▓╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╤â ╨╜╨░ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤â ╨┤╨╗╤Å ╨╛╨▒╤è╨╡╨║╤é╨░ "{1}", ╨║╨╛╤é╨╛╤Ç╤ï╨╣ ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜ ╨▓ ╨│╨╗╨╛╨▒╨░╨╗╤î╨╜╨╛╨╝ ╨║╤ì╤ê╨╡ ╤ü╨▒╨╛╤Ç╨╛╨║ (GAC). ╨Æ╨╛╨╖╨╝╨╛╨╢╨╜╨╛, ╨┐╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨▓ ╨┐╨░╨║╨╡╤é╨╡. ╨₧╨▒╤Ç╨░╤é╨╕╤é╨╡╤ü╤î ╨║ ╨▓╨╗╨░╨┤╨╡╨╗╤î╤å╨░╨╝ ╨┐╨░╨║╨╡╤é╨░ ╨┤╨╗╤Å ╨┐╨╛╨╗╤â╤ç╨╡╨╜╨╕╤Å ╨┐╨╛╨╝╨╛╤ë╨╕.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToAddReference">
         <source>Failed to add reference to '{0}'.</source>
-        <target state="translated">Не удалось добавить ссылку на «{0}».</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┤╨╛╨▒╨░╨▓╨╕╤é╤î ╤ü╤ü╤ï╨╗╨║╤â ╨╜╨░ ┬½{0}┬╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToRemoveReference">
         <source>Case insensitive search for reference '{0}', to be removed, returned more than 1 match. Request could not be performed.</source>
-        <target state="translated">При поиске ссылки «{0}» без учета регистра (для удаления) обнаружено более 1 совпадения. Выполнить запрос невозможно.</target>
+        <target state="translated">╨ƒ╤Ç╨╕ ╨┐╨╛╨╕╤ü╨║╨╡ ╤ü╤ü╤ï╨╗╨║╨╕ ┬½{0}┬╗ ╨▒╨╡╨╖ ╤â╤ç╨╡╤é╨░ ╤Ç╨╡╨│╨╕╤ü╤é╤Ç╨░ (╨┤╨╗╤Å ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å) ╨╛╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╨╛ ╨▒╨╛╨╗╨╡╨╡ 1 ╤ü╨╛╨▓╨┐╨░╨┤╨╡╨╜╨╕╤Å. ╨Æ╤ï╨┐╨╛╨╗╨╜╨╕╤é╤î ╨╖╨░╨┐╤Ç╨╛╤ü ╨╜╨╡╨▓╨╛╨╖╨╝╨╛╨╢╨╜╨╛.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUpdateBindingRedirects">
         <source>Failed to update binding redirects for {0} : {1}</source>
-        <target state="translated">Не удалось обновить перенаправления привязок для {0}: {1}</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╛╨▒╨╜╨╛╨▓╨╕╤é╤î ╨┐╨╡╤Ç╨╡╨╜╨░╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╤Å ╨┐╤Ç╨╕╨▓╤Å╨╖╨╛╨║ ╨┤╨╗╤Å {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallingPackage">
         <source>Installing NuGet package {0}.</source>
-        <target state="translated">Установка пакета NuGet {0}.</target>
+        <target state="translated">╨ú╤ü╤é╨░╨╜╨╛╨▓╨║╨░ ╨┐╨░╨║╨╡╤é╨░ NuGet {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildPropertyNotFound">
         <source>The {0} MSBuild property could not be found for project '{1}'.</source>
-        <target state="translated">Не удалось найти свойство MSBuild {0} для проекта "{1}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╤ü╨▓╨╛╨╣╤ü╤é╨▓╨╛ MSBuild {0} ╨┤╨╗╤Å ╨┐╤Ç╨╛╨╡╨║╤é╨░ "{1}".</target>
         <note>{0} is the name of the property that was not set.  {1} is the full path to the project.</note>
       </trans-unit>
       <trans-unit id="Migrating_ProjectJson_Started">
         <source>Migrating project.json project...</source>
-        <target state="translated">Миграция проекта project.json...</target>
+        <target state="translated">╨£╨╕╨│╤Ç╨░╤å╨╕╤Å ╨┐╤Ç╨╛╨╡╨║╤é╨░ project.json...</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrating_ProjectJson_Succeeded">
         <source>Migration Succeeded</source>
-        <target state="translated">Миграция выполнена</target>
+        <target state="translated">╨£╨╕╨│╤Ç╨░╤å╨╕╤Å ╨▓╤ï╨┐╨╛╨╗╨╜╨╡╨╜╨░</target>
         <note />
       </trans-unit>
       <trans-unit id="PathToExistingFileNotPresent">
         <source>Path '{0}' to existing file is not found on disk. Cannot add to project '{1}'</source>
-        <target state="translated">Путь «{0}» к существующему файлу на диске не найден. Не удается добавить в проект «{1}».</target>
+        <target state="translated">╨ƒ╤â╤é╤î ┬½{0}┬╗ ╨║ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╤Ä╤ë╨╡╨╝╤â ╤ä╨░╨╣╨╗╤â ╨╜╨░ ╨┤╨╕╤ü╨║╨╡ ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜. ╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨┤╨╛╨▒╨░╨▓╨╕╤é╤î ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é ┬½{1}┬╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotLoaded_RestoreFailed">
         <source>The operation failed as details for project {0} could not be loaded.</source>
-        <target state="translated">Произошел сбой операции, так как не удалось загрузить подробности для проекта {0}.</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╡╨╗ ╤ü╨▒╨╛╨╣ ╨╛╨┐╨╡╤Ç╨░╤å╨╕╨╕, ╤é╨░╨║ ╨║╨░╨║ ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╖╨░╨│╤Ç╤â╨╖╨╕╤é╤î ╨┐╨╛╨┤╤Ç╨╛╨▒╨╜╨╛╤ü╤é╨╕ ╨┤╨╗╤Å ╨┐╤Ç╨╛╨╡╨║╤é╨░ {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectUpgradeAndRetargetErrorMessage">
         <source>Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}</source>
-        <target state="translated">Некоторые пакеты NuGet были установлены с помощью целевой платформы, которая отличается от текущей, и может потребоваться их переустановка. Дополнительная информация: https://docs.nuget.org/docs/workflows/reinstalling-packages. Затронутые пакеты: {0}</target>
+        <target state="translated">╨¥╨╡╨║╨╛╤é╨╛╤Ç╤ï╨╡ ╨┐╨░╨║╨╡╤é╤ï NuGet ╨▒╤ï╨╗╨╕ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï ╤ü ╨┐╨╛╨╝╨╛╤ë╤î╤Ä ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤ï, ╨║╨╛╤é╨╛╤Ç╨░╤Å ╨╛╤é╨╗╨╕╤ç╨░╨╡╤é╤ü╤Å ╨╛╤é ╤é╨╡╨║╤â╤ë╨╡╨╣, ╨╕ ╨╝╨╛╨╢╨╡╤é ╨┐╨╛╤é╤Ç╨╡╨▒╨╛╨▓╨░╤é╤î╤ü╤Å ╨╕╤à ╨┐╨╡╤Ç╨╡╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨░. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╨░╤Å ╨╕╨╜╤ä╨╛╤Ç╨╝╨░╤å╨╕╤Å: https://docs.nuget.org/docs/workflows/reinstalling-packages. ╨ù╨░╤é╤Ç╨╛╨╜╤â╤é╤ï╨╡ ╨┐╨░╨║╨╡╤é╤ï: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectWithIdNotFound">
         <source>A project with ID '{0}' was not found.</source>
-        <target state="translated">Проект с идентификатором "{0}" не найден.</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é ╤ü ╨╕╨┤╨╡╨╜╤é╨╕╤ä╨╕╨║╨░╤é╨╛╤Ç╨╛╨╝ "{0}" ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜.</target>
         <note>{0} is the project's unique ID (ProjectGuid)</note>
       </trans-unit>
       <trans-unit id="PropertyCannotBeNull">
         <source>'{0}' cannot be null.</source>
-        <target state="translated">"{0}" не может иметь значение null.</target>
+        <target state="translated">"{0}" ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨╕╨╝╨╡╤é╤î ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ null.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
         <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
-        <target state="translated">Решение не сохранено. Сохраните свое решение, прежде чем управлять пакетами NuGet.</target>
+        <target state="translated">╨á╨╡╤ê╨╡╨╜╨╕╨╡ ╨╜╨╡ ╤ü╨╛╤à╤Ç╨░╨╜╨╡╨╜╨╛. ╨í╨╛╤à╤Ç╨░╨╜╨╕╤é╨╡ ╤ü╨▓╨╛╨╡ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡, ╨┐╤Ç╨╡╨╢╨┤╨╡ ╤ç╨╡╨╝ ╤â╨┐╤Ç╨░╨▓╨╗╤Å╤é╤î ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink">
         <source>migration document</source>
-        <target state="translated">документе о миграции</target>
+        <target state="translated">╨┤╨╛╨║╤â╨╝╨╡╨╜╤é╨╡ ╨╛ ╨╝╨╕╨│╤Ç╨░╤å╨╕╨╕</target>
         <note>The text has the document hyperlink applied to it.</note>
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink_After">
@@ -234,69 +234,69 @@
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink_Before">
         <source>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the</source>
-        <target state="translated">Произошел сбой операции NuGet, так как часть пакетов несовместима с вашим проектом. Платформа проекта "{0}" ("{1}") устарела. Дополнительные сведения о переносе своих проектов на поддерживаемую платформу см. в</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╡╨╗ ╤ü╨▒╨╛╨╣ ╨╛╨┐╨╡╤Ç╨░╤å╨╕╨╕ NuGet, ╤é╨░╨║ ╨║╨░╨║ ╤ç╨░╤ü╤é╤î ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨╜╨╡╤ü╨╛╨▓╨╝╨╡╤ü╤é╨╕╨╝╨░ ╤ü ╨▓╨░╤ê╨╕╨╝ ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨╝. ╨ƒ╨╗╨░╤é╤ä╨╛╤Ç╨╝╨░ ╨┐╤Ç╨╛╨╡╨║╤é╨░ "{0}" ("{1}") ╤â╤ü╤é╨░╤Ç╨╡╨╗╨░. ╨ö╨╛╨┐╨╛╨╗╨╜╨╕╤é╨╡╨╗╤î╨╜╤ï╨╡ ╤ü╨▓╨╡╨┤╨╡╨╜╨╕╤Å ╨╛ ╨┐╨╡╤Ç╨╡╨╜╨╛╤ü╨╡ ╤ü╨▓╨╛╨╕╤à ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓ ╨╜╨░ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╨╝╤â╤Ä ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤â ╤ü╨╝. ╨▓</target>
         <note>This text goes immediately before the document link.
 {0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").
 {1} is the short folder representation of the framework (e.g. "net45").</note>
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_ProjectList">
         <source>The following project(s) target the deprecated framework:</source>
-        <target state="translated">Проекты, использующие устаревшую платформу:</target>
+        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é╤ï, ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╤Ä╤ë╨╕╨╡ ╤â╤ü╤é╨░╤Ç╨╡╨▓╤ê╤â╤Ä ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤â:</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToGetCPSPackageInstallationService">
         <source>Unable to get the project's package installation service for project '{0}'.</source>
-        <target state="translated">Не удалось получить службу установки пакетов для проекта "{0}".</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┐╨╛╨╗╤â╤ç╨╕╤é╤î ╤ü╨╗╤â╨╢╨▒╤â ╤â╤ü╤é╨░╨╜╨╛╨▓╨║╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓ ╨┤╨╗╤Å ╨┐╤Ç╨╛╨╡╨║╤é╨░ "{0}".</target>
         <note>{0} is the full path to the project.</note>
       </trans-unit>
       <trans-unit id="UnresolvedItemDuringProjectClosureWalk">
         <source>Failed to resolve all items referenced by '{0}'. This message can typically be ignored. The issue may be resolved by fully restoring and building the solution. If the unresolved item is a project reference this can lead to an incomplete NuGet restore result and missing package references. To ensure that restore is able to find all projects verify that all projects are referenced correctly and exist on disk.</source>
-        <target state="translated">Не удалось разрешить все элементы, на которые ссылается "{0}". Обычно это сообщение можно проигнорировать. Чтобы устранить ошибку, полностью восстановите решение и соберите его. Если неразрешенный элемент является ссылкой на проект, восстановление NuGet может быть выполнено не полностью и ссылки на пакеты могут отсутствовать. Чтобы при восстановлении нашлись все проекты, убедитесь, что они существуют на диске и ссылки правильно указывают на них.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤Ç╨░╨╖╤Ç╨╡╤ê╨╕╤é╤î ╨▓╤ü╨╡ ╤ì╨╗╨╡╨╝╨╡╨╜╤é╤ï, ╨╜╨░ ╨║╨╛╤é╨╛╤Ç╤ï╨╡ ╤ü╤ü╤ï╨╗╨░╨╡╤é╤ü╤Å "{0}". ╨₧╨▒╤ï╤ç╨╜╨╛ ╤ì╤é╨╛ ╤ü╨╛╨╛╨▒╤ë╨╡╨╜╨╕╨╡ ╨╝╨╛╨╢╨╜╨╛ ╨┐╤Ç╨╛╨╕╨│╨╜╨╛╤Ç╨╕╤Ç╨╛╨▓╨░╤é╤î. ╨º╤é╨╛╨▒╤ï ╤â╤ü╤é╤Ç╨░╨╜╨╕╤é╤î ╨╛╤ê╨╕╨▒╨║╤â, ╨┐╨╛╨╗╨╜╨╛╤ü╤é╤î╤Ä ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╨╡ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡ ╨╕ ╤ü╨╛╨▒╨╡╤Ç╨╕╤é╨╡ ╨╡╨│╨╛. ╨ò╤ü╨╗╨╕ ╨╜╨╡╤Ç╨░╨╖╤Ç╨╡╤ê╨╡╨╜╨╜╤ï╨╣ ╤ì╨╗╨╡╨╝╨╡╨╜╤é ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╤ü╤ü╤ï╨╗╨║╨╛╨╣ ╨╜╨░ ╨┐╤Ç╨╛╨╡╨║╤é, ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ NuGet ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨▓╤ï╨┐╨╛╨╗╨╜╨╡╨╜╨╛ ╨╜╨╡ ╨┐╨╛╨╗╨╜╨╛╤ü╤é╤î╤Ä ╨╕ ╤ü╤ü╤ï╨╗╨║╨╕ ╨╜╨░ ╨┐╨░╨║╨╡╤é╤ï ╨╝╨╛╨│╤â╤é ╨╛╤é╤ü╤â╤é╤ü╤é╨▓╨╛╨▓╨░╤é╤î. ╨º╤é╨╛╨▒╤ï ╨┐╤Ç╨╕ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╕ ╨╜╨░╤ê╨╗╨╕╤ü╤î ╨▓╤ü╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╤ï, ╤â╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ ╨╛╨╜╨╕ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╤Ä╤é ╨╜╨░ ╨┤╨╕╤ü╨║╨╡ ╨╕ ╤ü╤ü╤ï╨╗╨║╨╕ ╨┐╤Ç╨░╨▓╨╕╨╗╤î╨╜╨╛ ╤â╨║╨░╨╖╤ï╨▓╨░╤Ä╤é ╨╜╨░ ╨╜╨╕╤à.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedFeedType">
         <source>The feed type '{0}' is unsupported.</source>
-        <target state="translated">Тип веб-канала "{0}" не поддерживается.</target>
+        <target state="translated">╨ó╨╕╨┐ ╨▓╨╡╨▒-╨║╨░╨╜╨░╨╗╨░ "{0}" ╨╜╨╡ ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╤é╤ü╤Å.</target>
         <note>{0} is the ItemFilter type which correlates to the selected tab</note>
       </trans-unit>
       <trans-unit id="VSOptions_Button_Open">
         <source>_Open</source>
-        <target state="translated">_Открыть</target>
+        <target state="translated">_╨₧╤é╨║╤Ç╤ï╤é╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_DirectoryNotEmpty">
         <source>Directory '{0}' is not empty. Skipping...</source>
-        <target state="translated">Каталог «{0}» не пуст. Пропуск…</target>
+        <target state="translated">╨Ü╨░╤é╨░╨╗╨╛╨│ ┬½{0}┬╗ ╨╜╨╡ ╨┐╤â╤ü╤é. ╨ƒ╤Ç╨╛╨┐╤â╤ü╨║ΓÇª</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_FailedToDeleteMarkedPackageDirectories">
         <source>Failed to remove package directories that were marked for deletion on Visual Studio restart: {0}</source>
-        <target state="translated">Не удалось удалить каталоги пакетов, которые были помечены для удаления после перезапуска Visual Studio: {0}</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╨┤╨░╨╗╨╕╤é╤î ╨║╨░╤é╨░╨╗╨╛╨│╨╕ ╨┐╨░╨║╨╡╤é╨╛╨▓, ╨║╨╛╤é╨╛╤Ç╤ï╨╡ ╨▒╤ï╨╗╨╕ ╨┐╨╛╨╝╨╡╤ç╨╡╨╜╤ï ╨┤╨╗╤Å ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å ╨┐╨╛╤ü╨╗╨╡ ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╤â╤ü╨║╨░ Visual Studio: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_FailedToDeleteMarkedPackageDirectory">
         <source>Failed to remove package directory '{0}' that was marked for deletion on Visual Studio restart.</source>
-        <target state="translated">Не удалось удалить каталог пакетов «{0}», который был помечен для удаления после перезапуска Visual Studio.</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤â╨┤╨░╨╗╨╕╤é╤î ╨║╨░╤é╨░╨╗╨╛╨│ ╨┐╨░╨║╨╡╤é╨╛╨▓ ┬½{0}┬╗, ╨║╨╛╤é╨╛╤Ç╤ï╨╣ ╨▒╤ï╨╗ ╨┐╨╛╨╝╨╡╤ç╨╡╨╜ ╨┤╨╗╤Å ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å ╨┐╨╛╤ü╨╗╨╡ ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╤â╤ü╨║╨░ Visual Studio.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_FailedToFindMatchForRemoveReference">
         <source>Failed to find match for removing reference '{0}'.</source>
-        <target state="translated">Не удалось найти совпадение для удаления ссылки «{0}».</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╤ü╨╛╨▓╨┐╨░╨┤╨╡╨╜╨╕╨╡ ╨┤╨╗╤Å ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å ╤ü╤ü╤ï╨╗╨║╨╕ ┬½{0}┬╗.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_FailedToMarkPackageDirectoryForDeletion">
         <source>Failed to mark package directory '{0}' for deletion on Visual Studio restart: {1}</source>
-        <target state="translated">Не удалось пометить каталог пакетов «{0}» для удаления после перезапуска Visual Studio: {1}</target>
+        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨┐╨╛╨╝╨╡╤é╨╕╤é╤î ╨║╨░╤é╨░╨╗╨╛╨│ ╨┐╨░╨║╨╡╤é╨╛╨▓ ┬½{0}┬╗ ╨┤╨╗╤Å ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å ╨┐╨╛╤ü╨╗╨╡ ╨┐╨╡╤Ç╨╡╨╖╨░╨┐╤â╤ü╨║╨░ Visual Studio: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_FileAlreadyExists">
         <source>'{0}' already exists. Skipping...</source>
-        <target state="translated">«{0}» уже существует. Пропуск…</target>
+        <target state="translated">┬½{0}┬╗ ╤â╨╢╨╡ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╨╡╤é. ╨ƒ╤Ç╨╛╨┐╤â╤ü╨║ΓÇª</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_NoExactMatchForReference">
         <source>No exact match found for removing reference '{0}'. Trying No No exact match found for removing reference '{0}'. Trying case-insensitive search...-</source>
-        <target state="translated">Не найдено точное совпадение для удаления ссылки «{0}». Не найдено точное совпадение для удаления ссылки «{0}». Осуществляется попытка поиска без учета регистра…</target>
+        <target state="translated">╨¥╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╨╛ ╤é╨╛╤ç╨╜╨╛╨╡ ╤ü╨╛╨▓╨┐╨░╨┤╨╡╨╜╨╕╨╡ ╨┤╨╗╤Å ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å ╤ü╤ü╤ï╨╗╨║╨╕ ┬½{0}┬╗. ╨¥╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╨╛ ╤é╨╛╤ç╨╜╨╛╨╡ ╤ü╨╛╨▓╨┐╨░╨┤╨╡╨╜╨╕╨╡ ╨┤╨╗╤Å ╤â╨┤╨░╨╗╨╡╨╜╨╕╤Å ╤ü╤ü╤ï╨╗╨║╨╕ ┬½{0}┬╗. ╨₧╤ü╤â╤ë╨╡╤ü╤é╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┐╨╛╨┐╤ï╤é╨║╨░ ╨┐╨╛╨╕╤ü╨║╨░ ╨▒╨╡╨╖ ╤â╤ç╨╡╤é╨░ ╤Ç╨╡╨│╨╕╤ü╤é╤Ç╨░ΓÇª</target>
         <note />
       </trans-unit>
     </body>

@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../NuGetTools.vsct">
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">Управление пакетами &amp;NuGet для решения…</target>
+        <target state="translated">╨ú╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ &amp;NuGet ╨┤╨╗╤Å ╤Ç╨╡╤ê╨╡╨╜╨╕╤ÅΓÇª</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="cmdidAddPackages|ButtonText">
         <source>Manage &amp;NuGet Packages...</source>
-        <target state="translated">Управление пакетами &amp;NuGet...</target>
+        <target state="translated">╨ú╨┐╤Ç╨░╨▓╨╗╨╡╨╜╨╕╨╡ ╨┐╨░╨║╨╡╤é╨░╨╝╨╕ &amp;NuGet...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackages|CommandName">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="cmdidClearHost|ButtonText">
         <source>&amp;Clear Console</source>
-        <target state="translated">&amp;Очистить консоль</target>
+        <target state="translated">&amp;╨₧╤ç╨╕╤ü╤é╨╕╤é╤î ╨║╨╛╨╜╤ü╨╛╨╗╤î</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidClearNuGetLocalResources|ButtonText">
@@ -39,17 +39,17 @@
       </trans-unit>
       <trans-unit id="cmdidPowerConsole|ButtonText">
         <source>Package Manager C&amp;onsole</source>
-        <target state="translated">Консол&amp;ь диспетчера пакетов</target>
+        <target state="translated">╨Ü╨╛╨╜╤ü╨╛╨╗&amp;╤î ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidProjects|ButtonText">
         <source>Default pro&amp;ject:</source>
-        <target state="translated">П&amp;роект по умолчанию:</target>
+        <target state="translated">╨ƒ&amp;╤Ç╨╛╨╡╨║╤é ╨┐╨╛ ╤â╨╝╨╛╨╗╤ç╨░╨╜╨╕╤Ä:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|ButtonText">
         <source>Restore NuGet Packa&amp;ges</source>
-        <target state="translated">Восстановить пак&amp;еты NuGet</target>
+        <target state="translated">╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨┐╨░╨║&amp;╨╡╤é╤ï NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|CommandName">
@@ -59,22 +59,22 @@
       </trans-unit>
       <trans-unit id="cmdidSourceSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">&amp;Параметры диспетчера пакетов</target>
+        <target state="translated">&amp;╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidSources|ButtonText">
         <source>Pac&amp;kage source:</source>
-        <target state="translated">Источник па&amp;кета:</target>
+        <target state="translated">╨ÿ╤ü╤é╨╛╤ç╨╜╨╕╨║ ╨┐╨░&amp;╨║╨╡╤é╨░:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidStopHost|ButtonText">
         <source>&amp;Stop command execution</source>
-        <target state="translated">&amp;Остановить выполнение команды</target>
+        <target state="translated">&amp;╨₧╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î ╨▓╤ï╨┐╨╛╨╗╨╜╨╡╨╜╨╕╨╡ ╨║╨╛╨╝╨░╨╜╨┤╤ï</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|ButtonText">
         <source>U&amp;pdate...</source>
-        <target state="translated">О&amp;бновить...</target>
+        <target state="translated">╨₧&amp;╨▒╨╜╨╛╨▓╨╕╤é╤î...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|CommandName">
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpdatePackage|ButtonText">
         <source>U&amp;pdate...</source>
-        <target state="translated">О&amp;бновить...</target>
+        <target state="translated">╨₧&amp;╨▒╨╜╨╛╨▓╨╕╤é╤î...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackage|CommandName">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradeNuGetProject|ButtonText">
         <source>&amp;Migrate packages.config to PackageReference...</source>
-        <target state="translated">&amp;Перенести packages.config в PackageReference...</target>
+        <target state="translated">&amp;╨ƒ╨╡╤Ç╨╡╨╜╨╡╤ü╤é╨╕ packages.config ╨▓ PackageReference...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradeNuGetProject|CommandName">
@@ -104,7 +104,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradePackagesConfig|ButtonText">
         <source>&amp;Migrate packages.config to PackageReference...</source>
-        <target state="translated">&amp;Перенести packages.config в PackageReference...</target>
+        <target state="translated">&amp;╨ƒ╨╡╤Ç╨╡╨╜╨╡╤ü╤é╨╕ packages.config ╨▓ PackageReference...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradePackagesConfig|CommandName">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpgradeProjectJsonNuGetProject|ButtonText">
         <source>&amp;Migrate project.json to PackageReference...</source>
-        <target state="translated">&amp;Перенести project.json в PackageReference...</target>
+        <target state="translated">&amp;╨ƒ╨╡╤Ç╨╡╨╜╨╡╤ü╤é╨╕ project.json ╨▓ PackageReference...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpgradeProjectJsonNuGetProject|CommandName">
@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="idGeneralSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">&amp;Параметры диспетчера пакетов</target>
+        <target state="translated">&amp;╨ƒ╨░╤Ç╨░╨╝╨╡╤é╤Ç╤ï ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
       <trans-unit id="idGeneralSettings|CommandName">
@@ -134,12 +134,12 @@
       </trans-unit>
       <trans-unit id="idLibraryPackageManager|ButtonText">
         <source>NuGet Package Ma&amp;nager</source>
-        <target state="translated">&amp;Диспетчер пакетов NuGet</target>
+        <target state="translated">&amp;╨ö╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç ╨┐╨░╨║╨╡╤é╨╛╨▓ NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="idToolbar|ButtonText">
         <source>Package Manager Console</source>
-        <target state="translated">Консоль диспетчера пакетов</target>
+        <target state="translated">╨Ü╨╛╨╜╤ü╨╛╨╗╤î ╨┤╨╕╤ü╨┐╨╡╤é╤ç╨╡╤Ç╨░ ╨┐╨░╨║╨╡╤é╨╛╨▓</target>
         <note />
       </trans-unit>
     </body>

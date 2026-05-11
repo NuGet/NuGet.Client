@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../Resources.resx">
     <body>
@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_PackageIdentity">
         <source>{0} version {1}</source>
-        <target state="translated">{0} versión {1}</target>
+        <target state="translated">{0} versi├│n {1}</target>
         <note>{1} = Package ID, {2} = Package version</note>
       </trans-unit>
       <trans-unit id="Accessibility_PackageManager">
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_ThumbHelp">
         <source>Use arrow keys to change the size of the sections</source>
-        <target state="translated">Usar las teclas de dirección para cambiar el tamaño de las secciones</target>
+        <target state="translated">Usar las teclas de direcci├│n para cambiar el tama├▒o de las secciones</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ThumbName">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="Accessibility_VulnerabilitiesDescriptionName">
         <source>Package vulnerability description</source>
-        <target state="translated">Descripción de la vulnerabilidad del paquete</target>
+        <target state="translated">Descripci├│n de la vulnerabilidad del paquete</target>
         <note />
       </trans-unit>
       <trans-unit id="Action_Consolidate">
@@ -109,27 +109,27 @@
       </trans-unit>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty.</source>
-        <target state="translated">El argumento no puede ser nulo ni estar vacío.</target>
+        <target state="translated">El argumento no puede ser nulo ni estar vac├¡o.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForPRMigrator">
         <source>Consider migrating this project's NuGet package management format from 'packages.config' to 'PackageReference'.</source>
-        <target state="translated">Considere la posibilidad de migrar el formato de administración de paquetes NuGet del proyecto de "packages.config" a "PackageReference".</target>
+        <target state="translated">Considere la posibilidad de migrar el formato de administraci├│n de paquetes NuGet del proyecto de "packages.config" a "PackageReference".</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForRestoreMessage">
         <source>Some NuGet packages are missing from this solution. Click to restore from your online package sources.</source>
-        <target state="translated">Faltan algunos paquetes NuGet en esta solución. Haga clic para restaurar desde los orígenes del paquete en línea.</target>
+        <target state="translated">Faltan algunos paquetes NuGet en esta soluci├│n. Haga clic para restaurar desde los or├¡genes del paquete en l├¡nea.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForUpdateMessage">
         <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">Hay disponible una nueva versión del Administrador de paquetes NuGet.</target>
+        <target state="translated">Hay disponible una nueva versi├│n del Administrador de paquetes NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
-        <target state="translated">Con referencia implícita mediante un SDK. Para actualizar el paquete, actualice el SDK al que pertenece.</target>
+        <target state="translated">Con referencia impl├¡cita mediante un SDK. Para actualizar el paquete, actualice el SDK al que pertenece.</target>
         <note />
       </trans-unit>
       <trans-unit id="Billion">
@@ -194,7 +194,7 @@
       </trans-unit>
       <trans-unit id="Button_RestartSearch">
         <source>Restart search</source>
-        <target state="translated">Reiniciar búsqueda</target>
+        <target state="translated">Reiniciar b├║squeda</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_ShowErrors">
@@ -204,7 +204,7 @@
       </trans-unit>
       <trans-unit id="Button_ShowMoreResults">
         <source>Show {0} more results</source>
-        <target state="translated">Mostrar {0} resultados más</target>
+        <target state="translated">Mostrar {0} resultados m├ís</target>
         <note>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</note>
       </trans-unit>
       <trans-unit id="Button_Uninstall">
@@ -219,17 +219,17 @@
       </trans-unit>
       <trans-unit id="Button_Yes">
         <source>_Yes</source>
-        <target state="translated">_Sí</target>
+        <target state="translated">_S├¡</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_YesToAll">
         <source>Yes to _All</source>
-        <target state="translated">Sí a _Todo</target>
+        <target state="translated">S├¡ a _Todo</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="CheckBox_DefaultPackageFormat">
         <source>Allow format selection on first package install</source>
-        <target state="translated">Permitir la selección de formato en la primera instalación del paquete</target>
+        <target state="translated">Permitir la selecci├│n de formato en la primera instalaci├│n del paquete</target>
         <note />
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects">
@@ -239,7 +239,7 @@
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects_HelpText">
         <source>Select this checkbox to install the NuGet Package to all projects in the solution</source>
-        <target state="translated">Seleccione esta casilla para instalar el paquete NuGet en todos los proyectos de la solución.</target>
+        <target state="translated">Seleccione esta casilla para instalar el paquete NuGet en todos los proyectos de la soluci├│n.</target>
         <note>Help text for the checkbox to be narrated by UI Automation Tree</note>
       </trans-unit>
       <trans-unit id="CheckBox_SelectProject_HelpText">
@@ -254,12 +254,12 @@
       </trans-unit>
       <trans-unit id="Checkbox_ForceRemove">
         <source>Force uninstall, even if there are dependencies on it</source>
-        <target state="translated">Forzar desinstalación, aunque tenga dependencias</target>
+        <target state="translated">Forzar desinstalaci├│n, aunque tenga dependencias</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_IncludePrerelease">
         <source>Include prerelease</source>
-        <target state="translated">Incluir versión preliminar</target>
+        <target state="translated">Incluir versi├│n preliminar</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ProjectSelection">
@@ -304,7 +304,7 @@
       </trans-unit>
       <trans-unit id="ColumnHeader_Requested">
         <source>Version</source>
-        <target state="translated">Versión</target>
+        <target state="translated">Versi├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Selected">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="DependencyBehavior_HighestPatch">
         <source>Highest Patch</source>
-        <target state="translated">Revisión superior</target>
+        <target state="translated">Revisi├│n superior</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_IgnoreDependencies">
@@ -344,27 +344,27 @@
       </trans-unit>
       <trans-unit id="Deprecation_LinkTooltip">
         <source>Select to view the alternative package.</source>
-        <target state="translated">Seleccione esta opción para ver el paquete alternativo.</target>
+        <target state="translated">Seleccione esta opci├│n para ver el paquete alternativo.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_MoreInfo">
         <source>More info</source>
-        <target state="translated">Más información</target>
+        <target state="translated">M├ís informaci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessage">
         <source>This package version is deprecated.</source>
-        <target state="translated">Esta versión del paquete está obsoleta.</target>
+        <target state="translated">Esta versi├│n del paquete est├í obsoleta.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessageAlternative">
         <source>This package version is deprecated. Use {0} instead.</source>
-        <target state="translated">Esta versión del paquete está obsoleta. Use {0} en su lugar.</target>
+        <target state="translated">Esta versi├│n del paquete est├í obsoleta. Use {0} en su lugar.</target>
         <note>{0} is a NuGet package id (string)</note>
       </trans-unit>
       <trans-unit id="Description_LearnMore">
         <source>Learn more</source>
-        <target state="translated">Más información</target>
+        <target state="translated">M├ís informaci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="DialogTitle_HttpSource">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file.</source>
-        <target state="translated">NuGet requiere orígenes HTTPS. Para usar un origen HTTP, es necesario establecer explícitamente "allowInsecureConnections" en verdadero en el archivo NuGet.Config.</target>
+        <target state="translated">NuGet requiere or├¡genes HTTPS. Para usar un origen HTTP, es necesario establecer expl├¡citamente "allowInsecureConnections" en verdadero en el archivo NuGet.Config.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MetadataNotFound">
@@ -389,17 +389,17 @@
       </trans-unit>
       <trans-unit id="Error_ProjectNotInCache">
         <source>Project {0} does not exist in the project system cache.</source>
-        <target state="translated">El proyecto {0} no existe en la memoria caché del sistema del proyecto.</target>
+        <target state="translated">El proyecto {0} no existe en la memoria cach├⌐ del sistema del proyecto.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SourceMapping_GPF_NotEnabled">
         <source>The package `{0}` is available in the Global packages folder, but the source it came from `{1}` is not one of the configured sources.</source>
-        <target state="translated">El paquete ''{0}'' está disponible en la carpeta paquetes globales, pero el origen de ''{1}'' no es uno de los orígenes configurados.</target>
+        <target state="translated">El paquete ''{0}'' est├í disponible en la carpeta paquetes globales, pero el origen de ''{1}'' no es uno de los or├¡genes configurados.</target>
         <note>{0} is the package ID. {1} is the URI of the package source found in the Global packages folder.</note>
       </trans-unit>
       <trans-unit id="Error_UnableToLoadReadme">
         <source>An error occurred while trying to load the README.</source>
-        <target state="translated">Error al intentar cargar el LÉAME.</target>
+        <target state="translated">Error al intentar cargar el L├ëAME.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_IgnoreAll">
@@ -414,7 +414,7 @@
       </trans-unit>
       <trans-unit id="FileConflictAction_Prompt">
         <source>Prompt</source>
-        <target state="translated">Pedir confirmación</target>
+        <target state="translated">Pedir confirmaci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="GroupBoxHeader_InstallOptions">
@@ -429,7 +429,7 @@
       </trans-unit>
       <trans-unit id="Hyperlink_AdvisoryUrl">
         <source>Advisory URL</source>
-        <target state="translated">Dirección URL de advertencia</target>
+        <target state="translated">Direcci├│n URL de advertencia</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_License">
@@ -449,12 +449,12 @@
       </trans-unit>
       <trans-unit id="Hyperlink_ProjectUrl">
         <source>Project URL</source>
-        <target state="translated">Dirección URL del proyecto</target>
+        <target state="translated">Direcci├│n URL del proyecto</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Readme">
         <source>Readme</source>
-        <target state="translated">Léame</target>
+        <target state="translated">L├⌐ame</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ReportAbuse">
@@ -474,7 +474,7 @@
       </trans-unit>
       <trans-unit id="Label_Action">
         <source>Action:</source>
-        <target state="translated">Acción:</target>
+        <target state="translated">Acci├│n:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Authors">
@@ -494,7 +494,7 @@
       </trans-unit>
       <trans-unit id="Label_DatePublished">
         <source>Date published:</source>
-        <target state="translated">Fecha de publicación:</target>
+        <target state="translated">Fecha de publicaci├│n:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Dependencies">
@@ -524,27 +524,27 @@
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_CriticalBugs">
         <source>This package has been deprecated as it has critical bugs.</source>
-        <target state="translated">Este paquete está en desuso porque tiene errores críticos.</target>
+        <target state="translated">Este paquete est├í en desuso porque tiene errores cr├¡ticos.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Legacy">
         <source>This package has been deprecated as it is legacy and no longer maintained.</source>
-        <target state="translated">Este paquete está en desuso porque es heredado y ya no se mantiene.</target>
+        <target state="translated">Este paquete est├í en desuso porque es heredado y ya no se mantiene.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_LegacyAndCriticalBugs">
         <source>This package has been deprecated as it has critical bugs and is no longer maintained.</source>
-        <target state="translated">Este paquete está en desuso porque tiene errores críticos y ya no se mantiene.</target>
+        <target state="translated">Este paquete est├í en desuso porque tiene errores cr├¡ticos y ya no se mantiene.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Unknown">
         <source>The package has been deprecated.</source>
-        <target state="translated">El paquete está en desuso.</target>
+        <target state="translated">El paquete est├í en desuso.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Description">
         <source>Description</source>
-        <target state="translated">Descripción</target>
+        <target state="translated">Descripci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Details">
@@ -559,7 +559,7 @@
       </trans-unit>
       <trans-unit id="Label_FileConflictAction">
         <source>File conflict action:</source>
-        <target state="translated">Acción de conflicto de archivos:</target>
+        <target state="translated">Acci├│n de conflicto de archivos:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Installed">
@@ -609,7 +609,7 @@
       </trans-unit>
       <trans-unit id="Label_NetworkError">
         <source>An error occurred while fetching additional information about the package. Refresh to try again.</source>
-        <target state="translated">Se produjo un error al obtener información adicional sobre el paquete. Actualice para volver a intentarlo.</target>
+        <target state="translated">Se produjo un error al obtener informaci├│n adicional sobre el paquete. Actualice para volver a intentarlo.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_NuGetWindowCaption">
@@ -629,7 +629,7 @@
       </trans-unit>
       <trans-unit id="Label_PackageDeprecatedToolTip">
         <source>This package version is deprecated.</source>
-        <target state="translated">Esta versión del paquete está obsoleta.</target>
+        <target state="translated">Esta versi├│n del paquete est├í obsoleta.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageDetails">
@@ -644,17 +644,17 @@
       </trans-unit>
       <trans-unit id="Label_PackagePrerelease">
         <source>Prerelease</source>
-        <target state="translated">Versión preliminar</target>
+        <target state="translated">Versi├│n preliminar</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageSelectForInfoToolTip">
         <source>Select to view package details for more information.</source>
-        <target state="translated">Seleccione para ver los detalles del paquete para obtener más información.</target>
+        <target state="translated">Seleccione para ver los detalles del paquete para obtener m├ís informaci├│n.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageVulnerableToolTip">
         <source>This package version has a vulnerability with {0} severity.</source>
-        <target state="translated">Esta versión del paquete tiene una vulnerabilidad con {0}gravedad.</target>
+        <target state="translated">Esta versi├│n del paquete tiene una vulnerabilidad con {0}gravedad.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_ProjectUrl">
@@ -664,12 +664,12 @@
       </trans-unit>
       <trans-unit id="Label_Readme">
         <source>Readme:</source>
-        <target state="translated">Léame:</target>
+        <target state="translated">L├⌐ame:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Readme_Tab">
         <source>README</source>
-        <target state="translated">LÉAME</target>
+        <target state="translated">L├ëAME</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_ReportAbuse">
@@ -684,17 +684,17 @@
       </trans-unit>
       <trans-unit id="Label_Solution">
         <source>Solution</source>
-        <target state="translated">Solución</target>
+        <target state="translated">Soluci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionNuGetWindowCaption">
         <source>NuGet - Solution</source>
-        <target state="translated">NuGet - Solución</target>
+        <target state="translated">NuGet - Soluci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionPackageManager">
         <source>Manage Packages for Solution</source>
-        <target state="translated">Administrar paquetes para la solución</target>
+        <target state="translated">Administrar paquetes para la soluci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Tags">
@@ -719,7 +719,7 @@
       </trans-unit>
       <trans-unit id="Label_Version">
         <source>Version:</source>
-        <target state="translated">Versión:</target>
+        <target state="translated">Versi├│n:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Vulnerabilities">
@@ -729,7 +729,7 @@
       </trans-unit>
       <trans-unit id="Label_VulnerabilitiesDescription">
         <source>This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</source>
-        <target state="translated">Esta versión del paquete tiene al menos una vulnerabilidad de gravedad {0}, lo que puede provocar problemas específicos en el proyecto. Intente actualizar la versión del paquete.</target>
+        <target state="translated">Esta versi├│n del paquete tiene al menos una vulnerabilidad de gravedad {0}, lo que puede provocar problemas espec├¡ficos en el proyecto. Intente actualizar la versi├│n del paquete.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_VulnerabilityAdvisory">
@@ -759,17 +759,17 @@
       </trans-unit>
       <trans-unit id="Link_LearnAboutInstallOptions">
         <source>Learn about Install Options</source>
-        <target state="translated">Obtener información acerca de Instalar opciones</target>
+        <target state="translated">Obtener informaci├│n acerca de Instalar opciones</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_LearnAboutUninstallOptions">
         <source>Learn about Uninstall Options</source>
-        <target state="translated">Obtener información acerca de Desinstalar opciones</target>
+        <target state="translated">Obtener informaci├│n acerca de Desinstalar opciones</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_MigratorHelp">
         <source>Why should I migrate?</source>
-        <target state="translated">¿Por qué debo migrar?</target>
+        <target state="translated">┬┐Por qu├⌐ debo migrar?</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_UpgradeOption">
@@ -779,7 +779,7 @@
       </trans-unit>
       <trans-unit id="Link_configuration">
         <source>Common NuGet configurations; How settings are applied.</source>
-        <target state="translated">Configuraciones comunes de NuGet; Cómo se aplican las opciones.</target>
+        <target state="translated">Configuraciones comunes de NuGet; C├│mo se aplican las opciones.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_PackageIdColumnHeader">
@@ -789,7 +789,7 @@
       </trans-unit>
       <trans-unit id="Migrator_PackageNotFound">
         <source>Migration failed as packages {0} could not be uninstalled. These packages were not found in the solution packages folder. No changes were made to the project.</source>
-        <target state="translated">Error al migrar porque no se pudieron desinstalar los paquetes {0}, que no se encontraron en la carpeta de paquetes de la solución. No se han realizado cambios en el proyecto.</target>
+        <target state="translated">Error al migrar porque no se pudieron desinstalar los paquetes {0}, que no se encontraron en la carpeta de paquetes de la soluci├│n. No se han realizado cambios en el proyecto.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_TopLevelColumnHeader">
@@ -799,7 +799,7 @@
       </trans-unit>
       <trans-unit id="Migrator_VersionColumnHeader">
         <source>Version</source>
-        <target state="translated">Versión</target>
+        <target state="translated">Versi├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="Million">
@@ -859,7 +859,7 @@
       </trans-unit>
       <trans-unit id="Preview_PackageUpdate">
         <source>{0} version {1} to {2} version {3}</source>
-        <target state="translated">{0} versión {1} a {2} versión {3}</target>
+        <target state="translated">{0} versi├│n {1} a {2} versi├│n {3}</target>
         <note>{0} = Old package ID, {1} = Old package version, {2} = New package ID, {3} = New package version</note>
       </trans-unit>
       <trans-unit id="Preview_UnknownProject">
@@ -913,7 +913,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandMoreInformation">
         <source>For more information, see</source>
-        <target state="translated">Para obtener más información, consulte</target>
+        <target state="translated">Para obtener m├ís informaci├│n, consulte</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandSuccess">
@@ -933,12 +933,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueName">
         <source>The name specified has already been added to the list of available package sources. Please provide a unique name.</source>
-        <target state="translated">El nombre especificado ya se ha agregado a la lista de orígenes de paquetes disponibles. Proporcione un nombre único.</target>
+        <target state="translated">El nombre especificado ya se ha agregado a la lista de or├¡genes de paquetes disponibles. Proporcione un nombre ├║nico.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueSource">
         <source>The source specified has already been added to the list of available package sources. Please provide a unique source.</source>
-        <target state="translated">El origen especificado ya se ha agregado a la lista de orígenes de paquetes disponibles. Proporcione un origen único.</target>
+        <target state="translated">El origen especificado ya se ha agregado a la lista de or├¡genes de paquetes disponibles. Proporcione un origen ├║nico.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Canceled">
@@ -978,7 +978,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_Changes">
         <source>Visual Studio is about to make changes to this solution:</source>
-        <target state="translated">Visual Studio está a punto de realizar cambios en esta solución:</target>
+        <target state="translated">Visual Studio est├í a punto de realizar cambios en esta soluci├│n:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DirectDependencies">
@@ -1008,12 +1008,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_LicenseHeaderText">
         <source>The following package(s) require that you accept their license terms before installing.</source>
-        <target state="translated">Los siguientes paquetes requieren la aceptación de los términos de licencia antes su instalación.</target>
+        <target state="translated">Los siguientes paquetes requieren la aceptaci├│n de los t├⌐rminos de licencia antes su instalaci├│n.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LicenseText">
         <source>By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."</source>
-        <target state="translated">Al hacer clic en "Aceptar", expresa su conformidad con los términos de licencia de los paquetes que se enumeran más arriba. Si no está de acuerdo con ellos, haga clic en "Rechazar".</target>
+        <target state="translated">Al hacer clic en "Aceptar", expresa su conformidad con los t├⌐rminos de licencia de los paquetes que se enumeran m├ís arriba. Si no est├í de acuerdo con ellos, haga clic en "Rechazar".</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Loading">
@@ -1028,7 +1028,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_ManageSettings">
         <source>You can manage these settings in </source>
-        <target state="translated">Puede administrar esta configuración en </target>
+        <target state="translated">Puede administrar esta configuraci├│n en </target>
         <note />
       </trans-unit>
       <trans-unit id="Text_MultipleVersionsInstalled">
@@ -1048,7 +1048,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_NoReadme">
         <source>There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</source>
-        <target state="translated">No hay ningún archivo README disponible para la versión del paquete seleccionada. Para más información, visite [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
+        <target state="translated">No hay ning├║n archivo README disponible para la versi├│n del paquete seleccionada. Para m├ís informaci├│n, visite [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
         <note>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</note>
       </trans-unit>
       <trans-unit id="Text_NotAvailableInSource">
@@ -1063,7 +1063,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_NuGetSettings">
         <source>NuGet Settings</source>
-        <target state="translated">Configuración de NuGet</target>
+        <target state="translated">Configuraci├│n de NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NuGetUpgradeIssues">
@@ -1078,7 +1078,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_PackageFormatApply">
         <source>The package manager format will apply to the following projects in this Solution</source>
-        <target state="translated">El formato del administrador de paquetes se aplicará a los siguientes proyectos de esta Solution</target>
+        <target state="translated">El formato del administrador de paquetes se aplicar├í a los siguientes proyectos de esta Solution</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageLevelTopLevel">
@@ -1093,22 +1093,22 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_PackageMappingsAutoCreate">
         <source>A package source mapping will be created.</source>
-        <target state="translated">Se creará una asignación de origen de paquete.</target>
+        <target state="translated">Se crear├í una asignaci├│n de origen de paquete.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsDisabled">
         <source>Package source mapping is off.</source>
-        <target state="translated">La asignación del origen del paquete está desactivada.</target>
+        <target state="translated">La asignaci├│n del origen del paquete est├í desactivada.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsFound">
         <source>Package source mapping found.</source>
-        <target state="translated">Se encontró la asignación del origen del paquete.</target>
+        <target state="translated">Se encontr├│ la asignaci├│n del origen del paquete.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsNotFound">
         <source>Requires a package source mapping.</source>
-        <target state="translated">Requiere una asignación del origen del paquete.</target>
+        <target state="translated">Requiere una asignaci├│n del origen del paquete.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport">
@@ -1118,12 +1118,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport_DocumentLink">
         <source>Learn more about package reference</source>
-        <target state="translated">Más información sobre la referencia del paquete</target>
+        <target state="translated">M├ís informaci├│n sobre la referencia del paquete</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSources">
         <source>Package sources:</source>
-        <target state="translated">Orígenes del paquete:</target>
+        <target state="translated">Or├¡genes del paquete:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackagesFound">
@@ -1143,12 +1143,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_SearchIncomplete">
         <source>Retrieving results from one or more sources</source>
-        <target state="translated">Recuperando resultados de uno o más orígenes</target>
+        <target state="translated">Recuperando resultados de uno o m├ís or├¡genes</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchStopped">
         <source>Unable to retrieve results from one or more sources</source>
-        <target state="translated">No se pueden recuperar resultados de uno o más orígenes</target>
+        <target state="translated">No se pueden recuperar resultados de uno o m├ís or├¡genes</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Searching">
@@ -1168,7 +1168,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_UserCanceled">
         <source>Operation canceled by user</source>
-        <target state="translated">Operación cancelada por el usuario</target>
+        <target state="translated">Operaci├│n cancelada por el usuario</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ViewLicense">
@@ -1178,7 +1178,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_ViewReadme">
         <source>View Readme</source>
-        <target state="translated">Ver archivo Léame</target>
+        <target state="translated">Ver archivo L├⌐ame</target>
         <note />
       </trans-unit>
       <trans-unit id="Thousand">
@@ -1188,27 +1188,27 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="ToolTip_BlockedVersion">
         <source>Following versions are unavailable due to additional constraints in the project or packages.config</source>
-        <target state="translated">Las versiones siguientes no están disponibles debido a restricciones adicionales en el proyecto o en packages.config.</target>
+        <target state="translated">Las versiones siguientes no est├ín disponibles debido a restricciones adicionales en el proyecto o en packages.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstallButton">
         <source>Install {0} version {1}.</source>
-        <target state="translated">Instalar {0} versión {1}.</target>
+        <target state="translated">Instalar {0} versi├│n {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstalledVersion">
         <source>Installed version: {0}</source>
-        <target state="translated">Versión instalada: {0}</target>
+        <target state="translated">Versi├│n instalada: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_LatestVersion">
         <source>Latest version: {0}</source>
-        <target state="translated">Versión más reciente: {0}</target>
+        <target state="translated">Versi├│n m├ís reciente: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageInstalled">
         <source>Latest stable version is installed</source>
-        <target state="translated">La versión estable más reciente está instalada</target>
+        <target state="translated">La versi├│n estable m├ís reciente est├í instalada</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageRecommended">
@@ -1223,22 +1223,22 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="ToolTip_Settings">
         <source>Settings</source>
-        <target state="translated">Configuración</target>
+        <target state="translated">Configuraci├│n</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependency">
         <source>Transitively referenced version</source>
-        <target state="translated">Versión a la que se hace referencia transitivamente</target>
+        <target state="translated">Versi├│n a la que se hace referencia transitivamente</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependencyVersion">
         <source>Transitively referenced version: {0}</source>
-        <target state="translated">Versión a la que se hace referencia transitivamente {0}</target>
+        <target state="translated">Versi├│n a la que se hace referencia transitivamente {0}</target>
         <note>{0} is a version number</note>
       </trans-unit>
       <trans-unit id="ToolTip_TransitivePathHelp">
         <source>To learn more about transitive paths, see</source>
-        <target state="translated">Para obtener más información sobre las rutas transitivas, consulte</target>
+        <target state="translated">Para obtener m├ís informaci├│n sobre las rutas transitivas, consulte</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UninstallButton">
@@ -1248,12 +1248,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="ToolTip_UpdateAvailable">
         <source>Update available</source>
-        <target state="translated">Actualización disponible</target>
+        <target state="translated">Actualizaci├│n disponible</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UpdateButton">
         <source>Update {0} to version {1}.</source>
-        <target state="translated">Actualizar {0} a la versión {1}.</target>
+        <target state="translated">Actualizar {0} a la versi├│n {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Tooltip_PrefixReserved">
@@ -1268,17 +1268,17 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="UpdateButton_VersionOverride_Tooltip">
         <source>Dependency version defined by VersionOverride, modify project file to change package version.</source>
-        <target state="translated">Versión de dependencia definida por VersionOverride. Modifique el archivo de proyecto para cambiar la versión del paquete.</target>
+        <target state="translated">Versi├│n de dependencia definida por VersionOverride. Modifique el archivo de proyecto para cambiar la versi├│n del paquete.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpgradeLogger_BackupPathMustBeValid">
         <source>Must be a valid path.</source>
-        <target state="translated">Debe ser una ruta de acceso válida.</target>
+        <target state="translated">Debe ser una ruta de acceso v├ílida.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_InstallFailed">
         <source>NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}</source>
-        <target state="translated">Error de migración de NuGet para instalar paquetes como PackageReference. Copia de seguridad de los archivos modificados en {0}</target>
+        <target state="translated">Error de migraci├│n de NuGet para instalar paquetes como PackageReference. Copia de seguridad de los archivos modificados en {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_RevertSteps">
@@ -1288,7 +1288,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Upgrade_UninstallFailed">
         <source>NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state.</source>
-        <target state="translated">La actualización de NuGet no pudo desinstalar los paquetes de packages.config, por lo que se ha revertido al estado anterior.</target>
+        <target state="translated">La actualizaci├│n de NuGet no pudo desinstalar los paquetes de packages.config, por lo que se ha revertido al estado anterior.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrader_BackupFailed">
@@ -1298,7 +1298,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Upgrader_PackageNotFound">
         <source>Unable to determine compatibility of package as {0}.nupkg was not found on disk. The project cannot be migrated.</source>
-        <target state="translated">No se puede determinar la compatibilidad del paquete porque no se encontró {0}.nupkg en el disco. No se puede migrar el proyecto.</target>
+        <target state="translated">No se puede determinar la compatibilidad del paquete porque no se encontr├│ {0}.nupkg en el disco. No se puede migrar el proyecto.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Button_Close">
@@ -1313,12 +1313,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptMessage">
         <source>Once started, this action cannot be cancelled.</source>
-        <target state="translated">Una vez iniciada, esta acción no se puede cancelar.</target>
+        <target state="translated">Una vez iniciada, esta acci├│n no se puede cancelar.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptTitle">
         <source>Clear all local NuGet resources?</source>
-        <target state="translated">¿Borrar todos los recursos de NuGet locales?</target>
+        <target state="translated">┬┐Borrar todos los recursos de NuGet locales?</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked">
@@ -1338,12 +1338,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Version_LatestPrerelease">
         <source>Latest prerelease</source>
-        <target state="translated">Versión preliminar más reciente</target>
+        <target state="translated">Versi├│n preliminar m├ís reciente</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_LatestStable">
         <source>Latest stable</source>
-        <target state="translated">Versión estable más reciente</target>
+        <target state="translated">Versi├│n estable m├ís reciente</target>
         <note />
       </trans-unit>
       <trans-unit id="Vulnerabilities_Loading">
@@ -1353,7 +1353,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Critical">
         <source>critical</source>
-        <target state="translated">crítica</target>
+        <target state="translated">cr├¡tica</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_High">
@@ -1373,17 +1373,17 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Warn_Adding_HttpSource">
         <source>You are attempting to add an HTTP source, which is insecure. Would you like to proceed with adding this insecure HTTP source?</source>
-        <target state="translated">Está intentando agregar un origen HTTP, que no es seguro. ¿Desea continuar con la adición de este origen HTTP no seguro?</target>
+        <target state="translated">Est├í intentando agregar un origen HTTP, que no es seguro. ┬┐Desea continuar con la adici├│n de este origen HTTP no seguro?</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_HTTPSource">
         <source>AllowInsecureConnections is enabled and allows http access. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere.</source>
-        <target state="translated">AllowInsecureConnections está habilitado y permite el acceso http. Nota: Este método no es seguro. Para ver las opciones seguras, consulte https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">AllowInsecureConnections est├í habilitado y permite el acceso http. Nota: Este m├⌐todo no es seguro. Para ver las opciones seguras, consulte https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectJson">
         <source>These options are not applicable to projects managing their dependencies through project.json or PackageReference</source>
-        <target state="translated">Estas opciones no se aplican a los proyectos que administran sus dependencias a través de project.json o PackageReference</target>
+        <target state="translated">Estas opciones no se aplican a los proyectos que administran sus dependencias a trav├⌐s de project.json o PackageReference</target>
         <note>To be displayed for the VS UI opened through a solution. bug #2665</note>
       </trans-unit>
       <trans-unit id="WindowTitle_DeprecatedFramework">
@@ -1398,7 +1398,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseAcceptance">
         <source>License Acceptance</source>
-        <target state="translated">Aceptación de la licencia</target>
+        <target state="translated">Aceptaci├│n de la licencia</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseFileWindow">

@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../Strings.resx">
     <body>
       <trans-unit id="CircularDependencyDetected">
         <source>Circular dependency detected '{0}'.</source>
-        <target state="translated">Dépendance circulaire détectée '{0}'.</target>
+        <target state="translated">D├⌐pendance circulaire d├⌐tect├⌐e '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyConstraint">
@@ -14,37 +14,37 @@
       </trans-unit>
       <trans-unit id="DuplicateDependencyIdsError">
         <source>The package '{0}' version '{1}' declared a duplicate dependency '{2}'. This might mean the package is corrupt or the server metadata for the package is corrupt.</source>
-        <target state="translated">Le package « {0} » version « {1} » a déclaré une dépendance « {2} » en double, ce qui peut indiquer que le package est endommagé ou que les métadonnées de serveur du package sont endommagées.</target>
+        <target state="translated">Le package ┬½┬á{0}┬á┬╗ version ┬½┬á{1}┬á┬╗ a d├⌐clar├⌐ une d├⌐pendance ┬½┬á{2}┬á┬╗ en double, ce qui peut indiquer que le package est endommag├⌐ ou que les m├⌐tadonn├⌐es de serveur du package sont endommag├⌐es.</target>
         <note />
       </trans-unit>
       <trans-unit id="FatalError">
         <source>A fatal error occured while resolving dependencies.</source>
-        <target state="translated">Une erreur irrécupérable s'est produite pendant la résolution des dépendances.</target>
+        <target state="translated">Une erreur irr├⌐cup├⌐rable s'est produite pendant la r├⌐solution des d├⌐pendances.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageConfig">
         <source>One or more unresolved package dependency constraints detected in the existing packages.config file. All dependency constraints must be resolved to add or update packages. If these packages are being updated this message may be ignored, if not the following error(s) may be blocking the current package operation: {0}</source>
-        <target state="translated">Une ou plusieurs contraintes de dépendance de package non résolues ont été détectées dans le fichier packages.config existant. Toutes les contraintes de dépendance doivent être résolues pour ajouter ou mettre à jour des packages. Si ces packages sont en cours de mise à jour, ce message peut être ignoré. Dans le cas contraire, la ou les erreurs suivantes peuvent bloquer l'opération de package en cours :{0}</target>
+        <target state="translated">Une ou plusieurs contraintes de d├⌐pendance de package non r├⌐solues ont ├⌐t├⌐ d├⌐tect├⌐es dans le fichier packages.config existant. Toutes les contraintes de d├⌐pendance doivent ├¬tre r├⌐solues pour ajouter ou mettre ├á jour des packages. Si ces packages sont en cours de mise ├á jour, ce message peut ├¬tre ignor├⌐. Dans le cas contraire, la ou les erreurs suivantes peuvent bloquer l'op├⌐ration de package en cours┬á:{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingDependencyInfo">
         <source>Unable to find package '{0}'. Existing packages must be restored before performing an install or update.</source>
-        <target state="translated">Package '{0}' introuvable. Les packages existants doivent être restaurés avant d'effectuer une installation ou une mise à jour.</target>
+        <target state="translated">Package '{0}' introuvable. Les packages existants doivent ├¬tre restaur├⌐s avant d'effectuer une installation ou une mise ├á jour.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSolution">
         <source>Unable to resolve dependencies.</source>
-        <target state="translated">Impossible de résoudre les dépendances.</target>
+        <target state="translated">Impossible de r├⌐soudre les d├⌐pendances.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackagesConfigConstraint">
         <source>'{0}' has an additional constraint {1} defined in {2}.</source>
-        <target state="translated">'{0}' a une contrainte {1} supplémentaire définie dans {2}.</target>
+        <target state="translated">'{0}' a une contrainte {1} suppl├⌐mentaire d├⌐finie dans {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolverTotalTime">
         <source>Resolving dependency information took {0}</source>
-        <target state="translated">La résolution des informations de dépendance a pris {0}</target>
+        <target state="translated">La r├⌐solution des informations de d├⌐pendance a pris {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToFindCompatibleVersion">
@@ -54,17 +54,17 @@
       </trans-unit>
       <trans-unit id="UnableToResolveDependencyForEmptySource">
         <source>Unable to resolve dependency '{0}'.</source>
-        <target state="translated">Impossible de résoudre la dépendance '{0}'.</target>
+        <target state="translated">Impossible de r├⌐soudre la d├⌐pendance '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToResolveDependencyForMultipleSources">
         <source>Unable to resolve dependency '{0}'. Source(s) used: {1}.</source>
-        <target state="translated">Impossible de résoudre la dépendance '{0}'. Source(s) utilisée(s) : {1}.</target>
+        <target state="translated">Impossible de r├⌐soudre la d├⌐pendance '{0}'. Source(s) utilis├⌐e(s)┬á: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionIsNotCompatible">
         <source>Unable to resolve dependencies. '{0}' is not compatible with {1}.</source>
-        <target state="translated">Impossible de résoudre les dépendances. '{0}' n'est pas compatible avec {1}.</target>
+        <target state="translated">Impossible de r├⌐soudre les d├⌐pendances. '{0}' n'est pas compatible avec {1}.</target>
         <note />
       </trans-unit>
     </body>

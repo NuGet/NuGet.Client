@@ -1,135 +1,135 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../Resources.resx">
     <body>
       <trans-unit id="Accessibility_ColumnNotSortedHelpText">
         <source>Not sorted, press space to sort ascending</source>
-        <target state="translated">정렬되지 않음, 오름차순으로 정렬하려면 스페이스바를 누르세요.</target>
+        <target state="translated">∞áòδá¼δÉÿ∞ºÇ ∞òè∞¥î, ∞ÿñδªä∞░¿∞ê£∞£╝δí£ ∞áòδá¼φòÿδáñδ⌐┤ ∞èñφÄÿ∞¥┤∞èñδ░öδÑ╝ δêäδÑ┤∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ColumnSortedAscendingHelpText">
         <source>Sorted ascending, press space to sort descending</source>
-        <target state="translated">오름차순으로 정렬됨, 내림차순으로 정렬하려면 스페이스바를 누르세요.</target>
+        <target state="translated">∞ÿñδªä∞░¿∞ê£∞£╝δí£ ∞áòδá¼δÉ¿, δé┤δª╝∞░¿∞ê£∞£╝δí£ ∞áòδá¼φòÿδáñδ⌐┤ ∞èñφÄÿ∞¥┤∞èñδ░öδÑ╝ δêäδÑ┤∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ColumnSortedDescendingHelpText">
         <source>Sorted descending, press space to sort ascending</source>
-        <target state="translated">내림차순으로 정렬됨, 오름차순으로 정렬하려면 스페이스바를 누르세요.</target>
+        <target state="translated">δé┤δª╝∞░¿∞ê£∞£╝δí£ ∞áòδá¼δÉ¿, ∞ÿñδªä∞░¿∞ê£∞£╝δí£ ∞áòδá¼φòÿδáñδ⌐┤ ∞èñφÄÿ∞¥┤∞èñδ░öδÑ╝ δêäδÑ┤∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageDeprecation">
         <source>Package deprecation</source>
-        <target state="translated">패키지 사용 중단</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞é¼∞Ü⌐ ∞ñæδï¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageDetailsUrlIcon">
         <source>Package details URL icon</source>
-        <target state="translated">패키지 세부 정보 URL 아이콘</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞ä╕δ╢Ç ∞áòδ│┤ URL ∞òä∞¥┤∞╜ÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageIcon">
         <source>Package icon</source>
-        <target state="translated">패키지 아이콘</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞òä∞¥┤∞╜ÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageIdentity">
         <source>{0} version {1}</source>
-        <target state="translated">{0} 버전 {1}</target>
+        <target state="translated">{0} δ▓ä∞áä {1}</target>
         <note>{1} = Package ID, {2} = Package version</note>
       </trans-unit>
       <trans-unit id="Accessibility_PackageManager">
         <source>Package manager</source>
-        <target state="translated">패키지 관리자</target>
+        <target state="translated">φî¿φéñ∞ºÇ Ω┤Çδª¼∞₧É</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageMetadata">
         <source>Package metadata</source>
-        <target state="translated">패키지 메타데이터</target>
+        <target state="translated">φî¿φéñ∞ºÇ δ⌐öφâÇδì░∞¥┤φä░</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackageVulnerabilities">
         <source>Package vulnerabilities</source>
-        <target state="translated">패키지 취약점</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞╖¿∞ò╜∞áÉ</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_Packages">
         <source>Packages</source>
-        <target state="translated">패키지</target>
+        <target state="translated">φî¿φéñ∞ºÇ</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesDetails">
         <source>Package details</source>
-        <target state="translated">패키지 세부 정보</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞ä╕δ╢Ç ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PackagesList">
         <source>Packages list</source>
-        <target state="translated">패키지 목록</target>
+        <target state="translated">φî¿φéñ∞ºÇ δ¬⌐δí¥</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PrefixReserved">
         <source>Prefix reserved</source>
-        <target state="translated">접두사가 예약됨</target>
+        <target state="translated">∞áæδæÉ∞é¼Ω░Ç ∞ÿê∞ò╜δÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PromoteAllToTopLevel">
         <source>Promote all to top level dependencies</source>
-        <target state="translated">모든 항목을 최상위 종속성으로 수준 올리기</target>
+        <target state="translated">δ¬¿δôá φò¡δ¬⌐∞¥ä ∞╡£∞âü∞£ä ∞óà∞åì∞ä▒∞£╝δí£ ∞êÿ∞ñÇ ∞ÿ¼δª¼Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_PromoteToTopLevel">
         <source>Promote to a top level dependency</source>
-        <target state="translated">최상위 종속성으로 수준 올리기</target>
+        <target state="translated">∞╡£∞âü∞£ä ∞óà∞åì∞ä▒∞£╝δí£ ∞êÿ∞ñÇ ∞ÿ¼δª¼Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ThumbHelp">
         <source>Use arrow keys to change the size of the sections</source>
-        <target state="translated">화살표 키를 사용하여 섹션 크기를 변경합니다.</target>
+        <target state="translated">φÖö∞é┤φæ£ φéñδÑ╝ ∞é¼∞Ü⌐φòÿ∞ù¼ ∞ä╣∞àÿ φü¼Ω╕░δÑ╝ δ│ÇΩ▓╜φò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_ThumbName">
         <source>splitter for Packages list</source>
-        <target state="translated">패키지 목록의 분할기</target>
+        <target state="translated">φî¿φéñ∞ºÇ δ¬⌐δí¥∞¥ÿ δ╢äφòáΩ╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="Accessibility_VulnerabilitiesDescriptionName">
         <source>Package vulnerability description</source>
-        <target state="translated">패키지 취약점 설명</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞╖¿∞ò╜∞áÉ ∞äñδ¬à</target>
         <note />
       </trans-unit>
       <trans-unit id="Action_Consolidate">
         <source>Consolidate</source>
-        <target state="translated">통합</target>
+        <target state="translated">φå╡φò⌐</target>
         <note />
       </trans-unit>
       <trans-unit id="AggregateSourceName">
         <source>All</source>
-        <target state="translated">모두</target>
+        <target state="translated">δ¬¿δæÉ</target>
         <note />
       </trans-unit>
       <trans-unit id="ArgumentNullOrEmpty">
         <source>Argument cannot be null or empty.</source>
-        <target state="translated">인수는 null이거나 비워 둘 수 없습니다.</target>
+        <target state="translated">∞¥╕∞êÿδèö null∞¥┤Ω▒░δéÿ δ╣ä∞¢î δæÿ ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForPRMigrator">
         <source>Consider migrating this project's NuGet package management format from 'packages.config' to 'PackageReference'.</source>
-        <target state="translated">이 프로젝트의 NuGet 패키지 관리 형식을 'packages.config'에서 'PackageReference'로 마이그레이션해 보세요.</target>
+        <target state="translated">∞¥┤ φöäδí£∞á¥φè╕∞¥ÿ NuGet φî¿φéñ∞ºÇ Ω┤Çδª¼ φÿò∞ï¥∞¥ä 'packages.config'∞ùÉ∞ä£ 'PackageReference'δí£ δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿφò┤ δ│┤∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForRestoreMessage">
         <source>Some NuGet packages are missing from this solution. Click to restore from your online package sources.</source>
-        <target state="translated">이 솔루션에서 일부 NuGet 패키지가 누락되었습니다. 온라인 패키지 소스에서 복원하려면 클릭하십시오.</target>
+        <target state="translated">∞¥┤ ∞åöδú¿∞àÿ∞ùÉ∞ä£ ∞¥╝δ╢Ç NuGet φî¿φéñ∞ºÇΩ░Ç δêäδ¥╜δÉÿ∞ùê∞è╡δïêδïñ. ∞ÿ¿δ¥╝∞¥╕ φî¿φéñ∞ºÇ ∞åî∞èñ∞ùÉ∞ä£ δ│╡∞¢Éφòÿδáñδ⌐┤ φü┤δª¡φòÿ∞ï¡∞ï£∞ÿñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="AskForUpdateMessage">
         <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">새 버전의 NuGet 패키지 관리자를 사용할 수 있습니다.</target>
+        <target state="translated">∞âê δ▓ä∞áä∞¥ÿ NuGet φî¿φéñ∞ºÇ Ω┤Çδª¼∞₧ÉδÑ╝ ∞é¼∞Ü⌐φòá ∞êÿ ∞₧ê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
-        <target state="translated">SDK에서 암시적으로 참조됩니다. 패키지를 업데이트하려면 패키지가 속한 SDK를 업데이트하세요.</target>
+        <target state="translated">SDK∞ùÉ∞ä£ ∞òö∞ï£∞áü∞£╝δí£ ∞░╕∞í░δÉ⌐δïêδïñ. φî¿φéñ∞ºÇδÑ╝ ∞ùàδì░∞¥┤φè╕φòÿδáñδ⌐┤ φî¿φéñ∞ºÇΩ░Ç ∞åìφò£ SDKδÑ╝ ∞ùàδì░∞¥┤φè╕φòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Billion">
@@ -139,477 +139,477 @@
       </trans-unit>
       <trans-unit id="Button_Apply">
         <source>_Apply</source>
-        <target state="translated">적용(_A)</target>
+        <target state="translated">∞áü∞Ü⌐(_A)</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Cancel">
         <source>_Cancel</source>
-        <target state="translated">취소(_C)</target>
+        <target state="translated">∞╖¿∞åî(_C)</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Copy">
         <source>Co_py</source>
-        <target state="translated">복사(_P)</target>
+        <target state="translated">δ│╡∞é¼(_P)</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Dismiss">
         <source>Dismiss</source>
-        <target state="translated">해제</target>
+        <target state="translated">φò┤∞á£</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_IAccept">
         <source>I _Accept</source>
-        <target state="translated">동의함(_A)</target>
+        <target state="translated">δÅÖ∞¥ÿφò¿(_A)</target>
         <note>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_IDecline">
         <source>I _Decline</source>
-        <target state="translated">동의 안 함(_D)</target>
+        <target state="translated">δÅÖ∞¥ÿ ∞òê φò¿(_D)</target>
         <note>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Install">
         <source>Install</source>
-        <target state="translated">설치</target>
+        <target state="translated">∞äñ∞╣ÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_No">
         <source>_No</source>
-        <target state="translated">아니요(_N)</target>
+        <target state="translated">∞òäδïê∞Üö(_N)</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_NoToAll">
         <source>No to A_ll</source>
-        <target state="translated">모두 아니요(_L)</target>
+        <target state="translated">δ¬¿δæÉ ∞òäδïê∞Üö(_L)</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_OK">
         <source>_OK</source>
-        <target state="translated">확인(_O)</target>
+        <target state="translated">φÖò∞¥╕(_O)</target>
         <note>Button_Cancel and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_Preview">
         <source>Preview</source>
-        <target state="translated">미리 보기</target>
+        <target state="translated">δ»╕δª¼ δ│┤Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_RestartSearch">
         <source>Restart search</source>
-        <target state="translated">검색 다시 시작</target>
+        <target state="translated">Ω▓Ç∞âë δïñ∞ï£ ∞ï£∞₧æ</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_ShowErrors">
         <source>Show errors in output</source>
-        <target state="translated">출력에서 오류 표시</target>
+        <target state="translated">∞╢£δáÑ∞ùÉ∞ä£ ∞ÿñδÑÿ φæ£∞ï£</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_ShowMoreResults">
         <source>Show {0} more results</source>
-        <target state="translated">{0}개 이상의 결과 표시</target>
+        <target state="translated">{0}Ω░£ ∞¥┤∞âü∞¥ÿ Ω▓░Ω│╝ φæ£∞ï£</target>
         <note>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</note>
       </trans-unit>
       <trans-unit id="Button_Uninstall">
         <source>Uninstall</source>
-        <target state="translated">제거</target>
+        <target state="translated">∞á£Ω▒░</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_Update">
         <source>Update</source>
-        <target state="translated">업데이트</target>
+        <target state="translated">∞ùàδì░∞¥┤φè╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Button_Yes">
         <source>_Yes</source>
-        <target state="translated">예(_Y)</target>
+        <target state="translated">∞ÿê(_Y)</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Button_YesToAll">
         <source>Yes to _All</source>
-        <target state="translated">모두 예(_A)</target>
+        <target state="translated">δ¬¿δæÉ ∞ÿê(_A)</target>
         <note>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="CheckBox_DefaultPackageFormat">
         <source>Allow format selection on first package install</source>
-        <target state="translated">패키지를 처음 설치할 때 형식 선택 허용</target>
+        <target state="translated">φî¿φéñ∞ºÇδÑ╝ ∞▓ÿ∞¥î ∞äñ∞╣ÿφòá δòî φÿò∞ï¥ ∞äáφâ¥ φùê∞Ü⌐</target>
         <note />
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects">
         <source>Select All Projects</source>
-        <target state="translated">모든 프로젝트 선택</target>
+        <target state="translated">δ¬¿δôá φöäδí£∞á¥φè╕ ∞äáφâ¥</target>
         <note>Name for the checkbox to be narrated by UI Automation Tree</note>
       </trans-unit>
       <trans-unit id="CheckBox_SelectAllProjects_HelpText">
         <source>Select this checkbox to install the NuGet Package to all projects in the solution</source>
-        <target state="translated">확인란을 선택하여 솔루션안의 모든 프로젝트에 NuGet 패키지를 설치하세요</target>
+        <target state="translated">φÖò∞¥╕δ₧Ç∞¥ä ∞äáφâ¥φòÿ∞ù¼ ∞åöδú¿∞àÿ∞òê∞¥ÿ δ¬¿δôá φöäδí£∞á¥φè╕∞ùÉ NuGet φî¿φéñ∞ºÇδÑ╝ ∞äñ∞╣ÿφòÿ∞ä╕∞Üö</target>
         <note>Help text for the checkbox to be narrated by UI Automation Tree</note>
       </trans-unit>
       <trans-unit id="CheckBox_SelectProject_HelpText">
         <source>Select this checkbox to install the NuGet Package to the project '{0}'</source>
-        <target state="translated">확인란을 선택하여 프로젝트 '{0}'에 NuGet 패키지를 설치하세요</target>
+        <target state="translated">φÖò∞¥╕δ₧Ç∞¥ä ∞äáφâ¥φòÿ∞ù¼ φöäδí£∞á¥φè╕ '{0}'∞ùÉ NuGet φî¿φéñ∞ºÇδÑ╝ ∞äñ∞╣ÿφòÿ∞ä╕∞Üö</target>
         <note>Help text for the checkbox to install a NuGet package to a specific project.</note>
       </trans-unit>
       <trans-unit id="CheckBox_Selected">
         <source>Selected</source>
-        <target state="translated">선택됨</target>
+        <target state="translated">∞äáφâ¥δÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ForceRemove">
         <source>Force uninstall, even if there are dependencies on it</source>
-        <target state="translated">관련 종속성이 있더라도 강제 제거</target>
+        <target state="translated">Ω┤Çδá¿ ∞óà∞åì∞ä▒∞¥┤ ∞₧êδìöδ¥╝δÅä Ω░ò∞á£ ∞á£Ω▒░</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_IncludePrerelease">
         <source>Include prerelease</source>
-        <target state="translated">시험판 포함</target>
+        <target state="translated">∞ï£φùÿφîÉ φÅ¼φò¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ProjectSelection">
         <source>{0} project(s)</source>
-        <target state="translated">프로젝트 {0}개</target>
+        <target state="translated">φöäδí£∞á¥φè╕ {0}Ω░£</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_RemoveDependencies">
         <source>Remove dependencies</source>
-        <target state="translated">종속성 제거</target>
+        <target state="translated">∞óà∞åì∞ä▒ ∞á£Ω▒░</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_SelectAllPackages">
         <source>Select all packages</source>
-        <target state="translated">모든 패키지 선택</target>
+        <target state="translated">δ¬¿δôá φî¿φéñ∞ºÇ ∞äáφâ¥</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_ShowPreviewWindow">
         <source>Show preview window</source>
-        <target state="translated">미리 보기 창 표시</target>
+        <target state="translated">δ»╕δª¼ δ│┤Ω╕░ ∞░╜ φæ£∞ï£</target>
         <note />
       </trans-unit>
       <trans-unit id="Checkbox_Show_Vulnerable_Only">
         <source>Show only vulnerable</source>
-        <target state="translated">취약한 항목만 표시</target>
+        <target state="translated">∞╖¿∞ò╜φò£ φò¡δ¬⌐δºî φæ£∞ï£</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_InstalledVersion">
         <source>Installed</source>
-        <target state="translated">설치됨</target>
+        <target state="translated">∞äñ∞╣ÿδÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_PackageLevel">
         <source>Package Level</source>
-        <target state="translated">패키지 수준</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞êÿ∞ñÇ</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Project">
         <source>Project</source>
-        <target state="translated">프로젝트</target>
+        <target state="translated">φöäδí£∞á¥φè╕</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Requested">
         <source>Version</source>
-        <target state="translated">버전</target>
+        <target state="translated">δ▓ä∞áä</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnHeader_Selected">
         <source>Selected</source>
-        <target state="translated">선택한 상태</target>
+        <target state="translated">∞äáφâ¥φò£ ∞âüφâ£</target>
         <note />
       </trans-unit>
       <trans-unit id="CopyMenuCommandLabel">
         <source>_Copy</source>
-        <target state="translated">복사(_C)</target>
+        <target state="translated">δ│╡∞é¼(_C)</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_Highest">
         <source>Highest</source>
-        <target state="translated">최상위</target>
+        <target state="translated">∞╡£∞âü∞£ä</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_HighestMinor">
         <source>Highest Minor</source>
-        <target state="translated">최상위 부</target>
+        <target state="translated">∞╡£∞âü∞£ä δ╢Ç</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_HighestPatch">
         <source>Highest Patch</source>
-        <target state="translated">최상위 패치</target>
+        <target state="translated">∞╡£∞âü∞£ä φî¿∞╣ÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_IgnoreDependencies">
         <source>Ignore Dependencies</source>
-        <target state="translated">종속성 무시</target>
+        <target state="translated">∞óà∞åì∞ä▒ δ¼┤∞ï£</target>
         <note />
       </trans-unit>
       <trans-unit id="DependencyBehavior_Lowest">
         <source>Lowest</source>
-        <target state="translated">최하위</target>
+        <target state="translated">∞╡£φòÿ∞£ä</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_LinkTooltip">
         <source>Select to view the alternative package.</source>
-        <target state="translated">선택해서 대체 패키지를 확인하세요.</target>
+        <target state="translated">∞äáφâ¥φò┤∞ä£ δîÇ∞▓┤ φî¿φéñ∞ºÇδÑ╝ φÖò∞¥╕φòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_MoreInfo">
         <source>More info</source>
-        <target state="translated">추가 정보</target>
+        <target state="translated">∞╢öΩ░Ç ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessage">
         <source>This package version is deprecated.</source>
-        <target state="translated">이 패키지 버전은 더 이상 사용하지 않습니다.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇ δ▓ä∞áä∞¥Ç δìö ∞¥┤∞âü ∞é¼∞Ü⌐φòÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Deprecation_PackageItemMessageAlternative">
         <source>This package version is deprecated. Use {0} instead.</source>
-        <target state="translated">이 패키지 버전은 더 이상 사용되지 않습니다. {0}을(를) 대신 사용하세요.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇ δ▓ä∞áä∞¥Ç δìö ∞¥┤∞âü ∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òè∞è╡δïêδïñ. {0}∞¥ä(δÑ╝) δîÇ∞ïá ∞é¼∞Ü⌐φòÿ∞ä╕∞Üö.</target>
         <note>{0} is a NuGet package id (string)</note>
       </trans-unit>
       <trans-unit id="Description_LearnMore">
         <source>Learn more</source>
-        <target state="translated">자세한 정보</target>
+        <target state="translated">∞₧É∞ä╕φò£ ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="DialogTitle_HttpSource">
         <source>HTTP Source</source>
-        <target state="translated">HTTP 원본</target>
+        <target state="translated">HTTP ∞¢Éδ│╕</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotShowThisAgain">
         <source>_Don't show this again</source>
-        <target state="translated">다시 표시하지 않음(_D)</target>
+        <target state="translated">δïñ∞ï£ φæ£∞ï£φòÿ∞ºÇ ∞òè∞¥î(_D)</target>
         <note>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file.</source>
-        <target state="translated">NuGet에 HTTPS 원본이 필요합니다. HTTP 소스를 사용하려면 NuGet.Config 파일에서 'allowInsecureConnections'를 명시적으로 true로 설정해야 합니다.</target>
+        <target state="translated">NuGet∞ùÉ HTTPS ∞¢Éδ│╕∞¥┤ φòä∞Üöφò⌐δïêδïñ. HTTP ∞åî∞èñδÑ╝ ∞é¼∞Ü⌐φòÿδáñδ⌐┤ NuGet.Config φîî∞¥╝∞ùÉ∞ä£ 'allowInsecureConnections'δÑ╝ δ¬à∞ï£∞áü∞£╝δí£ trueδí£ ∞äñ∞áòφò┤∞ò╝ φò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MetadataNotFound">
         <source>Unable to find metadata of {0}</source>
-        <target state="translated">{0} 메타데이터를 찾을 수 없습니다.</target>
+        <target state="translated">{0} δ⌐öφâÇδì░∞¥┤φä░δÑ╝ ∞░╛∞¥ä ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note>{0} is the package ID</note>
       </trans-unit>
       <trans-unit id="Error_ProjectNotInCache">
         <source>Project {0} does not exist in the project system cache.</source>
-        <target state="translated">프로젝트 {0}이(가) 프로젝트 시스템 캐시에 존재하지 않습니다.</target>
+        <target state="translated">φöäδí£∞á¥φè╕ {0}∞¥┤(Ω░Ç) φöäδí£∞á¥φè╕ ∞ï£∞èñφà£ ∞║É∞ï£∞ùÉ ∞í┤∞₧¼φòÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_SourceMapping_GPF_NotEnabled">
         <source>The package `{0}` is available in the Global packages folder, but the source it came from `{1}` is not one of the configured sources.</source>
-        <target state="translated">`{0}` 패키지는 전역 패키지 폴더에서 사용할 수 있지만 `{1}`에서 가져온 원본이 이 구성된 원본 중 하나가 아닙니다.</target>
+        <target state="translated">`{0}` φî¿φéñ∞ºÇδèö ∞áä∞ù¡ φî¿φéñ∞ºÇ φÅ┤δìö∞ùÉ∞ä£ ∞é¼∞Ü⌐φòá ∞êÿ ∞₧ê∞ºÇδºî `{1}`∞ùÉ∞ä£ Ω░Ç∞á╕∞ÿ¿ ∞¢Éδ│╕∞¥┤ ∞¥┤ Ω╡¼∞ä▒δÉ£ ∞¢Éδ│╕ ∞ñæ φòÿδéÿΩ░Ç ∞òäδïÖδïêδïñ.</target>
         <note>{0} is the package ID. {1} is the URI of the package source found in the Global packages folder.</note>
       </trans-unit>
       <trans-unit id="Error_UnableToLoadReadme">
         <source>An error occurred while trying to load the README.</source>
-        <target state="translated">추가 정보 로드를 시도하는 동안 오류가 발생했습니다.</target>
+        <target state="translated">∞╢öΩ░Ç ∞áòδ│┤ δí£δô£δÑ╝ ∞ï£δÅäφòÿδèö δÅÖ∞òê ∞ÿñδÑÿΩ░Ç δ░£∞â¥φûê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_IgnoreAll">
         <source>Ignore All</source>
-        <target state="translated">모두 무시</target>
+        <target state="translated">δ¬¿δæÉ δ¼┤∞ï£</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_OverwriteAll">
         <source>Overwrite All</source>
-        <target state="translated">모두 덮어쓰기</target>
+        <target state="translated">δ¬¿δæÉ δì«∞û┤∞ô░Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictAction_Prompt">
         <source>Prompt</source>
-        <target state="translated">확인</target>
+        <target state="translated">φÖò∞¥╕</target>
         <note />
       </trans-unit>
       <trans-unit id="GroupBoxHeader_InstallOptions">
         <source>Install and Update Options</source>
-        <target state="translated">설치 및 업데이트 옵션</target>
+        <target state="translated">∞äñ∞╣ÿ δ░Å ∞ùàδì░∞¥┤φè╕ ∞ÿ╡∞àÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="GroupBoxHeader_UninstallOptions">
         <source>Uninstall Options</source>
-        <target state="translated">제거 옵션</target>
+        <target state="translated">∞á£Ω▒░ ∞ÿ╡∞àÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_AdvisoryUrl">
         <source>Advisory URL</source>
-        <target state="translated">권고 URL</target>
+        <target state="translated">Ω╢îΩ│á URL</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_License">
         <source>License</source>
-        <target state="translated">라이선스</target>
+        <target state="translated">δ¥╝∞¥┤∞äá∞èñ</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Owner">
         <source>Owner</source>
-        <target state="translated">소유자</target>
+        <target state="translated">∞åî∞£á∞₧É</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_PackageSourceMappingSettings">
         <source>Configure</source>
-        <target state="translated">구성</target>
+        <target state="translated">Ω╡¼∞ä▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ProjectUrl">
         <source>Project URL</source>
-        <target state="translated">프로젝트 URL</target>
+        <target state="translated">φöäδí£∞á¥φè╕ URL</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_Readme">
         <source>Readme</source>
-        <target state="translated">추가 정보</target>
+        <target state="translated">∞╢öΩ░Ç ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
-        <target state="translated">신고하기</target>
+        <target state="translated">∞ïáΩ│áφòÿΩ╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoreUpgrade">
         <source>Ignore for now</source>
-        <target state="translated">지금은 무시</target>
+        <target state="translated">∞ºÇΩ╕ê∞¥Ç δ¼┤∞ï£</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageCaption_HelpIcon">
         <source>Help icon</source>
-        <target state="translated">도움말 아이콘</target>
+        <target state="translated">δÅä∞¢ÇδºÉ ∞òä∞¥┤∞╜ÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Action">
         <source>Action:</source>
-        <target state="translated">작업:</target>
+        <target state="translated">∞₧æ∞ùà:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Authors">
         <source>Author(s): </source>
-        <target state="translated">작성자: </target>
+        <target state="translated">∞₧æ∞ä▒∞₧É: </target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Browse">
         <source>Browse</source>
-        <target state="translated">찾아보기</target>
+        <target state="translated">∞░╛∞òäδ│┤Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_CreatingSourceMappings">
         <source>Creating source mappings to '{0}':</source>
-        <target state="translated">'{0}'에 대한 원본 매핑을 만드는 중:</target>
+        <target state="translated">'{0}'∞ùÉ δîÇφò£ ∞¢Éδ│╕ δºñφòæ∞¥ä δºîδô£δèö ∞ñæ:</target>
         <note>{0} - The Name of a user-configured NuGet Package Source</note>
       </trans-unit>
       <trans-unit id="Label_DatePublished">
         <source>Date published:</source>
-        <target state="translated">게시 날짜:</target>
+        <target state="translated">Ω▓î∞ï£ δéá∞º£:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Dependencies">
         <source>Dependencies</source>
-        <target state="translated">종속성</target>
+        <target state="translated">∞óà∞åì∞ä▒</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DependencyBehavior">
         <source>Dependency behavior:</source>
-        <target state="translated">종속성 동작:</target>
+        <target state="translated">∞óà∞åì∞ä▒ δÅÖ∞₧æ:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Deprecated">
         <source>Deprecated</source>
-        <target state="translated">사용되지 않음</target>
+        <target state="translated">∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òè∞¥î</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationAlternatePackage">
         <source>Alternate package</source>
-        <target state="translated">대체 패키지</target>
+        <target state="translated">δîÇ∞▓┤ φî¿φéñ∞ºÇ</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons">
         <source>Deprecation reason</source>
-        <target state="translated">사용 중단 이유</target>
+        <target state="translated">∞é¼∞Ü⌐ ∞ñæδï¿ ∞¥┤∞£á</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_CriticalBugs">
         <source>This package has been deprecated as it has critical bugs.</source>
-        <target state="translated">이 패키지는 중요한 버그를 포함하고 있으므로 사용되지 않습니다.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇδèö ∞ñæ∞Üöφò£ δ▓äΩ╖╕δÑ╝ φÅ¼φò¿φòÿΩ│á ∞₧ê∞£╝δ»Çδí£ ∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Legacy">
         <source>This package has been deprecated as it is legacy and no longer maintained.</source>
-        <target state="translated">이 패키지는 레거시이고 더 이상 유지 관리되지 않으므로 사용되지 않습니다.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇδèö δáêΩ▒░∞ï£∞¥┤Ω│á δìö ∞¥┤∞âü ∞£á∞ºÇ Ω┤Çδª¼δÉÿ∞ºÇ ∞òè∞£╝δ»Çδí£ ∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_LegacyAndCriticalBugs">
         <source>This package has been deprecated as it has critical bugs and is no longer maintained.</source>
-        <target state="translated">이 패키지는 중요한 버그를 포함하고 있고 더 이상 유지 관리되지 않으므로 사용되지 않습니다.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇδèö ∞ñæ∞Üöφò£ δ▓äΩ╖╕δÑ╝ φÅ¼φò¿φòÿΩ│á ∞₧êΩ│á δìö ∞¥┤∞âü ∞£á∞ºÇ Ω┤Çδª¼δÉÿ∞ºÇ ∞òè∞£╝δ»Çδí£ ∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_DeprecationReasons_Unknown">
         <source>The package has been deprecated.</source>
-        <target state="translated">패키지가 사용되지 않습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇΩ░Ç ∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Description">
         <source>Description</source>
-        <target state="translated">설명</target>
+        <target state="translated">∞äñδ¬à</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Details">
         <source>Details</source>
-        <target state="translated">세부 정보</target>
+        <target state="translated">∞ä╕δ╢Ç ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Downloads">
         <source>Downloads:</source>
-        <target state="translated">다운로드:</target>
+        <target state="translated">δïñ∞Ü┤δí£δô£:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_FileConflictAction">
         <source>File conflict action:</source>
-        <target state="translated">파일 충돌 작업:</target>
+        <target state="translated">φîî∞¥╝ ∞╢⌐δÅî ∞₧æ∞ùà:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Installed">
         <source>Installed</source>
-        <target state="translated">설치됨</target>
+        <target state="translated">∞äñ∞╣ÿδÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledColon">
         <source>Installed:</source>
-        <target state="translated">설치됨:</target>
+        <target state="translated">∞äñ∞╣ÿδÉ¿:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledPackages">
         <source>Installing:</source>
-        <target state="translated">설치 중:</target>
+        <target state="translated">∞äñ∞╣ÿ ∞ñæ:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_InstalledVersionsCount">
         <source>Versions: {0}</source>
-        <target state="translated">버전: {0}</target>
+        <target state="translated">δ▓ä∞áä: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Installed_DeprecatedWarning">
         <source>You have {0} deprecated package versions installed.</source>
-        <target state="translated">사용되지 않는 패키지 버전 {0}개가 설치되어 있습니다.</target>
+        <target state="translated">∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òèδèö φî¿φéñ∞ºÇ δ▓ä∞áä {0}Ω░£Ω░Ç ∞äñ∞╣ÿδÉÿ∞û┤ ∞₧ê∞è╡δïêδïñ.</target>
         <note>{0} is the number of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableAndDeprecatedWarning">
         <source>You have {0} vulnerable package versions and {1} deprecated package versions installed.</source>
-        <target state="translated">취약한 패키지 버전 {0}개와 사용되지 않는 패키지 버전 {1}개가 설치되어 있습니다.</target>
+        <target state="translated">∞╖¿∞ò╜φò£ φî¿φéñ∞ºÇ δ▓ä∞áä {0}Ω░£∞ÖÇ ∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òèδèö φî¿φéñ∞ºÇ δ▓ä∞áä {1}Ω░£Ω░Ç ∞äñ∞╣ÿδÉÿ∞û┤ ∞₧ê∞è╡δïêδïñ.</target>
         <note>{0} and {1} are numbers of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableWarning">
         <source>You have {0} vulnerable package versions installed.</source>
-        <target state="translated">취약한 패키지 버전 {0}개가 설치되어 있습니다.</target>
+        <target state="translated">∞╖¿∞ò╜φò£ φî¿φéñ∞ºÇ δ▓ä∞áä {0}Ω░£Ω░Ç ∞äñ∞╣ÿδÉÿ∞û┤ ∞₧ê∞è╡δïêδïñ.</target>
         <note>{0} is the number of installed package versions</note>
       </trans-unit>
       <trans-unit id="Label_License">
         <source>License:</source>
-        <target state="translated">라이선스:</target>
+        <target state="translated">δ¥╝∞¥┤∞äá∞èñ:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_MultiplePackageVulnerableVersionToolTip">
         <source>These installed package versions contain vulnerabilities: {0}</source>
-        <target state="translated">설치된 패키지 버전에 취약성이 포함되어 있습니다. {0}</target>
+        <target state="translated">∞äñ∞╣ÿδÉ£ φî¿φéñ∞ºÇ δ▓ä∞áä∞ùÉ ∞╖¿∞ò╜∞ä▒∞¥┤ φÅ¼φò¿δÉÿ∞û┤ ∞₧ê∞è╡δïêδïñ. {0}</target>
         <note>{0} are package versions</note>
       </trans-unit>
       <trans-unit id="Label_NetworkError">
         <source>An error occurred while fetching additional information about the package. Refresh to try again.</source>
-        <target state="translated">패키지에 대한 추가 정보를 가져오는 동안 오류가 발생했습니다. 새로 고쳐 다시 시도하세요.</target>
+        <target state="translated">φî¿φéñ∞ºÇ∞ùÉ δîÇφò£ ∞╢öΩ░Ç ∞áòδ│┤δÑ╝ Ω░Ç∞á╕∞ÿñδèö δÅÖ∞òê ∞ÿñδÑÿΩ░Ç δ░£∞â¥φûê∞è╡δïêδïñ. ∞âêδí£ Ω│á∞│É δïñ∞ï£ ∞ï£δÅäφòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_NuGetWindowCaption">
@@ -619,187 +619,187 @@
       </trans-unit>
       <trans-unit id="Label_Options">
         <source>Options</source>
-        <target state="translated">옵션</target>
+        <target state="translated">∞ÿ╡∞àÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Owners">
         <source>Owner(s):</source>
-        <target state="translated">소유자:</target>
+        <target state="translated">∞åî∞£á∞₧É:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageDeprecatedToolTip">
         <source>This package version is deprecated.</source>
-        <target state="translated">이 패키지 버전은 더 이상 사용하지 않습니다.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇ δ▓ä∞áä∞¥Ç δìö ∞¥┤∞âü ∞é¼∞Ü⌐φòÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageDetails">
         <source>Package Details</source>
-        <target state="translated">패키지 세부 정보</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞ä╕δ╢Ç ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageManager">
         <source>NuGet Package Manager: {0}</source>
-        <target state="translated">NuGet 패키지 관리자: {0}</target>
+        <target state="translated">NuGet φî¿φéñ∞ºÇ Ω┤Çδª¼∞₧É: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackagePrerelease">
         <source>Prerelease</source>
-        <target state="translated">시험판</target>
+        <target state="translated">∞ï£φùÿφîÉ</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageSelectForInfoToolTip">
         <source>Select to view package details for more information.</source>
-        <target state="translated">선택해서 패키지 세부 정보를 보고 자세한 정보를 확인하세요.</target>
+        <target state="translated">∞äáφâ¥φò┤∞ä£ φî¿φéñ∞ºÇ ∞ä╕δ╢Ç ∞áòδ│┤δÑ╝ δ│┤Ω│á ∞₧É∞ä╕φò£ ∞áòδ│┤δÑ╝ φÖò∞¥╕φòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_PackageVulnerableToolTip">
         <source>This package version has a vulnerability with {0} severity.</source>
-        <target state="translated">이 패키지 버전에는 {0} 심각도의 취약성이 있습니다.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇ δ▓ä∞áä∞ùÉδèö {0} ∞ï¼Ω░üδÅä∞¥ÿ ∞╖¿∞ò╜∞ä▒∞¥┤ ∞₧ê∞è╡δïêδïñ.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_ProjectUrl">
         <source>Project URL:</source>
-        <target state="translated">프로젝트 URL:</target>
+        <target state="translated">φöäδí£∞á¥φè╕ URL:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Readme">
         <source>Readme:</source>
-        <target state="translated">추가 정보:</target>
+        <target state="translated">∞╢öΩ░Ç ∞áòδ│┤:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Readme_Tab">
         <source>README</source>
-        <target state="translated">추가 정보</target>
+        <target state="translated">∞╢öΩ░Ç ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_ReportAbuse">
         <source>Report Abuse:</source>
-        <target state="translated">신고:</target>
+        <target state="translated">∞ïáΩ│á:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Repository">
         <source>Package source:</source>
-        <target state="translated">패키지 소스:</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞åî∞èñ:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Solution">
         <source>Solution</source>
-        <target state="translated">솔루션</target>
+        <target state="translated">∞åöδú¿∞àÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionNuGetWindowCaption">
         <source>NuGet - Solution</source>
-        <target state="translated">NuGet - 솔루션</target>
+        <target state="translated">NuGet - ∞åöδú¿∞àÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_SolutionPackageManager">
         <source>Manage Packages for Solution</source>
-        <target state="translated">솔루션 패키지 관리</target>
+        <target state="translated">∞åöδú¿∞àÿ φî¿φéñ∞ºÇ Ω┤Çδª¼</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Tags">
         <source>Tags:</source>
-        <target state="translated">태그:</target>
+        <target state="translated">φâ£Ω╖╕:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_UninstalledPackages">
         <source>Uninstalling:</source>
-        <target state="translated">제거 중:</target>
+        <target state="translated">∞á£Ω▒░ ∞ñæ:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_UpdatedPackages">
         <source>Updates:</source>
-        <target state="translated">업데이트:</target>
+        <target state="translated">∞ùàδì░∞¥┤φè╕:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Updates">
         <source>Updates</source>
-        <target state="translated">업데이트</target>
+        <target state="translated">∞ùàδì░∞¥┤φè╕</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Version">
         <source>Version:</source>
-        <target state="translated">버전:</target>
+        <target state="translated">δ▓ä∞áä:</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_Vulnerabilities">
         <source>Vulnerabilities detected ({0})</source>
-        <target state="translated">취약점 감지({0})</target>
+        <target state="translated">∞╖¿∞ò╜∞áÉ Ω░É∞ºÇ({0})</target>
         <note>{0} is the number of vulnerabilities</note>
       </trans-unit>
       <trans-unit id="Label_VulnerabilitiesDescription">
         <source>This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</source>
-        <target state="translated">이 패키지 버전에는 심각도가 {0}인 취약점이 하나 이상 있습니다. 프로젝트에 특정 문제가 발생할 수 있습니다. 패키지 버전을 업데이트해 보세요.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇ δ▓ä∞áä∞ùÉδèö ∞ï¼Ω░üδÅäΩ░Ç {0}∞¥╕ ∞╖¿∞ò╜∞áÉ∞¥┤ φòÿδéÿ ∞¥┤∞âü ∞₧ê∞è╡δïêδïñ. φöäδí£∞á¥φè╕∞ùÉ φè╣∞áò δ¼╕∞á£Ω░Ç δ░£∞â¥φòá ∞êÿ ∞₧ê∞è╡δïêδïñ. φî¿φéñ∞ºÇ δ▓ä∞áä∞¥ä ∞ùàδì░∞¥┤φè╕φò┤ δ│┤∞ä╕∞Üö.</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_VulnerabilityAdvisory">
         <source>Advisory ({0} severity):</source>
-        <target state="translated">권고({0} 심각도):</target>
+        <target state="translated">Ω╢îΩ│á({0} ∞ï¼Ω░üδÅä):</target>
         <note>{0} is the severity of the vulnerability</note>
       </trans-unit>
       <trans-unit id="Label_Vulnerable">
         <source>Vulnerable</source>
-        <target state="translated">취약</target>
+        <target state="translated">∞╖¿∞ò╜</target>
         <note />
       </trans-unit>
       <trans-unit id="LicenseFile_Loading">
         <source>Loading license file...</source>
-        <target state="translated">라이선스 파일을 로드하는 중...</target>
+        <target state="translated">δ¥╝∞¥┤∞äá∞èñ φîî∞¥╝∞¥ä δí£δô£φòÿδèö ∞ñæ...</target>
         <note />
       </trans-unit>
       <trans-unit id="LicenseTerm_LinkName">
         <source>{0} license</source>
-        <target state="translated">{0} 라이선스</target>
+        <target state="translated">{0} δ¥╝∞¥┤∞äá∞èñ</target>
         <note>{0} = license name. Examples: MIT, Apache</note>
       </trans-unit>
       <trans-unit id="Link_DoNotShowAgain">
         <source>Don't show again</source>
-        <target state="translated">다시 표시 안 함</target>
+        <target state="translated">δïñ∞ï£ φæ£∞ï£ ∞òê φò¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_LearnAboutInstallOptions">
         <source>Learn about Install Options</source>
-        <target state="translated">설치 옵션에 대한 자세한 정보</target>
+        <target state="translated">∞äñ∞╣ÿ ∞ÿ╡∞àÿ∞ùÉ δîÇφò£ ∞₧É∞ä╕φò£ ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_LearnAboutUninstallOptions">
         <source>Learn about Uninstall Options</source>
-        <target state="translated">제거 옵션에 대한 자세한 정보</target>
+        <target state="translated">∞á£Ω▒░ ∞ÿ╡∞àÿ∞ùÉ δîÇφò£ ∞₧É∞ä╕φò£ ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_MigratorHelp">
         <source>Why should I migrate?</source>
-        <target state="translated">마이그레이션해야 하는 이유는 무엇인가요?</target>
+        <target state="translated">δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿφò┤∞ò╝ φòÿδèö ∞¥┤∞£áδèö δ¼┤∞ùç∞¥╕Ω░Ç∞Üö?</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_UpgradeOption">
         <source>Migrate Now</source>
-        <target state="translated">지금 마이그레이션</target>
+        <target state="translated">∞ºÇΩ╕ê δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="Link_configuration">
         <source>Common NuGet configurations; How settings are applied.</source>
-        <target state="translated">일반적인 NuGet 구성; 설정이 적용되는 방식입니다.</target>
+        <target state="translated">∞¥╝δ░ÿ∞áü∞¥╕ NuGet Ω╡¼∞ä▒; ∞äñ∞áò∞¥┤ ∞áü∞Ü⌐δÉÿδèö δ░⌐∞ï¥∞₧àδïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_PackageIdColumnHeader">
         <source>Package Id</source>
-        <target state="translated">패키지 ID</target>
+        <target state="translated">φî¿φéñ∞ºÇ ID</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_PackageNotFound">
         <source>Migration failed as packages {0} could not be uninstalled. These packages were not found in the solution packages folder. No changes were made to the project.</source>
-        <target state="translated">{0} 패키지를 제거할 수 없어서 마이그레이션하지 못했습니다. 이러한 패키지를 솔루션 패키지 폴더에서 찾을 수 없습니다. 프로젝트가 변경되지 않았습니다.</target>
+        <target state="translated">{0} φî¿φéñ∞ºÇδÑ╝ ∞á£Ω▒░φòá ∞êÿ ∞ùå∞û┤∞ä£ δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿφòÿ∞ºÇ δ¬╗φûê∞è╡δïêδïñ. ∞¥┤δƒ¼φò£ φî¿φéñ∞ºÇδÑ╝ ∞åöδú¿∞àÿ φî¿φéñ∞ºÇ φÅ┤δìö∞ùÉ∞ä£ ∞░╛∞¥ä ∞êÿ ∞ùå∞è╡δïêδïñ. φöäδí£∞á¥φè╕Ω░Ç δ│ÇΩ▓╜δÉÿ∞ºÇ ∞òè∞òÿ∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_TopLevelColumnHeader">
         <source>Top-Level</source>
-        <target state="translated">최상위</target>
+        <target state="translated">∞╡£∞âü∞£ä</target>
         <note />
       </trans-unit>
       <trans-unit id="Migrator_VersionColumnHeader">
         <source>Version</source>
-        <target state="translated">버전</target>
+        <target state="translated">δ▓ä∞áä</target>
         <note />
       </trans-unit>
       <trans-unit id="Million">
@@ -809,67 +809,67 @@
       </trans-unit>
       <trans-unit id="NuGetUpgrade_PackageDependencyOf">
         <source>(dependency of {0})</source>
-        <target state="translated">({0}의 종속성)</target>
+        <target state="translated">({0}∞¥ÿ ∞óà∞åì∞ä▒)</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_Progress_Installing">
         <source>Installing required packages</source>
-        <target state="translated">필수 패키지를 설치하는 중</target>
+        <target state="translated">φòä∞êÿ φî¿φéñ∞ºÇδÑ╝ ∞äñ∞╣ÿφòÿδèö ∞ñæ</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_Progress_Uninstalling">
         <source>Uninstalling packages from packages.config</source>
-        <target state="translated">packages.config에서 패키지를 제거하는 중</target>
+        <target state="translated">packages.config∞ùÉ∞ä£ φî¿φéñ∞ºÇδÑ╝ ∞á£Ω▒░φòÿδèö ∞ñæ</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetUpgrade_WaitMessage">
         <source>Upgrading Project to PackageReference</source>
-        <target state="translated">프로젝트를 PackageReference로 업그레이드 중</target>
+        <target state="translated">φöäδí£∞á¥φè╕δÑ╝ PackageReferenceδí£ ∞ùàΩ╖╕δáê∞¥┤δô£ ∞ñæ</target>
         <note />
       </trans-unit>
       <trans-unit id="Operation_TotalTime">
         <source>Time Elapsed: {0}</source>
-        <target state="translated">경과 시간: {0}</target>
+        <target state="translated">Ω▓╜Ω│╝ ∞ï£Ω░ä: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageLevel_TopLevelPackageHeaderText">
         <source>Top-level packages ({0})</source>
-        <target state="translated">최상위 패키지({0})</target>
+        <target state="translated">∞╡£∞âü∞£ä φî¿φéñ∞ºÇ({0})</target>
         <note>{0} = number of packages</note>
       </trans-unit>
       <trans-unit id="PackageLevel_TransitivePackageHeaderText">
         <source>Transitive packages ({0})</source>
-        <target state="translated">전이적 패키지({0})</target>
+        <target state="translated">∞áä∞¥┤∞áü φî¿φéñ∞ºÇ({0})</target>
         <note>{0} = number of packages</note>
       </trans-unit>
       <trans-unit id="PackageRestoreErrorTryAgain">
         <source>An error occurred while trying to restore packages:</source>
-        <target state="translated">패키지를 복원하는 동안 오류가 발생했습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇδÑ╝ δ│╡∞¢Éφòÿδèö δÅÖ∞òê ∞ÿñδÑÿΩ░Ç δ░£∞â¥φûê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreProgressMessage">
         <source>Downloading missing packages...</source>
-        <target state="translated">누락된 패키지 다운로드 중...</target>
+        <target state="translated">δêäδ¥╜δÉ£ φî¿φéñ∞ºÇ δïñ∞Ü┤δí£δô£ ∞ñæ...</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageVersionWithTransitiveOrigins">
         <source>{0} by {1}</source>
-        <target state="translated">{1}의 {0}</target>
+        <target state="translated">{1}∞¥ÿ {0}</target>
         <note>{0} - Version of package, {1} - Packages that transitively reference the package</note>
       </trans-unit>
       <trans-unit id="Preview_PackageUpdate">
         <source>{0} version {1} to {2} version {3}</source>
-        <target state="translated">{1} 버전 {0}~007E;{3} 버전 {2}</target>
+        <target state="translated">{1} δ▓ä∞áä {0}~007E;{3} δ▓ä∞áä {2}</target>
         <note>{0} = Old package ID, {1} = Old package version, {2} = New package ID, {3} = New package version</note>
       </trans-unit>
       <trans-unit id="Preview_UnknownProject">
         <source>Unknown project</source>
-        <target state="translated">알 수 없는 프로젝트</target>
+        <target state="translated">∞òî ∞êÿ ∞ùåδèö φöäδí£∞á¥φè╕</target>
         <note />
       </trans-unit>
       <trans-unit id="RadioBtn_PackageRef">
         <source>PackageReference in project file</source>
-        <target state="translated">프로젝트 파일의 PackageReference</target>
+        <target state="translated">φöäδí£∞á¥φè╕ φîî∞¥╝∞¥ÿ PackageReference</target>
         <note />
       </trans-unit>
       <trans-unit id="RadioBtn_PackagesConfig">
@@ -879,306 +879,306 @@
       </trans-unit>
       <trans-unit id="RequestRestartToCompleteUninstallMultiplePackages">
         <source>Multiple packages failed to uninstall. Restart Visual Studio to finish the process.</source>
-        <target state="translated">여러 패키지를 제거하지 못했습니다. 프로세스를 마치려면 Visual Studio를 다시 시작하십시오.</target>
+        <target state="translated">∞ù¼δƒ¼ φî¿φéñ∞ºÇδÑ╝ ∞á£Ω▒░φòÿ∞ºÇ δ¬╗φûê∞è╡δïêδïñ. φöäδí£∞ä╕∞èñδÑ╝ δºê∞╣ÿδáñδ⌐┤ Visual StudioδÑ╝ δïñ∞ï£ ∞ï£∞₧æφòÿ∞ï¡∞ï£∞ÿñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="RequestRestartToCompleteUninstallSinglePackage">
         <source>The package at '{0}' failed to uninstall. Restart Visual Studio to finish the process.</source>
-        <target state="translated">'{0}'의 패키지를 제거하지 못했습니다. 프로세스를 마치려면 Visual Studio를 다시 시작하십시오.</target>
+        <target state="translated">'{0}'∞¥ÿ φî¿φéñ∞ºÇδÑ╝ ∞á£Ω▒░φòÿ∞ºÇ δ¬╗φûê∞è╡δïêδïñ. φöäδí£∞ä╕∞èñδÑ╝ δºê∞╣ÿδáñδ⌐┤ Visual StudioδÑ╝ δïñ∞ï£ ∞ï£∞₧æφòÿ∞ï¡∞ï£∞ÿñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestartButtonLabel">
         <source>Rest_art</source>
-        <target state="translated">재시작(_A)</target>
+        <target state="translated">∞₧¼∞ï£∞₧æ(_A)</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreButtonLabel">
         <source>_Restore</source>
-        <target state="translated">복원(_R)</target>
+        <target state="translated">δ│╡∞¢É(_R)</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowDetails">
         <source>Show Details</source>
-        <target state="translated">세부 정보 표시</target>
+        <target state="translated">∞ä╕δ╢Ç ∞áòδ│┤ φæ£∞ï£</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">
         <source>NuGet storage clear failed at {0}. 
 Error: {1}</source>
-        <target state="translated">{0}에 NuGet 스토리지를 지우지 못했습니다. 
-오류: {1}</target>
+        <target state="translated">{0}∞ùÉ NuGet ∞èñφåáδª¼∞ºÇδÑ╝ ∞ºÇ∞Ü░∞ºÇ δ¬╗φûê∞è╡δïêδïñ. 
+∞ÿñδÑÿ: {1}</target>
         <note>{0} :error message;
 {1}: date and time
 </note>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandMoreInformation">
         <source>For more information, see</source>
-        <target state="translated">자세한 내용은 다음을 참조하세요.</target>
+        <target state="translated">∞₧É∞ä╕φò£ δé┤∞Ü⌐∞¥Ç δïñ∞¥î∞¥ä ∞░╕∞í░φòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandSuccess">
         <source>NuGet storage cleared at {0}</source>
-        <target state="translated">{0}에 NuGet 스토리지가 지워졌습니다.</target>
+        <target state="translated">{0}∞ùÉ NuGet ∞èñφåáδª¼∞ºÇΩ░Ç ∞ºÇ∞¢î∞íî∞è╡δïêδïñ.</target>
         <note>{0} for date and time string</note>
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandWorking">
         <source>Clearing all NuGet storage...</source>
-        <target state="translated">모든 NuGet 스토리지를 지우는 중...</target>
+        <target state="translated">δ¬¿δôá NuGet ∞èñφåáδª¼∞ºÇδÑ╝ ∞ºÇ∞Ü░δèö ∞ñæ...</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_Title">
         <source>Package Manager Options</source>
-        <target state="translated">패키지 관리자 옵션</target>
+        <target state="translated">φî¿φéñ∞ºÇ Ω┤Çδª¼∞₧É ∞ÿ╡∞àÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueName">
         <source>The name specified has already been added to the list of available package sources. Please provide a unique name.</source>
-        <target state="translated">지정한 이름은 이미 사용 가능한 패키지 소스 목록에 추가되어 있습니다. 고유한 이름을 제공하십시오.</target>
+        <target state="translated">∞ºÇ∞áòφò£ ∞¥┤δªä∞¥Ç ∞¥┤δ»╕ ∞é¼∞Ü⌐ Ω░ÇδèÑφò£ φî¿φéñ∞ºÇ ∞åî∞èñ δ¬⌐δí¥∞ùÉ ∞╢öΩ░ÇδÉÿ∞û┤ ∞₧ê∞è╡δïêδïñ. Ω│á∞£áφò£ ∞¥┤δªä∞¥ä ∞á£Ω│╡φòÿ∞ï¡∞ï£∞ÿñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueSource">
         <source>The source specified has already been added to the list of available package sources. Please provide a unique source.</source>
-        <target state="translated">지정한 소스는 이미 사용 가능한 패키지 소스 목록에 추가되어 있습니다. 고유한 소스를 제공하십시오.</target>
+        <target state="translated">∞ºÇ∞áòφò£ ∞åî∞èñδèö ∞¥┤δ»╕ ∞é¼∞Ü⌐ Ω░ÇδèÑφò£ φî¿φéñ∞ºÇ ∞åî∞èñ δ¬⌐δí¥∞ùÉ ∞╢öΩ░ÇδÉÿ∞û┤ ∞₧ê∞è╡δïêδïñ. Ω│á∞£áφò£ ∞åî∞èñδÑ╝ ∞á£Ω│╡φòÿ∞ï¡∞ï£∞ÿñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Canceled">
         <source>Canceled loading packages</source>
-        <target state="translated">패키지 로드를 취소함</target>
+        <target state="translated">φî¿φéñ∞ºÇ δí£δô£δÑ╝ ∞╖¿∞åîφò¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_ErrorOccurred">
         <source>An error occurred while loading packages</source>
-        <target state="translated">패키지를 로드하는 동안 오류가 발생했습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇδÑ╝ δí£δô£φòÿδèö δÅÖ∞òê ∞ÿñδÑÿΩ░Ç δ░£∞â¥φûê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_NoMoreItems">
         <source>End of package list loaded</source>
-        <target state="translated">패키지 목록의 끝 로드됨</target>
+        <target state="translated">φî¿φéñ∞ºÇ δ¬⌐δí¥∞¥ÿ δü¥ δí£δô£δÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Ready">
         <source>Package list loaded</source>
-        <target state="translated">패키지 목록이 로드됨</target>
+        <target state="translated">φî¿φéñ∞ºÇ δ¬⌐δí¥∞¥┤ δí£δô£δÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_By">
         <source>by</source>
-        <target state="translated">작성자</target>
+        <target state="translated">∞₧æ∞ä▒∞₧É</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ByAuthor">
         <source>by {0}</source>
-        <target state="translated">작성자 {0}</target>
+        <target state="translated">∞₧æ∞ä▒∞₧É {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ByOwner">
         <source>by {0}</source>
-        <target state="translated">작성자 {0}</target>
+        <target state="translated">∞₧æ∞ä▒∞₧É {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Changes">
         <source>Visual Studio is about to make changes to this solution:</source>
-        <target state="translated">Visual Studio에서 이 솔루션을 변경하려고 합니다.</target>
+        <target state="translated">Visual Studio∞ùÉ∞ä£ ∞¥┤ ∞åöδú¿∞àÿ∞¥ä δ│ÇΩ▓╜φòÿδáñΩ│á φò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DirectDependencies">
         <source>Top-level dependencies:</source>
-        <target state="translated">최상위 종속성:</target>
+        <target state="translated">∞╡£∞âü∞£ä ∞óà∞åì∞ä▒:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Downloads">
         <source>{0} downloads</source>
-        <target state="translated">{0}개 다운로드</target>
+        <target state="translated">{0}Ω░£ δïñ∞Ü┤δí£δô£</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ErrorOccurred">
         <source>Error occurred</source>
-        <target state="translated">오류가 발생했습니다.</target>
+        <target state="translated">∞ÿñδÑÿΩ░Ç δ░£∞â¥φûê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HelpMeMigrate">
         <source>Help me migrate to NuGet PackageReference</source>
-        <target state="translated">NuGet PackageReference로 마이그레이션을 도와주세요.</target>
+        <target state="translated">NuGet PackageReferenceδí£ δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿ∞¥ä δÅä∞ÖÇ∞ú╝∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LegalDisclaimer">
         <source>Each package is licensed to you by its owner. NuGet is not responsible for, nor does it grant any licenses to, third-party packages.</source>
-        <target state="translated">각 패키지는 해당 소유자에 의해 사용이 허가되었습니다. NuGet은 타사 패키지에 대해 책임을 지지 않으며 라이선스를 부여하지도 않습니다.</target>
+        <target state="translated">Ω░ü φî¿φéñ∞ºÇδèö φò┤δï╣ ∞åî∞£á∞₧É∞ùÉ ∞¥ÿφò┤ ∞é¼∞Ü⌐∞¥┤ φùêΩ░ÇδÉÿ∞ùê∞è╡δïêδïñ. NuGet∞¥Ç φâÇ∞é¼ φî¿φéñ∞ºÇ∞ùÉ δîÇφò┤ ∞▒à∞₧ä∞¥ä ∞ºÇ∞ºÇ ∞òè∞£╝δ⌐░ δ¥╝∞¥┤∞äá∞èñδÑ╝ δ╢Ç∞ù¼φòÿ∞ºÇδÅä ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LicenseHeaderText">
         <source>The following package(s) require that you accept their license terms before installing.</source>
-        <target state="translated">다음 패키지를 설치하려면 사용 약관에 동의해야 합니다.</target>
+        <target state="translated">δïñ∞¥î φî¿φéñ∞ºÇδÑ╝ ∞äñ∞╣ÿφòÿδáñδ⌐┤ ∞é¼∞Ü⌐ ∞ò╜Ω┤Ç∞ùÉ δÅÖ∞¥ÿφò┤∞ò╝ φò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LicenseText">
         <source>By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."</source>
-        <target state="translated">"동의함"을 클릭하면 위에 나열된 패키지의 사용 약관에 동의하게 됩니다. 사용 약관에 동의하지 않는 경우 "동의 안 함"을 클릭하십시오.</target>
+        <target state="translated">"δÅÖ∞¥ÿφò¿"∞¥ä φü┤δª¡φòÿδ⌐┤ ∞£ä∞ùÉ δéÿ∞ù┤δÉ£ φî¿φéñ∞ºÇ∞¥ÿ ∞é¼∞Ü⌐ ∞ò╜Ω┤Ç∞ùÉ δÅÖ∞¥ÿφòÿΩ▓î δÉ⌐δïêδïñ. ∞é¼∞Ü⌐ ∞ò╜Ω┤Ç∞ùÉ δÅÖ∞¥ÿφòÿ∞ºÇ ∞òèδèö Ω▓╜∞Ü░ "δÅÖ∞¥ÿ ∞òê φò¿"∞¥ä φü┤δª¡φòÿ∞ï¡∞ï£∞ÿñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Loading">
         <source>Loading...</source>
-        <target state="translated">로드 중...</target>
+        <target state="translated">δí£δô£ ∞ñæ...</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_LoadingReadme">
         <source>Loading README...</source>
-        <target state="translated">README를 로드하는 중...</target>
+        <target state="translated">READMEδÑ╝ δí£δô£φòÿδèö ∞ñæ...</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ManageSettings">
         <source>You can manage these settings in </source>
-        <target state="translated">다음 위치에서 이러한 설정을 관리할 수 있습니다. </target>
+        <target state="translated">δïñ∞¥î ∞£ä∞╣ÿ∞ùÉ∞ä£ ∞¥┤δƒ¼φò£ ∞äñ∞áò∞¥ä Ω┤Çδª¼φòá ∞êÿ ∞₧ê∞è╡δïêδïñ. </target>
         <note />
       </trans-unit>
       <trans-unit id="Text_MultipleVersionsInstalled">
         <source>multiple versions installed</source>
-        <target state="translated">여러 버전이 설치되었습니다.</target>
+        <target state="translated">∞ù¼δƒ¼ δ▓ä∞áä∞¥┤ ∞äñ∞╣ÿδÉÿ∞ùê∞è╡δïêδïñ.</target>
         <note>In the solution package manager, if the select package has multiple versions installed, then this message is shown.</note>
       </trans-unit>
       <trans-unit id="Text_NoDependencies">
         <source>No dependencies</source>
-        <target state="translated">종속성 없음</target>
+        <target state="translated">∞óà∞åì∞ä▒ ∞ùå∞¥î</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NoPackagesFound">
         <source>No packages found</source>
-        <target state="translated">패키지를 찾을 수 없습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇδÑ╝ ∞░╛∞¥ä ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NoReadme">
         <source>There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</source>
-        <target state="translated">선택한 패키지 버전에 사용할 수 있는 README가 없습니다. 자세한 내용은 [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme) 를 방문하세요.</target>
+        <target state="translated">∞äáφâ¥φò£ φî¿φéñ∞ºÇ δ▓ä∞áä∞ùÉ ∞é¼∞Ü⌐φòá ∞êÿ ∞₧êδèö READMEΩ░Ç ∞ùå∞è╡δïêδïñ. ∞₧É∞ä╕φò£ δé┤∞Ü⌐∞¥Ç [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme) δÑ╝ δ░⌐δ¼╕φòÿ∞ä╕∞Üö.</target>
         <note>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</note>
       </trans-unit>
       <trans-unit id="Text_NotAvailableInSource">
         <source>Not available in this source</source>
-        <target state="translated">이 소스에서 사용할 수 없습니다.</target>
+        <target state="translated">∞¥┤ ∞åî∞èñ∞ùÉ∞ä£ ∞é¼∞Ü⌐φòá ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NotInstalled">
         <source>not installed</source>
-        <target state="translated">설치되지 않음</target>
+        <target state="translated">∞äñ∞╣ÿδÉÿ∞ºÇ ∞òè∞¥î</target>
         <note>In the solution package manager, if the select package is not installed, then this message is shown.</note>
       </trans-unit>
       <trans-unit id="Text_NuGetSettings">
         <source>NuGet Settings</source>
-        <target state="translated">NuGet 설정</target>
+        <target state="translated">NuGet ∞äñ∞áò</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NuGetUpgradeIssues">
         <source>Package compatibility issues:</source>
-        <target state="translated">패키지 호환성 문제:</target>
+        <target state="translated">φî¿φéñ∞ºÇ φÿ╕φÖÿ∞ä▒ δ¼╕∞á£:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_NuGetUpgradeNoIssuesFound">
         <source>No issues were found.</source>
-        <target state="translated">문제가 없습니다.</target>
+        <target state="translated">δ¼╕∞á£Ω░Ç ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageFormatApply">
         <source>The package manager format will apply to the following projects in this Solution</source>
-        <target state="translated">패키지 관리자 형식은 이 Solution의 다음 프로젝트에 적용됩니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇ Ω┤Çδª¼∞₧É φÿò∞ï¥∞¥Ç ∞¥┤ Solution∞¥ÿ δïñ∞¥î φöäδí£∞á¥φè╕∞ùÉ ∞áü∞Ü⌐δÉ⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageLevelTopLevel">
         <source>Top-level</source>
-        <target state="translated">최상위 수준</target>
+        <target state="translated">∞╡£∞âü∞£ä ∞êÿ∞ñÇ</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageLevelTransitive">
         <source>Transitive</source>
-        <target state="translated">전이</target>
+        <target state="translated">∞áä∞¥┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsAutoCreate">
         <source>A package source mapping will be created.</source>
-        <target state="translated">패키지 원본 매핑이 만들어집니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞¢Éδ│╕ δºñφòæ∞¥┤ δºîδôñ∞û┤∞ºæδïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsDisabled">
         <source>Package source mapping is off.</source>
-        <target state="translated">패키지 원본 매핑이 꺼져 있습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞¢Éδ│╕ δºñφòæ∞¥┤ Ω║╝∞á╕ ∞₧ê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsFound">
         <source>Package source mapping found.</source>
-        <target state="translated">패키지 원본 매핑을 찾았습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞¢Éδ│╕ δºñφòæ∞¥ä ∞░╛∞òÿ∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageMappingsNotFound">
         <source>Requires a package source mapping.</source>
-        <target state="translated">패키지 원본 매핑이 필요합니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞¢Éδ│╕ δºñφòæ∞¥┤ φòä∞Üöφò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport">
         <source>Projects with PackageReference are not supported in Visual Studio 2015 and earlier.</source>
-        <target state="translated">PackageReference가 포함된 프로젝트는 Visual Studio 2015 이전 버전에서 지원되지 않습니다.</target>
+        <target state="translated">PackageReferenceΩ░Ç φÅ¼φò¿δÉ£ φöäδí£∞á¥φè╕δèö Visual Studio 2015 ∞¥┤∞áä δ▓ä∞áä∞ùÉ∞ä£ ∞ºÇ∞¢ÉδÉÿ∞ºÇ ∞òè∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageRefSupport_DocumentLink">
         <source>Learn more about package reference</source>
-        <target state="translated">패키지 참조에 대한 자세한 정보</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞░╕∞í░∞ùÉ δîÇφò£ ∞₧É∞ä╕φò£ ∞áòδ│┤</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackageSources">
         <source>Package sources:</source>
-        <target state="translated">패키지 소스:</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞åî∞èñ:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_PackagesFound">
         <source>Packages found</source>
-        <target state="translated">패키지를 찾았습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇδÑ╝ ∞░╛∞òÿ∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ReadmeLoaded">
         <source>README loaded</source>
-        <target state="translated">README가 로드되었습니다.</target>
+        <target state="translated">READMEΩ░Ç δí£δô£δÉÿ∞ùê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchBoxText">
         <source>Search ({0})</source>
-        <target state="translated">검색({0})</target>
+        <target state="translated">Ω▓Ç∞âë({0})</target>
         <note>The text to be displayed in the search box</note>
       </trans-unit>
       <trans-unit id="Text_SearchIncomplete">
         <source>Retrieving results from one or more sources</source>
-        <target state="translated">하나 이상의 소스에서 결과를 검색하는 중</target>
+        <target state="translated">φòÿδéÿ ∞¥┤∞âü∞¥ÿ ∞åî∞èñ∞ùÉ∞ä£ Ω▓░Ω│╝δÑ╝ Ω▓Ç∞âëφòÿδèö ∞ñæ</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_SearchStopped">
         <source>Unable to retrieve results from one or more sources</source>
-        <target state="translated">하나 이상의 소스에서 결과를 검색할 수 없습니다.</target>
+        <target state="translated">φòÿδéÿ ∞¥┤∞âü∞¥ÿ ∞åî∞èñ∞ùÉ∞ä£ Ω▓░Ω│╝δÑ╝ Ω▓Ç∞âëφòá ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_Searching">
         <source>Searching '{0}'</source>
-        <target state="translated">'{0}' 검색 중</target>
+        <target state="translated">'{0}' Ω▓Ç∞âë ∞ñæ</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_TransitiveDependencies">
         <source>Transitive dependencies:</source>
-        <target state="translated">전이적 종속성:</target>
+        <target state="translated">∞áä∞¥┤∞áü ∞óà∞åì∞ä▒:</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_UpgradeNuGetProjectDescription">
         <source>Migrate this project from packages.config to PackageReference format.</source>
-        <target state="translated">이 프로젝트를 packages.config에서 PackageReference 형식으로 마이그레이션합니다.</target>
+        <target state="translated">∞¥┤ φöäδí£∞á¥φè╕δÑ╝ packages.config∞ùÉ∞ä£ PackageReference φÿò∞ï¥∞£╝δí£ δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿφò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_UserCanceled">
         <source>Operation canceled by user</source>
-        <target state="translated">사용자가 작업을 취소했습니다.</target>
+        <target state="translated">∞é¼∞Ü⌐∞₧ÉΩ░Ç ∞₧æ∞ùà∞¥ä ∞╖¿∞åîφûê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ViewLicense">
         <source>View License</source>
-        <target state="translated">라이선스 보기</target>
+        <target state="translated">δ¥╝∞¥┤∞äá∞èñ δ│┤Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_ViewReadme">
         <source>View Readme</source>
-        <target state="translated">추가 정보 보기</target>
+        <target state="translated">∞╢öΩ░Ç ∞áòδ│┤ δ│┤Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="Thousand">
@@ -1188,77 +1188,77 @@ Error: {1}</source>
       </trans-unit>
       <trans-unit id="ToolTip_BlockedVersion">
         <source>Following versions are unavailable due to additional constraints in the project or packages.config</source>
-        <target state="translated">프로젝트 혹은 packages.config의 추가 제약 조건으로 인해 다음 버전을 사용할 수 없습니다.</target>
+        <target state="translated">φöäδí£∞á¥φè╕ φÿ╣∞¥Ç packages.config∞¥ÿ ∞╢öΩ░Ç ∞á£∞ò╜ ∞í░Ω▒┤∞£╝δí£ ∞¥╕φò┤ δïñ∞¥î δ▓ä∞áä∞¥ä ∞é¼∞Ü⌐φòá ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstallButton">
         <source>Install {0} version {1}.</source>
-        <target state="translated">{0} 버전 {1}을(를) 설치합니다.</target>
+        <target state="translated">{0} δ▓ä∞áä {1}∞¥ä(δÑ╝) ∞äñ∞╣ÿφò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_InstalledVersion">
         <source>Installed version: {0}</source>
-        <target state="translated">설치된 버전: {0}</target>
+        <target state="translated">∞äñ∞╣ÿδÉ£ δ▓ä∞áä: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_LatestVersion">
         <source>Latest version: {0}</source>
-        <target state="translated">최신 버전: {0}</target>
+        <target state="translated">∞╡£∞ïá δ▓ä∞áä: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageInstalled">
         <source>Latest stable version is installed</source>
-        <target state="translated">안정적인 최신 버전이 설치되어 있습니다.</target>
+        <target state="translated">∞òê∞áò∞áü∞¥╕ ∞╡£∞ïá δ▓ä∞áä∞¥┤ ∞äñ∞╣ÿδÉÿ∞û┤ ∞₧ê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_PackageRecommended">
         <source>IntelliCode package suggestion based on this project context</source>
-        <target state="translated">이 프로젝트 컨텍스트를 기반으로 한 IntelliCode 패키지 제안</target>
+        <target state="translated">∞¥┤ φöäδí£∞á¥φè╕ ∞╗¿φàì∞èñφè╕δÑ╝ Ω╕░δ░ÿ∞£╝δí£ φò£ IntelliCode φî¿φéñ∞ºÇ ∞á£∞òê</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_Refresh">
         <source>Refresh</source>
-        <target state="translated">새로 고침</target>
+        <target state="translated">∞âêδí£ Ω│á∞╣¿</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_Settings">
         <source>Settings</source>
-        <target state="translated">설정</target>
+        <target state="translated">∞äñ∞áò</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependency">
         <source>Transitively referenced version</source>
-        <target state="translated">전이적으로 참조된 버전</target>
+        <target state="translated">∞áä∞¥┤∞áü∞£╝δí£ ∞░╕∞í░δÉ£ δ▓ä∞áä</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_TransitiveDependencyVersion">
         <source>Transitively referenced version: {0}</source>
-        <target state="translated">전이적으로 참조된 버전: {0}</target>
+        <target state="translated">∞áä∞¥┤∞áü∞£╝δí£ ∞░╕∞í░δÉ£ δ▓ä∞áä: {0}</target>
         <note>{0} is a version number</note>
       </trans-unit>
       <trans-unit id="ToolTip_TransitivePathHelp">
         <source>To learn more about transitive paths, see</source>
-        <target state="translated">전이적 경로에 대한 자세한 내용은 다음을 참조하세요.</target>
+        <target state="translated">∞áä∞¥┤∞áü Ω▓╜δí£∞ùÉ δîÇφò£ ∞₧É∞ä╕φò£ δé┤∞Ü⌐∞¥Ç δïñ∞¥î∞¥ä ∞░╕∞í░φòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UninstallButton">
         <source>Uninstall this package.</source>
-        <target state="translated">이 패키지를 제거합니다.</target>
+        <target state="translated">∞¥┤ φî¿φéñ∞ºÇδÑ╝ ∞á£Ω▒░φò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UpdateAvailable">
         <source>Update available</source>
-        <target state="translated">업데이트 사용 가능</target>
+        <target state="translated">∞ùàδì░∞¥┤φè╕ ∞é¼∞Ü⌐ Ω░ÇδèÑ</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolTip_UpdateButton">
         <source>Update {0} to version {1}.</source>
-        <target state="translated">{0}을(를) {1} 버전으로 업데이트합니다.</target>
+        <target state="translated">{0}∞¥ä(δÑ╝) {1} δ▓ä∞áä∞£╝δí£ ∞ùàδì░∞¥┤φè╕φò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Tooltip_PrefixReserved">
         <source>The ID prefix of this package has been reserved for the owner of the package by the currently selected feed</source>
-        <target state="translated">패키지 소유자를 위해 현재 선택한 피드로 이 패키지의 ID 접두사가 예약되었습니다.</target>
+        <target state="translated">φî¿φéñ∞ºÇ ∞åî∞£á∞₧ÉδÑ╝ ∞£äφò┤ φÿä∞₧¼ ∞äáφâ¥φò£ φö╝δô£δí£ ∞¥┤ φî¿φéñ∞ºÇ∞¥ÿ ID ∞áæδæÉ∞é¼Ω░Ç ∞ÿê∞ò╜δÉÿ∞ùê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Trillion">
@@ -1268,157 +1268,157 @@ Error: {1}</source>
       </trans-unit>
       <trans-unit id="UpdateButton_VersionOverride_Tooltip">
         <source>Dependency version defined by VersionOverride, modify project file to change package version.</source>
-        <target state="translated">VersionOverride에서 정의한 종속성 버전입니다. 패키지 버전을 변경하려면 프로젝트 파일을 수정하세요.</target>
+        <target state="translated">VersionOverride∞ùÉ∞ä£ ∞áò∞¥ÿφò£ ∞óà∞åì∞ä▒ δ▓ä∞áä∞₧àδïêδïñ. φî¿φéñ∞ºÇ δ▓ä∞áä∞¥ä δ│ÇΩ▓╜φòÿδáñδ⌐┤ φöäδí£∞á¥φè╕ φîî∞¥╝∞¥ä ∞êÿ∞áòφòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpgradeLogger_BackupPathMustBeValid">
         <source>Must be a valid path.</source>
-        <target state="translated">올바른 경로여야 합니다.</target>
+        <target state="translated">∞ÿ¼δ░öδÑ╕ Ω▓╜δí£∞ù¼∞ò╝ φò⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_InstallFailed">
         <source>NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}</source>
-        <target state="translated">NuGet 마이그레이션에서 패키지를 PackageReference로 설치하지 못했습니다. 변경된 파일은 {0}에 백업됩니다.</target>
+        <target state="translated">NuGet δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿ∞ùÉ∞ä£ φî¿φéñ∞ºÇδÑ╝ PackageReferenceδí£ ∞äñ∞╣ÿφòÿ∞ºÇ δ¬╗φûê∞è╡δïêδïñ. δ│ÇΩ▓╜δÉ£ φîî∞¥╝∞¥Ç {0}∞ùÉ δ░▒∞ùàδÉ⌐δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_RevertSteps">
         <source>Please follow simple instructions from {0} to go back to previous state.</source>
-        <target state="translated">이전 상태로 돌아가려면 {0}의 간단한 지침을 따르세요.</target>
+        <target state="translated">∞¥┤∞áä ∞âüφâ£δí£ δÅî∞òäΩ░Çδáñδ⌐┤ {0}∞¥ÿ Ω░äδï¿φò£ ∞ºÇ∞╣¿∞¥ä δö░δÑ┤∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_UninstallFailed">
         <source>NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state.</source>
-        <target state="translated">NuGet 업그레이드가 packages.config에서 패키지를 제거하지 못해서 이전 상태로 롤백되었습니다.</target>
+        <target state="translated">NuGet ∞ùàΩ╖╕δáê∞¥┤δô£Ω░Ç packages.config∞ùÉ∞ä£ φî¿φéñ∞ºÇδÑ╝ ∞á£Ω▒░φòÿ∞ºÇ δ¬╗φò┤∞ä£ ∞¥┤∞áä ∞âüφâ£δí£ δíñδ░▒δÉÿ∞ùê∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrader_BackupFailed">
         <source>The project cannot be upgraded as backing up the project file and packages.config ran into an issue.</source>
-        <target state="translated">프로젝트 파일 및 packages.config 백업에 문제가 발생하여 프로젝트를 업그레이드할 수 없습니다.</target>
+        <target state="translated">φöäδí£∞á¥φè╕ φîî∞¥╝ δ░Å packages.config δ░▒∞ùà∞ùÉ δ¼╕∞á£Ω░Ç δ░£∞â¥φòÿ∞ù¼ φöäδí£∞á¥φè╕δÑ╝ ∞ùàΩ╖╕δáê∞¥┤δô£φòá ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrader_PackageNotFound">
         <source>Unable to determine compatibility of package as {0}.nupkg was not found on disk. The project cannot be migrated.</source>
-        <target state="translated">{0}.nupkg를 디스크에서 찾을 수 없어서 패키지의 호환성을 확인할 수 없습니다. 프로젝트를 마이그레이션할 수 없습니다.</target>
+        <target state="translated">{0}.nupkgδÑ╝ δöö∞èñφü¼∞ùÉ∞ä£ ∞░╛∞¥ä ∞êÿ ∞ùå∞û┤∞ä£ φî¿φéñ∞ºÇ∞¥ÿ φÿ╕φÖÿ∞ä▒∞¥ä φÖò∞¥╕φòá ∞êÿ ∞ùå∞è╡δïêδïñ. φöäδí£∞á¥φè╕δÑ╝ δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿφòá ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Button_Close">
         <source>Close</source>
-        <target state="translated">닫기</target>
+        <target state="translated">δï½Ω╕░</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalResourcesTitle">
         <source>NuGet Package Manager</source>
-        <target state="translated">NuGet 패키지 관리자</target>
+        <target state="translated">NuGet φî¿φéñ∞ºÇ Ω┤Çδª¼∞₧É</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptMessage">
         <source>Once started, this action cannot be cancelled.</source>
-        <target state="translated">일단 시작하면 이 작업은 취소할 수 없습니다.</target>
+        <target state="translated">∞¥╝δï¿ ∞ï£∞₧æφòÿδ⌐┤ ∞¥┤ ∞₧æ∞ùà∞¥Ç ∞╖¿∞åîφòá ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptTitle">
         <source>Clear all local NuGet resources?</source>
-        <target state="translated">모든 로컬 NuGet 리소스를 지우시겠습니까?</target>
+        <target state="translated">δ¬¿δôá δí£∞╗¼ NuGet δª¼∞åî∞èñδÑ╝ ∞ºÇ∞Ü░∞ï£Ω▓á∞è╡δïêΩ╣î?</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked">
         <source>Blocked by package.config</source>
-        <target state="translated">package.config에 의해 차단됨</target>
+        <target state="translated">package.config∞ùÉ ∞¥ÿφò┤ ∞░¿δï¿δÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Blocked_Generic">
         <source>Blocked by project</source>
-        <target state="translated">프로젝트에 의해 차단</target>
+        <target state="translated">φöäδí£∞á¥φè╕∞ùÉ ∞¥ÿφò┤ ∞░¿δï¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_Installed">
         <source>Installed</source>
-        <target state="translated">설치됨</target>
+        <target state="translated">∞äñ∞╣ÿδÉ¿</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_LatestPrerelease">
         <source>Latest prerelease</source>
-        <target state="translated">최신 시험판</target>
+        <target state="translated">∞╡£∞ïá ∞ï£φùÿφîÉ</target>
         <note />
       </trans-unit>
       <trans-unit id="Version_LatestStable">
         <source>Latest stable</source>
-        <target state="translated">안정적인 최신 버전</target>
+        <target state="translated">∞òê∞áò∞áü∞¥╕ ∞╡£∞ïá δ▓ä∞áä</target>
         <note />
       </trans-unit>
       <trans-unit id="Vulnerabilities_Loading">
         <source>Loading vulnerable packages...</source>
-        <target state="translated">취약한 패키지를 로드하는 중...</target>
+        <target state="translated">∞╖¿∞ò╜φò£ φî¿φéñ∞ºÇδÑ╝ δí£δô£φòÿδèö ∞ñæ...</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Critical">
         <source>critical</source>
-        <target state="translated">위험</target>
+        <target state="translated">∞£äφùÿ</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_High">
         <source>high</source>
-        <target state="translated">높은</target>
+        <target state="translated">δåÆ∞¥Ç</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Low">
         <source>low</source>
-        <target state="translated">낮은</target>
+        <target state="translated">δé«∞¥Ç</target>
         <note />
       </trans-unit>
       <trans-unit id="VulnerabilitySeverity_Moderate">
         <source>moderate</source>
-        <target state="translated">보통</target>
+        <target state="translated">δ│┤φå╡</target>
         <note />
       </trans-unit>
       <trans-unit id="Warn_Adding_HttpSource">
         <source>You are attempting to add an HTTP source, which is insecure. Would you like to proceed with adding this insecure HTTP source?</source>
-        <target state="translated">안전하지 않은 HTTP 원본을 추가하려고 합니다. 이 안전하지 않은 HTTP 원본 추가를 계속하시겠습니까?</target>
+        <target state="translated">∞òê∞áäφòÿ∞ºÇ ∞òè∞¥Ç HTTP ∞¢Éδ│╕∞¥ä ∞╢öΩ░ÇφòÿδáñΩ│á φò⌐δïêδïñ. ∞¥┤ ∞òê∞áäφòÿ∞ºÇ ∞òè∞¥Ç HTTP ∞¢Éδ│╕ ∞╢öΩ░ÇδÑ╝ Ω│ä∞åìφòÿ∞ï£Ω▓á∞è╡δïêΩ╣î?</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_HTTPSource">
         <source>AllowInsecureConnections is enabled and allows http access. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere.</source>
-        <target state="translated">AllowInsecureConnections가 활성화되어 있으며 http 액세스를 허용합니다. 참고: 이 메서드는 안전하지 않습니다. 보안 옵션은 https://aka.ms/nuget-https-everywhere를 참조하세요.</target>
+        <target state="translated">AllowInsecureConnectionsΩ░Ç φÖ£∞ä▒φÖöδÉÿ∞û┤ ∞₧ê∞£╝δ⌐░ http ∞òí∞ä╕∞èñδÑ╝ φùê∞Ü⌐φò⌐δïêδïñ. ∞░╕Ω│á: ∞¥┤ δ⌐ö∞ä£δô£δèö ∞òê∞áäφòÿ∞ºÇ ∞òè∞è╡δïêδïñ. δ│┤∞òê ∞ÿ╡∞àÿ∞¥Ç https://aka.ms/nuget-https-everywhereδÑ╝ ∞░╕∞í░φòÿ∞ä╕∞Üö.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectJson">
         <source>These options are not applicable to projects managing their dependencies through project.json or PackageReference</source>
-        <target state="translated">이 옵션은 project.json 또는 PackageReference로 종속성을 관리하는 프로젝트에는 적용할 수 없습니다.</target>
+        <target state="translated">∞¥┤ ∞ÿ╡∞àÿ∞¥Ç project.json δÿÉδèö PackageReferenceδí£ ∞óà∞åì∞ä▒∞¥ä Ω┤Çδª¼φòÿδèö φöäδí£∞á¥φè╕∞ùÉδèö ∞áü∞Ü⌐φòá ∞êÿ ∞ùå∞è╡δïêδïñ.</target>
         <note>To be displayed for the VS UI opened through a solution. bug #2665</note>
       </trans-unit>
       <trans-unit id="WindowTitle_DeprecatedFramework">
         <source>Deprecated Framework</source>
-        <target state="translated">사용되지 않는 프레임워크</target>
+        <target state="translated">∞é¼∞Ü⌐δÉÿ∞ºÇ ∞òèδèö φöäδáê∞₧ä∞¢îφü¼</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_FileConflict">
         <source>File Conflict</source>
-        <target state="translated">파일 충돌</target>
+        <target state="translated">φîî∞¥╝ ∞╢⌐δÅî</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseAcceptance">
         <source>License Acceptance</source>
-        <target state="translated">라이선스 승인</target>
+        <target state="translated">δ¥╝∞¥┤∞äá∞èñ ∞è╣∞¥╕</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_LicenseFileWindow">
         <source>{0} License</source>
-        <target state="translated">{0} 라이선스</target>
+        <target state="translated">{0} δ¥╝∞¥┤∞äá∞èñ</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_NuGetMigrator">
         <source>Migrate NuGet format to PackageReference - {0}</source>
-        <target state="translated">NuGet 형식을 PackageReference로 마이그레이션 - {0}</target>
+        <target state="translated">NuGet φÿò∞ï¥∞¥ä PackageReferenceδí£ δºê∞¥┤Ω╖╕δáê∞¥┤∞àÿ - {0}</target>
         <note>{0} is the project name</note>
       </trans-unit>
       <trans-unit id="WindowTitle_PackageFormatSelector">
         <source>Choose NuGet Package Manager Format</source>
-        <target state="translated">NuGet 패키지 관리자 형식 선택</target>
+        <target state="translated">NuGet φî¿φéñ∞ºÇ Ω┤Çδª¼∞₧É φÿò∞ï¥ ∞äáφâ¥</target>
         <note />
       </trans-unit>
       <trans-unit id="WindowTitle_PreviewChanges">
         <source>Preview Changes</source>
-        <target state="translated">변경 내용 미리 보기</target>
+        <target state="translated">δ│ÇΩ▓╜ δé┤∞Ü⌐ δ»╕δª¼ δ│┤Ω╕░</target>
         <note />
       </trans-unit>
     </body>

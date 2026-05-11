@@ -1,110 +1,110 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../Resources.resx">
     <body>
       <trans-unit id="Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly">
         <source>Argument cannot be null, empty, or whitespace only.</source>
-        <target state="translated">Argument nemůže obsahovat hodnotu null, pouze mezeru nebo být prázdný.</target>
+        <target state="translated">Argument nem┼»┼╛e obsahovat hodnotu null, pouze mezeru nebo b├╜t pr├ízdn├╜.</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Cannot_Be_Null_Or_Empty">
         <source>Value cannot be null or empty string.</source>
-        <target state="translated">Hodnota nesmí být null ani prázdný řetězec.</target>
+        <target state="translated">Hodnota nesm├¡ b├╜t null ani pr├ízdn├╜ ┼Öet─¢zec.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeNotAllowed">
         <source>Attribute '{0}' is not allowed in element '{1}'.</source>
-        <target state="translated">Atribut {0} v elementu {1} není povolený.</target>
+        <target state="translated">Atribut {0} v elementu {1} nen├¡ povolen├╜.</target>
         <note>0 - attribute name
 1 - element name</note>
       </trans-unit>
       <trans-unit id="AttributeValueNotAllowed">
         <source>The attribute '{0}' has an unallowed value '{1}' in element '{2}'.</source>
-        <target state="translated">Atribut {0} v elementu {2} má nepovolenou hodnotu {1}.</target>
+        <target state="translated">Atribut {0} v elementu {2} m├í nepovolenou hodnotu {1}.</target>
         <note>0 - attribute name
 1 - attribute value
 2 - element name</note>
       </trans-unit>
       <trans-unit id="CannotUpdateDifferentItems">
         <source>The item passed to the Update method cannot refer to a different item than the one being updated.</source>
-        <target state="translated">Položka předaná metodě Update nemůže odkazovat na jinou položku než na tu, která se právě aktualizuje.</target>
+        <target state="translated">Polo┼╛ka p┼Öedan├í metod─¢ Update nem┼»┼╛e odkazovat na jinou polo┼╛ku ne┼╛ na tu, kter├í se pr├ív─¢ aktualizuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotUpdateMachineWide">
         <source>Unable to update setting since it is in a machine-wide NuGet.Config.</source>
-        <target state="translated">Nastavení nelze aktualizovat, protože se nachází v souboru NuGet.Config pro celý počítač.</target>
+        <target state="translated">Nastaven├¡ nelze aktualizovat, proto┼╛e se nach├íz├¡ v souboru NuGet.Config pro cel├╜ po─ì├¡ta─ì.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotUpdateNode">
         <source>Cannot update the node of a setting.</source>
-        <target state="translated">Uzel nastavení nelze aktualizovat.</target>
+        <target state="translated">Uzel nastaven├¡ nelze aktualizovat.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotUpdateReadOnlyConfig">
         <source>Unable to update setting since it is in an uneditable config file.</source>
-        <target state="translated">Nepovedlo se aktualizovat nastavení, protože se nachází v konfiguračním souboru, který se nedá upravit.</target>
+        <target state="translated">Nepovedlo se aktualizovat nastaven├¡, proto┼╛e se nach├íz├¡ v konfigura─ìn├¡m souboru, kter├╜ se ned├í upravit.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientCertificateDuplicateConfiguration">
         <source>There are multiple client certificate configurations associated with the same package source(s): {0}</source>
-        <target state="translated">Několik konfigurací klientských certifikátů je přidružených ke stejným zdrojům balíčků: {0}</target>
+        <target state="translated">N─¢kolik konfigurac├¡ klientsk├╜ch certifik├ít┼» je p┼Öidru┼╛en├╜ch ke stejn├╜m zdroj┼»m bal├¡─ìk┼»: {0}</target>
         <note>0 - Package sources separated with comma</note>
       </trans-unit>
       <trans-unit id="CredentialsItemMustHaveUsernamePassword">
         <source>Credentials item must have username and password.</source>
-        <target state="translated">Položka přihlašovacích údajů musí obsahovat uživatelské jméno a heslo.</target>
+        <target state="translated">Polo┼╛ka p┼Öihla┼íovac├¡ch ├║daj┼» mus├¡ obsahovat u┼╛ivatelsk├⌐ jm├⌐no a heslo.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_DuplicatePackageSource">
         <source>PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}</source>
-        <target state="translated">PackageSourceMapping je povoleno a ke stejným klíčům je přidruženo více zdrojů balíčku: {0}. Cesta: {1}</target>
+        <target state="translated">PackageSourceMapping je povoleno a ke stejn├╜m kl├¡─ì┼»m je p┼Öidru┼╛eno v├¡ce zdroj┼» bal├¡─ìku: {0}. Cesta: {1}</target>
         <note>0 - package sources separated with comma 1 - path</note>
       </trans-unit>
       <trans-unit id="Error_EncryptionUnsupported">
         <source>Encryption is not supported on non-Windows platforms.</source>
-        <target state="translated">Na platformách jiných než Windows se šifrování nepodporuje.</target>
+        <target state="translated">Na platform├ích jin├╜ch ne┼╛ Windows se ┼íifrov├ín├¡ nepodporuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidAttribute">
         <source>The attribute {0}-{1} is not valid.</source>
-        <target state="translated">Atribut {0}-{1} není platný.</target>
+        <target state="translated">Atribut {0}-{1} nen├¡ platn├╜.</target>
         <note>0 - attribute name
 1 - attribute value</note>
       </trans-unit>
       <trans-unit id="Error_ItemNeedsAtLeastOnePackagePattern">
         <source>Package source '{0}' must have at least one package pattern.</source>
-        <target state="translated">Zdroj balíčku {0} musí mít alespoň jeden vzor balíčku.</target>
+        <target state="translated">Zdroj bal├¡─ìku {0} mus├¡ m├¡t alespo┼ê jeden vzor bal├¡─ìku.</target>
         <note>0 - The name of the item.</note>
       </trans-unit>
       <trans-unit id="Error_ItemNeedsAtLeastOnePackagePatternWithPath">
         <source>Package source '{0}' must have at least one package pattern. Path: '{1}'</source>
-        <target state="translated">Zdroj balíčku {0} musí mít alespoň jeden vzor balíčku. Cesta: {1}</target>
+        <target state="translated">Zdroj bal├¡─ìku {0} mus├¡ m├¡t alespo┼ê jeden vzor bal├¡─ìku. Cesta: {1}</target>
         <note>0 - The name of the item
 1 - file path</note>
       </trans-unit>
       <trans-unit id="Error_MergeTwoDifferentSections">
         <source>Cannot merge two different sections.</source>
-        <target state="translated">Dva různé oddíly nelze sloučit.</target>
+        <target state="translated">Dva r┼»zn├⌐ odd├¡ly nelze slou─ìit.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MoreThanOnePassword">
         <source>A credentials item must have only one Password or ClearTextPassword entry.</source>
-        <target state="translated">Položka přihlašovacích údajů musí mít jenom jednu položku Password nebo ClearTextPassword.</target>
+        <target state="translated">Polo┼╛ka p┼Öihla┼íovac├¡ch ├║daj┼» mus├¡ m├¡t jenom jednu polo┼╛ku Password nebo ClearTextPassword.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MoreThanOneUsername">
         <source>A credentials item must have only one Username entry.</source>
-        <target state="translated">Položka přihlašovacích údajů musí mít jenom jednu položku Username.</target>
+        <target state="translated">Polo┼╛ka p┼Öihla┼íovac├¡ch ├║daj┼» mus├¡ m├¡t jenom jednu polo┼╛ku Username.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MoreThanOneValidAuthenticationTypes">
         <source>A credentials item must have only one ValidAuthenticationTypes entry.</source>
-        <target state="translated">Položka přihlašovacích údajů musí mít jenom jednu položku ValidAuthenticationTypes.</target>
+        <target state="translated">Polo┼╛ka p┼Öihla┼íovac├¡ch ├║daj┼» mus├¡ m├¡t jenom jednu polo┼╛ku ValidAuthenticationTypes.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_StoreCertCertificateNotFound">
         <source>Certificate for the package source '{0}' was not found in '{1}.{2}' storage by '{3}' criteria with '{4}' value.</source>
-        <target state="translated">Certifikát pro zdroj balíčku {0} se v úložišti {1}.{2} podle kritérií {3} s hodnotou {4} nenašel.</target>
+        <target state="translated">Certifik├ít pro zdroj bal├¡─ìku {0} se v ├║lo┼╛i┼íti {1}.{2} podle krit├⌐ri├¡ {3} s hodnotou {4} nena┼íel.</target>
         <note>0 - Package source name
 1 - Store location
 2 - Store name
@@ -113,22 +113,22 @@
       </trans-unit>
       <trans-unit id="FileCertItemPasswordAndClearTextPasswordAtSameTime">
         <source>Password and ClearTextPassword cannot be used at the same time.</source>
-        <target state="translated">Možnosti Password a ClearTextPassword se nedají použít současně.</target>
+        <target state="translated">Mo┼╛nosti Password a ClearTextPassword se nedaj├¡ pou┼╛├¡t sou─ìasn─¢.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileCertItemPasswordCannotBeDecrypted">
         <source>Client certificate configuration password for the package source '{0}' cannot be decrypted</source>
-        <target state="translated">Heslo konfigurace klientského certifikátu pro zdroj balíčku {0} se nedá dešifrovat.</target>
+        <target state="translated">Heslo konfigurace klientsk├⌐ho certifik├ítu pro zdroj bal├¡─ìku {0} se ned├í de┼íifrovat.</target>
         <note>0 - Package name</note>
       </trans-unit>
       <trans-unit id="FileCertItemPathFileNotExist">
         <source>A fileCert path specified a file that does not exist.</source>
-        <target state="translated">Cesta fileCert určovala soubor, který neexistuje.</target>
+        <target state="translated">Cesta fileCert ur─ìovala soubor, kter├╜ neexistuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileCertItemPathFileNotSet">
         <source>A fileCert item path was not set.</source>
-        <target state="translated">Cesta k položce fileCert se nenastavila.</target>
+        <target state="translated">Cesta k polo┼╛ce fileCert se nenastavila.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileDoesNotExist">
@@ -138,149 +138,149 @@
       </trans-unit>
       <trans-unit id="InvalidNullSettingsOperation">
         <source>"{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".</source>
-        <target state="translated">{0} nejde volat při nastavení NullSettings. Příčinou můžou být nedostatečná oprávnění ke čtení nebo zápisu pro soubor %AppData%\NuGet\NuGet.config.</target>
+        <target state="translated">{0} nejde volat p┼Öi nastaven├¡ NullSettings. P┼Ö├¡─ìinou m┼»┼╛ou b├╜t nedostate─ìn├í opr├ívn─¢n├¡ ke ─ìten├¡ nebo z├ípisu pro soubor %AppData%\NuGet\NuGet.config.</target>
         <note />
       </trans-unit>
       <trans-unit id="ItemDoesNotExist">
         <source>The item does not exist in the {0} section.</source>
-        <target state="translated">Tato položka se v oddílu {0} nenachází.</target>
+        <target state="translated">Tato polo┼╛ka se v odd├¡lu {0} nenach├íz├¡.</target>
         <note>0 - section name</note>
       </trans-unit>
       <trans-unit id="MissingRequiredAttribute">
         <source>Missing required attribute '{0}' in element '{1}'.</source>
-        <target state="translated">V elementu {1} chybí povinný atribut {0}.</target>
+        <target state="translated">V elementu {1} chyb├¡ povinn├╜ atribut {0}.</target>
         <note>0 - attribute name
 1 - element name</note>
       </trans-unit>
       <trans-unit id="MustContainAbsolutePath">
         <source>'{0}' must contain an absolute path '{1}'.</source>
-        <target state="translated">{0} musí obsahovat absolutní cestu {1}.</target>
+        <target state="translated">{0} mus├¡ obsahovat absolutn├¡ cestu {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoAttributesAllowed">
         <source>The {0} item should not have any attributes and it was found with {1}.</source>
-        <target state="translated">Položka {0} nesmí obsahovat žádné atributy, ale obsahuje {1}.</target>
+        <target state="translated">Polo┼╛ka {0} nesm├¡ obsahovat ┼╛├ídn├⌐ atributy, ale obsahuje {1}.</target>
         <note>0 - item name
 1- attributes count</note>
       </trans-unit>
       <trans-unit id="NoWritteableConfig">
         <source>There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client.</source>
-        <target state="translated">Soubor NuGet.Config, který by bylo možné použít k zápisu nastavení, není k dispozici. Vytvořte ho prosím v požadovaném umístění a restartujte klienta.</target>
+        <target state="translated">Soubor NuGet.Config, kter├╜ by bylo mo┼╛n├⌐ pou┼╛├¡t k z├ípisu nastaven├¡, nen├¡ k dispozici. Vytvo┼Öte ho pros├¡m v po┼╛adovan├⌐m um├¡st─¢n├¡ a restartujte klienta.</target>
         <note />
       </trans-unit>
       <trans-unit id="OwnersItemMustHaveAtLeastOneOwner">
         <source>Owners item must have at least one owner.</source>
-        <target state="translated">Položka vlastníků musí mít alespoň jednoho vlastníka.</target>
+        <target state="translated">Polo┼╛ka vlastn├¡k┼» mus├¡ m├¡t alespo┼ê jednoho vlastn├¡ka.</target>
         <note />
       </trans-unit>
       <trans-unit id="OwnersMustOnlyHaveContent">
         <source>Owners item must only have text content and cannot be empty.</source>
-        <target state="translated">Položka vlastníků musí mít jenom textový obsah a nemůže být prázdná.</target>
+        <target state="translated">Polo┼╛ka vlastn├¡k┼» mus├¡ m├¡t jenom textov├╜ obsah a nem┼»┼╛e b├╜t pr├ízdn├í.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyCannotBeNullOrEmpty">
         <source>{0} cannot be null or empty.</source>
-        <target state="translated">Vlastnost {0} nemůže být null nebo prázdná.</target>
+        <target state="translated">Vlastnost {0} nem┼»┼╛e b├╜t null nebo pr├ízdn├í.</target>
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="RepositoryMustHaveOneOwners">
         <source>The repository item with name '{0}' and service index '{1}' has more than one owners item in it.</source>
-        <target state="translated">Položka úložiště s názvem {0} a index služby {1} obsahuje více než jednu položku vlastníků.</target>
+        <target state="translated">Polo┼╛ka ├║lo┼╛i┼ít─¢ s n├ízvem {0} a index slu┼╛by {1} obsahuje v├¡ce ne┼╛ jednu polo┼╛ku vlastn├¡k┼».</target>
         <note>0 - repository name
 1 - service index</note>
       </trans-unit>
       <trans-unit id="SectionDoesNotExist">
         <source>The section '{0}' does not exist in the settings.</source>
-        <target state="translated">Oddíl {0} se v nastavení nenachází.</target>
+        <target state="translated">Odd├¡l {0} se v nastaven├¡ nenach├íz├¡.</target>
         <note>0 - section name</note>
       </trans-unit>
       <trans-unit id="Settings_FileName_Cannot_Be_A_Path">
         <source>Parameter 'fileName' to Settings must be just a file name and not a path.</source>
-        <target state="translated">Parametr fileName pro nastavení musí být jen název souboru, a ne cesta.</target>
+        <target state="translated">Parametr fileName pro nastaven├¡ mus├¡ b├╜t jen n├ízev souboru, a ne cesta.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_CannotHaveChildren">
         <source>Error parsing NuGet.Config. Element '{0}' cannot have descendant elements. Path: '{1}'.</source>
-        <target state="translated">Při analýze souboru NuGet.Config došlo k chybě. Element {0} nemůže mít podřízené elementy. Cesta: {1}</target>
+        <target state="translated">P┼Öi anal├╜ze souboru NuGet.Config do┼ílo k chyb─¢. Element {0} nem┼»┼╛e m├¡t pod┼Ö├¡zen├⌐ elementy. Cesta: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigDuplicateDisabledSources">
         <source>Cannot update package sources, config file contains a duplicated key '{0}' in the disabled package sources section. Path: '{1}'</source>
-        <target state="translated">Zdroje balíčku nejde aktualizovat, konfigurační soubor obsahuje duplicitní klíč{0}v oddílu zakázaných zdrojů balíčků. Cesta:{1}</target>
+        <target state="translated">Zdroje bal├¡─ìku nejde aktualizovat, konfigura─ìn├¡ soubor obsahuje duplicitn├¡ kl├¡─ì{0}v odd├¡lu zak├ízan├╜ch zdroj┼» bal├¡─ìk┼». Cesta:{1}</target>
         <note>0 - key 
 1 - config file path
 </note>
       </trans-unit>
       <trans-unit id="ShowError_ConfigHasInvalidPackageSource">
         <source>{0}: NuGet.Config has an invalid package source value '{1}'. Reason: {2}</source>
-        <target state="translated">{0}: NuGet.Config má neplatnou hodnotu zdroje balíčku {1}. Důvod: {2}</target>
+        <target state="translated">{0}: NuGet.Config m├í neplatnou hodnotu zdroje bal├¡─ìku {1}. D┼»vod: {2}</target>
         <note>0 - NU log code
 1 - package source value
 2 - original exception message</note>
       </trans-unit>
       <trans-unit id="ShowError_ConfigInvalidOperation">
         <source>NuGet.Config is malformed. Path: '{0}'.</source>
-        <target state="translated">NuGet.Config je poškozený. Cesta: {0}.</target>
+        <target state="translated">NuGet.Config je po┼íkozen├╜. Cesta: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigInvalidXml">
         <source>NuGet.Config is not valid XML. Path: '{0}'.</source>
-        <target state="translated">NuGet.Config není platný soubor XML. Cesta: {0}.</target>
+        <target state="translated">NuGet.Config nen├¡ platn├╜ soubor XML. Cesta: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigRootInvalid">
         <source>NuGet.Config does not contain the expected root element: 'configuration'. Path: '{0}'.</source>
-        <target state="translated">NuGet.Config neobsahuje požadovaný kořenový element: configuration. Cesta: {0}.</target>
+        <target state="translated">NuGet.Config neobsahuje po┼╛adovan├╜ ko┼Öenov├╜ element: configuration. Cesta: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_ConfigUnauthorizedAccess">
         <source>Failed to read NuGet.Config due to unauthorized access. Path: '{0}'.</source>
-        <target state="translated">Nepodařilo se načíst NuGet.Config, protože se jedná o neautorizovaný přístup. Cesta: {0}.</target>
+        <target state="translated">Nepoda┼Öilo se na─ì├¡st NuGet.Config, proto┼╛e se jedn├í o neautorizovan├╜ p┼Ö├¡stup. Cesta: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowError_UnknownOrigin">
         <source>File location not known</source>
-        <target state="translated">Neznámé umístění souboru</target>
+        <target state="translated">Nezn├ím├⌐ um├¡st─¢n├¡ souboru</target>
         <note />
       </trans-unit>
       <trans-unit id="TextShouldNotBeEmpty">
         <source>Text elements should not be empty.</source>
-        <target state="translated">Textové elementy nesmí být prázdné.</target>
+        <target state="translated">Textov├⌐ elementy nesm├¡ b├╜t pr├ízdn├⌐.</target>
         <note />
       </trans-unit>
       <trans-unit id="TrustedSignerMustHaveCertificates">
         <source>A trusted signer entry must have at least one certificate entry.</source>
-        <target state="translated">Položka důvěryhodného podepisujícího musí mít alespoň jednu položku certifikátu.</target>
+        <target state="translated">Polo┼╛ka d┼»v─¢ryhodn├⌐ho podepisuj├¡c├¡ho mus├¡ m├¡t alespo┼ê jednu polo┼╛ku certifik├ítu.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownHashAlgorithmNotSupported">
         <source>Unknown hash algorithm is not supported.</source>
-        <target state="translated">Neznámý algoritmus hash není podporován.</target>
+        <target state="translated">Nezn├ím├╜ algoritmus hash nen├¡ podporov├ín.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unknown_Config_Exception">
         <source>Unexpected failure reading NuGet.Config. Path: '{0}'.</source>
-        <target state="translated">Při čtení NuGet.Config došlo neočekávaně k selhání. Cesta: {0}.</target>
+        <target state="translated">P┼Öi ─ìten├¡ NuGet.Config do┼ílo neo─ìek├ívan─¢ k selh├ín├¡. Cesta: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedDecryptPassword">
         <source>Password decryption is not supported on .NET Core for this platform. The following feed uses an encrypted password: '{0}'. You can use a clear text password as a workaround.</source>
-        <target state="translated">Dešifrování hesla se v .NET Core pro tuto platformu nepodporuje. Následující informační kanál používá šifrované heslo: {0}. Místo toho můžete použít heslo uložené jako nešifrovaný text.</target>
+        <target state="translated">De┼íifrov├ín├¡ hesla se v .NET Core pro tuto platformu nepodporuje. N├ísleduj├¡c├¡ informa─ìn├¡ kan├íl pou┼╛├¡v├í ┼íifrovan├⌐ heslo: {0}. M├¡sto toho m┼»┼╛ete pou┼╛├¡t heslo ulo┼╛en├⌐ jako ne┼íifrovan├╜ text.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedEncryptPassword">
         <source>Password encryption is not supported on .NET Core for this platform. The following feed try to use an encrypted password: '{0}'. You can use a clear text password as a workaround.</source>
-        <target state="translated">Šifrování hesla se v .NET Core pro tuto platformu nepodporuje. Následující informační kanál se pokouší použít šifrované heslo: {0}. Místo toho můžete použít heslo uložené jako nešifrovaný text.</target>
+        <target state="translated">┼áifrov├ín├¡ hesla se v .NET Core pro tuto platformu nepodporuje. N├ísleduj├¡c├¡ informa─ìn├¡ kan├íl se pokou┼í├¡ pou┼╛├¡t ┼íifrovan├⌐ heslo: {0}. M├¡sto toho m┼»┼╛ete pou┼╛├¡t heslo ulo┼╛en├⌐ jako ne┼íifrovan├╜ text.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedHashAlgorithm">
         <source>Certificate entry has an unsupported hash algorithm: '{0}'.</source>
-        <target state="translated">Položka certifikátu má nepodporovaný algoritmus hash: {0}</target>
+        <target state="translated">Polo┼╛ka certifik├ítu m├í nepodporovan├╜ algoritmus hash: {0}</target>
         <note>0 - hash algorithm</note>
       </trans-unit>
       <trans-unit id="UserSettings_UnableToParseConfigFile">
         <source>Unable to parse config file because: {0} Path: '{1}'.</source>
-        <target state="translated">Konfigurační soubor nebylo možné analyzovat, protože: {0} Cesta: {1}</target>
+        <target state="translated">Konfigura─ìn├¡ soubor nebylo mo┼╛n├⌐ analyzovat, proto┼╛e: {0} Cesta: {1}</target>
         <note>0 - reason
 1- config file path</note>
       </trans-unit>

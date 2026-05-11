@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -16,6 +17,8 @@ using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.XPlat.FuncTest;
+using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 

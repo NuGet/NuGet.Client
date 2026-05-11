@@ -1,100 +1,100 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../NuGetMSSignCommand.resx">
     <body>
       <trans-unit id="MSSignCommandCSPNameDescription">
         <source>Name of the cryptographic service provider which contains the private key container.</source>
-        <target state="translated">其中包含私钥容器的加密服务提供程序的名称。</target>
+        <target state="translated">σà╢Σ╕¡σîàσÉ½τºüΘÆÑσ«╣σÖ¿τÜäσèáσ»åµ£ìσèíµÅÉΣ╛¢τ¿ïσ║ÅτÜäσÉìτº░πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFileDescription">
         <source>File path to the p7b file to be used while signing the package.</source>
-        <target state="translated">为包签名时使用的 p7b 文件的文件路径。</target>
+        <target state="translated">Σ╕║σîàτ¡╛σÉìµù╢Σ╜┐τö¿τÜä p7b µûçΣ╗╢τÜäµûçΣ╗╢Φ╖»σ╛äπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandCertificateFingerprintDescription">
         <source>SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a p7b file for the certificate.</source>
-        <target state="translated">用于在 p7b 文件中搜索证书的证书的 SHA-256、SHA-384 或 SHA-512 指纹。</target>
+        <target state="translated">τö¿Σ║Äσ£¿ p7b µûçΣ╗╢Σ╕¡µÉ£τ┤óΦ»üΣ╣ªτÜäΦ»üΣ╣ªτÜä SHA-256πÇüSHA-384 µêû SHA-512 µîçτ║╣πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandDescription">
         <source>Signs a NuGet package with the specified p7b file.</source>
-        <target state="translated">使用指定的 p7b 文件对 NuGet 包进行签名。</target>
+        <target state="translated">Σ╜┐τö¿µîçσ«ÜτÜä p7b µûçΣ╗╢σ»╣ NuGet σîàΦ┐¢Φíîτ¡╛σÉìπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandHashAlgorithmDescription">
         <source>Hash algorithm to be used while generating the package manifest file. Defaults to SHA256.</source>
-        <target state="translated">生成包清单文件时使用的哈希算法。默认值为 SHA256。</target>
+        <target state="translated">τöƒµêÉσîàµ╕àσìòµûçΣ╗╢µù╢Σ╜┐τö¿τÜäσôêσ╕îτ«ùµ│òπÇéΘ╗ÿΦ«ñσÇ╝Σ╕║ SHA256πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidArgumentException">
         <source>Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</source>
-        <target state="translated">为“{0}”提供的值无效。有关接受值的列表，请访问 https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
+        <target state="translated">Σ╕║ΓÇ£{0}ΓÇ¥µÅÉΣ╛¢τÜäσÇ╝µùáµòêπÇéµ£ëσà│µÄÑσÅùσÇ╝τÜäσêùΦí¿∩╝îΦ»╖Φ«┐Θù« https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign</target>
         <note>{0} - argument name</note>
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCertificateFingerprint">
         <source>{0}: Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="translated">{0}: "CertificateFingerprint" 选项的值无效。该值必须是 SHA-256、SHA-384 或 SHA-512 证书指纹(十六进制)。</target>
+        <target state="translated">{0}: "CertificateFingerprint" ΘÇëΘí╣τÜäσÇ╝µùáµòêπÇéΦ»ÑσÇ╝σ┐àΘí╗µÿ» SHA-256πÇüSHA-384 µêû SHA-512 Φ»üΣ╣ªµîçτ║╣(σìüσà¡Φ┐¢σê╢)πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandInvalidCngKeyException">
         <source>Cng Key is not an RSA key.</source>
-        <target state="translated">Cng 密钥不是 RSA 密钥。</target>
+        <target state="translated">Cng σ»åΘÆÑΣ╕ìµÿ» RSA σ»åΘÆÑπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandKeyContainerDescription">
         <source>Name of the key container which has the private key.</source>
-        <target state="translated">具有私钥的密钥容器的名称。</target>
+        <target state="translated">σà╖µ£ëτºüΘÆÑτÜäσ»åΘÆÑσ«╣σÖ¿τÜäσÉìτº░πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCertException">
         <source>Can't find specified certificate.</source>
-        <target state="translated">找不到指定的证书。</target>
+        <target state="translated">µë╛Σ╕ìσê░µîçσ«ÜτÜäΦ»üΣ╣ªπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoCngKeyException">
         <source>Can't find cng key.</source>
-        <target state="translated">找不到 cng 密钥。</target>
+        <target state="translated">µë╛Σ╕ìσê░ cng σ»åΘÆÑπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoPackageException">
         <source>No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">没有提供任何包。要获取接受的包提供方式列表，请访问 https://docs.nuget.org/docs/reference/command-line-reference</target>
+        <target state="translated">µ▓íµ£ëµÅÉΣ╛¢Σ╗╗Σ╜òσîàπÇéΦªüΦÄ╖σÅûµÄÑσÅùτÜäσîàµÅÉΣ╛¢µû╣σ╝ÅσêùΦí¿∩╝îΦ»╖Φ«┐Θù« https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoTimestamperWarning">
         <source>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, please visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">未提供 "-Timestamper" 选项，签名的包不会加盖时间戳。若要了解有关此选项的详细信息，请访问 https://docs.nuget.org/docs/reference/command-line-reference</target>
+        <target state="translated">µ£¬µÅÉΣ╛¢ "-Timestamper" ΘÇëΘí╣∩╝îτ¡╛σÉìτÜäσîàΣ╕ìΣ╝Üσèáτ¢ûµù╢Θù┤µê│πÇéΦïÑΦªüΣ║åΦºúµ£ëσà│µ¡ñΘÇëΘí╣τÜäΦ»ªτ╗åΣ┐íµü»∩╝îΦ»╖Φ«┐Θù« https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoValidCertificateFileException">
         <source>No CertificateFile provided or provided file is not a p7b file.</source>
-        <target state="translated">没有提供 CertificateFile 或者所提供的文件不是 p7b 文件。</target>
+        <target state="translated">µ▓íµ£ëµÅÉΣ╛¢ CertificateFile µêûΦÇàµëÇµÅÉΣ╛¢τÜäµûçΣ╗╢Σ╕ìµÿ» p7b µûçΣ╗╢πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOutputDirectoryDescription">
         <source>Directory where the signed package should be saved. By default the original package is overwritten by the signed package.</source>
-        <target state="translated">其中应保存已签名包的目录。默认情况下已签名包会覆盖原始包。</target>
+        <target state="translated">σà╢Σ╕¡σ║öΣ┐¥σ¡ÿσ╖▓τ¡╛σÉìσîàτÜäτ¢«σ╜òπÇéΘ╗ÿΦ«ñµâàσå╡Σ╕ïσ╖▓τ¡╛σÉìσîàΣ╝ÜΦªåτ¢ûσÄƒσºïσîàπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandOverwriteDescription">
         <source>Switch to indicate if the current signature should be overwritten. By default the command will fail if the package already has a signature.</source>
-        <target state="translated">用于指示是否应覆盖当前签名的开关。如果包已有签名，默认情况下该命令将失败。</target>
+        <target state="translated">τö¿Σ║Äµîçτñ║µÿ»σÉªσ║öΦªåτ¢ûσ╜ôσëìτ¡╛σÉìτÜäσ╝Çσà│πÇéσªéµ₧£σîàσ╖▓µ£ëτ¡╛σÉì∩╝îΘ╗ÿΦ«ñµâàσå╡Σ╕ïΦ»Ñσæ╜Σ╗ñσ░åσñ▒Φ┤ÑπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestampHashAlgorithmDescription">
         <source>Hash algorithm to be used by the RFC 3161 timestamp server. Defaults to SHA256.</source>
-        <target state="translated">RFC 3161 时间戳服务器要使用的哈希算法。默认值为 SHA256。</target>
+        <target state="translated">RFC 3161 µù╢Θù┤µê│µ£ìσèíσÖ¿ΦªüΣ╜┐τö¿τÜäσôêσ╕îτ«ùµ│òπÇéΘ╗ÿΦ«ñσÇ╝Σ╕║ SHA256πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandTimestamperDescription">
         <source>URL to an RFC 3161 timestamping server.</source>
-        <target state="translated">RFC 3161 加盖时间戳服务器的 URL。</target>
+        <target state="translated">RFC 3161 σèáτ¢ûµù╢Θù┤µê│µ£ìσèíσÖ¿τÜä URLπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageDescription">
         <source>Signs a NuGet package.</source>
-        <target state="translated">对 NuGet 包进行签名。</target>
+        <target state="translated">σ»╣ NuGet σîàΦ┐¢Φíîτ¡╛σÉìπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandUsageExamples">
@@ -113,17 +113,17 @@ nuget mssign MyPackage.nupkg -Timestamper https://foo.bar -CertificateFile foo.p
       </trans-unit>
       <trans-unit id="RepoSignCommandDescription">
         <source>Sign a NuGet package by adding repository signature with specified p7b file.</source>
-        <target state="translated">通过使用指定的 p7b 文件添加存储库签名来给 NuGet 包签名。</target>
+        <target state="translated">ΘÇÜΦ┐çΣ╜┐τö¿µîçσ«ÜτÜä p7b µûçΣ╗╢µ╖╗σèáσ¡ÿσé¿σ║ôτ¡╛σÉìµ¥Ñτ╗Ö NuGet σîàτ¡╛σÉìπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandPackageOwnersDescription">
         <source>Semicolon-separated list of package owners.</source>
-        <target state="translated">包所有者的分号分隔列表。</target>
+        <target state="translated">σîàµëÇµ£ëΦÇàτÜäσêåσÅ╖σêåΘÜöσêùΦí¿πÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageDescription">
         <source>Sign a NuGet package with repository signature.</source>
-        <target state="translated">使用存储库签名为 NuGet 包签名。</target>
+        <target state="translated">Σ╜┐τö¿σ¡ÿσé¿σ║ôτ¡╛σÉìΣ╕║ NuGet σîàτ¡╛σÉìπÇé</target>
         <note />
       </trans-unit>
       <trans-unit id="RepoSignCommandUsageExamples">
@@ -142,7 +142,7 @@ nuget reposign MyPackage.nupkg -Timestamper http://timestamper.test -Certificate
       </trans-unit>
       <trans-unit id="RepoSignCommandV3ServiceIndexUrlDescription">
         <source>Repository V3 service index URL.</source>
-        <target state="translated">存储库 V3 服务索引 URL。</target>
+        <target state="translated">σ¡ÿσé¿σ║ô V3 µ£ìσèíτ┤óσ╝ò URLπÇé</target>
         <note />
       </trans-unit>
     </body>

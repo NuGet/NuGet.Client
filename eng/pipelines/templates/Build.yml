@@ -1,3 +1,4 @@
+<<<<<<<< HEAD:eng/pipelines/templates/Build.yml
 parameters:
   - name: BuildRTM
     type: boolean
@@ -334,3 +335,11 @@ steps:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_MULTILEVEL_LOOKUP: true
     condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
+========
+PLEASE READ
+
+Please remove this file during conflict resolution in your PR.
+This file has been reverted (removed) in the source repository but the PR branch
+does not have the file yet as it's based on an older commit. This means the file is
+not getting removed in the PR due to the other conflicts.
+>>>>>>>> darc/back/79cfed0-17203fb:eng/pipelines/templates/Build_and_UnitTest.yml
