@@ -5,11 +5,12 @@ pipelines:
     retail:
       source:
         eslint:
-          lastModifiedDate: 2024-08-28
+          lastModifiedDate: 2026-05-12
         armory:
-          lastModifiedDate: 2024-08-28
+          lastModifiedDate: 2026-05-12
         accessibilityinsights:
           lastModifiedDate: 2025-06-03
       binary:
         binskim:
-          lastModifiedDate: 2025-01-29
+          lastModifiedDate: 2026-05-12
+    usedNonDefaultBranch: true
