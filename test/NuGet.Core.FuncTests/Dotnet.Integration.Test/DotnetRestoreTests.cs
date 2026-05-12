@@ -4226,7 +4226,7 @@ EndGlobal";
         [InlineData(true, false, false)]
         [InlineData(true, true, false)]
         [InlineData(true, true, true)]
-        public async Task DotnetRestore_GlobalPropertyRestoreSources_OverridesProjectProperty(bool useGlobalProperty, bool useStaticGraphRestore, bool usePackageSpecFactory)
+        public async Task DotnetRestore_RestoreSourcesWithRelativePaths_ResolvedCorrectPath(bool useGlobalProperty, bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             // Arrange
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
