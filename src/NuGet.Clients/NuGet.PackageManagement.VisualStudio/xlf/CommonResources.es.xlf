@@ -1,10 +1,10 @@
-∩╗┐<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../CommonResources.resx">
     <body>
       <trans-unit id="Argument_Cannot_Be_Null_Or_Empty">
         <source>Value cannot be null or an empty string.</source>
-        <target state="translated">El valor no puede ser nulo ni una cadena vac├¡a.</target>
+        <target state="translated">El valor no puede ser nulo ni una cadena vacía.</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Must_Be_Between">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="Argument_Must_Be_Enum_Member">
         <source>Value must be a value from the "{0}" enumeration.</source>
-        <target state="translated">El valor debe ser un valor de la enumeraci├│n "{0}".</target>
+        <target state="translated">El valor debe ser un valor de la enumeración "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="Argument_Must_Be_GreaterThan">
@@ -39,12 +39,12 @@
       </trans-unit>
       <trans-unit id="Argument_Must_Be_Null_Or_Non_Empty">
         <source>Value cannot be an empty string. It must either be null or a non-empty string.</source>
-        <target state="translated">El valor no puede ser una cadena vac├¡a. Debe ser nulo o una cadena que no est├⌐ vac├¡a.</target>
+        <target state="translated">El valor no puede ser una cadena vacía. Debe ser nulo o una cadena que no esté vacía.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnsureImportedMessage">
         <source>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</source>
-        <target state="translated">Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauraci├│n de paquetes NuGet para descargarlos. Para obtener m├ís informaci├│n, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</target>
+        <target state="translated">Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</target>
         <note />
       </trans-unit>
     </body>

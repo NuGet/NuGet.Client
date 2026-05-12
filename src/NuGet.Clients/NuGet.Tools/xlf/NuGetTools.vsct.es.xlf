@@ -1,10 +1,10 @@
-∩╗┐<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../NuGetTools.vsct">
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">Administrar paquetes &amp;NuGet para la soluci├│n...</target>
+        <target state="translated">Administrar paquetes &amp;NuGet para la solución...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="cmdidSourceSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">Configuraci├│n del &amp;Administrador de paquetes</target>
+        <target state="translated">Configuración del &amp;Administrador de paquetes</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidSources|ButtonText">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="cmdidStopHost|ButtonText">
         <source>&amp;Stop command execution</source>
-        <target state="translated">&amp;Detener ejecuci├│n del comando</target>
+        <target state="translated">&amp;Detener ejecución del comando</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|ButtonText">
@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="idGeneralSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">Configuraci├│n del &amp;Administrador de paquetes</target>
+        <target state="translated">Configuración del &amp;Administrador de paquetes</target>
         <note />
       </trans-unit>
       <trans-unit id="idGeneralSettings|CommandName">

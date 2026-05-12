@@ -752,7 +752,7 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
         <source>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</source>
         <target state="translated">正在還原 NuGet 套件...
-為避免 NuGet 在建置期間下載封裝，請開啟 [Visual Studio 選項] 對話方塊、按一下 [NuGet 套件管理器] 節點，然後取消核取「{0}」。</target>
+為避免 NuGet 在建置期間下載封裝，請開啟 [Visual Studio 選項] 對話方塊、按一下 [NuGet 套件管理員] 節點，然後取消核取「{0}」。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandProjectNotFound">

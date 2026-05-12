@@ -1,4 +1,4 @@
-∩╗┐<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../NuGetResources.resx">
     <body>
@@ -9,32 +9,32 @@
       </trans-unit>
       <trans-unit id="DependencyHasInvalidVersion">
         <source>Dependency '{0}' has an invalid version.</source>
-        <target state="translated">La versione della dipendenza '{0}' non ├¿ valida.</target>
+        <target state="translated">La versione della dipendenza '{0}' non è valida.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDependenciesDefined">
         <source>'{0}' already has a dependency defined for '{1}'.</source>
-        <target state="translated">'{0}' gi├á include una dipendenza definita per '{1}'.</target>
+        <target state="translated">'{0}' già include una dipendenza definita per '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="FoundDuplicateFile">
         <source>Attempted to pack multiple files into the same location(s). The following destinations were used multiple times: {0}</source>
-        <target state="translated">Si ├¿ provato a comprimere pi├╣ file nello stesso o negli stessi percorsi. Le destinazioni seguenti sono state usate pi├╣ volte: {0}</target>
+        <target state="translated">Si è provato a comprimere più file nello stesso o negli stessi percorsi. Le destinazioni seguenti sono state usate più volte: {0}</target>
         <note>0 - One or more duplicate files</note>
       </trans-unit>
       <trans-unit id="IconCannotOpenFile">
         <source>Cannot open the icon file '{0}': {1}.</source>
-        <target state="translated">Non ├¿ possibile aprire il file icona '{0}': {1}.</target>
+        <target state="translated">Non è possibile aprire il file icona '{0}': {1}.</target>
         <note>0 - Path to the icon file, 1 - Error message for not opening the icon</note>
       </trans-unit>
       <trans-unit id="IconErrorEmpty">
         <source>The icon file is empty.</source>
-        <target state="translated">Il file icona ├¿ vuoto.</target>
+        <target state="translated">Il file icona è vuoto.</target>
         <note />
       </trans-unit>
       <trans-unit id="IconInvalidExtension">
         <source>The 'icon' element '{0}' has an invalid file extension. Valid options are .png, .jpg or .jpeg.</source>
-        <target state="translated">L'estensione di file dell'elemento 'icon' '{0}' non ├¿ valida. Le opzioni valide sono .png, .jpg o .jpeg.</target>
+        <target state="translated">L'estensione di file dell'elemento 'icon' '{0}' non è valida. Le opzioni valide sono .png, .jpg o .jpeg.</target>
         <note>0 - Icon entry in the nuspec</note>
       </trans-unit>
       <trans-unit id="IconMaxFileSizeExceeded">
@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="IconMissingRequiredValue">
         <source>The element 'icon' cannot be empty.</source>
-        <target state="translated">L'elemento 'icon' non pu├▓ essere vuoto.</target>
+        <target state="translated">L'elemento 'icon' non può essere vuoto.</target>
         <note>Please, don't localize icon</note>
       </trans-unit>
       <trans-unit id="IconNoFileElement">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="IncompatibleSchema">
         <source>The schema version of '{0}' is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.</source>
-        <target state="translated">La versione dello schema di '{0}' ├¿ incompatibile con la versione {1} di NuGet. Aggiornare NuGet alla versione pi├╣ recente disponibile all'indirizzo http://go.microsoft.com/fwlink/?LinkId=213942.</target>
+        <target state="translated">La versione dello schema di '{0}' è incompatibile con la versione {1} di NuGet. Aggiornare NuGet alla versione più recente disponibile all'indirizzo http://go.microsoft.com/fwlink/?LinkId=213942.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidPackageId">
@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="Manifest_IdMaxLengthExceeded">
         <source>Id must not exceed 100 characters.</source>
-        <target state="translated">L'Id non deve contenere pi├╣ di 100 caratteri.</target>
+        <target state="translated">L'Id non deve contenere più di 100 caratteri.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_InvalidMinClientVersion">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="Manifest_LicenseFileExtensionIsInvalid">
         <source>The license file '{0}' has an invalid extension. Valid options are .txt, .md or none.</source>
-        <target state="translated">L'estensione del file di licenza '{0}' non ├¿ valida. Le opzioni valide sono .txt, .md o nessuna.</target>
+        <target state="translated">L'estensione del file di licenza '{0}' non è valida. Le opzioni valide sono .txt, .md o nessuna.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_LicenseFileIsNotInNupkg">
@@ -114,12 +114,12 @@
       </trans-unit>
       <trans-unit id="Manifest_LicenseUrlCannotBeUsedWithLicenseMetadata">
         <source>The licenseUrl and license elements cannot be used together.</source>
-        <target state="translated">Non ├¿ possibile usare insieme gli elementi licenseUrl e license.</target>
+        <target state="translated">Non è possibile usare insieme gli elementi licenseUrl e license.</target>
         <note>Please don't localize licenseUrl and license</note>
       </trans-unit>
       <trans-unit id="Manifest_PropertyValueReadFailure">
         <source>An error occured while trying to parse the value '{0}' of property '{1}' in the manifest file.</source>
-        <target state="translated">Si ├¿ verificato un errore durante il tentativo di analizzare il valore '{0}' della propriet├á '{1}' nel file manifesto.</target>
+        <target state="translated">Si è verificato un errore durante il tentativo di analizzare il valore '{0}' della proprietà '{1}' nel file manifesto.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_ReferencesHasMixedElements">
@@ -134,12 +134,12 @@
       </trans-unit>
       <trans-unit id="Manifest_RequireLicenseAcceptanceRequiresEmit">
         <source>EmitRequireLicenseAcceptance must not be set to false if RequireLicenseAcceptance is set to true.</source>
-        <target state="translated">EmitRequireLicenseAcceptance non deve essere impostato su false se RequireLicenseAcceptance ├¿ impostato su true.</target>
+        <target state="translated">EmitRequireLicenseAcceptance non deve essere impostato su false se RequireLicenseAcceptance è impostato su true.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_RequireLicenseAcceptanceRequiresLicenseUrl">
         <source>Enabling license acceptance requires a license or a licenseUrl to be specified. The licenseUrl will be deprecated, consider using the license metadata.</source>
-        <target state="translated">Per abilitare l'accettazione della licenza, ├¿ necessario specificare un elemento license o licenseUrl. L'elemento licenseUrl verr├á deprecato, quindi ├¿ consigliabile usare i metadati della licenza.</target>
+        <target state="translated">Per abilitare l'accettazione della licenza, è necessario specificare un elemento license o licenseUrl. L'elemento licenseUrl verrà deprecato, quindi è consigliabile usare i metadati della licenza.</target>
         <note>Please don't localize license and licenseUrl in 'requires a license or a licenseUrl' part.</note>
       </trans-unit>
       <trans-unit id="Manifest_RequiredElementMissing">
@@ -149,7 +149,7 @@
       </trans-unit>
       <trans-unit id="Manifest_RequiredMetadataMissing">
         <source>{0} is required.</source>
-        <target state="translated">{0} ├¿ obbligatorio.</target>
+        <target state="translated">{0} è obbligatorio.</target>
         <note />
       </trans-unit>
       <trans-unit id="Manifest_SourceContainsInvalidCharacters">
@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="Manifest_UriCannotBeEmpty">
         <source>{0} cannot be empty.</source>
-        <target state="translated">{0} non pu├▓ essere vuoto.</target>
+        <target state="translated">{0} non può essere vuoto.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAuthoring_FileNotFound">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="ReadmeCannotOpenFile">
         <source>Cannot open the readme file '{0}': {1}.</source>
-        <target state="translated">Non ├¿ possibile aprire il file leggimi '{0}': {1}.</target>
+        <target state="translated">Non è possibile aprire il file leggimi '{0}': {1}.</target>
         <note>0 - Path to the readme file, 1 - Error message for not opening the readme</note>
       </trans-unit>
       <trans-unit id="ReadmeErrorEmpty">
         <source>The readme file '{0}' is empty.</source>
-        <target state="translated">Il file leggimi '{0}' ├¿ vuoto.</target>
+        <target state="translated">Il file leggimi '{0}' è vuoto.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReadmeFileExtensionIsInvalid">
@@ -189,7 +189,7 @@
       </trans-unit>
       <trans-unit id="ReadmeMissingRequiredValue">
         <source>The element 'readme' cannot be empty.</source>
-        <target state="translated">L'elemento 'readme' non pu├▓ essere vuoto.</target>
+        <target state="translated">L'elemento 'readme' non può essere vuoto.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReadmeNoFileElement">

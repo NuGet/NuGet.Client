@@ -1,4 +1,4 @@
-∩╗┐<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../Strings.resx">
     <body>
@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="CreatedDependencyGraphSpec">
         <source>Created DependencyGraphSpec in {0:D2}ms.</source>
-        <target state="translated">DependencyGraphSpec wurde in {0:D2}┬áms erstellt.</target>
+        <target state="translated">DependencyGraphSpec wurde in {0:D2} ms erstellt.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeterminingProjectsToRestore">
@@ -19,27 +19,27 @@
       </trans-unit>
       <trans-unit id="Error_DgSpecGenerationFailed">
         <source>Cannot write the dependency graph spec because the generation failed.</source>
-        <target state="translated">Die Spezifikation des Abh├ñngigkeitsdiagramms kann aufgrund eines Fehlers beim Generieren nicht geschrieben werden.</target>
+        <target state="translated">Die Spezifikation des Abhängigkeitsdiagramms kann aufgrund eines Fehlers beim Generieren nicht geschrieben werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_DuplicateItems">
         <source>Duplicate '{0}' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate '{0}' items are: {1}.</source>
-        <target state="translated">Es wurden doppelte ΓÇ₧{0}ΓÇ£-Elemente gefunden. Entfernen Sie die doppelten Elemente, oder verwenden Sie die Updatefunktion, um ein konsistentes Wiederherstellungsverhalten sicherzustellen. Die doppelten ΓÇ₧{0}ΓÇ£-Elemente sind: {1}.</target>
+        <target state="translated">Es wurden doppelte „{0}“-Elemente gefunden. Entfernen Sie die doppelten Elemente, oder verwenden Sie die Updatefunktion, um ein konsistentes Wiederherstellungsverhalten sicherzustellen. Die doppelten „{0}“-Elemente sind: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MissingRestoreGraphOutputPath">
         <source>Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing.</source>
-        <target state="translated">Die Spezifikation des Abh├ñngigkeitsdiagramms kann nicht geschrieben werden, weil "RestoreGraphOutputPath" fehlt.</target>
+        <target state="translated">Die Spezifikation des Abhängigkeitsdiagramms kann nicht geschrieben werden, weil "RestoreGraphOutputPath" fehlt.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageDownload_NoVersion">
         <source>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</source>
-        <target state="translated">Das Paket "{0}" weist keine genaue Version wie "[1.0.0]" auf. Nur exakte Versionen sind bei PackageDownload zul├ñssig.</target>
+        <target state="translated">Das Paket "{0}" weist keine genaue Version wie "[1.0.0]" auf. Nur exakte Versionen sind bei PackageDownload zulässig.</target>
         <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_OnlyExactVersionsAreAllowed">
         <source>Package '{0} {1}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</source>
-        <target state="translated">Das Paket "{0} {1}" weist keine genaue Version wie "[1.0.0]" auf. Nur exakte Versionen sind bei PackageDownload zul├ñssig.</target>
+        <target state="translated">Das Paket "{0} {1}" weist keine genaue Version wie "[1.0.0]" auf. Nur exakte Versionen sind bei PackageDownload zulässig.</target>
         <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</note>
       </trans-unit>
       <trans-unit id="Error_PackagesConfigParseError">
@@ -72,7 +72,7 @@
       </trans-unit>
       <trans-unit id="Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue">
         <source>An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, is not an allowable value. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="translated">Fehler beim Parsen der Befehlszeilenargumente in der statischen graphbasierten Wiederherstellung. Die erste gelesene ganze Zahl ({0}) ist kein zul├ñssiger Wert. Melden Sie ein Problem unter https://github.com/NuGet/Home.</target>
+        <target state="translated">Fehler beim Parsen der Befehlszeilenargumente in der statischen graphbasierten Wiederherstellung. Die erste gelesene ganze Zahl ({0}) ist kein zulässiger Wert. Melden Sie ein Problem unter https://github.com/NuGet/Home.</target>
         <note>0 - The value of the first integer read from the stream</note>
       </trans-unit>
       <trans-unit id="Error_StaticGraphRestoreFailedToStart">
@@ -89,14 +89,14 @@
       </trans-unit>
       <trans-unit id="ImportsFallbackWarning">
         <source>ProjectReference '{0}' was resolved using '{1}' instead of the project target framework '{2}'. This project may not be fully compatible with your project.</source>
-        <target state="translated">ProjectReference "{0}" wurde nicht mit Projektzielframework "{2}", sondern mit "{1}" aufgel├╢st. Dieses Projekt ist mit Ihrem Projekt m├╢glicherweise nicht vollst├ñndig kompatibel.</target>
+        <target state="translated">ProjectReference "{0}" wurde nicht mit Projektzielframework "{2}", sondern mit "{1}" aufgelöst. Dieses Projekt ist mit Ihrem Projekt möglicherweise nicht vollständig kompatibel.</target>
         <note>0 - referenced project path
 1 - resolved tfm
 2 - project tfm</note>
       </trans-unit>
       <trans-unit id="InstallCommandNothingToInstall">
         <source>All packages listed in {0} are already installed.</source>
-        <target state="translated">Alle in "{0}" aufgef├╝hrten Pakete sind bereits installiert.</target>
+        <target state="translated">Alle in "{0}" aufgeführten Pakete sind bereits installiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_NoProjectsForRestore">
@@ -106,7 +106,7 @@
       </trans-unit>
       <trans-unit id="Log_ProjectsInSolutionNotKnowntoMSBuild">
         <source>The solution contains '{0}' project(s) '{1}' that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution.</source>
-        <target state="translated">Die Projektmappe enth├ñlt ΓÇ₧{0}ΓÇ£ Projekt(e) ΓÇ₧{1}ΓÇ£, die MSBuild nicht bekannt sind. Stellen Sie sicher, dass alle Projekte als MSBuild bekannt sind, bevor Sie die Projektmappe wiederherstellen.</target>
+        <target state="translated">Die Projektmappe enthält „{0}“ Projekt(e) „{1}“, die MSBuild nicht bekannt sind. Stellen Sie sicher, dass alle Projekte als MSBuild bekannt sind, bevor Sie die Projektmappe wiederherstellen.</target>
         <note>0 - number of projects not known to msbuild
 1 - list of projects</note>
       </trans-unit>
@@ -117,13 +117,13 @@
       </trans-unit>
       <trans-unit id="Log_RunningStaticGraphRestoreCommand">
         <source>Running command: '{0}' {1}</source>
-        <target state="translated">Befehl wird ausgef├╝hrt: "{0}" {1}</target>
+        <target state="translated">Befehl wird ausgeführt: "{0}" {1}</target>
         <note>0 - the path to the EXE being launched
 1 - The command-line arguments</note>
       </trans-unit>
       <trans-unit id="NoCompatibleTargetFramework">
         <source>Project '{0}' targets '{2}'. It cannot be referenced by a project that targets '{1}'.</source>
-        <target state="translated">F├╝r das Projekt "{0}" ist die Zielversion {2} festgelegt. Eine Referenzierung durch ein Projekt mit der Zielversion {1} ist nicht m├╢glich.</target>
+        <target state="translated">Für das Projekt "{0}" ist die Zielversion {2} festgelegt. Eine Referenzierung durch ein Projekt mit der Zielversion {1} ist nicht möglich.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoProjectsProvidedToTask">
@@ -133,12 +133,12 @@
       </trans-unit>
       <trans-unit id="NoProjectsToRestore">
         <source>Nothing to do. None of the projects specified contain packages to restore.</source>
-        <target state="translated">Keine Aktion erforderlich. Keines der angegebenen Projekte enth├ñlt wiederherzustellende Pakete.</target>
+        <target state="translated">Keine Aktion erforderlich. Keines der angegebenen Projekte enthält wiederherzustellende Pakete.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectEvaluationSummary">
         <source>Evaluated {0} project(s) in {1:D2}ms ({2} builds, {3} failures).</source>
-        <target state="translated">{0} Projekte in {1:D2}┬áms ({2} Builds, {3} Fehler).</target>
+        <target state="translated">{0} Projekte in {1:D2} ms ({2} Builds, {3} Fehler).</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCanceled">
@@ -148,22 +148,22 @@
       </trans-unit>
       <trans-unit id="RestoreNoSolutionFound">
         <source>No solution found. Restore against a solution or pass in /p:SolutionDir</source>
-        <target state="translated">Keine Projektmappe gefunden. F├╝hren Sie eine Wiederherstellung anhand einer Projektmappe durch, oder ├╝bergeben Sie "/p:SolutionDir".</target>
+        <target state="translated">Keine Projektmappe gefunden. Führen Sie eine Wiederherstellung anhand einer Projektmappe durch, oder übergeben Sie "/p:SolutionDir".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedFallbackFramework">
         <source>The project fallback framework '{0}' is not a supported target framework.</source>
-        <target state="translated">Das Fallbackframework "{0}" f├╝r das Projekt ist kein unterst├╝tztes Zielframework.</target>
+        <target state="translated">Das Fallbackframework "{0}" für das Projekt ist kein unterstütztes Zielframework.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedTargetFramework">
         <source>The project target framework '{0}' is not a supported target framework.</source>
-        <target state="translated">Das Zielframework "{0}" f├╝r das Projekt ist kein unterst├╝tztes Zielframework.</target>
+        <target state="translated">Das Zielframework "{0}" für das Projekt ist kein unterstütztes Zielframework.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_InvalidPackageSaveMode">
         <source>Invalid PackageSaveMode value '{0}'.</source>
-        <target state="translated">Ung├╝ltiger PackageSaveMode-Wert "{0}".</target>
+        <target state="translated">Ungültiger PackageSaveMode-Wert "{0}".</target>
         <note />
       </trans-unit>
     </body>

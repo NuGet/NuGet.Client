@@ -1,169 +1,169 @@
-∩╗┐<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../Strings.resx">
     <body>
       <trans-unit id="Argument_Cannot_Be_Null_Or_Empty">
         <source>Argument cannot be null or empty</source>
-        <target state="translated">╨É╤Ç╨│╤â╨╝╨╡╨╜╤é ╨╜╨╡ ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╤Ç╨░╨▓╨╡╨╜ NULL ╨╕╨╗╨╕ ╨▒╤ï╤é╤î ╨┐╤â╤ü╤é╤ï╨╝</target>
+        <target state="translated">Аргумент не может быть равен NULL или быть пустым</target>
         <note />
       </trans-unit>
       <trans-unit id="CreatedDependencyGraphSpec">
         <source>Created DependencyGraphSpec in {0:D2}ms.</source>
-        <target state="translated">╨í╨╛╨╖╨┤╨░╨╜╨╛ DependencyGraphSpec ╨╖╨░ {0:D2}╨╝╤ü.</target>
+        <target state="translated">Создано DependencyGraphSpec за {0:D2}мс.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeterminingProjectsToRestore">
         <source>Determining projects to restore...</source>
-        <target state="translated">╨₧╨┐╤Ç╨╡╨┤╨╡╨╗╨╡╨╜╨╕╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓ ╨┤╨╗╤Å ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å...</target>
+        <target state="translated">Определение проектов для восстановления...</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_DgSpecGenerationFailed">
         <source>Cannot write the dependency graph spec because the generation failed.</source>
-        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╖╨░╨┐╨╕╤ü╨░╤é╤î ╤ü╨┐╨╡╤å╨╕╤ä╨╕╨║╨░╤å╨╕╤Ä ╨│╤Ç╨░╤ä╨░ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╡╨╣ ╨╕╨╖-╨╖╨░ ╨╛╤ê╨╕╨▒╨║╨╕ ╨┐╤Ç╨╕ ╤ü╨╛╨╖╨┤╨░╨╜╨╕╨╕.</target>
+        <target state="translated">Не удается записать спецификацию графа зависимостей из-за ошибки при создании.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_DuplicateItems">
         <source>Duplicate '{0}' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate '{0}' items are: {1}.</source>
-        <target state="translated">╨₧╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╤ï ╨┐╨╛╨▓╤é╨╛╤Ç╤Å╤Ä╤ë╨╕╨╡╤ü╤Å ╤ì╨╗╨╡╨╝╨╡╨╜╤é╤ï "{0}". ╨ú╨┤╨░╨╗╨╕╤é╨╡ ╨┐╨╛╨▓╤é╨╛╤Ç╤Å╤Ä╤ë╨╕╨╡╤ü╤Å ╤ì╨╗╨╡╨╝╨╡╨╜╤é╤ï ╨╕╨╗╨╕ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ ╤ä╤â╨╜╨║╤å╨╕╤Ä "╨₧╨▒╨╜╨╛╨▓╨╕╤é╤î", ╤ç╤é╨╛╨▒╤ï ╨╛╨▒╨╡╤ü╨┐╨╡╤ç╨╕╤é╤î ╤ü╨╛╨│╨╗╨░╤ü╨╛╨▓╨░╨╜╨╜╨╛╨╡ ╨┐╨╛╨▓╨╡╨┤╨╡╨╜╨╕╨╡ ╨┐╤Ç╨╕ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╕. ╨ƒ╨╛╨▓╤é╨╛╤Ç╤Å╤Ä╤ë╨╕╨╡╤ü╤Å ╤ì╨╗╨╡╨╝╨╡╨╜╤é╤ï "{0}": {1}.</target>
+        <target state="translated">Обнаружены повторяющиеся элементы "{0}". Удалите повторяющиеся элементы или используйте функцию "Обновить", чтобы обеспечить согласованное поведение при восстановлении. Повторяющиеся элементы "{0}": {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MissingRestoreGraphOutputPath">
         <source>Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing.</source>
-        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╡╤é╤ü╤Å ╨╖╨░╨┐╨╕╤ü╨░╤é╤î ╤ü╨┐╨╡╤å╨╕╤ä╨╕╨║╨░╤å╨╕╤Ä ╨│╤Ç╨░╤ä╨░ ╨╖╨░╨▓╨╕╤ü╨╕╨╝╨╛╤ü╤é╨╡╨╣, ╤é╨░╨║ ╨║╨░╨║ "RestoreGraphOutputPath" ╨╛╤é╤ü╤â╤é╤ü╤é╨▓╤â╨╡╤é.</target>
+        <target state="translated">Не удается записать спецификацию графа зависимостей, так как "RestoreGraphOutputPath" отсутствует.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_PackageDownload_NoVersion">
         <source>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</source>
-        <target state="translated">╨ú ╨┐╨░╨║╨╡╤é╨░ "{0}" ╨╜╨╡╤é ╤é╨╛╤ç╨╜╨╛╨╣ ╨▓╨╡╤Ç╤ü╨╕╨╕, ╤é╨░╨║╨╛╨╣ ╨║╨░╨║ "[1.0.0]". ╨í PackageDownload ╨╝╨╛╨╢╨╜╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╤é╨╛╤ç╨╜╤ï╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕.</target>
+        <target state="translated">У пакета "{0}" нет точной версии, такой как "[1.0.0]". С PackageDownload можно использовать только точные версии.</target>
         <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_OnlyExactVersionsAreAllowed">
         <source>Package '{0} {1}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</source>
-        <target state="translated">╨ú ╨┐╨░╨║╨╡╤é╨░ "{0}{1}" ╨╜╨╡╤é ╤é╨╛╤ç╨╜╨╛╨╣ ╨▓╨╡╤Ç╤ü╨╕╨╕, ╤é╨░╨║╨╛╨╣ ╨║╨░╨║ "[1.0.0]". ╨í PackageDownload ╨╝╨╛╨╢╨╜╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╤é╤î ╤é╨╛╨╗╤î╨║╨╛ ╤é╨╛╤ç╨╜╤ï╨╡ ╨▓╨╡╤Ç╤ü╨╕╨╕.</target>
+        <target state="translated">У пакета "{0}{1}" нет точной версии, такой как "[1.0.0]". С PackageDownload можно использовать только точные версии.</target>
         <note>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</note>
       </trans-unit>
       <trans-unit id="Error_PackagesConfigParseError">
         <source>Error parsing packages.config file at {0}: {1}</source>
-        <target state="translated">╨₧╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ ╤ä╨░╨╣╨╗╨░ packages.config ╨▓ {0}: {1}</target>
+        <target state="translated">Ошибка при анализе файла packages.config в {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_StaticGraphNonZeroExitCode">
         <source>Static graph-based restore failed with exit code '{0}' but did not log an error. Please file an issue at https://github.com/NuGet/Home.</source>
-        <target state="translated">╨í╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨╡ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨╜╨░ ╨▒╨░╨╖╨╡ Graph ╨╜╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╤ü ╨║╨╛╨┤╨╛╨╝ ╨▓╤ï╤à╨╛╨┤╨░ "{0}", ╨╜╨╛ ╨╛╤ê╨╕╨▒╨║╨░ ╨╜╨╡ ╨▒╤ï╨╗╨░ ╨╖╨░╤Ç╨╡╨│╨╕╤ü╤é╤Ç╨╕╤Ç╨╛╨▓╨░╨╜╨░. ╨í╨╛╨╛╨▒╤ë╨╕╤é╨╡ ╨╛ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨╡ ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://github.com/NuGet/Home.</target>
+        <target state="translated">Статическое восстановление на базе Graph не удалось с кодом выхода "{0}", но ошибка не была зарегистрирована. Сообщите о проблеме на странице https://github.com/NuGet/Home.</target>
         <note>0 - the exit code of the process</note>
       </trans-unit>
       <trans-unit id="Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments">
         <source>An error occurred parsing command-line arguments in static graph-based restore as there was an unexpected number of arguments, {0}. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╨╛╨▓ ╨║╨╛╨╝╨░╨╜╨┤╨╜╨╛╨╣ ╤ü╤é╤Ç╨╛╨║╨╕ ╨┐╤Ç╨╕ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╕ ╨╜╨░ ╨╛╤ü╨╜╨╛╨▓╨╡ ╤ü╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╨│╤Ç╨░╤ä╨░, ╤é╨░╨║ ╨║╨░╨║ ╨▒╤ï╨╗╨╛ ╨╛╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╨╛ ╨╜╨╡╨╛╨╢╨╕╨┤╨░╨╜╨╜╨╛╨╡ ╤ç╨╕╤ü╨╗╨╛ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╨╛╨▓. {0} ╨í╨╛╨╛╨▒╤ë╨╕╤é╨╡ ╨╛ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨╡ ╨┐╨╛ ╨░╨┤╤Ç╨╡╤ü╤â https://github.com/NuGet/Home</target>
+        <target state="translated">Произошла ошибка при анализе аргументов командной строки при восстановлении на основе статического графа, так как было обнаружено неожиданное число аргументов. {0} Сообщите о проблеме по адресу https://github.com/NuGet/Home</target>
         <note>0 - The number of arguments</note>
       </trans-unit>
       <trans-unit id="Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream">
         <source>An error occurred parsing command-line arguments in static graph-based restore as end of the standard input stream was unexpectedly encountered. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╨╛╨▓ ╨║╨╛╨╝╨░╨╜╨┤╨╜╨╛╨╣ ╤ü╤é╤Ç╨╛╨║╨╕ ╨┐╤Ç╨╕ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╕ ╨╜╨░ ╨╛╤ü╨╜╨╛╨▓╨╡ ╤ü╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╨│╤Ç╨░╤ä╨░, ╤é╨░╨║ ╨║╨░╨║ ╨╜╨╡╨╛╨╢╨╕╨┤╨░╨╜╨╜╨╛ ╨▒╤ï╨╗╨╛ ╨╛╨▒╨╜╨░╤Ç╤â╨╢╨╡╨╜╨╛ ╨╖╨░╨▓╨╡╤Ç╤ê╨╡╨╜╨╕╨╡ ╤ü╤é╨░╨╜╨┤╨░╤Ç╤é╨╜╨╛╨│╨╛ ╨▓╤à╨╛╨┤╨╜╨╛╨│╨╛ ╨┐╨╛╤é╨╛╨║╨░. ╨í╨╛╨╛╨▒╤ë╨╕╤é╨╡ ╨╛ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨╡ ╨┐╨╛ ╨░╨┤╤Ç╨╡╤ü╤â https://github.com/NuGet/Home</target>
+        <target state="translated">Произошла ошибка при анализе аргументов командной строки при восстановлении на основе статического графа, так как неожиданно было обнаружено завершение стандартного входного потока. Сообщите о проблеме по адресу https://github.com/NuGet/Home</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream">
         <source>An error occurred parsing command-line arguments in static graph-based restore as an exception occurred reading the standard input stream, {0} Please file an issue at https://github.com/NuGet/Home
 {1}</source>
-        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╨╛╨▓ ╨║╨╛╨╝╨░╨╜╨┤╨╜╨╛╨╣ ╤ü╤é╤Ç╨╛╨║╨╕ ╨▓ ╤à╨╛╨┤╨╡ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╨╜╨░ ╨╛╤ü╨╜╨╛╨▓╨╡ ╤ü╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╨│╤Ç╨░╤ä╨░, ╤é╨░╨║ ╨║╨░╨║ ╨▓╨╛╨╖╨╜╨╕╨║╨╗╨╛ ╨╕╤ü╨║╨╗╤Ä╤ç╨╡╨╜╨╕╨╡ ╨┐╤Ç╨╕ ╤ç╤é╨╡╨╜╨╕╨╕ ╤ü╤é╨░╨╜╨┤╨░╤Ç╤é╨╜╨╛╨│╨╛ ╨▓╤à╨╛╨┤╨╜╨╛╨│╨╛ ╨┐╨╛╤é╨╛╨║╨░. {0} ╨í╨╛╨╛╨▒╤ë╨╕╤é╨╡ ╨╛ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨╡ ╨┐╨╛ ╨░╨┤╤Ç╨╡╤ü╤â https://github.com/NuGet/Home
+        <target state="translated">Произошла ошибка при анализе аргументов командной строки в ходе восстановления на основе статического графа, так как возникло исключение при чтении стандартного входного потока. {0} Сообщите о проблеме по адресу https://github.com/NuGet/Home
 {1}</target>
         <note>0 - The exception message
 1 - The string representation of the exception</note>
       </trans-unit>
       <trans-unit id="Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue">
         <source>An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, is not an allowable value. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨░╨╜╨░╨╗╨╕╨╖╨╡ ╨░╤Ç╨│╤â╨╝╨╡╨╜╤é╨╛╨▓ ╨║╨╛╨╝╨░╨╜╨┤╨╜╨╛╨╣ ╤ü╤é╤Ç╨╛╨║╨╕ ╨┐╤Ç╨╕ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╕ ╨╜╨░ ╨╛╤ü╨╜╨╛╨▓╨╡ ╤ü╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╨│╤Ç╨░╤ä╨░, ╤é╨░╨║ ╨║╨░╨║ ╨┐╨╡╤Ç╨▓╨╛╨╡ ╨┐╤Ç╨╛╤ç╨╕╤é╨░╨╜╨╜╨╛╨╡ ╤å╨╡╨╗╨╛╨╡ ╤ç╨╕╤ü╨╗╨╛, {0}, ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╤ï╨╝ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡╨╝. ╨í╨╛╨╛╨▒╤ë╨╕╤é╨╡ ╨╛ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨╡ ╨┐╨╛ ╨░╨┤╤Ç╨╡╤ü╤â https://github.com/NuGet/Home</target>
+        <target state="translated">Произошла ошибка при анализе аргументов командной строки при восстановлении на основе статического графа, так как первое прочитанное целое число, {0}, не является допустимым значением. Сообщите о проблеме по адресу https://github.com/NuGet/Home</target>
         <note>0 - The value of the first integer read from the stream</note>
       </trans-unit>
       <trans-unit id="Error_StaticGraphRestoreFailedToStart">
         <source>An error occurred starting static graph-based restore. {0}. Please file an issue at https://github.com/NuGet/Home</source>
-        <target state="translated">╨ƒ╤Ç╨╛╨╕╨╖╨╛╤ê╨╗╨░ ╨╛╤ê╨╕╨▒╨║╨░ ╨┐╤Ç╨╕ ╨╖╨░╨┐╤â╤ü╨║╨╡ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╨╜╨░ ╨╛╤ü╨╜╨╛╨▓╨╡ ╤ü╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨│╨╛ ╨│╤Ç╨░╤ä╨░. {0}. ╨í╨╛╨╛╨▒╤ë╨╕╤é╨╡ ╨╛ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨╡ ╨┐╨╛ ╨░╨┤╤Ç╨╡╤ü╤â https://github.com/NuGet/Home</target>
+        <target state="translated">Произошла ошибка при запуске восстановления на основе статического графа. {0}. Сообщите о проблеме по адресу https://github.com/NuGet/Home</target>
         <note>0 - The exception message</note>
       </trans-unit>
       <trans-unit id="Error_StaticGraphUnhandledException">
         <source>Static graph-based restore encountered an unhandled exception. Please file an issue at https://github.com/NuGet/Home.  The exception was:
 {0}</source>
-        <target state="translated">╨í╤é╨░╤é╨╕╤ç╨╡╤ü╨║╨╛╨╡ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨╜╨░ ╨▒╨░╨╖╨╡ Graph ╨╛╨▒╨╜╨░╤Ç╤â╨╢╨╕╨╗╨╛ ╨╜╨╡╨╛╨▒╤Ç╨░╨▒╨╛╤é╨░╨╜╨╜╨╛╨╡ ╨╕╤ü╨║╨╗╤Ä╤ç╨╡╨╜╨╕╨╡. ╨í╨╛╨╛╨▒╤ë╨╕╤é╨╡ ╨╛ ╨┐╤Ç╨╛╨▒╨╗╨╡╨╝╨╡ ╨╜╨░ ╤ü╤é╤Ç╨░╨╜╨╕╤å╨╡ https://github.com/NuGet/Home.  ╨ÿ╤ü╨║╨╗╤Ä╤ç╨╡╨╜╨╕╨╡:
+        <target state="translated">Статическое восстановление на базе Graph обнаружило необработанное исключение. Сообщите о проблеме на странице https://github.com/NuGet/Home.  Исключение:
 {0}</target>
         <note>0 - The exception as a string.</note>
       </trans-unit>
       <trans-unit id="ImportsFallbackWarning">
         <source>ProjectReference '{0}' was resolved using '{1}' instead of the project target framework '{2}'. This project may not be fully compatible with your project.</source>
-        <target state="translated">╨¡╨╗╨╡╨╝╨╡╨╜╤é ProjectReference "{0}" ╨▒╤ï╨╗ ╤Ç╨░╨╖╤Ç╨╡╤ê╨╡╨╜ ╤ü ╨┐╨╛╨╝╨╛╤ë╤î╤Ä "{1}", ╨░ ╨╜╨╡ ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤ï ╨┐╤Ç╨╛╨╡╨║╤é╨░ "{2}". ╨¡╤é╨╛╤é ╨┐╤Ç╨╛╨╡╨║╤é ╨╝╨╛╨╢╨╡╤é ╨▒╤ï╤é╤î ╨╜╨╡ ╨┐╨╛╨╗╨╜╨╛╤ü╤é╤î╤Ä ╤ü╨╛╨▓╨╝╨╡╤ü╤é╨╕╨╝ ╤ü ╨▓╨░╤ê╨╕╨╝ ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨╝.</target>
+        <target state="translated">Элемент ProjectReference "{0}" был разрешен с помощью "{1}", а не целевой платформы проекта "{2}". Этот проект может быть не полностью совместим с вашим проектом.</target>
         <note>0 - referenced project path
 1 - resolved tfm
 2 - project tfm</note>
       </trans-unit>
       <trans-unit id="InstallCommandNothingToInstall">
         <source>All packages listed in {0} are already installed.</source>
-        <target state="translated">╨Æ╤ü╨╡ ╨┐╨░╨║╨╡╤é╤ï, ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╨╡ ╨▓ {0}, ╤â╨╢╨╡ ╤â╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╤ï.</target>
+        <target state="translated">Все пакеты, указанные в {0}, уже установлены.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_NoProjectsForRestore">
         <source>The solution did not have any projects to restore, ensure that all projects are known to be MSBuild and that the projects exist.</source>
-        <target state="translated">╨Æ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╕ ╨╛╤é╤ü╤â╤é╤ü╤é╨▓╤â╤Ä╤é ╨┐╤Ç╨╛╨╡╨║╤é╤ï ╨┤╨╗╤Å ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å, ╤â╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ ╨▓╤ü╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╤ï ╨╕╨╖╨▓╨╡╤ü╤é╨╜╤ï ╨║╨░╨║ MSBuild ╨╕ ╨┤╨╡╨╣╤ü╤é╨▓╨╕╤é╨╡╨╗╤î╨╜╨╛ ╤ü╤â╤ë╨╡╤ü╤é╨▓╤â╤Ä╤é.</target>
+        <target state="translated">В решении отсутствуют проекты для восстановления, убедитесь, что все проекты известны как MSBuild и действительно существуют.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_ProjectsInSolutionNotKnowntoMSBuild">
         <source>The solution contains '{0}' project(s) '{1}' that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution.</source>
-        <target state="translated">╨á╨╡╤ê╨╡╨╜╨╕╨╡ ╤ü╨╛╨┤╨╡╤Ç╨╢╨╕╤é ┬½{0}┬╗ ╨┐╤Ç╨╛╨╡╨║╤é╤ï ┬½{1}┬╗, ╨║╨╛╤é╨╛╤Ç╤ï╨╡ ╨╜╨╡ ╨╕╨╖╨▓╨╡╤ü╤é╨╜╤ï MSBuild. ╨ƒ╨╡╤Ç╨╡╨┤ ╨▓╤ï╨┐╨╛╨╗╨╜╨╡╨╜╨╕╨╡╨╝ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╤Å ╤Ç╨╡╤ê╨╡╨╜╨╕╤Å ╤â╨▒╨╡╨┤╨╕╤é╨╡╤ü╤î, ╤ç╤é╨╛ ╨▓╤ü╨╡ ╨┐╤Ç╨╛╨╡╨║╤é╤ï ╨╕╨╖╨▓╨╡╤ü╤é╨╜╤ï ╨║╨░╨║ MSBuild.</target>
+        <target state="translated">Решение содержит «{0}» проекты «{1}», которые не известны MSBuild. Перед выполнением восстановления решения убедитесь, что все проекты известны как MSBuild.</target>
         <note>0 - number of projects not known to msbuild
 1 - list of projects</note>
       </trans-unit>
       <trans-unit id="Log_RestoreNoCacheInformation">
         <source>RestoreNoCache is deprecated and has been renamed to RestoreNoHttpCache. Please use RestoreNoHttpCache instead.</source>
-        <target state="translated">RestoreNoCache ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨▒╨╛╨╗╤î╤ê╨╡ ╨╜╨╡ ╤Ç╨╡╨║╨╛╨╝╨╡╨╜╨┤╤â╨╡╤é╤ü╤Å ╨║ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╨╛╨▓╨░╨╜╨╕╤Ä ╨╕ ╨┐╨╡╤Ç╨╡╨╕╨╝╨╡╨╜╨╛╨▓╨░╨╜ ╨▓ RestoreNoHttpCache. ╨Æ╨╝╨╡╤ü╤é╨╛ ╨╜╨╡╨│╨╛ ╨╕╤ü╨┐╨╛╨╗╤î╨╖╤â╨╣╤é╨╡ RestoreNoHttpCache.</target>
+        <target state="translated">RestoreNoCache является больше не рекомендуется к использованию и переименован в RestoreNoHttpCache. Вместо него используйте RestoreNoHttpCache.</target>
         <note>Do not translate RestoreNoCache and RestoreNoHttpCache</note>
       </trans-unit>
       <trans-unit id="Log_RunningStaticGraphRestoreCommand">
         <source>Running command: '{0}' {1}</source>
-        <target state="translated">╨ù╨░╨┐╤â╤ü╨║ ╨║╨╛╨╝╨░╨╜╨┤╤ï: "{0}" {1}</target>
+        <target state="translated">Запуск команды: "{0}" {1}</target>
         <note>0 - the path to the EXE being launched
 1 - The command-line arguments</note>
       </trans-unit>
       <trans-unit id="NoCompatibleTargetFramework">
         <source>Project '{0}' targets '{2}'. It cannot be referenced by a project that targets '{1}'.</source>
-        <target state="translated">╨ƒ╤Ç╨╛╨╡╨║╤é "{0}" ╨┐╤Ç╨╡╨┤╨╜╨░╨╖╨╜╨░╤ç╨╡╨╜ ╨┤╨╗╤Å ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤ï "{2}". ╨¥╨░ ╨╜╨╡╨│╨╛ ╨╜╨╡ ╤ü╨╗╨╡╨┤╤â╨╡╤é ╤ü╤ü╤ï╨╗╨░╤é╤î╤ü╤Å ╨▓ ╨┐╤Ç╨╛╨╡╨║╤é╨╡, ╨┐╤Ç╨╡╨┤╨╜╨░╨╖╨╜╨░╤ç╨╡╨╜╨╜╨╛╨╝ ╨┤╨╗╤Å ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╤ï "{1}".</target>
+        <target state="translated">Проект "{0}" предназначен для целевой платформы "{2}". На него не следует ссылаться в проекте, предназначенном для целевой платформы "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NoProjectsProvidedToTask">
         <source>Unable to find a project to restore!</source>
-        <target state="translated">╨¥╨╡ ╤â╨┤╨░╨╗╨╛╤ü╤î ╨╜╨░╨╣╤é╨╕ ╨▓╨╛╤ü╤ü╤é╨░╨╜╨░╨▓╨╗╨╕╨▓╨░╨╡╨╝╤ï╨╣ ╨┐╤Ç╨╛╨╡╨║╤é.</target>
+        <target state="translated">Не удалось найти восстанавливаемый проект.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoProjectsToRestore">
         <source>Nothing to do. None of the projects specified contain packages to restore.</source>
-        <target state="translated">╨á╨░╨▒╨╛╤é╤ï ╨╜╨╡╤é. ╨¥╨╕ ╨▓ ╨╛╨┤╨╜╨╛╨╝ ╨╕╨╖ ╤â╨║╨░╨╖╨░╨╜╨╜╤ï╤à ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓ ╨╜╨╡╤é ╨┐╨░╨║╨╡╤é╨╛╨▓, ╨║╨╛╤é╨╛╤Ç╤ï╨╡ ╨╝╨╛╨╢╨╜╨╛ ╨▒╤ï╨╗╨╛ ╨▒╤ï ╨▓╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╤î.</target>
+        <target state="translated">Работы нет. Ни в одном из указанных проектов нет пакетов, которые можно было бы восстановить.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectEvaluationSummary">
         <source>Evaluated {0} project(s) in {1:D2}ms ({2} builds, {3} failures).</source>
-        <target state="translated">╨₧╤å╨╡╨╜╨╡╨╜╨╛ ╨┐╤Ç╨╛╨╡╨║╤é╨╛╨▓: {0} ╨╖╨░ {1:D2}╨╝╤ü (╤ü╨▒╨╛╤Ç╨║╨╕: {2}, ╤ü╨▒╨╛╨╣: {3}).</target>
+        <target state="translated">Оценено проектов: {0} за {1:D2}мс (сборки: {2}, сбой: {3}).</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCanceled">
         <source>Restore canceled!</source>
-        <target state="translated">╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╗╨╡╨╜╨╕╨╡ ╨╛╤é╨╝╨╡╨╜╨╡╨╜╨╛.</target>
+        <target state="translated">Восстановление отменено.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreNoSolutionFound">
         <source>No solution found. Restore against a solution or pass in /p:SolutionDir</source>
-        <target state="translated">╨á╨╡╤ê╨╡╨╜╨╕╨╡ ╨╜╨╡ ╨╜╨░╨╣╨┤╨╡╨╜╨╛. ╨Æ╨╛╤ü╤ü╤é╨░╨╜╨╛╨▓╨╕╤é╨╡ ╤Ç╨╡╤ê╨╡╨╜╨╕╨╡ ╨╕╨╗╨╕ ╤â╨║╨░╨╢╨╕╤é╨╡ ╨┐╨░╤Ç╨░╨╝╨╡╤é╤Ç /p:SolutionDir.</target>
+        <target state="translated">Решение не найдено. Восстановите решение или укажите параметр /p:SolutionDir.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedFallbackFramework">
         <source>The project fallback framework '{0}' is not a supported target framework.</source>
-        <target state="translated">╨á╨╡╨╖╨╡╤Ç╨▓╨╜╨░╤Å ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╨░ ╨┐╤Ç╨╛╨╡╨║╤é╨░ "{0}" ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╨╝╨╛╨╣ ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╨╛╨╣.</target>
+        <target state="translated">Резервная платформа проекта "{0}" не является поддерживаемой целевой платформой.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedTargetFramework">
         <source>The project target framework '{0}' is not a supported target framework.</source>
-        <target state="translated">╨ª╨╡╨╗╨╡╨▓╨░╤Å ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╨░ ╨┐╤Ç╨╛╨╡╨║╤é╨░ "{0}" ╨╜╨╡ ╤Å╨▓╨╗╤Å╨╡╤é╤ü╤Å ╨┐╨╛╨┤╨┤╨╡╤Ç╨╢╨╕╨▓╨░╨╡╨╝╨╛╨╣ ╤å╨╡╨╗╨╡╨▓╨╛╨╣ ╨┐╨╗╨░╤é╤ä╨╛╤Ç╨╝╨╛╨╣.</target>
+        <target state="translated">Целевая платформа проекта "{0}" не является поддерживаемой целевой платформой.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_InvalidPackageSaveMode">
         <source>Invalid PackageSaveMode value '{0}'.</source>
-        <target state="translated">╨¥╨╡╨┤╨╛╨┐╤â╤ü╤é╨╕╨╝╨╛╨╡ ╨╖╨╜╨░╤ç╨╡╨╜╨╕╨╡ PackageSaveMode: "{0}".</target>
+        <target state="translated">Недопустимое значение PackageSaveMode: "{0}".</target>
         <note />
       </trans-unit>
     </body>
