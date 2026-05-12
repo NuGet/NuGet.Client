@@ -173,6 +173,11 @@
 {1} is the package's identity.
 {2} is the dependency's version range.</note>
       </trans-unit>
+      <trans-unit id="ErrorInvalidTimestamp">
+        <source>Invalid timestamp: '{0}'</source>
+        <target state="new">Invalid timestamp: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorManifestFileNotFound">
         <source>Manifest file not found at '{0}'</source>
         <target state="translated">在 '{0}' 找不到資訊清單檔</target>
