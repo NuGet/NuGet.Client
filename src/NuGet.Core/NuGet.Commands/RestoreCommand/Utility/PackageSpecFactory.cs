@@ -155,7 +155,7 @@ namespace NuGet.Commands.Restore.Utility
                         outerBuild.GetProperty("MSBuildStartupDirectory"),
                         project.Directory,
                         SplitPropertyValueOrNull(outerBuild, "RestoreFallbackFolders"),
-                        SplitPropertyValueOrNull(outerBuild, "RestoreFallbackFolders"),
+                        project.SplitGlobalPropertyValueOrNull("RestoreFallbackFolders"),
                         project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
                         project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
                         settings),
@@ -448,7 +448,7 @@ namespace NuGet.Commands.Restore.Utility
         internal static string GetPackagesPath(IProject project, ISettings settings)
         {
             var packagesPath = GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty("RestorePackagesPath")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestorePackagesPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty("RestorePackagesPath")),
                 () => SettingsUtility.GetGlobalPackagesFolder(settings));
 
@@ -782,7 +782,7 @@ namespace NuGet.Commands.Restore.Utility
         private static string GetRepositoryPath(IProject project, ISettings settings)
         {
             var path = GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty("RestoreRepositoryPath")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestoreRepositoryPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty("RestoreRepositoryPath")),
                 () => SettingsUtility.GetRepositoryPath(settings),
                 () =>
@@ -831,10 +831,10 @@ namespace NuGet.Commands.Restore.Utility
         internal static List<PackageSource> GetSources(IProject project, ISettings settings)
         {
             return GetSources(
-                project.OuterBuild.GetProperty("OriginalMSBuildStartupDirectory"),
+                project.GetGlobalProperty("OriginalMSBuildStartupDirectory"),
                 project.Directory,
                 project.OuterBuild.SplitPropertyValueOrNull("RestoreSources"),
-                project.OuterBuild.SplitPropertyValueOrNull("RestoreSources"),
+                project.SplitGlobalPropertyValueOrNull("RestoreSources"),
                 project.TargetFrameworks.Values.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectSources"))),
                 settings)
                 .Select(i => new PackageSource(i))
@@ -969,6 +969,19 @@ namespace NuGet.Commands.Restore.Utility
         private static string[]? SplitPropertyValueOrNull(this ITargetFramework project, string name)
         {
             string? value = project.GetProperty(name);
+
+            return value is null ? null : MSBuildStringUtility.Split(value);
+        }
+
+        /// <summary>
+        /// Splits the value of the specified global property and returns an array if the property has a value, otherwise returns <code>null</code>.
+        /// </summary>
+        /// <param name="project">The <see cref="IProject" /> to get the global property value from.</param>
+        /// <param name="name">The name of the global property to get the value of and split.</param>
+        /// <returns>A <see cref="T:string[]" /> containing the split value of the global property if it had a value, otherwise <code>null</code>.</returns>
+        private static string[]? SplitGlobalPropertyValueOrNull(this IProject project, string name)
+        {
+            string? value = project.GetGlobalProperty(name);
 
             return value is null ? null : MSBuildStringUtility.Split(value);
         }

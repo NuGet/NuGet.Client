@@ -801,7 +801,7 @@ namespace NuGet.Build.Tasks.Console
                     binaryLoggerParameters,
                     createProjectFactory: static (string projectPath, (ProjectInstance projectInstance, string targetFramework) args) =>
                     {
-                        var adapter = new RestoreProjectAdapter(args.projectInstance.FullPath);
+                        var adapter = new RestoreProjectAdapter(args.projectInstance.FullPath, args.projectInstance.GlobalProperties);
                         adapter.AddTargetFramework(args.targetFramework, new TargetFrameworkAdapter(args.projectInstance));
                         return adapter;
                     },

@@ -35,6 +35,10 @@ internal class LegacyProjectAdapter : IProject
 
     public IReadOnlyDictionary<string, ITargetFramework> TargetFrameworks { get; }
 
+    // LegacyProjectAdapter is used only in Visual Studio, where global properties
+    // (command line arguments like /p:Property=Value) are not applicable.
+    public string? GetGlobalProperty(string propertyName) => null;
+
     private class TargetFrameworkAdapter : ITargetFramework
     {
         private readonly IVsProjectAdapter _projectAdapter;
