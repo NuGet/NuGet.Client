@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using NuGet.Commands.Restore;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
@@ -63,7 +64,7 @@ namespace NuGet.SolutionRestoreManager.PackageSpecAdapter
                         hashCodeCombiner.AddObject(item.Name);
                         if (item.Metadata is not null)
                         {
-                            foreach (var metadata in item.Metadata)
+                            foreach (var metadata in item.Metadata.OrderBy(kvp => kvp.Key, StringComparer.OrdinalIgnoreCase))
                             {
                                 hashCodeCombiner.AddObject(metadata.Key);
                                 hashCodeCombiner.AddObject(metadata.Value);

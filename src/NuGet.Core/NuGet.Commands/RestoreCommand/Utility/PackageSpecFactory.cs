@@ -154,61 +154,92 @@ namespace NuGet.Commands.Restore.Utility
 
         private static void ApplySettingsSources(ProjectRestoreMetadata metadata, ISettings settings)
         {
-            if (metadata.Sources == null || metadata.Sources.Count == 0)
+            (List<string> sources, List<string> additionalSources) = SplitOnAdditionalMarker(
+                metadata.Sources?.Select(s => s.Source));
+
+            IEnumerable<string> processedSources;
+            if (sources.Count == 0)
             {
-                metadata.Sources = PackageSourceProvider.LoadPackageSources(settings)
+                processedSources = PackageSourceProvider.LoadPackageSources(settings)
                     .Where(e => e.IsEnabled)
-                    .ToList();
+                    .Select(e => e.Source);
             }
-            else if (MSBuildRestoreUtility.ContainsClearKeyword(metadata.Sources.Select(s => s.Source)))
+            else if (MSBuildRestoreUtility.ContainsClearKeyword(sources))
             {
-                // Clear was specified — remove the marker and don't fill from settings
-                metadata.Sources = metadata.Sources
-                    .Where(s => !StringComparer.OrdinalIgnoreCase.Equals(s.Source, MSBuildRestoreUtility.Clear))
-                    .ToList();
+                processedSources = Enumerable.Empty<string>();
+            }
+            else
+            {
+                processedSources = sources;
             }
 
             // Resolve relative source paths to absolute using the project directory.
             // The intermediate PackageSpec stores raw relative paths; we resolve them here.
             string projectDirectory = Path.GetDirectoryName(metadata.ProjectPath)!;
-            metadata.Sources = metadata.Sources
-                .Select(s => new PackageSource(ResolvePathOrKeep(projectDirectory, s.Source)))
+            metadata.Sources = processedSources
+                .Concat(additionalSources)
+                .Select(s => new PackageSource(UriUtility.GetAbsolutePath(projectDirectory, s)!))
                 .ToList();
         }
 
         private static void ApplySettingsFallbackFolders(ProjectRestoreMetadata metadata, ISettings settings)
         {
-            if (metadata.FallbackFolders == null || metadata.FallbackFolders.Count == 0)
+            (List<string> fallbackFolders, List<string> additionalFallbackFolders) = SplitOnAdditionalMarker(
+                metadata.FallbackFolders);
+
+            IEnumerable<string> processedFallbackFolders;
+            if (fallbackFolders.Count == 0)
             {
-                metadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList();
+                processedFallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings);
             }
-            else if (MSBuildRestoreUtility.ContainsClearKeyword(metadata.FallbackFolders))
+            else if (MSBuildRestoreUtility.ContainsClearKeyword(fallbackFolders))
             {
-                // Clear was specified — remove the marker and don't fill from settings
-                metadata.FallbackFolders = metadata.FallbackFolders
-                    .Where(f => !StringComparer.OrdinalIgnoreCase.Equals(f, MSBuildRestoreUtility.Clear))
-                    .ToList();
+                processedFallbackFolders = Enumerable.Empty<string>();
+            }
+            else
+            {
+                processedFallbackFolders = fallbackFolders;
             }
 
             // Resolve relative fallback folder paths to absolute using the project directory.
             string projectDirectory = Path.GetDirectoryName(metadata.ProjectPath)!;
-            metadata.FallbackFolders = metadata.FallbackFolders
-                .Select(f => ResolvePathOrKeep(projectDirectory, f))
+            metadata.FallbackFolders = processedFallbackFolders
+                .Concat(additionalFallbackFolders)
+                .Select(f => UriUtility.GetAbsolutePath(projectDirectory, f)!)
                 .ToList();
         }
 
         /// <summary>
-        /// Resolves a relative path to absolute using the project directory, but preserves
-        /// marker values like "$Additional$" and paths that are already absolute (e.g. from settings).
+        /// Splits a list of entries on the <see cref="AdditionalValue"/> marker.
+        /// Entries before the marker are "main" entries; entries after are "additional" entries
+        /// that should always be appended regardless of whether main entries come from settings.
         /// </summary>
-        private static string ResolvePathOrKeep(string projectDirectory, string path)
+        private static (List<string> main, List<string> additional) SplitOnAdditionalMarker(IEnumerable<string>? entries)
         {
-            if (StringComparer.Ordinal.Equals(path, AdditionalValue))
+            var main = new List<string>();
+            var additional = new List<string>();
+
+            if (entries is not null)
             {
-                return path;
+                bool readingAdditional = false;
+                foreach (string entry in entries)
+                {
+                    if (StringComparer.Ordinal.Equals(AdditionalValue, entry))
+                    {
+                        readingAdditional = true;
+                    }
+                    else if (readingAdditional)
+                    {
+                        additional.Add(entry);
+                    }
+                    else
+                    {
+                        main.Add(entry);
+                    }
+                }
             }
 
-            return UriUtility.GetAbsolutePath(projectDirectory, path)!;
+            return (main, additional);
         }
 
         /// <summary>
