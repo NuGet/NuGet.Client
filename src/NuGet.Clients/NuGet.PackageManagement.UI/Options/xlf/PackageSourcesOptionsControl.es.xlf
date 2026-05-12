@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../PackageSourcesOptionsControl.resx">
     <body>
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="HeaderLabel.Text">
         <source>Package sources:</source>
-        <target state="translated">Orígenes de paquetes:</target>
+        <target state="translated">Or├¡genes de paquetes:</target>
         <note />
       </trans-unit>
       <trans-unit id="HttpWarningIcon.AccessibleDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="MachineWidePackageSourcesListBox.AccessibleName">
         <source>Machine-wide package sources</source>
-        <target state="translated">Orígenes de paquetes de equipos</target>
+        <target state="translated">Or├¡genes de paquetes de equipos</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineWideSourcesLabel.Text">
         <source>&amp;Machine-wide package sources:</source>
-        <target state="translated">Orígenes de paquetes de &amp;equipos:</target>
+        <target state="translated">Or├¡genes de paquetes de &amp;equipos:</target>
         <note />
       </trans-unit>
       <trans-unit id="NewPackageNameLabel.Text">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="PackageSourcesListBox.AccessibleName">
         <source>Package sources</source>
-        <target state="translated">Orígenes del paquete</target>
+        <target state="translated">Or├¡genes del paquete</target>
         <note />
       </trans-unit>
       <trans-unit id="addButton.AccessibleDescription">

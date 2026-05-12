@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+∩╗┐<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../NuGetTools.vsct">
     <body>
       <trans-unit id="cmdidAddPackagesForSolution|ButtonText">
         <source>Manage &amp;NuGet Packages for Solution...</source>
-        <target state="translated">Gérer les packages &amp;NuGet pour la solution...</target>
+        <target state="translated">G├⌐rer les packages &amp;NuGet pour la solution...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackagesForSolution|CommandName">
@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="cmdidAddPackages|ButtonText">
         <source>Manage &amp;NuGet Packages...</source>
-        <target state="translated">Gérer les packages &amp;NuGet...</target>
+        <target state="translated">G├⌐rer les packages &amp;NuGet...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidAddPackages|CommandName">
@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="cmdidProjects|ButtonText">
         <source>Default pro&amp;ject:</source>
-        <target state="translated">Pro&amp;jet par défaut :</target>
+        <target state="translated">Pro&amp;jet par d├⌐faut┬á:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidRestorePackages|ButtonText">
@@ -59,22 +59,22 @@
       </trans-unit>
       <trans-unit id="cmdidSourceSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">Paramètres du &amp;Gestionnaire de package</target>
+        <target state="translated">Param├¿tres du &amp;Gestionnaire de package</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidSources|ButtonText">
         <source>Pac&amp;kage source:</source>
-        <target state="translated">Source de pac&amp;kages :</target>
+        <target state="translated">Source de pac&amp;kages┬á:</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidStopHost|ButtonText">
         <source>&amp;Stop command execution</source>
-        <target state="translated">&amp;Arrêter l’exécution de la commande</target>
+        <target state="translated">&amp;Arr├¬ter lΓÇÖex├⌐cution de la commande</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|ButtonText">
         <source>U&amp;pdate...</source>
-        <target state="translated">M&amp;ettre à jour...</target>
+        <target state="translated">M&amp;ettre ├á jour...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackages|CommandName">
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="cmdidUpdatePackage|ButtonText">
         <source>U&amp;pdate...</source>
-        <target state="translated">M&amp;ettre à jour...</target>
+        <target state="translated">M&amp;ettre ├á jour...</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidUpdatePackage|CommandName">
@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="idGeneralSettings|ButtonText">
         <source>&amp;Package Manager Settings</source>
-        <target state="translated">Paramètres du &amp;Gestionnaire de package</target>
+        <target state="translated">Param├¿tres du &amp;Gestionnaire de package</target>
         <note />
       </trans-unit>
       <trans-unit id="idGeneralSettings|CommandName">
