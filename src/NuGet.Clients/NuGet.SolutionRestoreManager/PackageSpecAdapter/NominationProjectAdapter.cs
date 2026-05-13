@@ -41,5 +41,8 @@ namespace NuGet.SolutionRestoreManager.PackageSpecAdapter
         public ITargetFramework OuterBuild { get; }
 
         public IReadOnlyDictionary<string, ITargetFramework> TargetFrameworks { get; }
+
+        // Global properties are MSBuild command-line arguments, which don't exist in VS nominations.
+        public string? GetGlobalProperty(string propertyName) => null;
     }
 }
