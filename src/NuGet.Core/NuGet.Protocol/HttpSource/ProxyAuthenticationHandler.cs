@@ -70,8 +70,7 @@ namespace NuGet.Protocol
 
                 // Store the auth start before sending the request
                 var cacheVersion = _credentialCache.Version;
-                // RequestUri is always set for NuGet HTTP requests
-                var requestUri = request.RequestUri!;
+                var requestUri = request.RequestUri ?? throw new ArgumentException(message: "request.RequestUri must not be null");
 
                 try
                 {

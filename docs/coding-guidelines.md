@@ -302,6 +302,26 @@ Think of it as a spectrum: **`required init`** > **`init`** > **`set`**. Use the
 
 Default to non-null types. Only mark a type as nullable (`?`) when the value is genuinely optional — configuration, cache misses, "not found" semantics. Don't replace null with sentinel values (`string.Empty`, `Array.Empty<T>()`) if downstream code would silently misbehave — empty should not become the new null.
 
+### Null-forgiving operator (`!`)
+
+Every use of the null-forgiving operator (`!`) must be justified. A bare `!` suppresses the compiler's null analysis and, if the assumption is ever wrong, produces a `NullReferenceException` with no indication of where the null originated. Prefer one of these alternatives, in order:
+
+1. **Restructure so `!` is unnecessary.** Change the return type, field type, or control flow so the compiler can prove non-null on its own (e.g., return `Task<T>` instead of setting a field, use `required` properties, use `[NotNullWhen]`).
+2. **Use `?? throw`.** When a value should never be null but the compiler can't verify it, fail fast with a descriptive exception:
+
+   ```cs
+   var requestUri = request.RequestUri
+       ?? throw new ArgumentException("request.RequestUri must not be null");
+   ```
+
+3. **Use `!` with a comment explaining why it is safe.** Reserve this for cases where the alternatives above are impractical — for example, a field that is guaranteed non-null by construction but set to `null!` in `Dispose`:
+
+   ```cs
+   _httpContent = null!; // Release reference without disposing; field is never read after Dispose.
+   ```
+
+Do not use `!` merely to silence a warning. If you cannot explain why the value is guaranteed non-null, make the type nullable and let callers handle it.
+
 ### Getting or Setting Environment Variables
 
 Environment variables apply to the entire process and are considered static state which can cause test issues since multiple tests can be running in parallel reading or updating the same variable.
