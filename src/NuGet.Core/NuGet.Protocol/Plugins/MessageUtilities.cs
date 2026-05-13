@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -31,7 +32,7 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(requestId));
             }
 
-            return new Message(requestId, type, method);
+            return new Message(requestId, type, method, (object)null);
         }
 
         /// <summary>
@@ -63,9 +64,39 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            var jsonPayload = JsonSerializationUtilities.FromObject(payload);
+            return new Message(requestId, type, method, payload);
+        }
 
-            return new Message(requestId, type, method, jsonPayload);
+        /// <summary>
+        /// Serializes a message's payload to a JSON string.
+        /// Use this instead of accessing the obsolete <see cref="Message.Payload" /> directly.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A JSON string, or <see langword="null" /> if no payload exists.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <see langword="null" />.</exception>
+        public static string SerializePayload(Message message)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (message.PayloadObject == null)
+            {
+                return null;
+            }
+
+            if (message.PayloadObject is JObject jobj)
+            {
+                return jobj.ToString(Newtonsoft.Json.Formatting.None);
+            }
+
+            using (var stringWriter = new System.IO.StringWriter())
+            using (var jsonWriter = new Newtonsoft.Json.JsonTextWriter(stringWriter))
+            {
+                JsonSerializationUtilities.Serialize(jsonWriter, message.PayloadObject);
+                return stringWriter.ToString();
+            }
         }
 
         /// <summary>
@@ -83,17 +114,17 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(message));
             }
 
-            if (message.Payload == null)
+            if (message.PayloadObject == null)
             {
                 return default(TPayload);
             }
 
-            if (message.Payload is Newtonsoft.Json.Linq.JObject jobj)
+            if (message.PayloadObject is Newtonsoft.Json.Linq.JObject jobj)
             {
                 return JsonSerializationUtilities.ToObject<TPayload>(jobj);
             }
 
-            if (message.Payload is TPayload typed)
+            if (message.PayloadObject is TPayload typed)
             {
                 return typed;
             }
@@ -102,7 +133,7 @@ namespace NuGet.Protocol.Plugins
                 string.Format(
                     System.Globalization.CultureInfo.CurrentCulture,
                     Strings.Plugin_InvalidPayloadCast,
-                    message.Payload.GetType().FullName,
+                    message.PayloadObject.GetType().FullName,
                     typeof(TPayload).FullName,
                     message.Method));
         }

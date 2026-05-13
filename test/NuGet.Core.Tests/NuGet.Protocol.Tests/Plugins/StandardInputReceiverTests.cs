@@ -124,7 +124,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(requestId, message.RequestId);
                 Assert.Equal(type, message.Type);
                 Assert.Equal(method, message.Method);
-                Assert.Null(message.Payload);
+                Assert.Null(MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -164,7 +164,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(requestId, message.RequestId);
                 Assert.Equal(type, message.Type);
                 Assert.Equal(method, message.Method);
-                Assert.Equal(payload, message.Payload != null ? TestUtilities.Serialize(message.Payload) : null);
+                Assert.Equal(payload, MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -212,7 +212,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(requestId, message.RequestId);
                 Assert.Equal(type, message.Type);
                 Assert.Equal(method, message.Method);
-                Assert.Equal(payload, TestUtilities.Serialize(message.Payload));
+                Assert.Equal(payload, MessageUtilities.SerializePayload(message));
             }
         }
 

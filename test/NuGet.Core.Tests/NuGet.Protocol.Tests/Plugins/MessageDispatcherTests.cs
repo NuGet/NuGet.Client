@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Tests;
 using Xunit;
 
@@ -210,7 +209,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Request, message.Type);
                 Assert.Equal(MessageMethod.Handshake, message.Method);
-                Assert.Null(message.Payload);
+                Assert.Null(MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -244,7 +243,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(MessageType.Request, message.Type);
                 Assert.Equal(MessageMethod.Handshake, message.Method);
                 Assert.Equal("{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"1.0.0\"}",
-                    TestUtilities.Serialize(message.Payload));
+                    MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -351,7 +350,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             {
-                var request = new Message(_idGenerator.Id, MessageType.Request, _method);
+                var request = MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method);
 
                 await dispatcher.DispatchCancelAsync(request, CancellationToken.None);
             }
@@ -376,7 +375,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => dispatcher.DispatchCancelAsync(
-                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method),
                         new CancellationToken(canceled: true)));
             }
         }
@@ -389,7 +388,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 dispatcher.SetConnection(connection);
 
-                var request = new Message(_idGenerator.Id, MessageType.Request, _method);
+                var request = MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method);
 
                 await Assert.ThrowsAsync<ProtocolException>(
                     () => dispatcher.DispatchCancelAsync(request, CancellationToken.None));
@@ -411,7 +410,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     message = e.Message;
                 };
 
-                var request = new Message(_idGenerator.Id, MessageType.Request, MessageMethod.GetOperationClaims);
+                var request = MessageUtilities.Create(_idGenerator.Id, MessageType.Request, MessageMethod.GetOperationClaims);
 
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
                     request.Method,
@@ -424,7 +423,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Cancel, message.Type);
                 Assert.Equal(request.Method, message.Method);
-                Assert.Null(message.Payload);
+                Assert.Null(MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -447,7 +446,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => dispatcher.DispatchFaultAsync(
-                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method),
                         fault: null,
                         cancellationToken: CancellationToken.None));
 
@@ -462,7 +461,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => dispatcher.DispatchFaultAsync(
-                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method),
                         new Fault("test"),
                         new CancellationToken(canceled: true)));
             }
@@ -497,7 +496,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Fault, message.Type);
                 Assert.Equal(MessageMethod.None, message.Method);
-                Assert.Equal("{\"Message\":\"a\"}", TestUtilities.Serialize(message.Payload));
+                Assert.Equal("{\"Message\":\"a\"}", MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -516,11 +515,11 @@ namespace NuGet.Protocol.Plugins.Tests
                     message = e.Message;
                 };
 
-                var request = new Message(
+                var request = MessageUtilities.Create(
                     _idGenerator.Id,
                     MessageType.Request,
                     MessageMethod.Handshake,
-                    JObject.FromObject(new Request()));
+                    new Request());
 
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
                     request.Method,
@@ -535,7 +534,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Fault, message.Type);
                 Assert.Equal(request.Method, message.Method);
-                Assert.Equal("{\"Message\":\"a\"}", TestUtilities.Serialize(message.Payload));
+                Assert.Equal("{\"Message\":\"a\"}", MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -544,8 +543,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             {
-                var payload = JObject.FromObject(new Request());
-                var request = new Message(_idGenerator.Id, MessageType.Request, _method, payload);
+                var request = MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method, new Request());
 
                 await dispatcher.DispatchProgressAsync(
                     request,
@@ -576,7 +574,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => dispatcher.DispatchProgressAsync(
-                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method),
                         progress: null,
                         cancellationToken: CancellationToken.None));
 
@@ -591,7 +589,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => dispatcher.DispatchProgressAsync(
-                        new Message(_idGenerator.Id, MessageType.Request, _method),
+                        MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method),
                         new Progress(),
                         new CancellationToken(canceled: true)));
             }
@@ -605,8 +603,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 dispatcher.SetConnection(connection);
 
-                var payload = JObject.FromObject(new Request());
-                var request = new Message(_idGenerator.Id, MessageType.Request, _method, payload);
+                var request = MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method, new Request());
                 var progress = new Progress(percentage: 0.5);
 
                 await Assert.ThrowsAsync<ProtocolException>(
@@ -629,12 +626,11 @@ namespace NuGet.Protocol.Plugins.Tests
                     message = e.Message;
                 };
 
-                var payload = JObject.FromObject(new Request());
-                var request = new Message(
+                var request = MessageUtilities.Create(
                     _idGenerator.Id,
                     MessageType.Request,
                     MessageMethod.GetOperationClaims,
-                    payload);
+                    new Request());
                 var progress = new Progress(percentage: 0.5);
 
                 var requestTask = dispatcher.DispatchRequestAsync<Request, Response>(
@@ -648,7 +644,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Equal(_idGenerator.Id, message.RequestId);
                 Assert.Equal(MessageType.Progress, message.Type);
                 Assert.Equal(request.Method, message.Method);
-                Assert.Equal("{\"Percentage\":0.5}", TestUtilities.Serialize(message.Payload));
+                Assert.Equal("{\"Percentage\":0.5}", MessageUtilities.SerializePayload(message));
             }
         }
 
@@ -688,11 +684,11 @@ namespace NuGet.Protocol.Plugins.Tests
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             using (var connection = new ConnectionMock())
             {
-                var response = new Message(
+                var response = MessageUtilities.Create(
                     _idGenerator.Id,
                     MessageType.Response,
                     _method,
-                    JObject.FromObject(new Response()));
+                    new Response());
 
                 dispatcher.SetConnection(connection);
 
@@ -713,8 +709,7 @@ namespace NuGet.Protocol.Plugins.Tests
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
             {
                 var version = new SemanticVersion(major: 1, minor: 0, patch: 0);
-                var payload = JObject.FromObject(new HandshakeRequest(version, version));
-                var request = new Message(_idGenerator.Id, MessageType.Request, _method, payload);
+                var request = MessageUtilities.Create(_idGenerator.Id, MessageType.Request, _method, new HandshakeRequest(version, version));
 
                 await dispatcher.DispatchResponseAsync(
                     request,
@@ -747,7 +742,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => dispatcher.DispatchResponseAsync<HandshakeResponse>(
-                        new Message(_idGenerator.Id, MessageType.Request, MessageMethod.Handshake),
+                        MessageUtilities.Create(_idGenerator.Id, MessageType.Request, MessageMethod.Handshake),
                         responsePayload: null,
                         cancellationToken: CancellationToken.None));
 
@@ -762,7 +757,7 @@ namespace NuGet.Protocol.Plugins.Tests
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => dispatcher.DispatchResponseAsync(
-                        new Message(_idGenerator.Id, MessageType.Request, MessageMethod.Handshake),
+                        MessageUtilities.Create(_idGenerator.Id, MessageType.Request, MessageMethod.Handshake),
                         new HandshakeResponse(
                             MessageResponseCode.Success,
                             ProtocolConstants.CurrentVersion),
@@ -783,11 +778,11 @@ namespace NuGet.Protocol.Plugins.Tests
                     new Request(),
                     CancellationToken.None);
 
-                var response = new Message(
+                var response = MessageUtilities.Create(
                     _idGenerator.Id,
                     MessageType.Response,
                     _method,
-                    JObject.FromObject(new Response()));
+                    new Response());
 
                 connection.SimulateResponse(response);
 
@@ -1023,7 +1018,7 @@ namespace NuGet.Protocol.Plugins.Tests
                             m => m.RequestId == request.RequestId &&
                             m.Type == MessageType.Cancel &&
                             m.Method == request.Method &&
-                            m.Payload == null),
+                            MessageUtilities.SerializePayload(m) == null),
                         It.IsAny<CancellationToken>()))
                     .Callback<Message, CancellationToken>(
                         (message, cancellationToken) =>
