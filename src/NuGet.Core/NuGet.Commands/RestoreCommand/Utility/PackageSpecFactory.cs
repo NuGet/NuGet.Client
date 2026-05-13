@@ -1018,12 +1018,13 @@ namespace NuGet.Commands.Restore.Utility
 
         private static string[] GetSources(string? startupDirectory, string projectDirectory, string[]? sources, string[]? sourcesOverride, IEnumerable<string> additionalProjectSources)
         {
-            // Override sources resolve against the MSBuild startup directory (cwd where msbuild was invoked).
-            // Regular sources resolve against the project directory.
+            // Sources — keep as relative paths; ApplySettings will resolve to absolute.
+            // Exception: override sources must be resolved against startupDirectory here,
+            // because ApplySettings only knows projectDirectory.
             var currentSources = GetValue(
                 () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)!).ToArray(),
                 () => MSBuildRestoreUtility.ContainsClearKeyword(sources) ? new[] { MSBuildRestoreUtility.Clear } : null,
-                () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)!).ToArray());
+                () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).ToArray());
 
             // If the result contains Clear (e.g., override had Clear mixed in), collapse to just the marker.
             if (currentSources != null && MSBuildRestoreUtility.ContainsClearKeyword(currentSources))
@@ -1036,8 +1037,7 @@ namespace NuGet.Commands.Restore.Utility
             var filteredAdditionalProjectSources = MSBuildRestoreUtility.AggregateSources(
                     values: additionalProjectSources,
                     excludeValues: Enumerable.Empty<string>())
-                .Select(MSBuildRestoreUtility.FixSourcePath)
-                .Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)!);
+                .Select(MSBuildRestoreUtility.FixSourcePath);
 
             // When no sources are defined by MSBuild properties, return empty. ApplySettings will fill from ISettings later.
             return AppendItems(currentSources ?? Array.Empty<string>(), filteredAdditionalProjectSources);
