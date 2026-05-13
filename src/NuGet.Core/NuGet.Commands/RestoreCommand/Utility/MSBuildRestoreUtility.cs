@@ -349,8 +349,6 @@ namespace NuGet.Commands
             var projectPath = specItem.GetProperty("ProjectPath");
             var projectName = specItem.GetProperty("ProjectName") ?? Path.GetFileNameWithoutExtension(projectPath);
             var outputPath = specItem.GetProperty("OutputPath");
-            var packagesPath = specItem.GetProperty("PackagesPath");
-
             if (string.IsNullOrEmpty(outputPath))
             {
                 outputPath = Path.Combine(Path.GetDirectoryName(projectPath), "obj");
@@ -373,29 +371,13 @@ namespace NuGet.Commands
                 Name = projectName,
                 RestoreMetadata = new ProjectRestoreMetadata()
                 {
-                    ProjectUniqueName = specItem.GetProperty("ProjectUniqueName") ?? projectPath,
+                    ProjectUniqueName = projectPath,
                     ProjectStyle = ProjectStyle.PackageReference,
                     ProjectPath = projectPath,
                     OutputPath = outputPath,
-                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, projectPath),
-                    PackagesPath = packagesPath,
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath),
                 }
             };
-
-            foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
-            {
-                errorSpec.RestoreMetadata.Sources.Add(new PackageSource(FixSourcePath(source)));
-            }
-
-            foreach (var configFilePath in MSBuildStringUtility.Split(specItem.GetProperty("ConfigFilePaths")))
-            {
-                errorSpec.RestoreMetadata.ConfigFilePaths.Add(configFilePath);
-            }
-
-            foreach (var folder in MSBuildStringUtility.Split(specItem.GetProperty("FallbackFolders")))
-            {
-                errorSpec.RestoreMetadata.FallbackFolders.Add(folder);
-            }
 
             return errorSpec;
         }
