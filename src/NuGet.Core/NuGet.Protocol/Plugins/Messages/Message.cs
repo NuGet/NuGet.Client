@@ -41,6 +41,7 @@ namespace NuGet.Protocol.Plugins
         public JObject Payload => null;
 
         [JsonProperty("Payload")]
+        [JsonConverter(typeof(ObjectPayloadConverter))]
         internal object PayloadObject { get; }
 
         /// <summary>
