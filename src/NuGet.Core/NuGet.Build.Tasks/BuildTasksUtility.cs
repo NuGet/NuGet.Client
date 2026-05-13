@@ -147,6 +147,25 @@ namespace NuGet.Build.Tasks
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
+            return await RestoreAsync(dependencyGraphSpec, interactive, recursive, noCache, ignoreFailedSources, disableParallel, force, forceEvaluate, hideWarningsAndErrors, restorePC, cleanupAssetsForUnsupportedProjects, additionalMessages: null, log, cancellationToken);
+        }
+
+        public static async Task<List<RestoreSummary>> RestoreAsync(
+            DependencyGraphSpec dependencyGraphSpec,
+            bool interactive,
+            bool recursive,
+            bool noCache,
+            bool ignoreFailedSources,
+            bool disableParallel,
+            bool force,
+            bool forceEvaluate,
+            bool hideWarningsAndErrors,
+            bool restorePC,
+            bool cleanupAssetsForUnsupportedProjects,
+            IReadOnlyList<IAssetsLogMessage> additionalMessages,
+            Common.ILogger log,
+            CancellationToken cancellationToken)
+        {
             if (dependencyGraphSpec == null)
             {
                 throw new ArgumentNullException(nameof(dependencyGraphSpec));
@@ -238,7 +257,8 @@ namespace NuGet.Build.Tasks
                             PreLoadedRequestProviders = providers,
                             AllowNoOp = !force,
                             HideWarningsAndErrors = hideWarningsAndErrors,
-                            RestoreForceEvaluate = forceEvaluate
+                            RestoreForceEvaluate = forceEvaluate,
+                            AdditionalMessages = additionalMessages
                         };
 
                         if (restoreContext.DisableParallel)

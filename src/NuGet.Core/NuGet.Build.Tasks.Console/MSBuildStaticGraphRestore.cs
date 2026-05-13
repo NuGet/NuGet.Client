@@ -105,7 +105,7 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -162,6 +162,7 @@ namespace NuGet.Build.Tasks.Console
                     hideWarningsAndErrors: IsOptionTrue(nameof(RestoreTaskEx.HideWarningsAndErrors), options),
                     restorePC: restorePackagesConfig,
                     cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
+                    additionalMessages: additionalMessages,
                     log: MSBuildLogger,
                 cancellationToken: CancellationToken.None);
                 bool result = restoreSummaries.All(rs => rs.Success);
@@ -191,7 +192,7 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, _) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
 
             try
             {
@@ -620,6 +621,13 @@ namespace NuGet.Build.Tasks.Console
             return outputPath == null ? null : Path.GetFullPath(Path.Combine(project.Directory, outputPath));
         }
 
+        internal static string GetRestoreOutputPath(ITargetFramework outerBuild, string projectDirectory)
+        {
+            string outputPath = outerBuild.GetProperty("RestoreOutputPath") ?? outerBuild.GetProperty("MSBuildProjectExtensionsPath");
+
+            return outputPath == null ? null : Path.GetFullPath(Path.Combine(projectDirectory, outputPath));
+        }
+
         /// <summary>
         /// Gets the package sources of the specified project.
         /// </summary>
@@ -789,12 +797,14 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
         /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
         /// <returns>A <see cref="DependencyGraphSpec" /> for the specified project if they could be loaded, otherwise <code>null</code>.</returns>
-        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader)
+        private (DependencyGraphSpec DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> AdditionalMessages) GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader)
         {
+            var additionalMessages = new ConcurrentBag<IAssetsLogMessage>();
+
             string envVar = environmentVariableReader.GetEnvironmentVariable(PackageSpecFactory.EnvironmentVariableName);
             if (!string.Equals(envVar, bool.FalseString, StringComparison.OrdinalIgnoreCase))
             {
-                return GetDependencyGraphSpec(
+                var dgSpec = GetDependencyGraphSpec(
                     entryProjectPath,
                     globalProperties,
                     interactive,
@@ -820,14 +830,22 @@ namespace NuGet.Build.Tasks.Console
                             MachineWideSettingsLazy,
                             _settingsLoadContext);
 
-                        var packageSpec = PackageSpecFactory.GetPackageSpec(project, settings);
-                        return packageSpec;
+                        return GetPackageSpecOrCreateError(
+                            () => PackageSpecFactory.GetPackageSpec(project, settings),
+                            project.FullPath,
+                            project.OuterBuild.GetProperty("MSBuildProjectName"),
+                            GetRestoreOutputPath(project.OuterBuild, project.Directory),
+                            project.Directory,
+                            settings,
+                            additionalMessages);
                     });
+
+                return (dgSpec, additionalMessages.ToArray());
             }
             else
             {
                 // Delete this code path once PackageSpecFactory.GetPackageSpec has been tested long enough to trust.
-                return GetDependencyGraphSpec(
+                var dgSpec = GetDependencyGraphSpec(
                     entryProjectPath,
                     globalProperties,
                     interactive,
@@ -839,10 +857,89 @@ namespace NuGet.Build.Tasks.Console
                     projectFinalizeDelegate: null,
                     getPackageSpec: project =>
                     {
-                        var packageSpec = GetPackageSpec(project.OuterProject, project);
-                        return packageSpec;
+                        var settings = RestoreSettingsUtils.ReadSettings(
+                            project.OuterProject.GetProperty("RestoreSolutionDirectory"),
+                            project.OuterProject.GetProperty("RestoreRootConfigDirectory") ?? project.OuterProject.Directory,
+                            UriUtility.GetAbsolutePath(project.OuterProject.Directory, project.OuterProject.GetProperty("RestoreConfigFile")),
+                            MachineWideSettingsLazy,
+                            _settingsLoadContext);
+
+                        return GetPackageSpecOrCreateError(
+                            () => GetPackageSpec(project.OuterProject, project),
+                            project.OuterProject.FullPath,
+                            project.OuterProject.GetProperty("MSBuildProjectName"),
+                            GetRestoreOutputPath(project.OuterProject),
+                            project.OuterProject.Directory,
+                            settings,
+                            additionalMessages);
                     });
+
+                return (dgSpec, additionalMessages.ToArray());
             }
+        }
+
+        /// <summary>
+        /// Attempts to get a <see cref="PackageSpec"/> for a project. If the creation fails (e.g. due to an invalid TargetFramework),
+        /// creates a minimal <see cref="PackageSpec"/> and records the error as an additional message so it gets attributed to the correct project.
+        /// </summary>
+        private static PackageSpec GetPackageSpecOrCreateError(
+            Func<PackageSpec> getPackageSpec,
+            string projectPath,
+            string projectName,
+            string outputPath,
+            string projectDirectory,
+            ISettings settings,
+            ConcurrentBag<IAssetsLogMessage> additionalMessages)
+        {
+            try
+            {
+                return getPackageSpec();
+            }
+#pragma warning disable CA1031 // We intentionally catch all non-cancellation exceptions to attribute errors to the correct project.
+            catch (Exception e) when (e is not OperationCanceledException)
+#pragma warning restore CA1031
+            {
+                var innerException = e is AggregateException agg ? agg.InnerExceptions[0] : e;
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_ReadingProjectInformation, projectName ?? Path.GetFileNameWithoutExtension(projectPath), innerException.Message);
+
+                return CreateErrorSpec(projectPath, projectName, projectDirectory, outputPath, settings, message, additionalMessages);
+            }
+        }
+
+        private static PackageSpec CreateErrorSpec(
+            string projectPath,
+            string projectName,
+            string projectDirectory,
+            string outputPath,
+            ISettings settings,
+            string errorMessage,
+            ConcurrentBag<IAssetsLogMessage> additionalMessages)
+        {
+            var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, errorMessage);
+            restoreLogMessage.ProjectPath = projectPath;
+            restoreLogMessage.FilePath = projectPath;
+
+            additionalMessages.Add(AssetsLogMessage.Create(restoreLogMessage));
+
+            outputPath ??= Path.Combine(projectDirectory, "obj");
+
+            return new PackageSpec
+            {
+                FilePath = projectPath,
+                Name = projectName ?? Path.GetFileNameWithoutExtension(projectPath),
+                RestoreMetadata = new ProjectRestoreMetadata()
+                {
+                    ProjectUniqueName = projectPath,
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    ProjectPath = projectPath,
+                    OutputPath = outputPath,
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, projectPath),
+                    PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings),
+                    ConfigFilePaths = settings.GetConfigFilePaths(),
+                    Sources = SettingsUtility.GetEnabledSources(settings).ToList(),
+                    FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList(),
+                }
+            };
         }
 
         private DependencyGraphSpec GetDependencyGraphSpec<TProject>(
