@@ -55,7 +55,7 @@ namespace NuGet.Protocol
         // Wraps HttpContent but does not dispose it for cloning
         internal class HttpContentWrapper : HttpContent
         {
-            private HttpContent? _httpContent;
+            private HttpContent _httpContent;
 
             public HttpContentWrapper(HttpContent httpContent)
             {
@@ -69,19 +69,19 @@ namespace NuGet.Protocol
 
             protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
             {
-                return _httpContent!.CopyToAsync(stream, context);
+                return _httpContent.CopyToAsync(stream, context);
             }
 
             protected override bool TryComputeLength(out long length)
             {
-                var contentLength = _httpContent?.Headers.ContentLength;
+                var contentLength = _httpContent.Headers.ContentLength;
                 length = contentLength ?? 0;
                 return contentLength != null;
             }
 
             protected override void Dispose(bool disposing)
             {
-                _httpContent = null; // do not dispose!
+                _httpContent = null!; // do not dispose!
             }
         }
 

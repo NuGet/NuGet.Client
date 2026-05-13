@@ -334,11 +334,9 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken cancellationToken)
         {
-            await EnsureHttpClientAsync();
+            HttpClient httpClient = await GetHttpClientAsync();
 
-            // Build the retriable request.
-            // _httpClient is initialized by EnsureHttpClientAsync above
-            var request = new HttpRetryHandlerRequest(_httpClient!, requestFactory)
+            var request = new HttpRetryHandlerRequest(httpClient, requestFactory)
             {
                 RequestTimeout = requestTimeout,
                 DownloadTimeout = downloadTimeout,
@@ -370,7 +368,7 @@ namespace NuGet.Protocol
             return new ThrottledResponse(_throttle, response);
         }
 
-        private async Task EnsureHttpClientAsync()
+        private async Task<HttpClient> GetHttpClientAsync()
         {
             // Create the http client on the first call
             if (_httpClient == null)
@@ -389,6 +387,8 @@ namespace NuGet.Protocol
                     _httpClientLock.Release();
                 }
             }
+
+            return _httpClient;
         }
 
         private async Task<HttpClient> CreateHttpClientAsync()
