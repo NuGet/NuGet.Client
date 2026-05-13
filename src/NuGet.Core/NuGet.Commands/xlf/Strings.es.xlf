@@ -465,7 +465,7 @@
         <note />
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
-        <source>PackageReference {0} will not be pruned. This package is unused and should be removed from your dependencies.</source>
+        <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly.</source>
         <target state="needs-review-translation">PackageReference {0} no se eliminará. Considere la posibilidad de quitar este paquete de las dependencias, ya que es probable que no sea necesario.</target>
         <note>0 - package id and version</note>
       </trans-unit>
