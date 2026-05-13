@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
     /// for loading, paging, filtering, selection, and collection management.
     /// This class has no references to WPF types and is fully unit-testable.
     /// </summary>
-    public class InfiniteScrollListViewModel : ViewModelBase
+    public class InfiniteScrollListViewModel : ViewModelBase, IDisposable
     {
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
         private readonly LoadingStatusIndicator _loadingVulnerabilitiesStatusIndicator = new LoadingStatusIndicator();
@@ -104,15 +104,17 @@ namespace NuGet.PackageManagement.UI.ViewModels
         /// <summary>
         /// Count of package items (excluding loading indicators).
         /// </summary>
-        public int PackageItemsCount => PackageItems.Count();
+        public int PackageItemsCount => Items.OfType<PackageItemViewModel>().Count();
 
         public int VulnerablePackagesCount => Items.OfType<PackageItemViewModel>().Count(i => i.IsPackageVulnerable);
 
         public Guid? OperationId => _loader?.State.OperationId;
 
-        public int SelectedCount => _selectedCount;
+        public int SelectedCount => Interlocked.CompareExchange(ref _selectedCount, 0, 0);
 
         internal LoadingStatusIndicator LoadingStatusIndicator => _loadingStatusIndicator;
+
+        internal LoadingStatusIndicator LoadingVulnerabilitiesStatusIndicator => _loadingVulnerabilitiesStatusIndicator;
 
         internal IPackageItemLoader Loader => _loader;
 
@@ -198,7 +200,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 return Task.CompletedTask;
             }, token);
 
-            _selectedCount = 0;
+            Interlocked.Exchange(ref _selectedCount, 0);
 
             await LoadItemsAsync(selectedPackageItem, token);
         }
@@ -270,7 +272,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                _logger.Log(new LogMessage(LogLevel.Error, Resx.Resources.Text_UserCanceled));
+                _logger?.Log(new LogMessage(LogLevel.Error, Resx.Resources.Text_UserCanceled));
 
                 _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
 
@@ -288,7 +290,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                 var errorMessage = ExceptionUtilities.DisplayMessage(ex);
-                _logger.Log(new LogMessage(LogLevel.Error, errorMessage));
+                _logger?.Log(new LogMessage(LogLevel.Error, errorMessage));
 
                 _loadingStatusIndicator.SetError(errorMessage);
 
@@ -493,7 +495,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     {
                         package.PropertyChanged += Package_PropertyChanged;
                         Items.Add(package);
-                        _selectedCount = package.IsSelected ? _selectedCount + 1 : _selectedCount;
+                        if (package.IsSelected)
+                        {
+                            Interlocked.Increment(ref _selectedCount);
+                        }
                     }
 
                     if (removed)
@@ -585,11 +590,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 if (package.IsSelected)
                 {
-                    _selectedCount++;
+                    Interlocked.Increment(ref _selectedCount);
                 }
                 else
                 {
-                    _selectedCount--;
+                    Interlocked.Decrement(ref _selectedCount);
                 }
 
                 UpdateSelectionState();
@@ -709,6 +714,15 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public void ResetLoadingStatusIndicator()
         {
             _loadingStatusIndicator.Reset(string.Empty);
+        }
+
+        public void Dispose()
+        {
+            _loadingStatusIndicator.PropertyChanged -= LoadingStatusIndicator_PropertyChanged;
+            ClearPackageList();
+            _loadCts?.Cancel();
+            _loadCts?.Dispose();
+            _loadCts = null;
         }
     }
 }

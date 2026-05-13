@@ -27,7 +27,6 @@ namespace NuGet.PackageManagement.UI
     public partial class InfiniteScrollList : UserControl
     {
         private ScrollViewer _scrollViewer;
-        private readonly Lazy<JoinableTaskFactory> _joinableTaskFactory;
         private const string LogEntrySource = "NuGet Package Manager";
 
         public InfiniteScrollListViewModel ViewModel { get; }
@@ -49,8 +48,6 @@ namespace NuGet.PackageManagement.UI
             {
                 throw new ArgumentNullException(nameof(joinableTaskFactory));
             }
-
-            _joinableTaskFactory = joinableTaskFactory;
 
             ViewModel = new InfiniteScrollListViewModel(joinableTaskFactory);
 
@@ -216,7 +213,7 @@ namespace NuGet.PackageManagement.UI
         private void _updateButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedPackages = ViewModel.GetSelectedPackages();
-            UpdateButtonClicked(selectedPackages);
+            UpdateButtonClicked?.Invoke(selectedPackages);
         }
 
         private void List_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)

@@ -116,7 +116,8 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                     logger: Mock.Of<INuGetUILogger>(),
                     searchResultTask: Task.FromResult(new SearchResultContextInfo()),
                     token: CancellationToken.None);
-                await tcs.Task;
+                var completed = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(30)));
+                Assert.Same(tcs.Task, completed);
             }
             finally
             {
@@ -603,6 +604,130 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             vm.UpdatePackageList(new[] { CreatePackageItemViewModel("B") }, refresh: false);
 
             Assert.Equal(2, vm.PackageItems.Count());
+        }
+
+        [Fact]
+        public async Task ShouldShowStatusBar_WhenMultiSourceAndMoreItems_ReturnsTrue()
+        {
+            var vm = CreateViewModel();
+            var packages = new[] { CreatePackageItemViewModel("A") };
+            var loader = CreateMockLoader(LoadingStatus.Ready, packages, isMultiSource: true);
+
+            await LoadAndWaitAsync(vm, loader);
+
+            var state = new Mock<IItemLoaderState>();
+            state.Setup(x => x.LoadingStatus).Returns(LoadingStatus.Ready);
+            state.Setup(x => x.ItemsCount).Returns(100); // more than ItemsLoaded
+
+            Assert.True(vm.ShouldShowStatusBar(state.Object));
+        }
+
+        [Fact]
+        public async Task ShouldShowStatusBar_WhenMultiSourceLoadingWithItems_ReturnsTrue()
+        {
+            var vm = CreateViewModel();
+            var packages = new[] { CreatePackageItemViewModel("A") };
+            // Use NoMoreItems so the load completes, then test ShouldShowStatusBar with a Loading state
+            var loader = CreateMockLoader(LoadingStatus.NoMoreItems, packages, isMultiSource: true);
+
+            await LoadAndWaitAsync(vm, loader);
+
+            var state = new Mock<IItemLoaderState>();
+            state.Setup(x => x.LoadingStatus).Returns(LoadingStatus.Loading);
+            state.Setup(x => x.ItemsCount).Returns(5);
+
+            Assert.True(vm.ShouldShowStatusBar(state.Object));
+        }
+
+        [Fact]
+        public async Task LoadMoreItemsAsync_WhenLoaderStatusReady_TriggersLoad()
+        {
+            var vm = CreateViewModel();
+            var packages = new[] { CreatePackageItemViewModel("A") };
+            var loader = CreateMockLoader(LoadingStatus.Ready, packages);
+
+            await LoadAndWaitAsync(vm, loader);
+
+            // After LoadAndWaitAsync with Ready status, the loader stays Ready.
+            // LoadMoreItemsAsync should trigger another load, appending more items.
+            await vm.LoadMoreItemsAsync();
+
+            Assert.Equal(2, vm.PackageItems.Count());
+        }
+
+        [Fact]
+        public async Task LoadMoreItemsAsync_WhenLoaderStatusNotReady_IsNoOp()
+        {
+            var vm = CreateViewModel();
+            var packages = new[] { CreatePackageItemViewModel("A") };
+            var loader = CreateMockLoader(LoadingStatus.NoMoreItems, packages);
+
+            await LoadAndWaitAsync(vm, loader);
+
+            // Status is NoMoreItems, so LoadMoreItemsAsync should do nothing
+            await vm.LoadMoreItemsAsync();
+
+            Assert.Single(vm.PackageItems);
+        }
+
+        [Fact]
+        public async Task ShowMoreResults_RefreshesPackageListAndUpdatesStatusBar()
+        {
+            var vm = CreateViewModel();
+            var packages = new[]
+            {
+                CreatePackageItemViewModel("A"),
+                CreatePackageItemViewModel("B"),
+            };
+            var loader = CreateMockLoader(LoadingStatus.Ready, packages);
+            await LoadAndWaitAsync(vm, loader);
+
+            vm.ShowMoreResults();
+
+            Assert.Equal(2, vm.PackageItems.Count());
+        }
+
+        [Fact]
+        public void FilterVulnerabilitiesIndicator_WhenFilteringDisabled_HidesIndicator()
+        {
+            var vm = CreateViewModel();
+            vm.SetVulnerabilitiesFiltering(false);
+
+            // The vulnerabilities indicator should not appear when filtering is disabled
+            Assert.False(vm.FilterVulnerabilitiesIndicator(vm.LoadingVulnerabilitiesStatusIndicator));
+        }
+
+        [Fact]
+        public void FilterVulnerabilitiesIndicator_WhenFilteringEnabled_ShowsIndicator()
+        {
+            var vm = CreateViewModel();
+            vm.SetVulnerabilitiesFiltering(true);
+
+            // When filtering is enabled and status is Loading (default), the indicator should be shown
+            Assert.True(vm.FilterVulnerabilitiesIndicator(vm.LoadingVulnerabilitiesStatusIndicator));
+        }
+
+        [Fact]
+        public void FilterVulnerabilitiesIndicator_WhenNoItemsFoundAndVulnerablePackagesExist_HidesIndicator()
+        {
+            var vm = CreateViewModel();
+            vm.SetVulnerabilitiesFiltering(true);
+            vm.LoadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
+
+            // Add a vulnerable package so VulnerablePackagesCount > 0
+            vm.UpdatePackageList(new[] { CreatePackageItemViewModel("A", isVulnerable: true) }, refresh: false);
+
+            Assert.False(vm.FilterVulnerabilitiesIndicator(vm.LoadingVulnerabilitiesStatusIndicator));
+        }
+
+        [Fact]
+        public void FilterVulnerabilitiesIndicator_NonIndicatorItem_AlwaysReturnsTrue()
+        {
+            var vm = CreateViewModel();
+            vm.SetVulnerabilitiesFiltering(true);
+            var package = CreatePackageItemViewModel("A");
+
+            Assert.True(vm.FilterVulnerabilitiesIndicator(package));
         }
     }
 }
