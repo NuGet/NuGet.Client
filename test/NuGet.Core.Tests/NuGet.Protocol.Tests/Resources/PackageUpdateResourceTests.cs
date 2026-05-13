@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -276,7 +275,7 @@ namespace NuGet.Protocol.Tests
                         "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
                         request =>
                         {
-                            var content = new StringContent(string.Format(JsonData.TempApiKeyJsonData,"tempkey"), Encoding.UTF8, "application/json");
+                            var content = new TestContent(string.Format(JsonData.TempApiKeyJsonData, "tempkey"));
                             var response = new HttpResponseMessage(HttpStatusCode.OK){
                             Content = content
 };
@@ -493,7 +492,7 @@ namespace NuGet.Protocol.Tests
                         "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
                         request =>
                         {
-                            var content = new StringContent(string.Format(JsonData.TempApiKeyJsonData,"tempkey"), Encoding.UTF8, "application/json");
+                            var content = new TestContent(string.Format(JsonData.TempApiKeyJsonData, "tempkey"));
                             var response = new HttpResponseMessage(HttpStatusCode.OK){
                             Content = content
 };
@@ -660,7 +659,7 @@ namespace NuGet.Protocol.Tests
                         "https://www.nuget.org/api/v2/package/create-verification-key/test/1.0.0",
                         request =>
                         {
-                            var content = new StringContent(string.Format(JsonData.TempApiKeyJsonData, "tempkey"), Encoding.UTF8, "application/json");
+                            var content = new TestContent(string.Format(JsonData.TempApiKeyJsonData, "tempkey"));
                             var response = new HttpResponseMessage(HttpStatusCode.OK){
                             Content = content
 };
@@ -796,7 +795,7 @@ namespace NuGet.Protocol.Tests
                          request =>
                          {
                             createKeyRequestCount++;
-                            var content = new StringContent(string.Format(JsonData.TempApiKeyJsonData, $"tempkey{createKeyRequestCount}"), Encoding.UTF8, "application/json");
+                            var content = new TestContent(string.Format(JsonData.TempApiKeyJsonData, $"tempkey{createKeyRequestCount}"));
                             var response = new HttpResponseMessage(HttpStatusCode.OK){
                             Content = content
 };
