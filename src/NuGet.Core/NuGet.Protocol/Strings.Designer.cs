@@ -205,20 +205,20 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unexpected JSON token type &apos;{0}&apos;..
-        /// </summary>
-        internal static string Error_UnexpectedJsonToken {
-            get {
-                return ResourceManager.GetString("Error_UnexpectedJsonToken", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Required property &apos;{0}&apos; not found in JSON..
         /// </summary>
         internal static string Error_RequiredJsonPropertyMissing {
             get {
                 return ResourceManager.GetString("Error_RequiredJsonPropertyMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected JSON token type &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_UnexpectedJsonToken {
+            get {
+                return ResourceManager.GetString("Error_UnexpectedJsonToken", resourceCulture);
             }
         }
         
@@ -732,15 +732,6 @@ namespace NuGet.Protocol {
         internal static string Plugin_InvalidMessageType {
             get {
                 return ResourceManager.GetString("Plugin_InvalidMessageType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot convert payload of type &apos;{0}&apos; to &apos;{1}&apos; for method &apos;{2}&apos;..
-        /// </summary>
-        internal static string Plugin_InvalidPayloadCast {
-            get {
-                return ResourceManager.GetString("Plugin_InvalidPayloadCast", resourceCulture);
             }
         }
         

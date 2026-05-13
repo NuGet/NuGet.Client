@@ -124,18 +124,7 @@ namespace NuGet.Protocol.Plugins
                 return JsonSerializationUtilities.ToObject<TPayload>(jobj);
             }
 
-            if (message.PayloadObject is TPayload typed)
-            {
-                return typed;
-            }
-
-            throw new InvalidCastException(
-                string.Format(
-                    System.Globalization.CultureInfo.CurrentCulture,
-                    Strings.Plugin_InvalidPayloadCast,
-                    message.PayloadObject.GetType().FullName,
-                    typeof(TPayload).FullName,
-                    message.Method));
+            return (TPayload)message.PayloadObject;
         }
     }
 }

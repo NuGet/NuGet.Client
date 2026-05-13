@@ -351,12 +351,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
     <value>The message type '{0}' is invalid at this time.</value>
     <comment>{0} is a message type enum value</comment>
   </data>
-  <data name="Plugin_InvalidPayloadCast" xml:space="preserve">
-    <value>Cannot convert payload of type '{0}' to '{1}' for method '{2}'.</value>
-    <comment>{0} is the actual payload type name
-{1} is the expected payload type name
-{2} is the message method</comment>
-  </data>
   <data name="Plugin_UnrecognizedOperationClaims" xml:space="preserve">
     <value>The operation claims are unrecognized:  {0}.</value>
     <comment>{0} is a comma-delimited list of unrecognized enum values.</comment>
