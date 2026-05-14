@@ -4209,13 +4209,16 @@ EndGlobal";
         // When a referenced project has an empty/invalid TargetFramework, the error should be attributed
         // to the offending project (ProjectB), not the referencing project (ProjectA) or the solution.
         [Theory]
-        [InlineData("", false)]
-        [InlineData("invalid", false)]
-        [InlineData("net8.0;net472", false)]
-        [InlineData("", true)]
-        [InlineData("invalid", true)]
-        [InlineData("net8.0;net472", true)]
-        public void DotnetRestore_ProjectReferencesProjectWithInvalidTargetFramework_ErrorAttributedToReferencedProject(string invalidTargetFramework, bool useStaticGraphRestore)
+        [InlineData("", false, false)]
+        [InlineData("invalid", false, false)]
+        [InlineData("net8.0;net472", false, false)]
+        [InlineData("", true, false)]
+        [InlineData("invalid", true, false)]
+        [InlineData("net8.0;net472", true, false)]
+        [InlineData("", true, true)]
+        [InlineData("invalid", true, true)]
+        [InlineData("net8.0;net472", true, true)]
+        public void DotnetRestore_ProjectReferencesProjectWithInvalidTargetFramework_ErrorAttributedToReferencedProject(string invalidTargetFramework, bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var testDirectory = pathContext.SolutionRoot;
@@ -4254,7 +4257,11 @@ EndGlobal";
 
             // Act - restore ProjectA (which references ProjectB with the bad TFM)
             var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
-            var result = _dotnetFixture.RestoreProjectExpectFailure(projectADirectory, projectAName, additionalArgs, testOutputHelper: _testOutputHelper);
+            var environmentVariables = new Dictionary<string, string>
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            };
+            var result = _dotnetFixture.RestoreProjectExpectFailure(projectADirectory, projectAName, additionalArgs, environmentVariables, testOutputHelper: _testOutputHelper);
 
             // Assert - the restore should fail and attribute the error to ProjectB (the offending project)
             result.ExitCode.Should().NotBe(0);
@@ -4284,9 +4291,10 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void DotnetRestore_ProjectWithBadVersion_ErrorAttributedToProject(bool useStaticGraphRestore)
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void DotnetRestore_ProjectWithBadVersion_ErrorAttributedToProject(bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var testDirectory = pathContext.SolutionRoot;
@@ -4306,7 +4314,11 @@ EndGlobal";
 
             // Act - restore the project with the bad Version
             var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
-            var result = _dotnetFixture.RestoreProjectExpectFailure(projectDirectory, projectName, additionalArgs, testOutputHelper: _testOutputHelper);
+            var environmentVariables = new Dictionary<string, string>
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            };
+            var result = _dotnetFixture.RestoreProjectExpectFailure(projectDirectory, projectName, additionalArgs, environmentVariables, testOutputHelper: _testOutputHelper);
 
             // Assert - the restore should fail with NU1105 attributed to the project
             result.ExitCode.Should().NotBe(0);
@@ -4325,9 +4337,10 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void DotnetRestore_ProjectWithInvalidNuGetVersion_CreatesAssetsFileWithError(bool useStaticGraphRestore)
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void DotnetRestore_ProjectWithInvalidNuGetVersion_CreatesAssetsFileWithError(bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var testDirectory = pathContext.SolutionRoot;
@@ -4347,7 +4360,11 @@ EndGlobal";
 
             // Act - restore the project with the invalid NuGet version
             var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
-            var result = _dotnetFixture.RestoreProjectExpectFailure(projectDirectory, projectName, additionalArgs, testOutputHelper: _testOutputHelper);
+            var environmentVariables = new Dictionary<string, string>
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            };
+            var result = _dotnetFixture.RestoreProjectExpectFailure(projectDirectory, projectName, additionalArgs, environmentVariables, testOutputHelper: _testOutputHelper);
 
             // Assert - the restore should fail with the error attributed to the project
             result.ExitCode.Should().NotBe(0);
@@ -4366,13 +4383,16 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData("", false)]
-        [InlineData("invalid", false)]
-        [InlineData("net8.0;net472", false)]
-        [InlineData("", true)]
-        [InlineData("invalid", true)]
-        [InlineData("net8.0;net472", true)]
-        public void DotnetRestore_SolutionWithProjectWithInvalidTargetFramework_ErrorAttributedToReferencedProject(string invalidTargetFramework, bool useStaticGraphRestore)
+        [InlineData("", false, false)]
+        [InlineData("invalid", false, false)]
+        [InlineData("net8.0;net472", false, false)]
+        [InlineData("", true, false)]
+        [InlineData("invalid", true, false)]
+        [InlineData("net8.0;net472", true, false)]
+        [InlineData("", true, true)]
+        [InlineData("invalid", true, true)]
+        [InlineData("net8.0;net472", true, true)]
+        public void DotnetRestore_SolutionWithProjectWithInvalidTargetFramework_ErrorAttributedToReferencedProject(string invalidTargetFramework, bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var testDirectory = pathContext.SolutionRoot;
@@ -4417,7 +4437,11 @@ EndGlobal";
 
             // Act - restore the solution
             var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
-            var result = _dotnetFixture.RunDotnetExpectFailure(testDirectory, $"restore {solutionFile} {additionalArgs}", testOutputHelper: _testOutputHelper);
+            var environmentVariables = new Dictionary<string, string>
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            };
+            var result = _dotnetFixture.RestoreSolutionExpectFailure(testDirectory, solutionName, additionalArgs, environmentVariables, testOutputHelper: _testOutputHelper);
 
             // Assert - the restore should fail and attribute the error to ProjectB (the offending project)
             result.ExitCode.Should().NotBe(0);
@@ -4447,9 +4471,10 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void DotnetRestore_SolutionWithCPMBadPackageVersion_ErrorAttributedToProject(bool useStaticGraphRestore)
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void DotnetRestore_SolutionWithCPMBadPackageVersion_ErrorAttributedToProject(bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var testDirectory = pathContext.SolutionRoot;
@@ -4513,7 +4538,11 @@ EndGlobal";
 
             // Act - restore the solution
             var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
-            var result = _dotnetFixture.RunDotnetExpectFailure(testDirectory, $"restore {solutionFile} {additionalArgs}", testOutputHelper: _testOutputHelper);
+            var environmentVariables = new Dictionary<string, string>
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            };
+            var result = _dotnetFixture.RestoreSolutionExpectFailure(testDirectory, solutionName, additionalArgs, environmentVariables, testOutputHelper: _testOutputHelper);
 
             // Assert - the restore should fail with the error attributed to ProjectB
             result.ExitCode.Should().NotBe(0);
@@ -4536,9 +4565,10 @@ EndGlobal";
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task DotnetRestore_CPMProjectWithSemicolonInTargetFramework_ErrorAttributedToProject(bool useStaticGraphRestore)
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task DotnetRestore_CPMProjectWithSemicolonInTargetFramework_ErrorAttributedToProject(bool useStaticGraphRestore, bool usePackageSpecFactory)
         {
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
             var testDirectory = pathContext.SolutionRoot;
@@ -4587,7 +4617,11 @@ EndGlobal";
 
             // Act - restore the solution
             var additionalArgs = useStaticGraphRestore ? "/p:RestoreUseStaticGraphEvaluation=true" : string.Empty;
-            var result = _dotnetFixture.RunDotnetExpectFailure(testDirectory, $"restore {solutionFile} {additionalArgs}", testOutputHelper: _testOutputHelper);
+            var environmentVariables = new Dictionary<string, string>
+            {
+                { PackageSpecFactory.EnvironmentVariableName, usePackageSpecFactory.ToString() }
+            };
+            var result = _dotnetFixture.RestoreSolutionExpectFailure(testDirectory, solutionName, additionalArgs, environmentVariables, testOutputHelper: _testOutputHelper);
 
             // Assert - the restore should fail with NU1105 attributed to the project
             result.ExitCode.Should().NotBe(0);
