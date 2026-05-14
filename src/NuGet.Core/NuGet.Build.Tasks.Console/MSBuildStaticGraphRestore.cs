@@ -845,8 +845,7 @@ namespace NuGet.Build.Tasks.Console
                             project.OuterBuild.GetProperty("MSBuildProjectName"),
                             GetRestoreOutputPath(project.OuterBuild, project.Directory),
                             project.Directory,
-                            additionalMessages,
-                            () => SettingsUtility.GetGlobalPackagesFolder(settings));
+                            additionalMessages);
                     });
 
                 return (dgSpec, additionalMessages.ToArray());
@@ -872,17 +871,7 @@ namespace NuGet.Build.Tasks.Console
                             project.OuterProject.GetProperty("MSBuildProjectName"),
                             GetRestoreOutputPath(project.OuterProject),
                             project.OuterProject.Directory,
-                            additionalMessages,
-                            () =>
-                            {
-                                var settings = RestoreSettingsUtils.ReadSettings(
-                                    project.OuterProject.GetProperty("RestoreSolutionDirectory"),
-                                    project.OuterProject.GetProperty("RestoreRootConfigDirectory") ?? project.OuterProject.Directory,
-                                    UriUtility.GetAbsolutePath(project.OuterProject.Directory, project.OuterProject.GetProperty("RestoreConfigFile")),
-                                    MachineWideSettingsLazy,
-                                    _settingsLoadContext);
-                                return SettingsUtility.GetGlobalPackagesFolder(settings);
-                            });
+                            additionalMessages);
                     });
 
                 return (dgSpec, additionalMessages.ToArray());
@@ -899,8 +888,7 @@ namespace NuGet.Build.Tasks.Console
             string projectName,
             string outputPath,
             string projectDirectory,
-            ConcurrentBag<IAssetsLogMessage> additionalMessages,
-            Func<string> getPackagesPath = null)
+            ConcurrentBag<IAssetsLogMessage> additionalMessages)
         {
             try
             {
@@ -913,7 +901,7 @@ namespace NuGet.Build.Tasks.Console
                 var innerException = e is AggregateException agg ? agg.InnerExceptions[0] : e;
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_ReadingProjectInformation, projectName ?? Path.GetFileNameWithoutExtension(projectPath), innerException.Message);
 
-                return CreateErrorSpec(projectPath, projectName, projectDirectory, outputPath, message, additionalMessages, getPackagesPath?.Invoke());
+                return CreateErrorSpec(projectPath, projectName, projectDirectory, outputPath, message, additionalMessages);
             }
         }
 
@@ -923,8 +911,7 @@ namespace NuGet.Build.Tasks.Console
             string projectDirectory,
             string outputPath,
             string errorMessage,
-            ConcurrentBag<IAssetsLogMessage> additionalMessages,
-            string packagesPath = null)
+            ConcurrentBag<IAssetsLogMessage> additionalMessages)
         {
             var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, errorMessage);
             restoreLogMessage.ProjectPath = projectPath;
@@ -944,7 +931,7 @@ namespace NuGet.Build.Tasks.Console
                     ProjectStyle = ProjectStyle.PackageReference,
                     ProjectPath = projectPath,
                     OutputPath = outputPath,
-                    PackagesPath = packagesPath,
+                    PackagesPath = string.Empty,
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath),
                 }
             };

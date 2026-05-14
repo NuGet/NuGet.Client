@@ -375,7 +375,7 @@ namespace NuGet.Commands
                     ProjectStyle = ProjectStyle.PackageReference,
                     ProjectPath = projectPath,
                     OutputPath = outputPath,
-                    PackagesPath = specItem.GetProperty("PackagesPath"),
+                    PackagesPath = string.Empty,
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath),
                 }
             };
