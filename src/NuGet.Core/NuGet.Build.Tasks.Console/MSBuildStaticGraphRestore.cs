@@ -846,7 +846,7 @@ namespace NuGet.Build.Tasks.Console
                             GetRestoreOutputPath(project.OuterBuild, project.Directory),
                             project.Directory,
                             additionalMessages,
-                            SettingsUtility.GetGlobalPackagesFolder(settings));
+                            () => SettingsUtility.GetGlobalPackagesFolder(settings));
                     });
 
                 return (dgSpec, additionalMessages.ToArray());
@@ -866,13 +866,6 @@ namespace NuGet.Build.Tasks.Console
                     projectFinalizeDelegate: null,
                     getPackageSpec: project =>
                     {
-                        var settings = RestoreSettingsUtils.ReadSettings(
-                            project.OuterProject.GetProperty("RestoreSolutionDirectory"),
-                            project.OuterProject.GetProperty("RestoreRootConfigDirectory") ?? project.OuterProject.Directory,
-                            UriUtility.GetAbsolutePath(project.OuterProject.Directory, project.OuterProject.GetProperty("RestoreConfigFile")),
-                            MachineWideSettingsLazy,
-                            _settingsLoadContext);
-
                         return GetPackageSpecOrCreateError(
                             () => GetPackageSpec(project.OuterProject, project),
                             project.OuterProject.FullPath,
@@ -880,7 +873,16 @@ namespace NuGet.Build.Tasks.Console
                             GetRestoreOutputPath(project.OuterProject),
                             project.OuterProject.Directory,
                             additionalMessages,
-                            SettingsUtility.GetGlobalPackagesFolder(settings));
+                            () =>
+                            {
+                                var settings = RestoreSettingsUtils.ReadSettings(
+                                    project.OuterProject.GetProperty("RestoreSolutionDirectory"),
+                                    project.OuterProject.GetProperty("RestoreRootConfigDirectory") ?? project.OuterProject.Directory,
+                                    UriUtility.GetAbsolutePath(project.OuterProject.Directory, project.OuterProject.GetProperty("RestoreConfigFile")),
+                                    MachineWideSettingsLazy,
+                                    _settingsLoadContext);
+                                return SettingsUtility.GetGlobalPackagesFolder(settings);
+                            });
                     });
 
                 return (dgSpec, additionalMessages.ToArray());
@@ -898,7 +900,7 @@ namespace NuGet.Build.Tasks.Console
             string outputPath,
             string projectDirectory,
             ConcurrentBag<IAssetsLogMessage> additionalMessages,
-            string packagesPath = null)
+            Func<string> getPackagesPath = null)
         {
             try
             {
@@ -911,7 +913,7 @@ namespace NuGet.Build.Tasks.Console
                 var innerException = e is AggregateException agg ? agg.InnerExceptions[0] : e;
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_ReadingProjectInformation, projectName ?? Path.GetFileNameWithoutExtension(projectPath), innerException.Message);
 
-                return CreateErrorSpec(projectPath, projectName, projectDirectory, outputPath, message, additionalMessages, packagesPath);
+                return CreateErrorSpec(projectPath, projectName, projectDirectory, outputPath, message, additionalMessages, getPackagesPath?.Invoke());
             }
         }
 
