@@ -111,19 +111,12 @@ namespace NuGet.Commands.Restore.Utility
             // PackagesPath: fill from settings if not set by the project
             if (string.IsNullOrEmpty(metadata.PackagesPath))
             {
-                if (metadata is PackagesConfigProjectRestoreMetadata)
-                {
-                    // packages.config doesn't use PackagesPath
-                }
-                else
-                {
-                    metadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-                }
+                metadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
             }
             else
             {
                 // Resolve relative path from the project file
-                string projectDirectory = Path.GetDirectoryName(metadata.ProjectPath)!;
+                string projectDirectory = Path.GetDirectoryName(metadata.ProjectPath) ?? throw new ArgumentException("Path.GetDirectoryName(metadata.ProjectPath) returned null");
                 metadata.PackagesPath = UriUtility.GetAbsolutePath(projectDirectory, metadata.PackagesPath);
             }
 
@@ -135,7 +128,7 @@ namespace NuGet.Commands.Restore.Utility
                 // Final fallback: solution-relative "packages" folder
                 if (string.IsNullOrEmpty(pcMetadata.RepositoryPath))
                 {
-                    string projectDirectory = Path.GetDirectoryName(metadata.ProjectPath)!;
+                    string projectDirectory = Path.GetDirectoryName(metadata.ProjectPath) ?? throw new ArgumentException("Path.GetDirectoryName.metadata.ProjectPath returned null");
                     pcMetadata.RepositoryPath = UriUtility.GetAbsolutePath(projectDirectory, PackagesConfig.PackagesNodeName);
                 }
             }
@@ -606,23 +599,6 @@ namespace NuGet.Commands.Restore.Utility
         }
 
         /// <summary>
-        /// Gets the packages path for the specified project.
-        /// </summary>
-        /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <param name="settings">The <see cref="ISettings" /> of the project.</param>
-        /// <returns>The full path to the packages directory for the specified project.</returns>
-        internal static string GetPackagesPath(IProject project, ISettings settings)
-        {
-            var packagesPath = GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestorePackagesPath")),
-                () => UriUtility.GetAbsolutePath(project.Directory, project.OuterBuild.GetProperty("RestorePackagesPath")),
-                () => SettingsUtility.GetGlobalPackagesFolder(settings));
-
-            // GetValue doesn't understand that the last func will always provide a non-null value.
-            return packagesPath!;
-        }
-
-        /// <summary>
         /// Gets the package fallback folders for a project.
         /// </summary>
         /// <param name="fallbackFolders">A <see cref="T:string[]" /> containing the fallback folders for the project.</param>
@@ -660,7 +636,7 @@ namespace NuGet.Commands.Restore.Utility
         private static string? GetPackagesPath(IProject project)
         {
             return GetValue(
-                () => project.OuterBuild.GetProperty("RestorePackagesPath"),
+                () => project.GetGlobalProperty("RestorePackagesPath"),
                 () => project.OuterBuild.GetProperty("RestorePackagesPath"));
         }
 

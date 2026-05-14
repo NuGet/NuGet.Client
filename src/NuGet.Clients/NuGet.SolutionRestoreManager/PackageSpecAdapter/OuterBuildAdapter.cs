@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,15 +14,15 @@ namespace NuGet.SolutionRestoreManager.PackageSpecAdapter
 {
     internal class OuterBuildAdapter : ITargetFramework
     {
-        public OuterBuildAdapter(string projectDirectory, string shortName, IVsProjectRestoreInfo3 nomination)
+        public OuterBuildAdapter(string projectDirectory, string projectNameWithoutExtension, IVsProjectRestoreInfo3 nomination)
         {
             _projectDirectory = projectDirectory;
-            _shortName = shortName;
+            _projectNameWithoutExtension = projectNameWithoutExtension;
             _nomination = nomination ?? throw new ArgumentNullException(nameof(nomination));
         }
 
         private readonly string _projectDirectory;
-        private readonly string _shortName;
+        private readonly string _projectNameWithoutExtension;
         private readonly IVsProjectRestoreInfo3 _nomination;
 
         public IReadOnlyList<IItem> GetItems(string itemType)
@@ -98,7 +96,7 @@ namespace NuGet.SolutionRestoreManager.PackageSpecAdapter
 
             if (string.Equals(propertyName, ProjectBuildProperties.PackageId, StringComparison.OrdinalIgnoreCase))
             {
-                return _shortName;
+                return _projectNameWithoutExtension;
             }
 
             return null;
