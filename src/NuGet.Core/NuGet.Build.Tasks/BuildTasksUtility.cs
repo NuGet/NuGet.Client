@@ -115,41 +115,6 @@ namespace NuGet.Build.Tasks
             ProjectStyle.ProjectJson
         };
 
-        public static Task<List<RestoreSummary>> RestoreAsync(
-            DependencyGraphSpec dependencyGraphSpec,
-            bool interactive,
-            bool recursive,
-            bool noCache,
-            bool ignoreFailedSources,
-            bool disableParallel,
-            bool force,
-            bool forceEvaluate,
-            bool hideWarningsAndErrors,
-            bool restorePC,
-            Common.ILogger log,
-            CancellationToken cancellationToken)
-        {
-            return RestoreAsync(dependencyGraphSpec, interactive, recursive, noCache, ignoreFailedSources, disableParallel, force, forceEvaluate, hideWarningsAndErrors, restorePC, cleanupAssetsForUnsupportedProjects: false, log, cancellationToken);
-        }
-
-        public static async Task<List<RestoreSummary>> RestoreAsync(
-            DependencyGraphSpec dependencyGraphSpec,
-            bool interactive,
-            bool recursive,
-            bool noCache,
-            bool ignoreFailedSources,
-            bool disableParallel,
-            bool force,
-            bool forceEvaluate,
-            bool hideWarningsAndErrors,
-            bool restorePC,
-            bool cleanupAssetsForUnsupportedProjects,
-            Common.ILogger log,
-            CancellationToken cancellationToken)
-        {
-            return await RestoreAsync(dependencyGraphSpec, interactive, recursive, noCache, ignoreFailedSources, disableParallel, force, forceEvaluate, hideWarningsAndErrors, restorePC, cleanupAssetsForUnsupportedProjects, additionalMessages: null, log, cancellationToken);
-        }
-
         public static async Task<List<RestoreSummary>> RestoreAsync(
             DependencyGraphSpec dependencyGraphSpec,
             bool interactive,
