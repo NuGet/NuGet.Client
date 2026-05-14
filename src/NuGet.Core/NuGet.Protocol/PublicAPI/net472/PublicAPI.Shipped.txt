@@ -504,7 +504,7 @@ NuGet.Protocol.HttpSource.ProcessStreamAsync<T>(NuGet.Protocol.HttpSourceRequest
 NuGet.Protocol.HttpSource.RetryHandler.get -> NuGet.Protocol.IHttpRetryHandler!
 NuGet.Protocol.HttpSource.RetryHandler.set -> void
 NuGet.Protocol.HttpSourceAuthenticationHandler
-~NuGet.Protocol.HttpSourceAuthenticationHandler.HttpSourceAuthenticationHandler(NuGet.Configuration.PackageSource packageSource, System.Net.Http.HttpClientHandler clientHandler, NuGet.Configuration.ICredentialService credentialService) -> void
+NuGet.Protocol.HttpSourceAuthenticationHandler.HttpSourceAuthenticationHandler(NuGet.Configuration.PackageSource! packageSource, System.Net.Http.HttpClientHandler! clientHandler, NuGet.Configuration.ICredentialService? credentialService) -> void
 NuGet.Protocol.HttpSourceCachedRequest
 NuGet.Protocol.HttpSourceCachedRequest.AcceptHeaderValues.get -> System.Collections.Generic.IList<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue!>!
 NuGet.Protocol.HttpSourceCachedRequest.CacheContext.get -> NuGet.Protocol.Core.Types.HttpSourceCacheContext!
@@ -1712,10 +1712,10 @@ override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.GetPackageDow
 ~override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository sourceRepository, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
 override NuGet.Protocol.HttpHandlerResourceV3.ClientHandler.get -> System.Net.Http.HttpClientHandler!
 override NuGet.Protocol.HttpHandlerResourceV3.MessageHandler.get -> System.Net.Http.HttpMessageHandler!
-~override NuGet.Protocol.HttpHandlerResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+override NuGet.Protocol.HttpHandlerResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 override NuGet.Protocol.HttpSourceAuthenticationHandler.Dispose(bool disposing) -> void
-~override NuGet.Protocol.HttpSourceAuthenticationHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>
-~override NuGet.Protocol.HttpSourceResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+override NuGet.Protocol.HttpSourceAuthenticationHandler.SendAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+override NuGet.Protocol.HttpSourceResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 ~override NuGet.Protocol.LegacyFeedCapabilityResourceV2Feed.SupportsIsAbsoluteLatestVersionAsync(NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
 ~override NuGet.Protocol.LegacyFeedCapabilityResourceV2Feed.SupportsSearchAsync(NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
 ~override NuGet.Protocol.LocalAutoCompleteResource.IdStartsWith(string packageIdPrefix, bool includePrerelease, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
@@ -1952,8 +1952,8 @@ static NuGet.Protocol.HttpRequestMessageFactory.Create(System.Net.Http.HttpMetho
 ~static NuGet.Protocol.HttpResponseMessageExtensions.LogServerWarning(this System.Net.Http.HttpResponseMessage response, NuGet.Common.ILogger log) -> void
 static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository! source) -> NuGet.Protocol.HttpSource!
 static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository! source, NuGet.Protocol.IThrottle! throttle) -> NuGet.Protocol.HttpSource!
-~static NuGet.Protocol.HttpSourceResourceProvider.Throttle.get -> NuGet.Protocol.IThrottle
-~static NuGet.Protocol.HttpSourceResourceProvider.Throttle.set -> void
+static NuGet.Protocol.HttpSourceResourceProvider.Throttle.get -> NuGet.Protocol.IThrottle?
+static NuGet.Protocol.HttpSourceResourceProvider.Throttle.set -> void
 static NuGet.Protocol.HttpStreamValidation.ValidateJObject(string! uri, System.IO.Stream! stream) -> void
 static NuGet.Protocol.HttpStreamValidation.ValidateNupkg(string! uri, System.IO.Stream! stream) -> void
 static NuGet.Protocol.HttpStreamValidation.ValidateXml(string! uri, System.IO.Stream! stream) -> void
