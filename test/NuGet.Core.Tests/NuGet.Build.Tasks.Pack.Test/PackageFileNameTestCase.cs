@@ -7,13 +7,7 @@ using System.IO;
 using System.Linq;
 using Xunit.Abstractions;
 
-#if TEST_FOR_UNIT
 namespace NuGet.Build.Tasks.Pack.Test
-#elif IS_DESKTOP
-namespace Msbuild.Integration.Test
-#elif IS_CORECLR
-namespace Dotnet.Integration.Test
-#endif
 {
     // NuGet.Build.Tasks.Pack.Test
     /// <summary></summary>
@@ -24,6 +18,18 @@ namespace Dotnet.Integration.Test
     /// </remarks>
     public class PackageFileNameTestCase : IXunitSerializable
     {
+        private string _scenario = string.Empty;
+        private string[] _outputNupkgNames = System.Array.Empty<string>();
+        private string _idProjProp = string.Empty;
+        private string _idNuspecMeta = string.Empty;
+        private string _versionProjProp = string.Empty;
+        private string _versionNuspecProperties = string.Empty;
+        private string _versionNuspecMeta = string.Empty;
+        private bool _useNuspecFile;
+        private bool _outputFileNamesWithoutVersion;
+        private bool _includeSymbols;
+        private NuGet.Commands.SymbolPackageFormat _symbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg;
+
         public static System.Collections.Generic.IEnumerable<object[]> TestCases
         {
             get
@@ -32,89 +38,114 @@ namespace Dotnet.Integration.Test
                     {
 
                         //// without nuspec input
-                        new PackageFileNameTestCase("000",["proj.1.9.0.nupkg"          ], "proj", "nusp", "1.9", "", "", false),
-                        new PackageFileNameTestCase("001",["proj.2.0.0.nupkg"          ], "proj", "nusp", "2.0.0.0", "       ", "4.0.0.0", false),
-                        new PackageFileNameTestCase("002",["proj.2.0.0.1.nupkg"        ], "proj", "nusp", "2.0.0.1", "       ", "4.0.0.1", false),
-                        new PackageFileNameTestCase("003",["proj.2.0.0.2.nupkg"        ], "proj", "nusp", "2.0.0.2", "3.0.0.2", "4.0.0.2", false),
-                        new PackageFileNameTestCase("004",["proj.2.0.0.3-preview.nupkg"], "proj", "nusp", "2.0.0.3-preview", "3.0.0.2", "4.0.0.2", false),
-                        new PackageFileNameTestCase("005",["proj.2.0.0.4-release.nupkg"], "proj", "$meta_id$", "2.0.0.4-release", "3.0.0.2", "$meta_version$", false),
-                        new PackageFileNameTestCase("100",["proj.nupkg"                ], "proj", "nusp", "1.9", "", "", false, outputFileNamesWithoutVersion:true),
-                        new PackageFileNameTestCase("104",["proj.nupkg"                ], "proj", "nusp", "2.0.0.3-preview", "3.0.0.2", "4.0.0.2", false,outputFileNamesWithoutVersion:true),
+                        new() { Scenario = "NoNuspec_NormalizesShortVersion", OutputNupkgNames = ["proj.1.9.0.nupkg"], IdProjProp = "proj", VersionProjProp = "1.9", UseNuspecFile = false },
+                        new() { Scenario = "NoNuspec_TrimsTrailingRevisionZero", OutputNupkgNames = ["proj.2.0.0.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = false },
+                        new() { Scenario = "NoNuspec_PreservesNonZeroRevision", OutputNupkgNames = ["proj.2.0.0.1.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.1", UseNuspecFile = false },
+                        new() { Scenario = "NoNuspec_PreservesFourPartPrereleaseVersion", OutputNupkgNames = ["proj.2.0.0.3-preview.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.3-preview", UseNuspecFile = false },
+                        new() { Scenario = "NoNuspec_StripsVersionWhenConfigured", OutputNupkgNames = ["proj.nupkg"], IdProjProp = "proj", VersionProjProp = "1.9", UseNuspecFile = false, OutputFileNamesWithoutVersion = true },
 
                         // with nuspec input
-                        new PackageFileNameTestCase("010",["nusp.4.0.0.nupkg"          ], "proj", "nusp", "2.0.0.0", "       ", "4.0.0.0", true),
-                        new PackageFileNameTestCase("011",["nusp.4.0.0.3.nupkg"        ], "proj", "nusp", "2.0.0.3", "       ", "4.0.0.3", true),
-                        new PackageFileNameTestCase("012",["nusp.3.0.0.4.nupkg"        ], "proj", "nusp", "2.0.0.4", "3.0.0.4", "4.0.0.4", true),
-                        new PackageFileNameTestCase("013",["nusp.5.0.0-preview.nupkg"  ], "proj", "nusp", "2.0.0.0", "       ", "5.0.0.0-preview", true),
-                        new PackageFileNameTestCase("014",["nusp.5.0.0.2-preview.nupkg"], "proj", "nusp", "2.0.0.0", "       ", "5.0.0.2-preview", true),
-                        new PackageFileNameTestCase("015",["nusp.6.0.0-beta.nupkg"     ], "proj", "nusp", "2.0.0.0", "6-beta ", "5.0.0.3-preview", true),
-                        new PackageFileNameTestCase("110",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "       ", "4.0.0.0", true, outputFileNamesWithoutVersion:true),
-                        new PackageFileNameTestCase("115",["nusp.nupkg"                ], "proj", "nusp", "2.0.0.0", "6-beta ", "5.0.0.3-preview", true, outputFileNamesWithoutVersion:true),
+                        new() { Scenario = "WithNuspec_UsesMetadataVersion", OutputNupkgNames = ["nusp.4.0.0.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "       ", VersionNuspecMeta = "4.0.0.0" },
+                        new() { Scenario = "WithNuspec_UsesMetadataRevision", OutputNupkgNames = ["nusp.4.0.0.3.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.3", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "       ", VersionNuspecMeta = "4.0.0.3" },
+                        new() { Scenario = "WithNuspec_UsesNuspecPropertiesVersion", OutputNupkgNames = ["nusp.3.0.0.4.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.4", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "3.0.0.4", VersionNuspecMeta = "4.0.0.4" },
+                        new() { Scenario = "WithNuspec_UsesMetadataPrereleaseVersion", OutputNupkgNames = ["nusp.5.0.0-preview.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "       ", VersionNuspecMeta = "5.0.0.0-preview" },
+                        new() { Scenario = "WithNuspec_UsesMetadataFourPartPrereleaseVersion", OutputNupkgNames = ["nusp.5.0.0.2-preview.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "       ", VersionNuspecMeta = "5.0.0.2-preview" },
+                        new() { Scenario = "WithNuspec_UsesNuspecPropertiesPrereleaseVersion", OutputNupkgNames = ["nusp.6.0.0-beta.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "6-beta ", VersionNuspecMeta = "5.0.0.3-preview" },
+                        new() { Scenario = "WithNuspec_StripsVersionWhenConfigured", OutputNupkgNames = ["nusp.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "       ", VersionNuspecMeta = "4.0.0.0", OutputFileNamesWithoutVersion = true },
 
                         // has symbol
-                        new PackageFileNameTestCase("020",["proj.2.1.0.snupkg"], "proj", "nusp", "2.1.0.0", "7.1.1", "5.0.0.3-preview", false, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ),
-                        new PackageFileNameTestCase("021",["nusp.7.1.2.snupkg"], "proj", "nusp", "2.0.0.0", "7.1.2", "5.0.0.4-preview", true, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ),
-                        new PackageFileNameTestCase("120",["proj.snupkg"      ], "proj", "nusp", "2.1.0.0", "7.1.1", "5.0.0.3-preview", false, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ,outputFileNamesWithoutVersion:true),
-                        new PackageFileNameTestCase("121",["nusp.snupkg"      ], "proj", "nusp", "2.0.0.0", "7.1.2", "5.0.0.4-preview", true, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.Snupkg ,outputFileNamesWithoutVersion:true),
+                        new() { Scenario = "NoNuspec_SnupkgUsesNormalizedVersion", OutputNupkgNames = ["proj.2.1.0.snupkg"], IdProjProp = "proj", VersionProjProp = "2.1.0.0", UseNuspecFile = false, IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg },
+                        new() { Scenario = "WithNuspec_SnupkgUsesNuspecPropertiesVersion", OutputNupkgNames = ["nusp.7.1.2.snupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "7.1.2", VersionNuspecMeta = "5.0.0.4-preview", IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg },
+                        new() { Scenario = "NoNuspec_SnupkgStripsVersionWhenConfigured", OutputNupkgNames = ["proj.snupkg"], IdProjProp = "proj", VersionProjProp = "2.1.0.0", UseNuspecFile = false, OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg },
+                        new() { Scenario = "WithNuspec_SnupkgStripsVersionWhenConfigured", OutputNupkgNames = ["nusp.snupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "7.1.2", VersionNuspecMeta = "5.0.0.4-preview", OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg },
 
-                        new PackageFileNameTestCase("022",["proj.2.2.0.nupkg", "proj.2.2.0.symbols.nupkg"], "proj", "nusp", "2.2.0.0", "7.1.1", "5.0.0.3-preview", false, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg ),
-                        new PackageFileNameTestCase("023",["nusp.7.2.2.nupkg", "nusp.7.2.2.symbols.nupkg"], "proj", "nusp", "2.0.0.0", "7.2.2", "5.0.0.4-preview", true, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg ),
-                        new PackageFileNameTestCase("122",["proj.nupkg", "proj.symbols.nupkg"            ], "proj", "nusp", "2.2.0.0", "7.1.1", "5.0.0.3-preview", false, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg, outputFileNamesWithoutVersion:true),
-                        new PackageFileNameTestCase("123",["nusp.nupkg", "nusp.symbols.nupkg"            ], "proj", "nusp", "2.0.0.0", "7.2.2", "5.0.0.4-preview", true, includeSymbols: true, symbolPackageFormat: NuGet.Commands.SymbolPackageFormat.SymbolsNupkg, outputFileNamesWithoutVersion:true),
+                        new() { Scenario = "NoNuspec_SymbolsNupkgIncludesPrimaryAndSymbolsPackages", OutputNupkgNames = ["proj.2.2.0.nupkg", "proj.2.2.0.symbols.nupkg"], IdProjProp = "proj", VersionProjProp = "2.2.0.0", UseNuspecFile = false, IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.SymbolsNupkg },
+                        new() { Scenario = "WithNuspec_SymbolsNupkgIncludesPrimaryAndSymbolsPackages", OutputNupkgNames = ["nusp.7.2.2.nupkg", "nusp.7.2.2.symbols.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "7.2.2", VersionNuspecMeta = "5.0.0.4-preview", IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.SymbolsNupkg },
+                        new() { Scenario = "NoNuspec_SymbolsNupkgStripsVersionWhenConfigured", OutputNupkgNames = ["proj.nupkg", "proj.symbols.nupkg"], IdProjProp = "proj", VersionProjProp = "2.2.0.0", UseNuspecFile = false, OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.SymbolsNupkg },
+                        new() { Scenario = "WithNuspec_SymbolsNupkgStripsVersionWhenConfigured", OutputNupkgNames = ["nusp.nupkg", "nusp.symbols.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "7.2.2", VersionNuspecMeta = "5.0.0.4-preview", OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.SymbolsNupkg },
 
                     };
 
 
-                return (object[][])cases.Select((c, i) => new object[] { c }).ToArray();
+                return cases.Select(c => new object[] { c }).ToArray();
             }
         }
 
-        public PackageFileNameTestCase
-            (string testNumber
-            , string[] outputNupkgNames
-            , string idProjProp
-            , string idNuspecMeta
-            , string versionProjProp
-            , string versionNuspecProperties
-            , string versionNuspecMeta
-            , bool useNuspecFile
-            , bool outputFileNamesWithoutVersion = false
-            , bool includeSymbols = false
-            , NuGet.Commands.SymbolPackageFormat symbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg)
+        public string Scenario
         {
-            CaseNumber = testNumber;
-            OutputNupkgNames = outputNupkgNames;
-            IdProjProp = idProjProp;
-            IdNuspecMeta = idNuspecMeta;
-            VersionProjProp = versionProjProp;
-            VersionNuspecProperties = versionNuspecProperties;
-            VersionNuspecMeta = versionNuspecMeta;
-            UseNuspecFile = useNuspecFile;
-            OutputFileNamesWithoutVersion = outputFileNamesWithoutVersion;
-            IncludeSymbols = includeSymbols;
-            SymbolPackageFormat = symbolPackageFormat;
+            get => _scenario;
+            init => _scenario = value;
         }
 
-        public string CaseNumber { get; set; } = string.Empty;
-        public string[] OutputNupkgNames { get; set; } = System.Array.Empty<string>();
-        public string IdProjProp { get; set; } = string.Empty;
-        public string IdNuspecMeta { get; set; } = string.Empty;
-        public string VersionProjProp { get; set; } = string.Empty;
-        public string VersionNuspecProperties { get; set; } = string.Empty;
-        public string VersionNuspecMeta { get; set; } = string.Empty;
-        public bool UseNuspecFile { get; set; }
-        public bool OutputFileNamesWithoutVersion { get; set; }
-        public bool IncludeSymbols { get; set; }
-        public NuGet.Commands.SymbolPackageFormat SymbolPackageFormat { get; set; } = NuGet.Commands.SymbolPackageFormat.Snupkg;
+        public string[] OutputNupkgNames
+        {
+            get => _outputNupkgNames;
+            init => _outputNupkgNames = value;
+        }
+
+        public string IdProjProp
+        {
+            get => _idProjProp;
+            init => _idProjProp = value;
+        }
+
+        public string IdNuspecMeta
+        {
+            get => _idNuspecMeta;
+            init => _idNuspecMeta = value;
+        }
+
+        public string VersionProjProp
+        {
+            get => _versionProjProp;
+            init => _versionProjProp = value;
+        }
+
+        public string VersionNuspecProperties
+        {
+            get => _versionNuspecProperties;
+            init => _versionNuspecProperties = value;
+        }
+
+        public string VersionNuspecMeta
+        {
+            get => _versionNuspecMeta;
+            init => _versionNuspecMeta = value;
+        }
+
+        public bool UseNuspecFile
+        {
+            get => _useNuspecFile;
+            init => _useNuspecFile = value;
+        }
+
+        public bool OutputFileNamesWithoutVersion
+        {
+            get => _outputFileNamesWithoutVersion;
+            init => _outputFileNamesWithoutVersion = value;
+        }
+
+        public bool IncludeSymbols
+        {
+            get => _includeSymbols;
+            init => _includeSymbols = value;
+        }
+
+        public NuGet.Commands.SymbolPackageFormat SymbolPackageFormat
+        {
+            get => _symbolPackageFormat;
+            init => _symbolPackageFormat = value;
+        }
 
         #region IXunitSerializable
 
-        [System.Obsolete]
-        public PackageFileNameTestCase() : this("", [], "", "", "", "", "", false) { }
+        public PackageFileNameTestCase()
+        {
+        }
 
         void IXunitSerializable.Serialize(IXunitSerializationInfo info)
         {
-            info.AddValue(nameof(CaseNumber), CaseNumber);
+            info.AddValue(nameof(Scenario), Scenario);
             info.AddValue(nameof(OutputNupkgNames), OutputNupkgNames);
             info.AddValue(nameof(IdProjProp), IdProjProp);
             info.AddValue(nameof(IdNuspecMeta), IdNuspecMeta);
@@ -128,17 +159,17 @@ namespace Dotnet.Integration.Test
         }
         void IXunitSerializable.Deserialize(IXunitSerializationInfo info)
         {
-            CaseNumber = (string)info.GetValue(nameof(CaseNumber), typeof(string));
-            OutputNupkgNames = (string[])info.GetValue(nameof(OutputNupkgNames), typeof(string[]));
-            IdProjProp = (string)info.GetValue(nameof(IdProjProp), typeof(string));
-            IdNuspecMeta = (string)info.GetValue(nameof(IdNuspecMeta), typeof(string));
-            VersionProjProp = (string)info.GetValue(nameof(VersionProjProp), typeof(string));
-            VersionNuspecProperties = (string)info.GetValue(nameof(VersionNuspecProperties), typeof(string));
-            VersionNuspecMeta = (string)info.GetValue(nameof(VersionNuspecMeta), typeof(string));
-            UseNuspecFile = (bool)info.GetValue(nameof(UseNuspecFile), typeof(bool));
-            OutputFileNamesWithoutVersion = (bool)info.GetValue(nameof(OutputFileNamesWithoutVersion), typeof(bool));
-            IncludeSymbols = (bool)info.GetValue(nameof(IncludeSymbols), typeof(bool));
-            SymbolPackageFormat = (NuGet.Commands.SymbolPackageFormat)info.GetValue(nameof(SymbolPackageFormat), typeof(NuGet.Commands.SymbolPackageFormat));
+            _scenario = (string)info.GetValue(nameof(Scenario), typeof(string));
+            _outputNupkgNames = (string[])info.GetValue(nameof(OutputNupkgNames), typeof(string[]));
+            _idProjProp = (string)info.GetValue(nameof(IdProjProp), typeof(string));
+            _idNuspecMeta = (string)info.GetValue(nameof(IdNuspecMeta), typeof(string));
+            _versionProjProp = (string)info.GetValue(nameof(VersionProjProp), typeof(string));
+            _versionNuspecProperties = (string)info.GetValue(nameof(VersionNuspecProperties), typeof(string));
+            _versionNuspecMeta = (string)info.GetValue(nameof(VersionNuspecMeta), typeof(string));
+            _useNuspecFile = (bool)info.GetValue(nameof(UseNuspecFile), typeof(bool));
+            _outputFileNamesWithoutVersion = (bool)info.GetValue(nameof(OutputFileNamesWithoutVersion), typeof(bool));
+            _includeSymbols = (bool)info.GetValue(nameof(IncludeSymbols), typeof(bool));
+            _symbolPackageFormat = (NuGet.Commands.SymbolPackageFormat)info.GetValue(nameof(SymbolPackageFormat), typeof(NuGet.Commands.SymbolPackageFormat));
         }
         #endregion
     }

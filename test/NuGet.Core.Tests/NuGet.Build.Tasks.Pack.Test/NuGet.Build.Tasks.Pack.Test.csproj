@@ -4,10 +4,6 @@
     <Description>Unit tests for NuGet.Build.Tasks.Pack.</Description>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);TEST_FOR_UNIT</DefineConstants>
-  </PropertyGroup>
-  
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
