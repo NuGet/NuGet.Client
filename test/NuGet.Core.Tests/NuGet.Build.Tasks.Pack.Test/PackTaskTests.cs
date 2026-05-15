@@ -469,8 +469,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     System.IO.File.WriteAllBytes(System.IO.Path.Combine(binDir, "dummy.pdb"), new byte[0]);
                 }
 
-                // Create .csproj and .nuspec
-                PackageFileNameTestsCommon.CreateTestProjectFile(testCase, testDirectory);
+                // Create nuspec when the test scenario uses one.
                 PackageFileNameTestsCommon.CreateNuspecFile(testCase, testDirectory);
 
                 // Create project.assets.json

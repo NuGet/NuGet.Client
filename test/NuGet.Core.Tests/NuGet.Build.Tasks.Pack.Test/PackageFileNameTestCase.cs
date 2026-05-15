@@ -178,67 +178,6 @@ namespace NuGet.Build.Tasks.Pack.Test
     {
         public const string FILENAME_PROJECT_FILE = "test.csproj";
         public const string FILENAME_NUSPEC_FILE = "test.nuspec";
-        public const string FILENAME_GETOUTPUTITEMSTASK_OUTPUTPACKITEMS_TEST = "_OutputPackItems.txt";
-
-        public static void CreateTestProjectFile(
-            PackageFileNameTestCase testCase,
-            string testDirectory)
-        {
-            CreateTestProjectFile(testCase, testDirectory, null, null, "netstandard2.0");
-        }
-
-        public static void CreateTestProjectFile(
-            PackageFileNameTestCase testCase,
-            string testDirectory,
-            string? pathDllFile,
-            string? pathTargetsFile,
-            string testFrameworkMoniker)
-        {
-            var csprojPath = Path.Combine(testDirectory, FILENAME_PROJECT_FILE);
-
-            var csprojContent = $"""
-<Project Sdk="Microsoft.NET.Sdk">
-    <Import Condition="'{pathTargetsFile != null}'=='{true}'" Project="{pathTargetsFile}" />
-    <PropertyGroup>
-        <NuGetPackTaskAssemblyFile Condition="'{pathDllFile != null}'=='{true}'">{pathDllFile}</NuGetPackTaskAssemblyFile>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <TargetFramework>{testFrameworkMoniker}</TargetFramework>
-        <NoWarn>NU5100;NU5119;CS2008</NoWarn>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <IsPackable>true</IsPackable>
-
-        <IncludeBuildOutput>true</IncludeBuildOutput>
-        <IncludeBuiltProjectOutputGroup>false</IncludeBuiltProjectOutputGroup>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-
-        <PackageId>{testCase.IdProjProp}</PackageId>
-        <PackageVersion>{testCase.VersionProjProp}</PackageVersion>
-        <PackageTags>tagA;tagB</PackageTags>
-
-        <NuspecFile Condition="'{testCase.UseNuspecFile}'=='{true}'" >{FILENAME_NUSPEC_FILE}</NuspecFile>
-        <NuspecProperties Condition="'{testCase.VersionNuspecProperties?.Trim()}'!=''" >version={testCase.VersionNuspecProperties}</NuspecProperties>
-
-        <IncludeSymbols>{testCase.IncludeSymbols}</IncludeSymbols>
-        <SymbolPackageFormat>{GetSymbolPackageFormatText(testCase.SymbolPackageFormat)}</SymbolPackageFormat>
-
-        <OutputFileNamesWithoutVersion Condition="'{testCase.OutputFileNamesWithoutVersion}'=='{true}'" >{testCase.OutputFileNamesWithoutVersion}</OutputFileNamesWithoutVersion>
-    </PropertyGroup>
-    <ItemGroup>
-        <None Remove="{FILENAME_NUSPEC_FILE}" />
-    </ItemGroup>
-
-    <Target Name="write_OutputPackItems" AfterTargets="_GetOutputItemsFromPack" >    
-	    <WriteLinesToFile File="obj/{FILENAME_GETOUTPUTITEMSTASK_OUTPUTPACKITEMS_TEST}" Lines="@(_OutputPackItems)" Overwrite="true" Encoding="UTF-8" />
-    </Target>
-</Project>
-""";
-
-            File.WriteAllText(csprojPath, csprojContent, System.Text.Encoding.Unicode);
-        }
 
         public static void CreateNuspecFile(
             PackageFileNameTestCase testCase,
