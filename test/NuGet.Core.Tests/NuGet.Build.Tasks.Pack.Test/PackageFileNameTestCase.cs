@@ -179,23 +179,22 @@ namespace NuGet.Build.Tasks.Pack.Test
         public const string FILENAME_PROJECT_FILE = "test.csproj";
         public const string FILENAME_NUSPEC_FILE = "test.nuspec";
         public const string FILENAME_GETOUTPUTITEMSTASK_OUTPUTPACKITEMS_TEST = "_OutputPackItems.txt";
-        public static void CreateTestProjectFileAndNuspecFile
-             (PackageFileNameTestCase testCase
-             , string testDirectory)
+
+        public static void CreateTestProjectFile(
+            PackageFileNameTestCase testCase,
+            string testDirectory)
         {
-            CreateTestProjectFileAndNuspecFile(testCase, testDirectory, null, null, "netstandard2.0");
+            CreateTestProjectFile(testCase, testDirectory, null, null, "netstandard2.0");
         }
 
-        public static void CreateTestProjectFileAndNuspecFile
-            (PackageFileNameTestCase testCase
-            , string testDirectory
-            , string? pathDllFile
-            , string? pathTargetsFile
-            , string testFrameworkMoniker)
+        public static void CreateTestProjectFile(
+            PackageFileNameTestCase testCase,
+            string testDirectory,
+            string? pathDllFile,
+            string? pathTargetsFile,
+            string testFrameworkMoniker)
         {
-
             var csprojPath = Path.Combine(testDirectory, FILENAME_PROJECT_FILE);
-            var nuspecPath = Path.Combine(testDirectory, FILENAME_NUSPEC_FILE);
 
             var csprojContent = $"""
 <Project Sdk="Microsoft.NET.Sdk">
@@ -238,6 +237,19 @@ namespace NuGet.Build.Tasks.Pack.Test
 </Project>
 """;
 
+            File.WriteAllText(csprojPath, csprojContent, System.Text.Encoding.Unicode);
+        }
+
+        public static void CreateNuspecFile(
+            PackageFileNameTestCase testCase,
+            string testDirectory)
+        {
+            if (!testCase.UseNuspecFile)
+            {
+                return;
+            }
+
+            var nuspecPath = Path.Combine(testDirectory, FILENAME_NUSPEC_FILE);
             var nuspecContent = $"""
 <?xml version="1.0" encoding="utf-8"?>
     <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
@@ -251,11 +263,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 </package>
 """;
 
-            File.WriteAllText(csprojPath, csprojContent, System.Text.Encoding.Unicode);
-            if (testCase.UseNuspecFile)
-            {
-                File.WriteAllText(nuspecPath, nuspecContent, new System.Text.UTF8Encoding(true));
-            }
+            File.WriteAllText(nuspecPath, nuspecContent, new System.Text.UTF8Encoding(true));
         }
 
         public static string GetSymbolPackageFormatText(NuGet.Commands.SymbolPackageFormat symbolPackageFormat)

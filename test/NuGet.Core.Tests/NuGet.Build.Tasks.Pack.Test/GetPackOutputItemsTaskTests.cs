@@ -45,7 +45,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     outputItemTask.NuspecFile = System.IO.Path.Combine(testDirectory.Path, PackageFileNameTestsCommon.FILENAME_NUSPEC_FILE);
                 }
 
-                PackageFileNameTestsCommon.CreateTestProjectFileAndNuspecFile(testCase, testDirectory);
+                PackageFileNameTestsCommon.CreateNuspecFile(testCase, testDirectory);
 
                 Assert.True(outputItemTask.Execute());
 

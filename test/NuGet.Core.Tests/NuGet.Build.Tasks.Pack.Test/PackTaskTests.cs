@@ -470,7 +470,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                 }
 
                 // Create .csproj and .nuspec
-                PackageFileNameTestsCommon.CreateTestProjectFileAndNuspecFile(testCase, testDirectory);
+                PackageFileNameTestsCommon.CreateTestProjectFile(testCase, testDirectory);
+                PackageFileNameTestsCommon.CreateNuspecFile(testCase, testDirectory);
 
                 // Create project.assets.json
                 var path = string.Join(".", typeof(PackTaskLogicTests).Namespace, "compiler.resources", "json.assets.project");
