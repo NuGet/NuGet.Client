@@ -3,26 +3,6 @@ parameters:
   displayName: Build bits for publishing
   type: boolean
   default: true
-- name: RunTestsOnWindows
-  displayName: Run tests on Windows
-  type: boolean
-  default: false
-- name: RunSourceBuild
-  displayName: Run source build
-  type: boolean
-  default: false
-- name: RunTestsOnLinux
-  displayName: Run tests on Linux
-  type: boolean
-  default: false
-- name: RunTestsOnMac
-  displayName: Run tests on Mac
-  type: boolean
-  default: false
-- name: RunMonoTestsOnMac
-  displayName: Run Mono tests on Mac
-  type: boolean
-  default: false
 - name: SigningType
   displayName: Type of signing to use
   type: string
@@ -45,11 +25,6 @@ variables:
   Codeql.Enabled: false
   Codeql.TSAEnabled: false
   RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
-  RunTestsOnWindows: ${{ parameters.RunTestsOnWindows }}
-  RunSourceBuild: ${{ parameters.RunSourceBuild }}
-  RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
-  RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
-  RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
   SourceBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
 
 extends:
@@ -81,9 +56,4 @@ extends:
         isOfficialBuild: true
         NuGetLocalizationType: Full
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-        RunTestsOnWindows: ${{parameters.RunTestsOnWindows}}
-        RunSourceBuild: ${{parameters.RunSourceBuild}}
-        RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
-        RunTestsOnMac: ${{parameters.RunTestsOnMac}}
-        RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
         SigningType: ${{ parameters.SigningType }}

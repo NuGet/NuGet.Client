@@ -1,0 +1,113 @@
+parameters:
+- name: displayName
+- name: agentPool
+  type: string
+  default: Azure Pipelines
+- name: agentDemands
+  type: string
+  default: none
+- name: vmImage
+  type: string
+  default: none
+- name: testType
+- name: testTargetFramework
+- name: timeoutInMinutes
+  type: number
+  default: 15
+- name: testProjectName
+  displayName: Optional name of an individual test project to run tests from.  The default is to run tests from all applicable projects.
+  type: string
+  default: ''
+- name: testVerbosity
+  displayName: Optional verbosity to use when running tests.
+  type: string
+  default: 'minimal'
+
+jobs:
+- job:
+  displayName: ${{ parameters.displayName }}
+  variables:
+    - name: BuildConfiguration
+      value: Release
+    - name: BuildRTM
+      value: false
+    - name: TestType
+      value: ${{ parameters.testType }}
+    - name: TestTargetFramework
+      value: ${{ parameters.testTargetFramework }}
+    - name: TestProjectName
+      value: ${{ parameters.testProjectName }}
+    - name: BinlogDirectory
+      value: $(Agent.TempDirectory)\binlogs\
+    - name: VSTestVerbosity
+      value: ${{ parameters.testVerbosity }}
+
+  pool:
+    name: ${{ parameters.agentPool }}
+    ${{ if ne(parameters.vmImage, 'none') }}:
+      vmImage: ${{ parameters.vmImage }}
+    ${{ if ne(parameters.agentDemands, 'none') }}:
+      demands: ${{ parameters.agentDemands }}
+
+  steps:
+  - task: PowerShell@1
+    displayName: Run configure.ps1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force -CleanCache"
+
+  - task: PowerShell@1
+    displayName: Print Environment Variables
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
+  - task: MSBuild@1
+    displayName: Restore
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=1 /p:BuildRTM=$(BuildRTM) /v:m /binarylogger:\"$(BinlogDirectory)01-Restore.binlog\""
+
+  - task: MSBuild@1
+    displayName: Build
+    inputs:
+      solution: "build\\build.proj"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=1 /p:SkipILMergeOfNuGetExe=true /binarylogger:\"$(BinlogDirectory)02-Build.binlog\""
+      maximumCpuCount: true
+
+  - task: DotNetCoreCLI@2
+    displayName: Run $(TestType) Tests
+    condition: succeeded()
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    env:
+      VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1000
+    inputs:
+      command: test
+      ${{ if ne(parameters.testProjectName, '') }}:
+        projects: "test/**/${{ parameters.testProjectName }}/${{ parameters.testProjectName }}.csproj"
+      ${{ else }}:
+        projects: |
+          test/NuGet.Core.Tests/**/*.csproj
+          !test/NuGet.Core.Tests/NuGet.CommandLine.Xplat.Tests/*.csproj
+          test/NuGet.Clients.Tests/**/*.csproj
+          !test/NuGet.Clients.Tests/NuGet.CommandLine.Test/*.csproj
+      arguments: --no-restore --no-build --configuration $(BuildConfiguration) --framework $(TestTargetFramework)
+      ${{ if ne(parameters.testProjectName, '') }}:
+        testRunTitle: Windows $(TestType) Tests for $(TestProjectName) ($(TestTargetFramework))
+      ${{ else }}:
+        testRunTitle: Windows $(TestType) Tests ($(TestTargetFramework))
+
+  - script: taskkill /im dotnet.exe /f
+    displayName: Terminate dotnet.exe processes on cancellation or failure
+    continueOnError: true
+    condition: or(failed(), canceled(), eq(variables['System.Debug'], 'true'))
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish MSBuild Binary Logs
+    condition: or(failed(), canceled(), eq(variables['System.Debug'], 'true'))
+    inputs:
+      targetPath: $(BinlogDirectory)
+      artifact: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
