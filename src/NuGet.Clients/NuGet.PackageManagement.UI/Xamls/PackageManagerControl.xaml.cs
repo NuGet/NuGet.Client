@@ -1623,6 +1623,7 @@ namespace NuGet.PackageManagement.UI
             _packageDetail.Cleanup();
             _detailModel.Dispose();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
+            _packageList.Dispose();
 
             EmitPMUIClosingTelemetry();
         }

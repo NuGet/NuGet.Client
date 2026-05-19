@@ -57,9 +57,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
-        public ReentrantSemaphore ItemsLock { get; private set; }
+        internal ReentrantSemaphore ItemsLock { get; private set; }
 
-        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
+        internal ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
         internal InfiniteScrollListViewModel(Lazy<JoinableTaskFactory> joinableTaskFactory)
         {
@@ -207,7 +207,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private PackageItemViewModel _selectedPackageItem;
 
-        internal PackageItemViewModel SelectedPackageItem
+        public PackageItemViewModel SelectedPackageItem
         {
             get => _selectedPackageItem;
             set => SetAndRaisePropertyChanged(ref _selectedPackageItem, value);
@@ -231,7 +231,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
         private async Task LoadItemsAsync(PackageItemViewModel selectedPackageItem, CancellationToken token)
         {
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-            Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
+            var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+            oldCts?.Cancel();
+            oldCts?.Dispose();
 
             await RepopulatePackageListAsync(selectedPackageItem, _loader, loadCts);
         }
@@ -723,6 +725,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _loadCts?.Cancel();
             _loadCts?.Dispose();
             _loadCts = null;
+            ItemsLock?.Dispose();
         }
     }
 }

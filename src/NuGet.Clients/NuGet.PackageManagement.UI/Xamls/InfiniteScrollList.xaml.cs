@@ -24,10 +24,11 @@ namespace NuGet.PackageManagement.UI
     /// This codebehind handles only WPF-specific concerns; all business logic
     /// is in <see cref="InfiniteScrollListViewModel"/>.
     /// </summary>
-    public partial class InfiniteScrollList : UserControl
+    public partial class InfiniteScrollList : UserControl, IDisposable
     {
         private ScrollViewer _scrollViewer;
         private const string LogEntrySource = "NuGet Package Manager";
+        private bool _disposed;
 
         public InfiniteScrollListViewModel ViewModel { get; }
 
@@ -238,6 +239,17 @@ namespace NuGet.PackageManagement.UI
         private void Expander_ExpansionStateToggled(object sender, RoutedEventArgs e)
         {
             GroupExpansionChanged?.Invoke(sender, e);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            ViewModel.Dispose();
+            _disposed = true;
         }
     }
 }
