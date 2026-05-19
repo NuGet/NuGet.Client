@@ -20,13 +20,13 @@
 
 ## Benchmarking
 
-When asked to benchmark code or measure performance, use the `NuGet.Benchmarks` project at `test/TestExtensions/NuGet.Benchmarks/`. Add your benchmark class to `Program.cs` (or a new `.cs` file in that project), update the `BenchmarkRunner.Run<T>()` call, and run with:
+When asked to benchmark code or measure performance, use the `NuGet.Benchmarks` project at `test/TestExtensions/NuGet.Benchmarks/`. Create a new `.cs` file in that directory (it is git-ignored) with a class that implements `IBenchmark` and annotates benchmark methods with `[Benchmark]`. No changes to `Program.cs` are needed — it auto-discovers all `IBenchmark` implementations. Run with:
 
 ```bash
 dotnet run -c Release --project test/TestExtensions/NuGet.Benchmarks/NuGet.Benchmarks.csproj
 ```
 
-See `test/TestExtensions/NuGet.Benchmarks/README.md` for details.
+See `test/TestExtensions/NuGet.Benchmarks/README.md` for details and an example.
 
 ## Nullable Migration Rules
 

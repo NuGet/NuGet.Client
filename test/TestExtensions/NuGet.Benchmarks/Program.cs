@@ -1,50 +1,29 @@
-using BenchmarkDotNet.Attributes;
+using System.Linq;
+using System.Reflection;
 using BenchmarkDotNet.Running;
 
-BenchmarkRunner.Run<LambdaAllocationBenchmarks>();
+// Auto-discovers and runs all classes implementing IBenchmark in this assembly.
+// To write benchmarks: add a new *.cs file (git-ignored by .gitignore in this directory)
+// with a class that implements IBenchmark and annotates benchmark methods with [Benchmark].
+// No changes to this file are needed. See README.md for an example.
 
-public class Item
+Assembly assembly = Assembly.GetExecutingAssembly();
+Type[] benchmarkTypes = [.. assembly.GetTypes()
+    .Where(t => typeof(IBenchmark).IsAssignableFrom(t) && t is { IsClass: true, IsAbstract: false })];
+
+if (benchmarkTypes.Length > 0)
 {
-    public Item(string value) => Value = value;
-    public string Value { get; }
+    BenchmarkRunner.Run(benchmarkTypes, config: null, args: args);
+}
+else
+{
+    Console.WriteLine("No benchmark classes found.");
+    Console.WriteLine("Create a *.cs file in this directory with a class that implements IBenchmark.");
+    Console.WriteLine("See README.md for an example.");
 }
 
-[MemoryDiagnoser]
-public class LambdaAllocationBenchmarks
-{
-    [Benchmark]
-    public void StaticLambda()
-    {
-        Create(static path => new Item(path));
-    }
-
-    [Benchmark]
-    public void Lambda()
-    {
-        string pre = "my prefix";
-        Create(path => new Item(path + pre));
-    }
-
-    [Benchmark]
-    public void MethodGroup()
-    {
-        Create(Factory);
-    }
-
-    [Benchmark]
-    public void DirectCall()
-    {
-        CreateItem("hello");
-    }
-
-    private static Item Factory(string path) => new Item(path);
-
-    private static void Create<T>(Func<string, T> factory)
-    {
-    }
-
-    private static Item CreateItem(string path)
-    {
-        return new Item(path);
-    }
-}
+/// <summary>
+/// Marker interface for benchmark classes that are automatically discovered and run.
+/// Implement this interface in a class and annotate methods with [Benchmark].
+/// </summary>
+public interface IBenchmark { }
