@@ -62,8 +62,3 @@ public class Item
 ```
 
 For full documentation on available attributes (`[MemoryDiagnoser]`, `[Params]`, `[GlobalSetup]`, etc.) see the [BenchmarkDotNet docs](https://benchmarkdotnet.org/articles/overview.html).
-
-## Prior art
-
-This approach mirrors the benchmark project used in the .NET SDK:
-<https://github.com/dotnet/dotnet/blob/main/src/sdk/benchmarks/MicroBenchmark/MicroBenchmark.csproj>
