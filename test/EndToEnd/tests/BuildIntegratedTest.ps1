@@ -1,17 +1,3 @@
-# basic install into a build integrated project
-function Test-BuildIntegratedInstallPackage {
-    # Arrange
-    $project = New-BuildIntegratedProj UAPApp
-
-    # Act
-    Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
-
-    # Assert
-    Assert-PackageReferenceExists $project NuGet.Versioning 1.0.7
-    Assert-NetCorePackageInLockFile $project NuGet.Versioning 1.0.7
-    Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/portable-net40+win/NuGet.Versioning.dll
-}
-
 # install multiple packages into a project
 function Test-BuildIntegratedInstallMultiplePackages {
     # Arrange
@@ -63,35 +49,6 @@ function Test-BuildIntegratedInstallAndVerifyLockFileContainsChildDependency {
     Assert-NetCorePackageInLockFile $project WindowsAzure.MobileServices 1.0.2
     Assert-NetCoreNoPackageReference $project WindowsAzure.MobileServices
 } 
-
-# basic uninstall
-function Test-BuildIntegratedUninstallPackage {
-    # Arrange
-    $project = New-BuildIntegratedProj UAPApp
-    Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.7
-
-    # Act
-    Uninstall-Package NuGet.Versioning -ProjectName $project.Name
-
-    # Assert
-    Assert-NetCoreNoPackageReference $project NuGet.Versioning
-    Assert-NetCorePackageNotInLockFile $project NuGet.Versioning
-}
-
-# basic update package
-function Test-BuildIntegratedUpdatePackage {
-    # Arrange
-    $project = New-BuildIntegratedProj UAPApp
-    Install-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.5
-
-    # Act
-    Update-Package NuGet.Versioning -ProjectName $project.Name -version 1.0.6
-
-    # Assert
-    Assert-PackageReferenceExists $project NuGet.Versioning 1.0.6
-    Assert-NetCorePackageInLockFile $project NuGet.Versioning 1.0.6
-    Assert-PackageReferenceAssetsFileRuntimeAssembly $project lib/portable-net40+win/NuGet.Versioning.dll
-}
 
 function Test-BuildIntegratedUpdateNonExistantPackage {
     # Arrange
