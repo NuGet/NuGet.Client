@@ -3,6 +3,3 @@
 # Only Program.cs (which contains the auto-discovery logic) is tracked.
 *.cs
 !Program.cs
-
-# BenchmarkDotNet output artifacts
-BenchmarkDotNet.Artifacts/
