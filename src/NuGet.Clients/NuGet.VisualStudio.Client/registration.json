@@ -387,7 +387,16 @@
           "allowItemEditing": true,
           "allowAdditionsAndRemovals": true
         }
-      }
+      },
+      "commands": [
+        {
+          "vsct": {
+            "text": "Onboard", //TODO
+            "set": "54A0AC88-A025-4A62-8D48-6C1848E4F545", // TODO: guidClearNuGetLocalResourcesCmdSetString
+            "id": 256 // TODO: cmdidClearNuGetLocalResources
+          }
+        }
+      ]
     }
   },
   "categories": {
