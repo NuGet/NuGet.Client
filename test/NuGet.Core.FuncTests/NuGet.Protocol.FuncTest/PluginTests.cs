@@ -194,6 +194,7 @@ namespace NuGet.Protocol.FuncTest
                 var payload = new GetOperationClaimsRequest(packageSourceRepository: "a", serviceIndex: "{}");
 
                 var response = await test.Plugin.Connection.SendRequestAndReceiveResponseAsync<GetOperationClaimsRequest, GetOperationClaimsResponse>(
+                    MessageMethod.GetOperationClaims,
                     payload,
                     test.CancellationToken);
 
