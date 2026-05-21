@@ -15,8 +15,6 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class GetOperationClaimsRequest
     {
-        private readonly string _serviceIndex;
-
         /// <summary>
         /// Gets the package source repository location for the <see cref="ServiceIndexJson" />.
         /// </summary>
@@ -27,9 +25,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         [JsonProperty("ServiceIndex")]
         [JsonConverter(typeof(NsjRawJsonStringConverter))]
-        [System.Text.Json.Serialization.JsonPropertyName("ServiceIndex")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(RawJsonStringConverter))]
-        public string ServiceIndexJson => _serviceIndex;
+        public string ServiceIndexJson { get; }
 
         /// <summary>
         /// Gets the service index (index.json) for the <see cref="PackageSourceRepository" />.
@@ -48,7 +44,7 @@ namespace NuGet.Protocol.Plugins
         public GetOperationClaimsRequest(string packageSourceRepository, string serviceIndex)
         {
             PackageSourceRepository = packageSourceRepository;
-            _serviceIndex = serviceIndex;
+            ServiceIndexJson = serviceIndex;
         }
 
         /// <summary>

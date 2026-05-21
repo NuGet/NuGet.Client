@@ -125,8 +125,6 @@ namespace NuGet.Protocol.Plugins
 
                 if (serviceIndex != null)
                 {
-                    var serviceIndexJson = serviceIndex.Json;
-
                     foreach (var result in await FindAvailablePluginsAsync(cancellationToken))
                     {
                         var pluginCreationResult = await TryCreatePluginAsync(
@@ -134,7 +132,7 @@ namespace NuGet.Protocol.Plugins
                             OperationClaim.DownloadPackage,
                             new PluginRequestKey(result.PluginFile.Path, source.PackageSource.Source),
                             source.PackageSource.Source,
-                            serviceIndexJson,
+                            serviceIndex.Json,
                             cancellationToken);
 
                         if (pluginCreationResult.Item1)

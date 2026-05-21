@@ -15,8 +15,6 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class GetServiceIndexResponse
     {
-        private readonly string _serviceIndex;
-
         /// <summary>
         /// Gets the response code.
         /// </summary>
@@ -28,9 +26,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         [JsonProperty("ServiceIndex")]
         [JsonConverter(typeof(NsjRawJsonStringConverter))]
-        [System.Text.Json.Serialization.JsonPropertyName("ServiceIndex")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(RawJsonStringConverter))]
-        public string ServiceIndexJson => _serviceIndex;
+        public string ServiceIndexJson { get; }
 
         /// <summary>
         /// Gets the service index (index.json) for the package source repository.
@@ -68,7 +64,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             ResponseCode = responseCode;
-            _serviceIndex = serviceIndex;
+            ServiceIndexJson = serviceIndex;
         }
 
         /// <summary>

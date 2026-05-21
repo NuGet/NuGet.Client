@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -20,8 +21,14 @@ namespace NuGet.Protocol.Plugins
                 return null;
             }
 
-            var token = JToken.Load(reader);
-            return token.ToString(Formatting.None);
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                throw new JsonSerializationException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+            }
+
+            var obj = JObject.Load(reader);
+            return obj.ToString(Formatting.None);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
