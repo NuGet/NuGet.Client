@@ -322,7 +322,7 @@ namespace NuGet.Protocol.Plugins
                 StringComparer.OrdinalIgnoreCase);
         }
 
-        private async Task<IReadOnlyList<OperationClaim>> GetPluginOperationClaimsAsync(
+        private static async Task<IReadOnlyList<OperationClaim>> GetPluginOperationClaimsAsync(
             IPlugin plugin,
             string packageSourceRepository,
             string serviceIndex,
