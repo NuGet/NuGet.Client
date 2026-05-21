@@ -1,0 +1,39 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable disable
+
+using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace NuGet.Protocol.Plugins
+{
+    internal sealed class NsjRawJsonStringConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType) => objectType == typeof(string);
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null)
+            {
+                return null;
+            }
+
+            var token = JToken.Load(reader);
+            return token.ToString(Formatting.None);
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (value is string s)
+            {
+                writer.WriteRawValue(s);
+            }
+            else
+            {
+                writer.WriteNull();
+            }
+        }
+    }
+}

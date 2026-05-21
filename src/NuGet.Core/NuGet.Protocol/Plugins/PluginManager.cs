@@ -11,7 +11,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -126,7 +125,7 @@ namespace NuGet.Protocol.Plugins
 
                 if (serviceIndex != null)
                 {
-                    var serviceIndexJson = JObject.Parse(serviceIndex.Json);
+                    var serviceIndexJson = serviceIndex.Json;
 
                     foreach (var result in await FindAvailablePluginsAsync(cancellationToken))
                     {
@@ -192,7 +191,7 @@ namespace NuGet.Protocol.Plugins
             OperationClaim requestedOperationClaim,
             PluginRequestKey requestKey,
             string packageSourceRepository,
-            JObject serviceIndex,
+            string serviceIndex,
             CancellationToken cancellationToken)
         {
             // This is a non cancellable task.
@@ -328,7 +327,7 @@ namespace NuGet.Protocol.Plugins
         private async Task<IReadOnlyList<OperationClaim>> GetPluginOperationClaimsAsync(
             IPlugin plugin,
             string packageSourceRepository,
-            JObject serviceIndex,
+            string serviceIndex,
             CancellationToken cancellationToken)
         {
             if (plugin.Connection.ProtocolVersion.Equals(Plugins.ProtocolConstants.Version100) && (string.IsNullOrEmpty(packageSourceRepository) || serviceIndex == null))

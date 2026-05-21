@@ -15,6 +15,8 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class GetServiceIndexResponse
     {
+        private readonly string _serviceIndex;
+
         /// <summary>
         /// Gets the response code.
         /// </summary>
@@ -22,22 +24,33 @@ namespace NuGet.Protocol.Plugins
         public MessageResponseCode ResponseCode { get; }
 
         /// <summary>
+        /// Gets the service index (index.json) for the package source repository as a raw JSON string.
+        /// </summary>
+        [JsonProperty("ServiceIndex")]
+        [JsonConverter(typeof(NsjRawJsonStringConverter))]
+        [System.Text.Json.Serialization.JsonPropertyName("ServiceIndex")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(RawJsonStringConverter))]
+        public string ServiceIndexJson => _serviceIndex;
+
+        /// <summary>
         /// Gets the service index (index.json) for the package source repository.
         /// </summary>
-        public JObject ServiceIndex { get; }
+        [Obsolete("Use ServiceIndexJson instead. This property always returns null.")]
+        [JsonIgnore]
+        public JObject ServiceIndex => null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetServiceIndexResponse" /> class.
         /// </summary>
         /// <param name="responseCode">The response code.</param>
-        /// <param name="serviceIndex">The service index (index.json) for the package source repository.</param>
+        /// <param name="serviceIndex">The service index (index.json) for the package source repository as a raw JSON string.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="responseCode" />
         /// is an undefined <see cref="MessageResponseCode" /> value.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="responseCode" /> 
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="responseCode" />
         /// is <see cref="MessageResponseCode.Success" /> and <paramref name="serviceIndex" />
         /// is <see langword="null" />.</exception>
         [JsonConstructor]
-        public GetServiceIndexResponse(MessageResponseCode responseCode, JObject serviceIndex)
+        public GetServiceIndexResponse(MessageResponseCode responseCode, string serviceIndex)
         {
             if (!Enum.IsDefined(typeof(MessageResponseCode), responseCode))
             {
@@ -55,7 +68,18 @@ namespace NuGet.Protocol.Plugins
             }
 
             ResponseCode = responseCode;
-            ServiceIndex = serviceIndex;
+            _serviceIndex = serviceIndex;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GetServiceIndexResponse" /> class.
+        /// </summary>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="serviceIndex">The service index (index.json) for the package source repository.</param>
+        [Obsolete("Use GetServiceIndexResponse(MessageResponseCode, string) instead.")]
+        public GetServiceIndexResponse(MessageResponseCode responseCode, JObject serviceIndex)
+            : this(responseCode, serviceIndex?.ToString(Formatting.None))
+        {
         }
     }
 }
