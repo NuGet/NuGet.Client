@@ -46,6 +46,16 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal(expectedJson, result);
         }
 
+        [Theory]
+        [InlineData("not json")]
+        [InlineData("[1,2,3]")]
+        [InlineData("42")]
+        [InlineData("\"a string\"")]
+        public void Write_NonObjectValue_Throws(string value)
+        {
+            Assert.ThrowsAny<JsonException>(() => JsonConvert.SerializeObject(new Wrapper { Value = value }));
+        }
+
         private sealed class Wrapper
         {
             [JsonConverter(typeof(NsjRawJsonStringConverter))]

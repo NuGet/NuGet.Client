@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Plugins
         {
             if (value is string s)
             {
-                writer.WriteRawValue(s);
+                JObject.Parse(s).WriteTo(writer);
             }
             else
             {
