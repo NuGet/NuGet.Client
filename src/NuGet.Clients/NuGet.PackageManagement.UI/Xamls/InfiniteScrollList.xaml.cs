@@ -294,17 +294,27 @@ namespace NuGet.PackageManagement.UI
 
             try
             {
-                // add Loading... indicator if not present
-                if (!Items.Contains(_loadingStatusIndicator))
+                // Items is registered with BindingOperations.EnableCollectionSynchronization,
+                // so every cross-thread mutation must hold _list.ItemsLock. Skipping the lock
+                // leaves stale entries in WPF's cross-thread change log that can crash with
+                // ArgumentOutOfRangeException inside ListCollectionView.ProcessCollectionChanged
+                // when a concurrent ItemsView.Refresh() rebuilds the ShadowCollection.
+                await _list.ItemsLock.ExecuteAsync(() =>
                 {
-                    Items.Add(_loadingStatusIndicator);
-                    addedLoadingIndicator = true;
-                }
+                    // add Loading... indicator if not present
+                    if (!Items.Contains(_loadingStatusIndicator))
+                    {
+                        Items.Add(_loadingStatusIndicator);
+                        addedLoadingIndicator = true;
+                    }
 
-                if (!Items.Contains(_loadingVulnerabilitiesStatusIndicator))
-                {
-                    Items.Add(_loadingVulnerabilitiesStatusIndicator);
-                }
+                    if (!Items.Contains(_loadingVulnerabilitiesStatusIndicator))
+                    {
+                        Items.Add(_loadingVulnerabilitiesStatusIndicator);
+                    }
+
+                    return Task.CompletedTask;
+                });
 
                 await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
@@ -354,31 +364,37 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
-                if (VulnerablePackagesCount == 0)
+                // Mutations to Items must hold _list.ItemsLock; see comment at the top of try.
+                await _list.ItemsLock.ExecuteAsync(() =>
                 {
-                    _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                }
-                else
-                {
-                    Items.Remove(_loadingVulnerabilitiesStatusIndicator);
-                }
-
-                if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
-                    && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
-                {
-                    // Ideally, after a search, it should report its status, and
-                    // do not keep the LoadingStatus.Loading forever.
-                    // This is a workaround.
-                    var emptyListCount = addedLoadingIndicator ? 1 : 0;
-                    if (Items.Count == emptyListCount)
+                    if (VulnerablePackagesCount == 0)
                     {
-                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                        _loadingVulnerabilitiesStatusIndicator.Status = LoadingStatus.NoItemsFound;
                     }
                     else
                     {
-                        Items.Remove(_loadingStatusIndicator);
+                        Items.Remove(_loadingVulnerabilitiesStatusIndicator);
                     }
-                }
+
+                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
+                        && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
+                    {
+                        // Ideally, after a search, it should report its status, and
+                        // do not keep the LoadingStatus.Loading forever.
+                        // This is a workaround.
+                        var emptyListCount = addedLoadingIndicator ? 1 : 0;
+                        if (Items.Count == emptyListCount)
+                        {
+                            _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                        }
+                        else
+                        {
+                            Items.Remove(_loadingStatusIndicator);
+                        }
+                    }
+
+                    return Task.CompletedTask;
+                });
             }
 
             UpdateCheckBoxStatus();
