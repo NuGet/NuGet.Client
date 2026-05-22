@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI.ViewModels;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,12 +16,12 @@ namespace NuGet.PackageManagement.UI.Test
     /// <summary>
     /// Regression coverage for the Watson <see cref="System.ArgumentOutOfRangeException"/> in
     /// <see cref="System.Windows.Data.ListCollectionView.ProcessCollectionChanged"/> that originated in
-    /// <c>InfiniteScrollList.RepopulatePackageListAsync</c>.
+    /// <c>InfiniteScrollListViewModel.RepopulatePackageListAsync</c>.
     ///
-    /// The collection backing <c>InfiniteScrollList.Items</c> is registered with
+    /// The collection backing <c>InfiniteScrollListViewModel.Items</c> is registered with
     /// <see cref="BindingOperations.EnableCollectionSynchronization(System.Collections.IEnumerable, object)"/>
-    /// using <c>InfiniteScrollListBox.ItemsLock</c>, so every cross-thread mutation must hold that lock.
-    /// The test runs <see cref="InfiniteScrollList.AddLoadingIndicatorsAsync"/> on a background thread the way
+    /// using <c>InfiniteScrollListViewModel.ItemsLock</c>, so every cross-thread mutation must hold that lock.
+    /// The test runs <see cref="InfiniteScrollListViewModel.AddLoadingIndicatorsAsync"/> on a background thread the way
     /// production does, and asserts the dispatcher never observes an unhandled exception from WPF's binding engine.
     ///
     /// Note: this test deliberately does <b>not</b> construct an <c>InfiniteScrollList</c> instance — XAML loading
@@ -88,7 +89,7 @@ namespace NuGet.PackageManagement.UI.Test
                     {
                         producers[t] = Task.Run(async () =>
                         {
-                            await InfiniteScrollList.AddLoadingIndicatorsAsync(
+                            await InfiniteScrollListViewModel.AddLoadingIndicatorsAsync(
                                 items,
                                 loadingStatusIndicator: new object(),
                                 loadingVulnerabilitiesStatusIndicator: new object(),
