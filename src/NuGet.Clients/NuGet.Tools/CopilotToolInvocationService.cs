@@ -46,14 +46,18 @@ namespace NuGetVSExtension
             }
 
             // 3. Acquire Copilot service
+#pragma warning disable ISB001 // Dispose objects before losing scope - ownership is transferred to CopilotToolSession on success
             ICopilotService? copilotService = await ServiceBroker.GetProxyAsync<ICopilotService>(CopilotDescriptors.CopilotService, cancellationToken);
+#pragma warning restore ISB001
             if (copilotService is null)
             {
                 return CopilotToolSessionResult.Failure(CopilotToolSessionError.CopilotServiceNotAvailable);
             }
 
             // 4. Acquire MCP tool function provider
+#pragma warning disable ISB001 // Dispose objects before losing scope - ownership is transferred to CopilotToolSession on success
             ICopilotFunctionProvider? cfp = await ServiceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
+#pragma warning restore ISB001
             if (cfp is null)
             {
                 (copilotService as IDisposable)?.Dispose();
