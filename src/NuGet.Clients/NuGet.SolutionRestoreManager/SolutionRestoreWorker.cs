@@ -423,13 +423,19 @@ namespace NuGet.SolutionRestoreManager
                     using (var restoreOperation = new BackgroundRestoreOperation())
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, token);
+                        RestoreReadinessResult restoreReadiness = new();
+                        if (ShouldWaitForOnBuildRestoreReadiness(request))
+                        {
+                            restoreReadiness = await WaitForOnBuildRestoreReadinessAsync(token);
+                        }
+
                         var restoreTrackingData = GetRestoreTrackingData(
-                            restoreReason: ImplicitRestoreReason.None,
+                            restoreReason: restoreReadiness.RestoreReason,
                             requestCount: 1,
-                            projectRestoreInfoSourcesCount: -1,
-                            bulkRestoreCoordinationCheckStartTime: default,
-                            projectsReadyCheckCount: 0,
-                            projectReadyTimings: new List<TimeSpan>(),
+                            projectRestoreInfoSourcesCount: restoreReadiness.ProjectRestoreInfoSourcesCount,
+                            bulkRestoreCoordinationCheckStartTime: restoreReadiness.BulkRestoreCoordinationCheckStartTime,
+                            projectsReadyCheckCount: restoreReadiness.ProjectsReadyCheckCount,
+                            projectReadyTimings: restoreReadiness.ProjectReadyTimings,
                             request.ExplicitRestoreReason);
                         var result = await ProcessRestoreRequestAsync(restoreOperation, request, restoreTrackingData, token);
 
@@ -454,30 +460,77 @@ namespace NuGet.SolutionRestoreManager
             Interlocked.Exchange(ref _restoreJobContext, new SolutionRestoreJobContext());
         }
 
+        private bool ShouldWaitForOnBuildRestoreReadiness(SolutionRestoreRequest request)
+        {
+            return request.RestoreSource == RestoreOperationSource.OnBuild && _isFirstRestore;
+        }
+
+        internal async Task<RestoreReadinessResult> WaitForOnBuildRestoreReadinessAsync(CancellationToken token)
+        {
+            return await WaitForOnBuildRestoreReadinessCoreAsync(
+                waitForSolutionLoadedAsync: WaitForSolutionLoadedAsync,
+                isAllProjectsNominatedAsync: () => _solutionManager.Value.IsAllProjectsNominatedAsync(),
+                checkProjectsReadyAsync: CheckProjectsReadyAsync,
+                token: token);
+        }
+
+        internal static async Task<RestoreReadinessResult> WaitForOnBuildRestoreReadinessCoreAsync(
+            Func<CancellationToken, Task> waitForSolutionLoadedAsync,
+            Func<Task<bool>> isAllProjectsNominatedAsync,
+            Func<DateTime, CancellationToken, Task<(bool allProjectsReady, bool bulkCheckTimeout, int projectRestoreInfoSourcesCount, TimeSpan projectReadyCheckTime)>> checkProjectsReadyAsync,
+            CancellationToken token)
+        {
+            RestoreReadinessResult restoreReadiness = new();
+
+            await waitForSolutionLoadedAsync(token);
+
+            while (!token.IsCancellationRequested)
+            {
+                var isAllProjectsNominated = await isAllProjectsNominatedAsync();
+                if (!isAllProjectsNominated)
+                {
+                    await Task.Delay(IdleTimeoutMs, token);
+                    continue;
+                }
+
+                if (restoreReadiness.BulkRestoreCoordinationCheckStartTime == default)
+                {
+                    restoreReadiness.BulkRestoreCoordinationCheckStartTime = DateTime.UtcNow;
+                }
+
+                restoreReadiness.ProjectsReadyCheckCount++;
+                (bool allProjectsReady, bool bulkCheckTimeout, int projectRestoreInfoSourcesCount, TimeSpan projectReadyTiming) =
+                    await checkProjectsReadyAsync(
+                        restoreReadiness.BulkRestoreCoordinationCheckStartTime.Value,
+                        token);
+                restoreReadiness.ProjectRestoreInfoSourcesCount = projectRestoreInfoSourcesCount;
+                restoreReadiness.ProjectReadyTimings.Add(projectReadyTiming);
+
+                if (allProjectsReady)
+                {
+                    restoreReadiness.RestoreReason = ImplicitRestoreReason.ProjectsReady;
+                    break;
+                }
+
+                if (bulkCheckTimeout)
+                {
+                    restoreReadiness.RestoreReason = ImplicitRestoreReason.ProjectsReadyCheckTimeout;
+                    break;
+                }
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            return restoreReadiness;
+        }
+
         private async Task<bool> StartBackgroundJobRunnerAsync(CancellationToken token)
         {
             // Hops onto a background pool thread
             await TaskScheduler.Default;
 
             var status = false;
-            // Check if the solution is fully loaded
-            while (!_solutionLoadedEvent.IsSet)
-            {
-                // Needed when OnAfterBackgroundSolutionLoadComplete fires before
-                // Advise has been called.
-                if (await IsSolutionFullyLoadedAsync())
-                {
-                    _solutionLoadedEvent.Set();
-                    break;
-                }
-                else
-                {
-                    // Waits for 100ms to let solution fully load or canceled
-                    await _solutionLoadedEvent.WaitAsync()
-                        .WithTimeout(TimeSpan.FromMilliseconds(DelaySolutionLoadRetry))
-                        .WithCancellation(token);
-                }
-            }
+            await WaitForSolutionLoadedAsync(token);
 
             ImplicitRestoreReason restoreReason = ImplicitRestoreReason.None;
             DateTime? bulkRestoreCoordinationCheckStartTime = default;
@@ -529,41 +582,22 @@ namespace NuGet.SolutionRestoreManager
                             {
                                 if (isAllProjectsNominated)
                                 {
-                                    var projectReadyCheckMeasurement = Stopwatch.StartNew();
                                     if (bulkRestoreCoordinationCheckStartTime == default)
                                     {
                                         bulkRestoreCoordinationCheckStartTime = DateTime.UtcNow;
                                     }
+
                                     projectsReadyCheckCount++;
-                                    // If we are about to start restore, we should run through all the projects to ensure there isn't a pending nomination.
-                                    IReadOnlyList<object> restoreProjectInfoSources = _solutionManager.Value.GetAllProjectRestoreInfoSources();
-                                    projectRestoreInfoSourcesCount = restoreProjectInfoSources.Count;
-                                    var allProjectsReady = true;
-                                    var bulkCheckTimeout = false;
-                                    for (int i = 0; i < restoreProjectInfoSources.Count && !bulkCheckTimeout; i++)
-                                    {
-                                        var restoreInfoSource = (IVsProjectRestoreInfoSource)restoreProjectInfoSources[i];
-                                        if (restoreInfoSource.HasPendingNomination)
-                                        {
-                                            allProjectsReady = false;
-                                            TimeSpan timeoutTime = CalculateTimeoutTime(bulkRestoreCoordinationCheckStartTime.Value, DateTime.UtcNow, BulkRestoreCoordinationTimeout);
-                                            var timeoutTask = Task.Delay(timeoutTime, token);
-                                            var whenNominatedTask = restoreInfoSource.WhenNominated(token);
-
-                                            var result = await Task.WhenAny(whenNominatedTask, timeoutTask);
-                                            if (result == timeoutTask)
-                                            {
-                                                bulkCheckTimeout = true;
-                                            }
-                                        }
-                                    }
-
-                                    projectReadyCheckMeasurement.Stop();
+                                    (bool allProjectsReady, bool bulkCheckTimeout, int updatedProjectRestoreInfoSourcesCount, TimeSpan projectReadyCheckTime) =
+                                        await CheckProjectsReadyAsync(
+                                            bulkRestoreCoordinationCheckStartTime.Value,
+                                            token);
+                                    projectRestoreInfoSourcesCount = updatedProjectRestoreInfoSourcesCount;
                                     if (projectReadyTimings == null)
                                     {
                                         projectReadyTimings = new();
                                     }
-                                    projectReadyTimings.Add(projectReadyCheckMeasurement.Elapsed);
+                                    projectReadyTimings.Add(projectReadyCheckTime);
 
                                     if (allProjectsReady)
                                     {
@@ -639,6 +673,65 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return status;
+        }
+
+        private async Task WaitForSolutionLoadedAsync(CancellationToken token)
+        {
+            while (!_solutionLoadedEvent.IsSet)
+            {
+                // Needed when OnAfterBackgroundSolutionLoadComplete fires before
+                // Advise has been called.
+                if (await IsSolutionFullyLoadedAsync())
+                {
+                    _solutionLoadedEvent.Set();
+                    break;
+                }
+
+                // Waits for 100ms to let solution fully load or canceled
+                await _solutionLoadedEvent.WaitAsync(token)
+                    .WithTimeout(TimeSpan.FromMilliseconds(DelaySolutionLoadRetry));
+            }
+        }
+
+        private async Task<(bool allProjectsReady, bool bulkCheckTimeout, int projectRestoreInfoSourcesCount, TimeSpan projectReadyCheckTime)> CheckProjectsReadyAsync(
+            DateTime bulkRestoreCoordinationCheckStartTime,
+            CancellationToken token)
+        {
+            var projectReadyCheckMeasurement = Stopwatch.StartNew();
+
+            // If we are about to start restore, we should run through all the projects to ensure there isn't a pending nomination.
+            IReadOnlyList<object> restoreProjectInfoSources = _solutionManager.Value.GetAllProjectRestoreInfoSources();
+            int projectRestoreInfoSourcesCount = restoreProjectInfoSources.Count;
+            var allProjectsReady = true;
+            var bulkCheckTimeout = false;
+            for (int i = 0; i < restoreProjectInfoSources.Count && !bulkCheckTimeout; i++)
+            {
+                var restoreInfoSource = (IVsProjectRestoreInfoSource)restoreProjectInfoSources[i];
+                if (restoreInfoSource.HasPendingNomination)
+                {
+                    allProjectsReady = false;
+                    TimeSpan timeoutTime = CalculateTimeoutTime(
+                        bulkRestoreCoordinationCheckStartTime,
+                        DateTime.UtcNow,
+                        BulkRestoreCoordinationTimeout);
+                    var timeoutTask = Task.Delay(timeoutTime, token);
+                    var whenNominatedTask = restoreInfoSource.WhenNominated(token);
+
+                    var result = await Task.WhenAny(whenNominatedTask, timeoutTask);
+                    if (result == timeoutTask)
+                    {
+                        bulkCheckTimeout = true;
+                    }
+                }
+            }
+
+            projectReadyCheckMeasurement.Stop();
+
+            return (
+                allProjectsReady,
+                bulkCheckTimeout,
+                projectRestoreInfoSourcesCount,
+                projectReadyCheckMeasurement.Elapsed);
         }
 
         /// <summary>
@@ -785,6 +878,26 @@ namespace NuGet.SolutionRestoreManager
             _solutionLoadedEvent.Set();
 
             return VSConstants.S_OK;
+        }
+
+        internal sealed class RestoreReadinessResult
+        {
+            public RestoreReadinessResult()
+            {
+                RestoreReason = ImplicitRestoreReason.None;
+                ProjectRestoreInfoSourcesCount = -1;
+                ProjectReadyTimings = new List<TimeSpan>();
+            }
+
+            public ImplicitRestoreReason RestoreReason { get; set; }
+
+            public DateTime? BulkRestoreCoordinationCheckStartTime { get; set; }
+
+            public int ProjectsReadyCheckCount { get; set; }
+
+            public int ProjectRestoreInfoSourcesCount { get; set; }
+
+            public List<TimeSpan> ProjectReadyTimings { get; }
         }
 
         private class BackgroundRestoreOperation
