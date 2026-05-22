@@ -18,7 +18,7 @@ namespace NuGetVSExtension
         private readonly IDisposable? _functionProviderDisposable;
 
         internal CopilotToolSession(
-            ICopilotThread thread,
+            CopilotThread thread,
             IReadOnlyList<CopilotFunctionDescriptor> functions,
             IDisposable? copilotServiceDisposable,
             IDisposable? functionProviderDisposable)
@@ -29,7 +29,7 @@ namespace NuGetVSExtension
             _functionProviderDisposable = functionProviderDisposable;
         }
 
-        public ICopilotThread Thread { get; }
+        public CopilotThread Thread { get; }
 
         public IReadOnlyList<CopilotFunctionDescriptor> Functions { get; }
 

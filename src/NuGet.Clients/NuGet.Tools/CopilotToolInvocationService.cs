@@ -27,7 +27,7 @@ namespace NuGetVSExtension
 
         public async Task<CopilotToolSessionResult> TryCreateToolSessionAsync(
             CopilotClientId clientId,
-            Guid correlationId,
+            CopilotCorrelationId correlationId,
             string requiredToolName,
             CancellationToken cancellationToken)
         {
@@ -75,7 +75,7 @@ namespace NuGetVSExtension
 
             // 6. Start Copilot thread
             CopilotThreadOptions options = new(clientId);
-            ICopilotThread thread = await copilotService.StartThreadAsync(options, cancellationToken);
+            CopilotThread thread = await copilotService.StartThreadAsync(options, cancellationToken);
 
             return CopilotToolSessionResult.Success(
                 new CopilotToolSession(
