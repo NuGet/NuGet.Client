@@ -25,7 +25,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         [MemberData(nameof(PackageFileNameTestCases))]
         public void GetPackOutputItemsTaskTests_Execute_CheckPackageFileName(PackageFileNameTestCase testCase)
         {
-            var outputItemTask = new NuGet.Build.Tasks.Pack.GetPackOutputItemsTask();
+            var outputItemTask = new GetPackOutputItemsTask();
             outputItemTask.PackageId = testCase.IdProjProp;
             outputItemTask.PackageVersion = testCase.VersionProjProp;
             outputItemTask.IncludeSymbols = testCase.IncludeSymbols;
