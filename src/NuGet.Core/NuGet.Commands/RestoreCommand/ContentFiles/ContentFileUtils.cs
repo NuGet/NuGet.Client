@@ -23,8 +23,8 @@ namespace NuGet.Commands
     {
         private const string ContentFilesFolderName = "contentFiles/";
 
-        // Synthetic absolute root for InMemoryDirectoryInfo. FileSystemGlobbing 6.0.0 resolves
-        // file paths via Path.GetFullPath but stores rootDir as-is — both must be absolute for
+        // Synthetic absolute root for InMemoryDirectoryInfo. The current version of FileSystemGlobbing
+        // resolves  file paths via Path.GetFullPath but stores rootDir as-is — both must be absolute for
         // the internal StartsWith check. The value doesn't affect matching results.
         private const string MatcherRoot = "/_";
 
