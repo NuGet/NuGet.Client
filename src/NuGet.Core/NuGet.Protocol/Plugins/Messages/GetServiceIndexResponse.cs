@@ -21,12 +21,14 @@ namespace NuGet.Protocol.Plugins
         [JsonRequired]
         public MessageResponseCode ResponseCode { get; }
 
+#nullable enable
         /// <summary>
         /// Gets the service index (index.json) for the package source repository as a raw JSON string.
         /// </summary>
         [JsonProperty("ServiceIndex")]
         [JsonConverter(typeof(NsjRawJsonStringConverter))]
-        public string ServiceIndexJson { get; }
+        public string? ServiceIndexJson { get; }
+#nullable disable
 
         /// <summary>
         /// Gets the service index (index.json) for the package source repository.
@@ -45,8 +47,9 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="responseCode" />
         /// is <see cref="MessageResponseCode.Success" /> and <paramref name="serviceIndex" />
         /// is <see langword="null" />.</exception>
+#nullable enable
         [JsonConstructor]
-        public GetServiceIndexResponse(MessageResponseCode responseCode, string serviceIndex)
+        public GetServiceIndexResponse(MessageResponseCode responseCode, string? serviceIndex)
         {
             if (!Enum.IsDefined(typeof(MessageResponseCode), responseCode))
             {
@@ -66,6 +69,7 @@ namespace NuGet.Protocol.Plugins
             ResponseCode = responseCode;
             ServiceIndexJson = serviceIndex;
         }
+#nullable disable
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetServiceIndexResponse" /> class.

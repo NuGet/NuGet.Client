@@ -20,12 +20,14 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         public string PackageSourceRepository { get; }
 
+#nullable enable
         /// <summary>
         /// Gets the service index (index.json) for the <see cref="PackageSourceRepository" /> as a raw JSON string.
         /// </summary>
         [JsonProperty("ServiceIndex")]
         [JsonConverter(typeof(NsjRawJsonStringConverter))]
-        public string ServiceIndexJson { get; }
+        public string? ServiceIndexJson { get; }
+#nullable disable
 
         /// <summary>
         /// Gets the service index (index.json) for the <see cref="PackageSourceRepository" />.
@@ -40,12 +42,14 @@ namespace NuGet.Protocol.Plugins
         /// <param name="packageSourceRepository">The package source location.</param>
         /// <param name="serviceIndex">The service index (index.json) as a raw JSON string.</param>
         /// <remarks>Both packageSourceRepository and service index can be null. If they are, the operation claims request is considered as source agnostic</remarks>
+#nullable enable
         [JsonConstructor]
-        public GetOperationClaimsRequest(string packageSourceRepository, string serviceIndex)
+        public GetOperationClaimsRequest(string? packageSourceRepository, string? serviceIndex)
         {
             PackageSourceRepository = packageSourceRepository;
             ServiceIndexJson = serviceIndex;
         }
+#nullable disable
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetOperationClaimsRequest" /> class.
