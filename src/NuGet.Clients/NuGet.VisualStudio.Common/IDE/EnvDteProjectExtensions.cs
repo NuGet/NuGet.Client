@@ -290,14 +290,33 @@ namespace NuGet.VisualStudio
             nameParts.Push(GetName(cursor));
 
             // walk up till the solution root
-            while (cursor.ParentProjectItem != null
-                   && cursor.ParentProjectItem.ContainingProject != null)
+            ProjectItem parent;
+            while ((parent = GetParentProjectItemOrNull(cursor)) != null
+                   && parent.ContainingProject != null)
             {
-                cursor = cursor.ParentProjectItem.ContainingProject;
+                cursor = parent.ContainingProject;
                 nameParts.Push(GetName(cursor));
             }
 
             return string.Join("\\", nameParts);
+        }
+
+        private static ProjectItem GetParentProjectItemOrNull(EnvDTE.Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            try
+            {
+                return project.ParentProjectItem;
+            }
+            catch (ArgumentException)
+            {
+                // Some VS project types (notably the "Miscellaneous Files" pseudo-project,
+                // Microsoft.VisualStudio.CommonIDE.Solutions.Dte.DteMiscProject) throw
+                // ArgumentException from the ParentProjectItem getter instead of returning
+                // null. Treat that case as "no parent" so callers don't fault.
+                return null;
+            }
         }
 
         /// <summary>
