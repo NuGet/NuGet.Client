@@ -297,7 +297,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             finally
             {
                 // Items is registered with BindingOperations.EnableCollectionSynchronization, so every
-                // cross-thread mutation must hold ItemsLock. See AddLoadingIndicatorsAsync for details.
+                // cross-thread mutation must hold ItemsLock.
                 await ItemsLock.ExecuteAsync(() =>
                 {
                     if (VulnerablePackagesCount == 0)
