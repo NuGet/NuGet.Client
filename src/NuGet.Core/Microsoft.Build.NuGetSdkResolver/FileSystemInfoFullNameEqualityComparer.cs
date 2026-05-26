@@ -44,7 +44,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <returns>A hash code for the specified <see cref="FileSystemInfo" /> object's <see cref="FileSystemInfo.FullName" /> property..</returns>
         public int GetHashCode(FileSystemInfo obj)
         {
-#if NETFRAMEWORK || NETSTANDARD
+#if NETFRAMEWORK
             return obj.FullName.GetHashCode();
 #else
             return obj.FullName.GetHashCode(StringComparison.Ordinal);

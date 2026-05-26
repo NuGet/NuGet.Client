@@ -117,7 +117,7 @@ namespace NuGet.Packaging
             int hash = 0;
             if (SourcePath != null)
             {
-#if NETFRAMEWORK || NETSTANDARD
+#if NETFRAMEWORK
                 hash = SourcePath.GetHashCode();
 #else
                 hash = SourcePath.GetHashCode(StringComparison.Ordinal);
@@ -126,7 +126,7 @@ namespace NuGet.Packaging
 
             if (TargetPath != null)
             {
-#if NETFRAMEWORK || NETSTANDARD
+#if NETFRAMEWORK
                 hash = hash * 4567 + TargetPath.GetHashCode();
 #else
                 hash = hash * 4567 + TargetPath.GetHashCode(StringComparison.Ordinal);

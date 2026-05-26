@@ -378,7 +378,7 @@ namespace NuGet.ContentModel
                 {
                     foreach (var property in obj._properties)
                     {
-#if NETFRAMEWORK || NETSTANDARD
+#if NETFRAMEWORK
                         hashCode ^= property.Key.GetHashCode();
 #else
                         hashCode ^= property.Key.GetHashCode(StringComparison.Ordinal);

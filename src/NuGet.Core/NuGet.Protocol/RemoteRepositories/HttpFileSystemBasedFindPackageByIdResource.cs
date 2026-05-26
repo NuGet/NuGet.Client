@@ -432,23 +432,12 @@ namespace NuGet.Protocol
                 return false;
             }
 
-#if !NETSTANDARD
             if (!packageVersions.TryGetValue(version, out NuGetVersion? originalVersion))
             {
                 versionString = null;
                 return false;
             }
             versionString = originalVersion.ToNormalizedString();
-#else
-            // .NET Standard 2.0 doesn't support HashSet<T>.TryGetValue. The API docs say the version should be lowercase, but if
-            // a server doesn't follow the spec and uses case sensitive URLs, this might result in 404 responses.
-            if (!packageVersions.Contains(version))
-            {
-                versionString = null;
-                return false;
-            }
-            versionString = version.ToNormalizedString().ToLowerInvariant();
-#endif
 
             return true;
         }
@@ -582,12 +571,7 @@ namespace NuGet.Protocol
         {
             var json = await JsonSerializer.DeserializeAsync(stream, JsonContext.Default.FlatContainerVersionList, cancellationToken: token);
 
-            var result =
-#if NETSTANDARD
-                new HashSet<NuGetVersion>();
-#else
-                new HashSet<NuGetVersion>(capacity: json.Versions?.Count ?? 0);
-#endif
+            var result = new HashSet<NuGetVersion>(capacity: json.Versions?.Count ?? 0);
 
             foreach (var versionString in json.Versions ?? [])
             {

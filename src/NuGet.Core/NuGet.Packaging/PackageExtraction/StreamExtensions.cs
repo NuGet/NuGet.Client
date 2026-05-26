@@ -6,10 +6,6 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using NuGet.Common;
 
-#if NETFRAMEWORK || NETSTANDARD2_0
-using System.Buffers;
-#endif
-
 namespace NuGet.Packaging
 {
     public static class StreamExtensions
@@ -17,28 +13,6 @@ namespace NuGet.Packaging
         public static string CopyToFile(this Stream inputStream, string fileFullPath)
         {
             return Testable.Default.CopyToFile(inputStream, fileFullPath);
-        }
-
-        private static void CopyTo(Stream inputStream, Stream outputStream)
-        {
-            // .NET Framework allocates an unavoidable byte[] when using
-            // Stream.CopyTo. Reimplement it, pulling from the pool similar
-            // to .NET 5.
-
-#if NETFRAMEWORK || NETSTANDARD2_0
-            const int bufferSize = 81920; // Same as Stream.CopyTo
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-
-            int bytesRead;
-            while ((bytesRead = inputStream.Read(buffer, offset: 0, buffer.Length)) != 0)
-            {
-                outputStream.Write(buffer, offset: 0, bytesRead);
-            }
-
-            ArrayPool<byte>.Shared.Return(buffer);
-#else
-            inputStream.CopyTo(outputStream);
-#endif
         }
 
         internal class Testable
@@ -127,7 +101,7 @@ namespace NuGet.Packaging
                     using (MemoryMappedFile mmf = MemoryMappedFile.CreateFromFile(fileFullPath, FileMode.Open, mapName: null, size))
                     using (MemoryMappedViewStream mmstream = mmf.CreateViewStream())
                     {
-                        CopyTo(inputStream, mmstream);
+                        inputStream.CopyTo(mmstream);
                     }
                 }
             }
@@ -136,7 +110,7 @@ namespace NuGet.Packaging
             {
                 using (var outputStream = NuGetExtractionFileIO.CreateFile(fileFullPath))
                 {
-                    CopyTo(inputStream, outputStream);
+                    inputStream.CopyTo(outputStream);
                 }
             }
         }

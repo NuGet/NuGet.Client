@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-#if !NETFRAMEWORK && !NETSTANDARD
+#if NET
 using System;
 #endif
 
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(string s)
         {
-#if NETFRAMEWORK || NETSTANDARD
+#if NETFRAMEWORK
             var hashCode = (s != null) ? s.GetHashCode() : 0;
 #else
             var hashCode = (s != null) ? s.GetHashCode(StringComparison.Ordinal) : 0;

@@ -115,11 +115,7 @@ namespace NuGet.DependencyResolver
                 {
                     if (!existingItem.Equals(item))
                     {
-#if NETSTANDARD2_0
-                        _storage = new HashSet<GraphItem<TItem>>() { existingItem, item };
-#else
                         _storage = new HashSet<GraphItem<TItem>>(capacity: 3) { existingItem, item };
-#endif
                     }
                 }
                 else

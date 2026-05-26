@@ -267,13 +267,7 @@ namespace NuGet.RuntimeModel
             if (_packagesWithDependencies.Contains(packageId))
             {
                 var key = new RuntimeDependencyKey(runtimeName, packageId);
-
-#if NET472_OR_GREATER || NET5_0_OR_GREATER
-
                 return _dependencyCache!.GetOrAdd(key, FindRuntimeDependenciesInternal, this);
-#else
-                return _dependencyCache!.GetOrAdd(key, key => FindRuntimeDependenciesInternal(key, this));
-#endif
             }
 
             return Enumerable.Empty<RuntimePackageDependency>();
