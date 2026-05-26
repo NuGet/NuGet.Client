@@ -21,10 +21,10 @@ namespace NuGet.PackageManagement.UI.Test
     /// The collection backing <c>InfiniteScrollListViewModel.Items</c> is registered with
     /// <see cref="BindingOperations.EnableCollectionSynchronization(System.Collections.IEnumerable, object)"/>
     /// using <c>InfiniteScrollListViewModel.ItemsLock</c>, so every cross-thread mutation must hold that lock.
-    /// The test runs <see cref="InfiniteScrollListViewModel.AddLoadingIndicatorsAsync"/> on a background thread the way
+    /// The test runs <see cref="InfiniteScrollListViewModel.EnsureLoadingIndicatorsAsync"/> on a background thread the way
     /// production does, and asserts the dispatcher never observes an unhandled exception from WPF's binding engine.
     ///
-    /// Note: this test deliberately does <b>not</b> construct an <c>InfiniteScrollList</c> instance — XAML loading
+    /// Note: this test deliberately does <b>not</b> construct an <c>InfiniteScrollList</c> instance â€” XAML loading
     /// inside the test process is unreliable, which is why every existing
     /// <c>InfiniteScrollListTests</c> entry is skipped via <c>https://github.com/NuGet/Home/issues/10938</c>.
     /// Calling the extracted helper directly is enough to cover the unsynchronized-mutation bug.
@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.UI.Test
                     {
                         producers[t] = Task.Run(async () =>
                         {
-                            await InfiniteScrollListViewModel.AddLoadingIndicatorsAsync(
+                            await InfiniteScrollListViewModel.EnsureLoadingIndicatorsAsync(
                                 items,
                                 loadingStatusIndicator: new object(),
                                 loadingVulnerabilitiesStatusIndicator: new object(),

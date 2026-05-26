@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
             try
             {
-                addedLoadingIndicator = await AddLoadingIndicatorsAsync(
+                addedLoadingIndicator = await EnsureLoadingIndicatorsAsync(
                     Items,
                     _loadingStatusIndicator,
                     _loadingVulnerabilitiesStatusIndicator,
@@ -343,7 +343,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         /// <see cref="ArgumentOutOfRangeException"/> when its cross-thread change log is later processed.
         /// </remarks>
         /// <returns><see langword="true"/> if <paramref name="loadingStatusIndicator"/> was added.</returns>
-        internal static async Task<bool> AddLoadingIndicatorsAsync(
+        internal static async Task<bool> EnsureLoadingIndicatorsAsync(
             ObservableCollection<object> items,
             object loadingStatusIndicator,
             object loadingVulnerabilitiesStatusIndicator,
