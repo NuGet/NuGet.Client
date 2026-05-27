@@ -9,6 +9,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -18,6 +20,8 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class PluginCacheEntry
     {
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
+
         /// <summary>
         /// Create a plugin cache entry.
         /// </summary>
@@ -25,10 +29,16 @@ namespace NuGet.Protocol.Plugins
         /// <param name="pluginFilePath">The full plugin file path, which will be used to create a key for the folder created in the root folder itself </param>
         /// <param name="requestKey">A unique request key for the operation claims. Ideally the packageSourceRepository value of the PluginRequestKey. Example https://protected.package.feed/index.json, or Source-Agnostic</param>
         public PluginCacheEntry(string rootCacheFolder, string pluginFilePath, string requestKey)
+            : this(rootCacheFolder, pluginFilePath, requestKey, EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        internal PluginCacheEntry(string rootCacheFolder, string pluginFilePath, string requestKey, IEnvironmentVariableReader environmentVariableReader)
         {
             RootFolder = Path.Combine(rootCacheFolder, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(pluginFilePath, addIdentifiableCharacters: false)));
             CacheFileName = Path.Combine(RootFolder, CachingUtility.RemoveInvalidFileNameChars(CachingUtility.ComputeHash(requestKey, addIdentifiableCharacters: false)) + ".dat");
             NewCacheFileName = CacheFileName + "-new";
+            _environmentVariableReader = environmentVariableReader;
         }
 
         internal TimeSpan MaxAge { get; set; } = TimeSpan.FromDays(30);
@@ -61,11 +71,19 @@ namespace NuGet.Protocol.Plugins
 
         private void ProcessContent(Stream content)
         {
-            var serializer = new JsonSerializer();
-            using (var sr = new StreamReader(content))
-            using (var jsonTextReader = new JsonTextReader(sr))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
-                OperationClaims = serializer.Deserialize<IReadOnlyList<OperationClaim>>(jsonTextReader);
+                OperationClaims = System.Text.Json.JsonSerializer.Deserialize(content, PluginCacheJsonContext.Default.IReadOnlyListOperationClaim);
+            }
+            else
+            {
+                var serializer = new Newtonsoft.Json.JsonSerializer();
+                using (var sr = new StreamReader(content))
+                using (var jsonTextReader = new JsonTextReader(sr))
+                {
+                    OperationClaims = serializer.Deserialize<IReadOnlyList<OperationClaim>>(jsonTextReader);
+                }
             }
         }
 
@@ -90,7 +108,17 @@ namespace NuGet.Protocol.Plugins
                     FileShare.None,
                     CachingUtility.BufferSize))
                 {
-                    var json = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(OperationClaims, Formatting.Indented));
+                    byte[] json;
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                        || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                    {
+                        json = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(OperationClaims, PluginCacheJsonContext.Default.IReadOnlyListOperationClaim);
+                    }
+                    else
+                    {
+                        json = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(OperationClaims, Formatting.Indented));
+                    }
+
                     await fileStream.WriteAsync(json, 0, json.Length);
                 }
 

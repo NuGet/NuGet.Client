@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Moq;
+using NuGet.Common;
 using NuGet.Protocol.Plugins;
 using NuGet.Shared;
 using NuGet.Test.Utility;
@@ -15,13 +17,20 @@ namespace NuGet.Protocol.Tests.Plugins
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class PluginCacheEntryTests
     {
-        [Fact]
-        public void PluginCacheEntry_DoesNotThrowWithNoFile()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PluginCacheEntry_DoesNotThrowWithNoFile(bool useStj)
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
+                // Arrange
+                var entry = CreateEntry(testDirectory.Path, "a", "b", useStj);
+
+                // Act
                 entry.LoadFromFile();
+
+                // Assert
                 Assert.Null(entry.OperationClaims);
             }
         }
@@ -47,8 +56,9 @@ namespace NuGet.Protocol.Tests.Plugins
 
         [Theory]
         [MemberData(nameof(GetsRoundTripsValuesData))]
-        public async Task PluginCacheEntry_RoundTripsValuesAsync(string[] values)
+        public async Task PluginCacheEntry_RoundTripsValuesAsync(string[] values, bool useStj)
         {
+            // Arrange
             var list = new List<OperationClaim>();
             foreach (var val in values)
             {
@@ -58,27 +68,57 @@ namespace NuGet.Protocol.Tests.Plugins
 
             using (var testDirectory = TestDirectory.Create())
             {
-                var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
-                entry.LoadFromFile();
+                var entry = CreateEntry(testDirectory.Path, "a", "b", useStj);
                 entry.OperationClaims = list;
-                await entry.UpdateCacheFileAsync();
 
-                var newEntry = new PluginCacheEntry(testDirectory.Path, "a", "b");
+                // Act
+                await entry.UpdateCacheFileAsync();
+                var newEntry = CreateEntry(testDirectory.Path, "a", "b", useStj);
                 newEntry.LoadFromFile();
 
+                // Assert
                 Assert.True(EqualityUtility.SequenceEqualWithNullCheck(entry.OperationClaims, newEntry.OperationClaims));
             }
         }
 
-        [Fact]
-        public async Task PluginCacheEntry_DoesNotDeleteAnOpenedFile()
+        [Theory]
+        [MemberData(nameof(GetsRoundTripsValuesData))]
+        public async Task PluginCacheEntry_CrossDeserializationCompatibility(string[] values, bool writeWithStj)
         {
+            // Arrange
+            var list = new List<OperationClaim>();
+            foreach (var val in values)
+            {
+                Enum.TryParse(val, out OperationClaim result);
+                list.Add(result);
+            }
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var writeEntry = CreateEntry(testDirectory.Path, "a", "b", writeWithStj);
+                writeEntry.OperationClaims = list;
+                await writeEntry.UpdateCacheFileAsync();
+
+                // Act
+                var readEntry = CreateEntry(testDirectory.Path, "a", "b", !writeWithStj);
+                readEntry.LoadFromFile();
+
+                // Assert
+                Assert.True(EqualityUtility.SequenceEqualWithNullCheck(writeEntry.OperationClaims, readEntry.OperationClaims));
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task PluginCacheEntry_DoesNotDeleteAnOpenedFile(bool useStj)
+        {
+            // Arrange
             var list = new List<OperationClaim>() { OperationClaim.Authentication };
 
             using (var testDirectory = TestDirectory.Create())
             {
-                var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
-                entry.LoadFromFile();
+                var entry = CreateEntry(testDirectory.Path, "a", "b", useStj);
                 entry.OperationClaims = list;
                 await entry.UpdateCacheFileAsync();
 
@@ -88,6 +128,7 @@ namespace NuGet.Protocol.Tests.Plugins
 
                 Assert.True(File.Exists(CacheFileName));
 
+                // Act
                 using (var fileStream = new FileStream(
                    CacheFileName,
                    FileMode.Open,
@@ -101,6 +142,7 @@ namespace NuGet.Protocol.Tests.Plugins
                     await entry.UpdateCacheFileAsync(); // this should not update
                 }
 
+                // Assert
                 entry.LoadFromFile();
                 Assert.True(EqualityUtility.SequenceEqualWithNullCheck(entry.OperationClaims, new List<OperationClaim>() { OperationClaim.Authentication }));
             }
@@ -108,10 +150,21 @@ namespace NuGet.Protocol.Tests.Plugins
 
         public static IEnumerable<object[]> GetsRoundTripsValuesData()
         {
-            yield return new object[] { new string[] { "Authentication", "DownloadPackage" } };
-            yield return new object[] { new string[] { "Authentication" } };
-            yield return new object[] { new string[] { "DownloadPackage" } };
-            yield return new object[] { new string[] { } };
+            foreach (bool useStj in new[] { true, false })
+            {
+                yield return new object[] { new string[] { "Authentication", "DownloadPackage" }, useStj };
+                yield return new object[] { new string[] { "Authentication" }, useStj };
+                yield return new object[] { new string[] { "DownloadPackage" }, useStj };
+                yield return new object[] { new string[] { }, useStj };
+            }
+        }
+
+        private static PluginCacheEntry CreateEntry(string rootCacheFolder, string pluginFilePath, string requestKey, bool useStj)
+        {
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"))
+                .Returns(useStj ? "true" : "false");
+            return new PluginCacheEntry(rootCacheFolder, pluginFilePath, requestKey, envReader.Object);
         }
     }
 }
