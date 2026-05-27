@@ -1171,7 +1171,7 @@ NuGet.Protocol.Plugins.OutboundRequestContext.Dispose() -> void
 NuGet.Protocol.Plugins.OutboundRequestContext.OutboundRequestContext() -> void
 ~NuGet.Protocol.Plugins.OutboundRequestContext.RequestId.get -> string
 ~NuGet.Protocol.Plugins.OutboundRequestContext.RequestId.set -> void
-~NuGet.Protocol.Plugins.OutboundRequestContext<TResult>
+NuGet.Protocol.Plugins.OutboundRequestContext<TResult>
 ~NuGet.Protocol.Plugins.OutboundRequestContext<TResult>.CompletionTask.get -> System.Threading.Tasks.Task<TResult>
 ~NuGet.Protocol.Plugins.OutboundRequestContext<TResult>.OutboundRequestContext(NuGet.Protocol.Plugins.IConnection connection, NuGet.Protocol.Plugins.Message request, System.TimeSpan? timeout, bool isKeepAlive, System.Threading.CancellationToken cancellationToken) -> void
 NuGet.Protocol.Plugins.Plugin
