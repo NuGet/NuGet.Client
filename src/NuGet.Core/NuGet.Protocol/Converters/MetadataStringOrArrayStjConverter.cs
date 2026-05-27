@@ -19,15 +19,8 @@ namespace NuGet.Protocol.Converters
     /// </remarks>
     internal sealed class MetadataStringOrArrayStjConverter : JsonConverter<IReadOnlyList<string>>
     {
-        public override bool HandleNull => true;
-
         public override IReadOnlyList<string>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
-            }
-
             if (reader.TokenType == JsonTokenType.String)
             {
                 var str = reader.GetString();
@@ -50,17 +43,25 @@ namespace NuGet.Protocol.Converters
             reader.Read();
             if (reader.TokenType == JsonTokenType.EndArray)
             {
-                return new[] { first! };
+                return first is null ? Array.Empty<string>() : new[] { first };
             }
 
-            var values = new List<string?> { first };
+            var values = new List<string>();
+            if (first is not null)
+            {
+                values.Add(first);
+            }
+
             do
             {
-                values.Add(reader.TokenType == JsonTokenType.Null ? null : reader.CoerceScalarTokenToString());
+                if (reader.TokenType != JsonTokenType.Null)
+                {
+                    values.Add(reader.CoerceScalarTokenToString());
+                }
             }
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray);
 
-            return values!;
+            return values;
         }
 
         public override void Write(Utf8JsonWriter writer, IReadOnlyList<string> value, JsonSerializerOptions options)

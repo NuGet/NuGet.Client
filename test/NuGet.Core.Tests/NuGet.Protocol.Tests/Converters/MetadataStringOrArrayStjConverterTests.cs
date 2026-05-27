@@ -34,6 +34,7 @@ namespace NuGet.Protocol.Tests.Converters
             => StjSerializer.Deserialize<StjWrapper>($"{{\"v\":{json}}}")!.Value;
 
         [Theory]
+        [InlineData("null", null)]
         [InlineData("\"\"", null)]
         [InlineData("\"   \"", null)]
         [InlineData("\"Alice\"", new[] { "Alice" })]
@@ -41,7 +42,6 @@ namespace NuGet.Protocol.Tests.Converters
         [InlineData("[\"Alice\"]", new[] { "Alice" })]
         [InlineData("[\"Alice\",\"Bob\",\"Charlie\"]", new[] { "Alice", "Bob", "Charlie" })]
         [InlineData("[\"Alice\",\"\",\"Bob\"]", new[] { "Alice", "", "Bob" })]
-        [InlineData("[\"Alice\",null,\"Bob\"]", new[] { "Alice", null, "Bob" })]
         public void Read_ValidStringOrArray_Succeeds(string json, string[]? expected)
         {
             // Act
