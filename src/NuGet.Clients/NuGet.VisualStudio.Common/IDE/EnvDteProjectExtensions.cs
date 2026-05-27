@@ -311,10 +311,9 @@ namespace NuGet.VisualStudio
             }
             catch (ArgumentException)
             {
-                // Some VS project types (notably the "Miscellaneous Files" pseudo-project,
-                // Microsoft.VisualStudio.CommonIDE.Solutions.Dte.DteMiscProject) throw
-                // ArgumentException from the ParentProjectItem getter instead of returning
-                // null. Treat that case as "no parent" so callers don't fault.
+                // DteMiscProject.ParentProjectItem can throw ArgumentException from its
+                // ProjectItems.Item(name) lookup. Treat as "no parent".
+                // https://devdiv.visualstudio.com/DevDiv/_git/VS?path=/src/env/vscore/package/Solutions/Dte/DteMiscProject.cs&version=GC01fad60843e7b3b97d52e6a6a602b0eace04a509&line=419&lineEnd=420&lineStartColumn=1&lineEndColumn=1&lineStyle=plain&_a=contents
                 return null;
             }
         }

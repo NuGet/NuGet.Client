@@ -26,9 +26,8 @@ namespace NuGet.VisualStudio.Common.Test.IDE
         public async Task GetCustomUniqueNameAsync_ParentProjectItemThrowsArgumentException_ReturnsProjectName()
         {
             // Arrange
-            // Regression test for the "Miscellaneous Files" pseudo-project
-            // (Microsoft.VisualStudio.CommonIDE.Solutions.Dte.DteMiscProject), whose
-            // ParentProjectItem getter throws ArgumentException rather than returning null.
+            // Regression: DteMiscProject.ParentProjectItem can throw ArgumentException.
+            // https://devdiv.visualstudio.com/DevDiv/_git/VS?path=/src/env/vscore/package/Solutions/Dte/DteMiscProject.cs&version=GC01fad60843e7b3b97d52e6a6a602b0eace04a509&line=419&lineEnd=420&lineStartColumn=1&lineEndColumn=1&lineStyle=plain&_a=contents
             const string projectName = "MiscellaneousFiles";
 
             var project = new Mock<Project>();
