@@ -92,7 +92,7 @@ namespace NuGetVSExtension
                 CopilotToolSessionError.CopilotServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.CopilotServiceNotAvailable, Resources.Error_CopilotServiceNotAvailable),
                 CopilotToolSessionError.McpToolServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable, Resources.Error_McpToolServiceNotAvailable),
                 CopilotToolSessionError.ToolNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable, Resources.Error_NuGetSolverNotAvailable),
-                _ => (FixVulnerabilitiesWithCopilotErrorType.None, string.Empty),
+                _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
             };
 
             SendTelemetryEvent(telemetryError);
