@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace NuGetVSExtension
 {
     /// <summary>
@@ -16,6 +18,7 @@ namespace NuGetVSExtension
             Error = error;
         }
 
+        [MemberNotNullWhen(true, nameof(Session))]
         public bool IsSuccess => Error == CopilotToolSessionError.None;
 
         public CopilotToolSessionError Error { get; }
