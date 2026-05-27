@@ -49,7 +49,9 @@ namespace NuGetVSExtension
                 DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
             };
 
-            CopilotToolSessionResult result = await ToolInvocationService!.TryCreateToolSessionAsync(
+            Assumes.Present(ToolInvocationService);
+
+            CopilotToolSessionResult result = await ToolInvocationService.TryCreateToolSessionAsync(
                 clientId,
                 request.CorrelationId,
                 McpServerConstants.NuGetSolverFullyQualifiedToolName,
