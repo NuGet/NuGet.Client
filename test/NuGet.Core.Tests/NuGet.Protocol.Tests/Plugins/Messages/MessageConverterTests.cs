@@ -66,7 +66,7 @@ namespace NuGet.Protocol.Plugins.Tests
             yield return Msg(MessageType.Request, MessageMethod.GetOperationClaims,
                 new GetOperationClaimsRequest("https://contoso.test", ServiceIndexJson));
             yield return Msg(MessageType.Request, MessageMethod.GetOperationClaims,
-                new GetOperationClaimsRequest(null, null));
+                new GetOperationClaimsRequest((string?)null, (string?)null));
             yield return Msg(MessageType.Response, MessageMethod.GetOperationClaims,
                 new GetOperationClaimsResponse(new[] { OperationClaim.DownloadPackage }));
             yield return Msg(MessageType.Response, MessageMethod.GetOperationClaims,
@@ -264,16 +264,13 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void Deserialize_UnknownMethodTypeCombination_WithStj_ReturnsNullPayload()
+        public void Deserialize_UnknownMethodTypeCombination_WithStj_Throws()
         {
             // Arrange — STJ dispatch table has no entry for (None, Request)
             var json = "{\"RequestId\":\"id\",\"Type\":\"Request\",\"Method\":\"None\",\"Payload\":{\"X\":1}}";
 
-            // Act
-            var message = DeserializeWithStj(json);
-
-            // Assert
-            Assert.Null(MessageUtilities.DeserializePayload<object>(message));
+            // Act & Assert
+            Assert.ThrowsAny<System.Text.Json.JsonException>(() => DeserializeWithStj(json));
         }
 
         [Fact]
@@ -419,7 +416,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             // Arrange
             var message = MessageUtilities.Create("id", MessageType.Request, MessageMethod.GetOperationClaims,
-                new GetOperationClaimsRequest(null, null));
+                new GetOperationClaimsRequest((string?)null, (string?)null));
 
             // Act
             var payload = RoundtripPayload<GetOperationClaimsRequest>(message, useStj);

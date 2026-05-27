@@ -143,18 +143,13 @@ namespace NuGet.Protocol.Plugins
                         || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
                     {
                         string json = System.Text.Json.JsonSerializer.Serialize(message, PluginJsonContext.Default.Message);
-
-                        // We need to terminate JSON objects with a delimiter (i.e.:  a single
-                        // newline sequence) to signal to the receiver when to stop reading.
                         _textWriter.WriteLine(json);
                         _textWriter.Flush();
                     }
                     else
                     {
-                        using (var jsonWriter = new Newtonsoft.Json.JsonTextWriter(_textWriter) { CloseOutput = false })
-                        {
-                            JsonSerializationUtilities.Serialize(jsonWriter, message);
-                        }
+                        using var jsonWriter = new Newtonsoft.Json.JsonTextWriter(_textWriter) { CloseOutput = false };
+                        JsonSerializationUtilities.Serialize(jsonWriter, message);
 
                         // We need to terminate JSON objects with a delimiter (i.e.:  a single
                         // newline sequence) to signal to the receiver when to stop reading.

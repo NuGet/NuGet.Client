@@ -15,9 +15,6 @@ namespace NuGet.Protocol.Plugins
     {
         private static readonly Dictionary<(MessageMethod, MessageType), Func<JsonElement, object>> _read = new()
         {
-            [(MessageMethod.None, MessageType.Fault)] = e => e.Deserialize(PluginJsonContext.Default.Fault),
-            [(MessageMethod.None, MessageType.Progress)] = e => e.Deserialize(PluginJsonContext.Default.Progress),
-
             [(MessageMethod.Handshake, MessageType.Request)] = e => e.Deserialize(PluginJsonContext.Default.HandshakeRequest),
             [(MessageMethod.Handshake, MessageType.Response)] = e => e.Deserialize(PluginJsonContext.Default.HandshakeResponse),
 
@@ -116,6 +113,10 @@ namespace NuGet.Protocol.Plugins
             }
 
             var requestId = requestIdProp.GetString();
+            if (string.IsNullOrEmpty(requestId))
+            {
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.ArgumentCannotBeNullOrEmpty, nameof(Message.RequestId)));
+            }
 
             if (!root.TryGetProperty(nameof(Message.Type), out var typeProp))
             {
@@ -147,14 +148,21 @@ namespace NuGet.Protocol.Plugins
                     throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedPayloadTokenType, payloadProp.ValueKind));
                 }
 
-                // Fault and Progress are keyed by MessageMethod.None since they can arrive for any method.
-                var lookupMethod = messageType is MessageType.Fault or MessageType.Progress
-                    ? MessageMethod.None
-                    : messageMethod;
-
-                if (_read.TryGetValue((lookupMethod, messageType), out var deserialize))
+                if (messageType is MessageType.Fault)
+                {
+                    payload = payloadProp.Deserialize(PluginJsonContext.Default.Fault);
+                }
+                else if (messageType is MessageType.Progress)
+                {
+                    payload = payloadProp.Deserialize(PluginJsonContext.Default.Progress);
+                }
+                else if (_read.TryGetValue((messageMethod, messageType), out var deserialize))
                 {
                     payload = deserialize(payloadProp);
+                }
+                else
+                {
+                    throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Plugin_UnrecognizedEnumValue, $"{messageMethod}/{messageType}"));
                 }
             }
 

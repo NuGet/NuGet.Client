@@ -1,9 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NuGet.Versioning;
@@ -12,23 +11,23 @@ namespace NuGet.Protocol.Plugins
 {
     internal sealed class StjSemanticVersionConverter : JsonConverter<SemanticVersion>
     {
-        public override SemanticVersion Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override SemanticVersion? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var str = reader.GetString();
-            if (str is null)
+            if (reader.TokenType == JsonTokenType.Null)
             {
                 return null;
             }
 
-            if (!SemanticVersion.TryParse(str, out var version))
+            if (reader.TokenType != JsonTokenType.String)
             {
-                throw new JsonException($"Invalid SemanticVersion: '{str}'");
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
             }
 
-            return version;
+            var str = reader.GetString()!;
+            return SemanticVersion.Parse(str);
         }
 
         public override void Write(Utf8JsonWriter writer, SemanticVersion value, JsonSerializerOptions options)
-            => writer.WriteStringValue(value.ToFullString());
+            => writer.WriteStringValue(value.ToString());
     }
 }
