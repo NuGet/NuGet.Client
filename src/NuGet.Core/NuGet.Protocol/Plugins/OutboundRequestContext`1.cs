@@ -16,7 +16,6 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     /// <typeparam name="TResult">The response payload type.</typeparam>
     public sealed class OutboundRequestContext<TResult> : OutboundRequestContext
-        where TResult : class
     {
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly IConnection _connection;

@@ -936,14 +936,14 @@ namespace NuGet.Protocol.Plugins.Tests
         private static Message Deserialize(string json, bool useStj) =>
             useStj ? DeserializeWithStj(json) : DeserializeWithNsj(json);
 
-        private static T GetPayload<T>(Message message, bool useStj) where T : class =>
+        private static T GetPayload<T>(Message message) where T : class =>
             MessageUtilities.DeserializePayload<T>(message);
 
         private static T RoundtripPayload<T>(Message message, bool useStj) where T : class
         {
             var json = Serialize(message, useStj);
             var deserialized = Deserialize(json, useStj);
-            return GetPayload<T>(deserialized, useStj);
+            return GetPayload<T>(deserialized);
         }
     }
 }

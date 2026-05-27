@@ -18,7 +18,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             var str = reader.GetString();
-            return TimeSpan.Parse(str!, CultureInfo.InvariantCulture);
+            return TimeSpan.ParseExact(str!, "c", CultureInfo.InvariantCulture);
         }
 
         public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options)
