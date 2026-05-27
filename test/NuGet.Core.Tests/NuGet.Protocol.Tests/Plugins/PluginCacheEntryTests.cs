@@ -162,7 +162,7 @@ namespace NuGet.Protocol.Tests.Plugins
         private static PluginCacheEntry CreateEntry(string rootCacheFolder, string pluginFilePath, string requestKey, bool useStj)
         {
             var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"))
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
                 .Returns(useStj ? "true" : "false");
             return new PluginCacheEntry(rootCacheFolder, pluginFilePath, requestKey, envReader.Object);
         }
