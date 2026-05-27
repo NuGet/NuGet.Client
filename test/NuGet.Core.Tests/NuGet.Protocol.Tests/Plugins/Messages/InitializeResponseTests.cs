@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -41,19 +41,20 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("{\"ResponseCode\":\"Error\"}", MessageResponseCode.Error)]
         public void JsonDeserialization_ReturnsCorrectObject(string json, MessageResponseCode responseCode)
         {
-            var response = JsonSerializer.Deserialize(json, PluginJsonContext.Default.InitializeResponse)!;
+            var response = JsonSerializationUtilities.Deserialize<InitializeResponse>(json);
 
             Assert.Equal(responseCode, response.ResponseCode);
         }
 
         [Theory]
+        [InlineData("{}")]
         [InlineData("{\"ResponseCode\":null}")]
         [InlineData("{\"ResponseCode\":\"\"}")]
         [InlineData("{\"ResponseCode\":\"abc\"}")]
         public void JsonDeserialization_ThrowsForInvalidResponseCode(string json)
         {
-            Assert.Throws<JsonException>(
-                () => JsonSerializer.Deserialize(json, PluginJsonContext.Default.InitializeResponse));
+            Assert.Throws<JsonSerializationException>(
+                () => JsonSerializationUtilities.Deserialize<InitializeResponse>(json));
         }
     }
 }

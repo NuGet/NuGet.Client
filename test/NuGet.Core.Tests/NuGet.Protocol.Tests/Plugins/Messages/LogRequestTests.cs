@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Json;
+using Newtonsoft.Json;
 using NuGet.Common;
 using Xunit;
 
@@ -51,26 +51,28 @@ namespace NuGet.Protocol.Plugins.Tests
 
         [Theory]
         [InlineData("{\"LogLevel\":\"Warning\",\"Message\":\"a\"}", "a")]
+        [InlineData("{\"LogLevel\":\"Warning\",\"Message\":3}", "3")]
         public void JsonDeserialization_ReturnsCorrectObject(string json, string message)
         {
-            var request = JsonSerializer.Deserialize(json, PluginJsonContext.Default.LogRequest)!;
+            var request = JsonSerializationUtilities.Deserialize<LogRequest>(json);
 
             Assert.Equal(LogLevel.Warning, request.LogLevel);
             Assert.Equal(message, request.Message);
         }
 
         [Theory]
-        [InlineData("", typeof(JsonException))]
+        [InlineData("", typeof(ArgumentException))]
         [InlineData("{}", typeof(ArgumentException))]
-        [InlineData("{\"LogLevel\":null,\"Message\":\"a\"}", typeof(JsonException))]
-        [InlineData("{\"LogLevel\":\"\",\"Message\":\"a\"}", typeof(JsonException))]
-        [InlineData("{\"LogLevel\":\"abc\",\"Message\":\"a\"}", typeof(JsonException))]
+        [InlineData("{\"Message\":\"a\"}", typeof(JsonSerializationException))]
+        [InlineData("{\"LogLevel\":null,\"Message\":\"a\"}", typeof(JsonSerializationException))]
+        [InlineData("{\"LogLevel\":\"\",\"Message\":\"a\"}", typeof(JsonSerializationException))]
+        [InlineData("{\"LogLevel\":\"abc\",\"Message\":\"a\"}", typeof(JsonSerializationException))]
         [InlineData("{\"LogLevel\":\"Debug\"}", typeof(ArgumentException))]
         [InlineData("{\"LogLevel\":\"Debug\",\"Message\":null}", typeof(ArgumentException))]
         [InlineData("{\"LogLevel\":\"Debug\",\"Message\":\"\"}", typeof(ArgumentException))]
         public void JsonDeserialization_ThrowsForInvalidJson(string json, Type exceptionType)
         {
-            Assert.Throws(exceptionType, () => JsonSerializer.Deserialize(json, PluginJsonContext.Default.LogRequest));
+            Assert.Throws(exceptionType, () => JsonSerializationUtilities.Deserialize<LogRequest>(json));
         }
     }
 }

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Json;
+using Newtonsoft.Json;
 using NuGet.Common;
 using Xunit;
 
@@ -43,20 +43,21 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var json = "{\"LogLevel\":\"Error\"}";
 
-            var request = JsonSerializer.Deserialize(json, PluginJsonContext.Default.SetLogLevelRequest);
+            var request = JsonSerializationUtilities.Deserialize<SetLogLevelRequest>(json);
 
             Assert.NotNull(request);
             Assert.Equal(LogLevel.Error, request.LogLevel);
         }
 
         [Theory]
+        [InlineData("{}")]
         [InlineData("{\"LogLevel\":null}")]
         [InlineData("{\"LogLevel\":\"\"}")]
         [InlineData("{\"LogLevel\":\"abc\"}")]
         public void JsonDeserialization_ThrowsForInvalidLogLevel(string json)
         {
-            Assert.Throws<JsonException>(
-                () => JsonSerializer.Deserialize(json, PluginJsonContext.Default.SetLogLevelRequest));
+            Assert.Throws<JsonSerializationException>(
+                () => JsonSerializationUtilities.Deserialize<SetLogLevelRequest>(json));
         }
     }
 }
