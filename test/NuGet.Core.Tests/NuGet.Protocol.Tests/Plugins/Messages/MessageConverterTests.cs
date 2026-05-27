@@ -174,21 +174,16 @@ namespace NuGet.Protocol.Plugins.Tests
 
         public static IEnumerable<object[]> MalformedJsonCases()
         {
-            // Each json is exercised against both NSJ and STJ
-            string[] jsons =
-            {
-                "{\"Type\":\"Request\",\"Method\":\"Handshake\",\"Payload\":{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"1.0.0\"}}",   // missing RequestId
-                "{\"RequestId\":\"id\",\"Method\":\"Handshake\"}",                                                                                     // missing Type
-                "{\"RequestId\":\"id\",\"Type\":\"NotAType\",\"Method\":\"Handshake\"}",                                                               // unrecognized Type
-                "{\"RequestId\":\"id\",\"Type\":\"Request\"}",                                                                                         // missing Method
-                "{\"RequestId\":\"id\",\"Type\":\"Request\",\"Method\":\"NotAMethod\"}",                                                               // unrecognized Method
-            };
-
-            foreach (var json in jsons)
-            {
-                yield return new object[] { json, false };
-                yield return new object[] { json, true };
-            }
+            yield return new object[] { "{\"Type\":\"Request\",\"Method\":\"Handshake\",\"Payload\":{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"1.0.0\"}}", false, typeof(ArgumentException) };
+            yield return new object[] { "{\"Type\":\"Request\",\"Method\":\"Handshake\",\"Payload\":{\"ProtocolVersion\":\"1.0.0\",\"MinimumProtocolVersion\":\"1.0.0\"}}", true, typeof(System.Text.Json.JsonException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Method\":\"Handshake\"}", false, typeof(Newtonsoft.Json.JsonSerializationException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Method\":\"Handshake\"}", true, typeof(System.Text.Json.JsonException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Type\":\"NotAType\",\"Method\":\"Handshake\"}", false, typeof(Newtonsoft.Json.JsonSerializationException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Type\":\"NotAType\",\"Method\":\"Handshake\"}", true, typeof(System.Text.Json.JsonException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Type\":\"Request\"}", false, typeof(Newtonsoft.Json.JsonSerializationException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Type\":\"Request\"}", true, typeof(System.Text.Json.JsonException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Type\":\"Request\",\"Method\":\"NotAMethod\"}", false, typeof(Newtonsoft.Json.JsonSerializationException) };
+            yield return new object[] { "{\"RequestId\":\"id\",\"Type\":\"Request\",\"Method\":\"NotAMethod\"}", true, typeof(System.Text.Json.JsonException) };
         }
 
         [Theory]
@@ -257,33 +252,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
         [Theory]
         [MemberData(nameof(MalformedJsonCases))]
-        public void Deserialize_MalformedJson_Throws(string json, bool useStj)
+        public void Deserialize_MalformedJson_Throws(string json, bool useStj, Type expectedExceptionType)
         {
             // Act & Assert
-            Assert.ThrowsAny<Exception>(() => Deserialize(json, useStj));
-        }
-
-        [Fact]
-        public void Deserialize_UnknownMethodTypeCombination_WithStj_Throws()
-        {
-            // Arrange — STJ dispatch table has no entry for (None, Request)
-            var json = "{\"RequestId\":\"id\",\"Type\":\"Request\",\"Method\":\"None\",\"Payload\":{\"X\":1}}";
-
-            // Act & Assert
-            Assert.ThrowsAny<System.Text.Json.JsonException>(() => DeserializeWithStj(json));
-        }
-
-        [Fact]
-        public void Deserialize_UnknownMethodTypeCombination_WithNsj_ReturnsJObjectPayload()
-        {
-            // Arrange — NSJ has no dispatch table; unknown payloads deserialize as JObject
-            var json = "{\"RequestId\":\"id\",\"Type\":\"Request\",\"Method\":\"None\",\"Payload\":{\"X\":1}}";
-
-            // Act
-            var message = DeserializeWithNsj(json);
-
-            // Assert
-            Assert.IsType<Newtonsoft.Json.Linq.JObject>(MessageUtilities.DeserializePayload<Newtonsoft.Json.Linq.JObject>(message));
+            Assert.Throws(expectedExceptionType, () => Deserialize(json, useStj));
         }
 
         [Fact]

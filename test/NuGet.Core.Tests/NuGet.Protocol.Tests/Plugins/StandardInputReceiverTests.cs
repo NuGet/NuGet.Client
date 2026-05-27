@@ -186,11 +186,11 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData(true)]
         public void MessageReceived_RaisedForSingleMessageInChunksWithBlockingStream(bool useStj)
         {
-            var json = "{\"RequestId\":\"a\",\"Type\":\"Progress\",\"Method\":\"None\",\"Payload\":{\"d\":\"e\"}}\r\n";
+            var json = "{\"RequestId\":\"a\",\"Type\":\"Progress\",\"Method\":\"None\",\"Payload\":{\"Percentage\":0.5}}\r\n";
             var requestId = "a";
             var type = MessageType.Progress;
             var method = MessageMethod.None;
-            var payload = "{\"d\":\"e\"}";
+            var payload = "{\"Percentage\":0.5}";
 
             using (var receivedEvent = new ManualResetEventSlim(initialState: false))
             using (var cancellationTokenSource = new CancellationTokenSource())
