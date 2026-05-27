@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using Test.Utility;
@@ -14,8 +15,10 @@ namespace NuGet.Protocol.Tests
 {
     public class AutoCompleteResourceV2FeedTests
     {
-        [Fact]
-        public async Task AutoCompleteResourceV2Feed_IdStartsWith()
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task AutoCompleteResourceV2Feed_IdStartsWith(string useStj)
         {
             // Arrange
             var serviceAddress = ProtocolUtility.CreateServiceAddress();
@@ -26,9 +29,11 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+            var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
 
-            var autoCompleteResource = await repo.GetResourceAsync<AutoCompleteResource>(CancellationToken.None)
-                ?? throw new Xunit.Sdk.XunitException("Expected AutoCompleteResource.");
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION")).Returns(useStj);
+            var autoCompleteResource = new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), repo.PackageSource, envReader.Object);
 
             // Act
             var result = await autoCompleteResource.IdStartsWith("Azure", false, NullLogger.Instance, CancellationToken.None);
@@ -37,8 +42,10 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(30, result.Count());
         }
 
-        [Fact]
-        public async Task AutoCompleteResourceV2Feed_VersionStartsWith()
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task AutoCompleteResourceV2Feed_VersionStartsWith(string useStj)
         {
             // Arrange
             var serviceAddress = ProtocolUtility.CreateServiceAddress();
@@ -49,9 +56,11 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+            var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
 
-            var autoCompleteResource = await repo.GetResourceAsync<AutoCompleteResource>(CancellationToken.None)
-                ?? throw new Xunit.Sdk.XunitException("Expected AutoCompleteResource.");
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION")).Returns(useStj);
+            var autoCompleteResource = new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), repo.PackageSource, envReader.Object);
 
             // Act
             var result = await autoCompleteResource.VersionStartsWith("xunit", "1", false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -60,8 +69,10 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(6, result.Count());
         }
 
-        [Fact]
-        public async Task AutoCompleteResourceV2Feed_VersionStartsWithInvalidId()
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task AutoCompleteResourceV2Feed_VersionStartsWithInvalidId(string useStj)
         {
             // Arrange
             var serviceAddress = ProtocolUtility.CreateServiceAddress();
@@ -71,9 +82,11 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress, string.Empty);
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+            var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
 
-            var autoCompleteResource = await repo.GetResourceAsync<AutoCompleteResource>(CancellationToken.None)
-                ?? throw new Xunit.Sdk.XunitException("Expected AutoCompleteResource.");
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION")).Returns(useStj);
+            var autoCompleteResource = new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), repo.PackageSource, envReader.Object);
 
             // Act
             var result = await autoCompleteResource.VersionStartsWith("azure", "1", false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);

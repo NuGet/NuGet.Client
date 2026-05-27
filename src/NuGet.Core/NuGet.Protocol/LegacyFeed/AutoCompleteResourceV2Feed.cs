@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -20,8 +22,14 @@ namespace NuGet.Protocol
     {
         private readonly HttpSource _httpSource;
         private readonly Uri _baseUri;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         public AutoCompleteResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource)
+            : this(httpSourceResource, baseAddress, packageSource, environmentVariableReader: null)
+        {
+        }
+
+        internal AutoCompleteResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource, IEnvironmentVariableReader environmentVariableReader)
         {
             if (httpSourceResource == null)
             {
@@ -34,8 +42,8 @@ namespace NuGet.Protocol
             }
 
             _httpSource = httpSourceResource.HttpSource;
-
             _baseUri = UriUtility.CreateSourceUri($"{baseAddress}/");
+            _environmentVariableReader = environmentVariableReader;
         }
 
         public override async Task<IEnumerable<string>> IdStartsWith(
@@ -79,20 +87,35 @@ namespace NuGet.Protocol
             Common.ILogger logger,
             CancellationToken token)
         {
-            return await _httpSource.ProcessStreamAsync(
-                   new HttpSourceRequest(apiEndpointUri, logger),
-                   async stream =>
-                   {
-                       using (var reader = new StreamReader(await stream.AsSeekableStreamAsync(token)))
-                       using (var jsonReader = new JsonTextReader(reader))
-                       {
-                           var serializer = JsonSerializer.Create();
-                           var json = serializer.Deserialize<string[]>(jsonReader);
-                           return json;
-                       }
-                   },
-                   logger,
-                   token);
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            {
+                return await _httpSource.ProcessStreamAsync(
+                    new HttpSourceRequest(apiEndpointUri, logger),
+                    async stream =>
+                    {
+                        var seekableStream = await stream.AsSeekableStreamAsync(token);
+                        return await System.Text.Json.JsonSerializer.DeserializeAsync(seekableStream, JsonContext.Default.StringArray, token);
+                    },
+                    logger,
+                    token);
+            }
+            else
+            {
+                return await _httpSource.ProcessStreamAsync(
+                    new HttpSourceRequest(apiEndpointUri, logger),
+                    async stream =>
+                    {
+                        using (var reader = new StreamReader(await stream.AsSeekableStreamAsync(token)))
+                        using (var jsonReader = new JsonTextReader(reader))
+                        {
+                            var serializer = Newtonsoft.Json.JsonSerializer.Create();
+                            return serializer.Deserialize<string[]>(jsonReader);
+                        }
+                    },
+                    logger,
+                    token);
+            }
         }
     }
 }
