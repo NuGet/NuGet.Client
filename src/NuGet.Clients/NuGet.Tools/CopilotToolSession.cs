@@ -15,18 +15,15 @@ namespace NuGetVSExtension
     internal sealed class CopilotToolSession : IAsyncDisposable
     {
         private readonly IDisposable? _copilotServiceDisposable;
-        private readonly IDisposable? _functionProviderDisposable;
 
         internal CopilotToolSession(
             CopilotThread thread,
             IReadOnlyList<CopilotFunctionDescriptor> functions,
-            IDisposable? copilotServiceDisposable,
-            IDisposable? functionProviderDisposable)
+            IDisposable? copilotServiceDisposable)
         {
             Thread = thread;
             Functions = functions;
             _copilotServiceDisposable = copilotServiceDisposable;
-            _functionProviderDisposable = functionProviderDisposable;
         }
 
         public CopilotThread Thread { get; }
@@ -36,7 +33,6 @@ namespace NuGetVSExtension
         public async ValueTask DisposeAsync()
         {
             await Thread.DisposeAsync();
-            _functionProviderDisposable?.Dispose();
             _copilotServiceDisposable?.Dispose();
         }
     }
