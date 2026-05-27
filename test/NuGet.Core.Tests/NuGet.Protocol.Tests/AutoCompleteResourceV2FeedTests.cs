@@ -16,6 +16,17 @@ namespace NuGet.Protocol.Tests
 {
     public class AutoCompleteResourceV2FeedTests
     {
+        private static AutoCompleteResourceV2Feed CreateAutoCompleteResource(
+            HttpSourceResource httpSourceResource,
+            string serviceAddress,
+            Configuration.PackageSource packageSource,
+            string useStj)
+        {
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns(useStj);
+            return new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), packageSource, envReader.Object);
+        }
+
         [Theory]
         [InlineData("true")]
         [InlineData("false")]
@@ -31,10 +42,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
             var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
-
-            var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns(useStj);
-            var autoCompleteResource = new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), repo.PackageSource, envReader.Object);
+            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource, serviceAddress, repo.PackageSource, useStj);
 
             // Act
             var result = await autoCompleteResource.IdStartsWith("Azure", false, NullLogger.Instance, CancellationToken.None);
@@ -58,10 +66,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
             var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
-
-            var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION")).Returns(useStj);
-            var autoCompleteResource = new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), repo.PackageSource, envReader.Object);
+            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource, serviceAddress, repo.PackageSource, useStj);
 
             // Act
             var result = await autoCompleteResource.VersionStartsWith("xunit", "1", false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -84,10 +89,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
             var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
-
-            var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION")).Returns(useStj);
-            var autoCompleteResource = new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), repo.PackageSource, envReader.Object);
+            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource, serviceAddress, repo.PackageSource, useStj);
 
             // Act
             var result = await autoCompleteResource.VersionStartsWith("azure", "1", false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
