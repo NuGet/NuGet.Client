@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using Test.Utility;
 using Xunit;
 
