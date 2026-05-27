@@ -17,6 +17,7 @@
 ## Project-Specific Rules
 
 - All files in the repository are nullable by default (project-level nullable enable). No need to add `#nullable enable` directives to individual files.
+- Do not add `#nullable disable` to new files. Project-level nullable is enabled, so new files should opt in to nullable annotations and handle any warnings honestly (return `?` types, guard nulls, etc.) rather than disabling the feature. Existing files that still have `#nullable disable` will be migrated incrementally — do not propagate the directive into newly created files alongside them.
 
 ## Benchmarking
 
