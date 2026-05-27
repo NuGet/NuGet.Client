@@ -87,35 +87,26 @@ namespace NuGet.Protocol
             Common.ILogger logger,
             CancellationToken token)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
-            {
-                return await _httpSource.ProcessStreamAsync(
-                    new HttpSourceRequest(apiEndpointUri, logger),
-                    async stream =>
+            return await _httpSource.ProcessStreamAsync(
+                new HttpSourceRequest(apiEndpointUri, logger),
+                async stream =>
+                {
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                        || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
                     {
                         var seekableStream = await stream.AsSeekableStreamAsync(token);
                         return await System.Text.Json.JsonSerializer.DeserializeAsync(seekableStream, JsonContext.Default.StringArray, token);
-                    },
-                    logger,
-                    token);
-            }
-            else
-            {
-                return await _httpSource.ProcessStreamAsync(
-                    new HttpSourceRequest(apiEndpointUri, logger),
-                    async stream =>
+                    }
+                    else
                     {
-                        using (var reader = new StreamReader(await stream.AsSeekableStreamAsync(token)))
-                        using (var jsonReader = new JsonTextReader(reader))
-                        {
-                            var serializer = Newtonsoft.Json.JsonSerializer.Create();
-                            return serializer.Deserialize<string[]>(jsonReader);
-                        }
-                    },
-                    logger,
-                    token);
-            }
+                        using var reader = new StreamReader(await stream.AsSeekableStreamAsync(token));
+                        using var jsonReader = new JsonTextReader(reader);
+                        var serializer = Newtonsoft.Json.JsonSerializer.Create();
+                        return serializer.Deserialize<string[]>(jsonReader);
+                    }
+                },
+                logger,
+                token);
         }
     }
 }
