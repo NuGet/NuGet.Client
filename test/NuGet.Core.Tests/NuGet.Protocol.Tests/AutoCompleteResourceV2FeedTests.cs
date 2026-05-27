@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Tests
             var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
 
             var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable("NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION")).Returns(useStj);
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns(useStj);
             var autoCompleteResource = new AutoCompleteResourceV2Feed(httpSourceResource, serviceAddress.TrimEnd('/'), repo.PackageSource, envReader.Object);
 
             // Act
