@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Plugins
         /// <param name="pluginFilePath">The full plugin file path, which will be used to create a key for the folder created in the root folder itself </param>
         /// <param name="requestKey">A unique request key for the operation claims. Ideally the packageSourceRepository value of the PluginRequestKey. Example https://protected.package.feed/index.json, or Source-Agnostic</param>
         public PluginCacheEntry(string rootCacheFolder, string pluginFilePath, string requestKey)
-            : this(rootCacheFolder, pluginFilePath, requestKey, EnvironmentVariableWrapper.Instance)
+            : this(rootCacheFolder, pluginFilePath, requestKey, environmentVariableReader: null)
         {
         }
 
