@@ -22,6 +22,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 ? new TestEnvironmentVariableReader(
                     new Dictionary<string, string> { [NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar] = "true" })
                 : TestEnvironmentVariableReader.EmptyInstance;
+
         [Fact]
         public void Constructor_ThrowsForNullReader()
         {
@@ -143,8 +144,8 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\"}\r\n", "a", MessageType.Response, MessageMethod.None, null, true)]
         [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\",\"Payload\":null}\r\n", "a", MessageType.Response, MessageMethod.None, null, false)]
         [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\",\"Payload\":null}\r\n", "a", MessageType.Response, MessageMethod.None, null, true)]
-        [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\",\"Payload\":{\"d\":\"e\"}}\r\n", "a", MessageType.Response, MessageMethod.None, "{\"d\":\"e\"}", false)]
-        [InlineData("{\"RequestId\":\"a\",\"Type\":\"Response\",\"Method\":\"None\",\"Payload\":{\"d\":\"e\"}}\r\n", "a", MessageType.Response, MessageMethod.None, "{\"d\":\"e\"}", true)]
+        [InlineData("{\"RequestId\":\"a\",\"Type\":\"Fault\",\"Method\":\"None\",\"Payload\":{\"Message\":\"x\"}}\r\n", "a", MessageType.Fault, MessageMethod.None, "{\"Message\":\"x\"}", false)]
+        [InlineData("{\"RequestId\":\"a\",\"Type\":\"Fault\",\"Method\":\"None\",\"Payload\":{\"Message\":\"x\"}}\r\n", "a", MessageType.Fault, MessageMethod.None, "{\"Message\":\"x\"}", true)]
         public void MessageReceived_RaisedForSingleMessageWithBlockingStream(string json, string requestId, MessageType type, MessageMethod method, string payload, bool useStj)
         {
             using (var receivedEvent = new ManualResetEventSlim(initialState: false))
