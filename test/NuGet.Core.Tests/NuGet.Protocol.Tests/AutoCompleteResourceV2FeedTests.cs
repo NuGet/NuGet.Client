@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
             var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
-            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource, serviceAddress, repo.PackageSource, useStj);
+            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource!, serviceAddress, repo.PackageSource, useStj);
 
             // Act
             var result = await autoCompleteResource.IdStartsWith("Azure", false, NullLogger.Instance, CancellationToken.None);
@@ -66,7 +66,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
             var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
-            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource, serviceAddress, repo.PackageSource, useStj);
+            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource!, serviceAddress, repo.PackageSource, useStj);
 
             // Act
             var result = await autoCompleteResource.VersionStartsWith("xunit", "1", false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -89,7 +89,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
             var httpSourceResource = await repo.GetResourceAsync<HttpSourceResource>(CancellationToken.None);
-            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource, serviceAddress, repo.PackageSource, useStj);
+            var autoCompleteResource = CreateAutoCompleteResource(httpSourceResource!, serviceAddress, repo.PackageSource, useStj);
 
             // Act
             var result = await autoCompleteResource.VersionStartsWith("azure", "1", false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
