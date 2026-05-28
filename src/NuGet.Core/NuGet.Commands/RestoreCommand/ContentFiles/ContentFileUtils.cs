@@ -108,8 +108,8 @@ namespace NuGet.Commands
             // and a single InMemoryDirectoryInfo over all candidate paths. This lets us call
             // Matcher.Execute once per nuspec entry instead of once per (entry × file), reducing
             // MatcherContext + internal list/array allocations from O(N×M) to O(N).
-            var relativePathToEntries = new Dictionary<string, List<ContentFilesEntry>>(entryMappings.Count, StringComparer.OrdinalIgnoreCase);
-            foreach ((var file, var entries) in entryMappings)
+            Dictionary<string, List<ContentFilesEntry>> relativePathToEntries = new(entryMappings.Count, StringComparer.OrdinalIgnoreCase);
+            foreach ((string file, List<ContentFilesEntry> entries) in entryMappings)
             {
                 // Remove contentFiles/ from the string
                 Debug.Assert(file.StartsWith(ContentFilesFolderName, StringComparison.OrdinalIgnoreCase),
