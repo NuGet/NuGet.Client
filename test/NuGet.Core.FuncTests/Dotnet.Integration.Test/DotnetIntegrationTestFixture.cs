@@ -23,6 +23,8 @@ namespace Dotnet.Integration.Test
 {
     public class DotnetIntegrationTestFixture : IDisposable
     {
+        private const string PreferredSdkMajorVersionMetadataKey = "PreferredSdkMajorVersion";
+
         /// <summary>
         /// A value indicating if the test is running on a hosted agent with diagnostics enabled.
         /// </summary>
@@ -43,12 +45,8 @@ namespace Dotnet.Integration.Test
 
         public DotnetIntegrationTestFixture()
         {
-            string testAssemblyPath = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
-#if SDK_CURRENT
-            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath, preferredMajorVersion: 10);
-#elif SDK_NEXT
-            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath, preferredMajorVersion: 11);
-#endif
+            int preferredMajorVersion = GetPreferredSdkMajorVersion();
+            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(preferredMajorVersion);
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
@@ -70,6 +68,23 @@ namespace Dotnet.Integration.Test
 
             // This is for pre-release packages.
             AddPackageSource("dotnet", Constants.DotNetPackageSource.AbsoluteUri);
+        }
+
+        private static int GetPreferredSdkMajorVersion()
+        {
+            string preferredSdkMajorVersion = Assembly.GetExecutingAssembly()
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Where(attribute => StringComparer.Ordinal.Equals(attribute.Key, PreferredSdkMajorVersionMetadataKey))
+                .Select(attribute => attribute.Value)
+                .SingleOrDefault();
+
+            if (!int.TryParse(preferredSdkMajorVersion, out int preferredMajorVersion))
+            {
+                throw new InvalidOperationException(
+                    $"Could not determine {PreferredSdkMajorVersionMetadataKey} from assembly metadata.");
+            }
+
+            return preferredMajorVersion;
         }
 
         private void AddPackageSource(string name, string source)

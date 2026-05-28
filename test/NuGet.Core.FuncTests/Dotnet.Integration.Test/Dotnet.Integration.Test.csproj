@@ -1,18 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>sdkCurrent;sdkNext</TargetFrameworks>
+    <TargetFrameworks>$(LatestNETCoreTargetFramework);sdkNext</TargetFrameworks>
     <Description>Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.</Description>
-    <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
-    <TargetFrameworkMoniker>.NETCoreApp,Version=v10.0</TargetFrameworkMoniker>
+    <LatestNETCoreTargetFrameworkMajorVersion>$([System.Version]::Parse('$([MSBuild]::GetTargetFrameworkVersion('$(LatestNETCoreTargetFramework)', 2))').Major)</LatestNETCoreTargetFrameworkMajorVersion>
+    <NextNETCoreTargetFrameworkMajorVersion>$([MSBuild]::Add($(LatestNETCoreTargetFrameworkMajorVersion), 1))</NextNETCoreTargetFrameworkMajorVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'sdkCurrent'">
+  <PropertyGroup Condition="'$(TargetFramework)' == '$(LatestNETCoreTargetFramework)'">
     <DefineConstants>$(DefineConstants);SDK_CURRENT</DefineConstants>
+    <PreferredSdkMajorVersion>$(LatestNETCoreTargetFrameworkMajorVersion)</PreferredSdkMajorVersion>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(TargetFramework)' == 'sdkNext'">
     <DefineConstants>$(DefineConstants);SDK_NEXT</DefineConstants>
+    <PreferredSdkMajorVersion>$(NextNETCoreTargetFrameworkMajorVersion)</PreferredSdkMajorVersion>
+    <TargetFrameworkIdentifier>$([MSBuild]::GetTargetFrameworkIdentifier('$(LatestNETCoreTargetFramework)'))</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v$([MSBuild]::GetTargetFrameworkVersion('$(LatestNETCoreTargetFramework)', 2))</TargetFrameworkVersion>
+    <TargetFrameworkMoniker>$(TargetFrameworkIdentifier),Version=$(TargetFrameworkVersion)</TargetFrameworkMoniker>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(PreferredSdkMajorVersion)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PreferredSdkMajorVersion</_Parameter1>
+      <_Parameter2>$(PreferredSdkMajorVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
