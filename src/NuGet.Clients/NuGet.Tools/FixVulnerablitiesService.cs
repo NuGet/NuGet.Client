@@ -63,7 +63,7 @@ namespace NuGetVSExtension
                 return;
             }
 
-            await using CopilotToolSession session = result.Session;
+            await using CopilotToolSession session = result.Session!;
 
             // Attach solution context and available functions to the request
             string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
