@@ -47,7 +47,6 @@ namespace NuGet.Protocol.Plugins
         /// <param name="proxyPassword">The proxy password.</param>
         /// <param name="username">The package source repository username.</param>
         /// <param name="password">The package source repository password.</param>
-        [JsonConstructor]
         public SetCredentialsRequest(
             string packageSourceRepository,
             string proxyUsername,
