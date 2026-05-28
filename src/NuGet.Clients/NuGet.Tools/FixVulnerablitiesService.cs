@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
 using NuGet.Common;
