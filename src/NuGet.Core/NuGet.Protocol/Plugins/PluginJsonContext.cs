@@ -22,8 +22,6 @@ namespace NuGet.Protocol.Plugins
     [JsonSerializable(typeof(GetFilesInPackageResponse))]
     [JsonSerializable(typeof(GetOperationClaimsRequest))]
     [JsonSerializable(typeof(GetOperationClaimsResponse))]
-    [JsonSerializable(typeof(OperationClaim[]))]
-    [JsonSerializable(typeof(System.Collections.Generic.IReadOnlyList<OperationClaim>))]
     [JsonSerializable(typeof(GetPackageHashRequest))]
     [JsonSerializable(typeof(GetPackageHashResponse))]
     [JsonSerializable(typeof(GetPackageVersionsRequest))]
