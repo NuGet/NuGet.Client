@@ -4711,7 +4711,6 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/13326
         // When a managed project (B) references a C++/CLI project (A) that has a package
         // with build/native/ targets, restoring B first causes A to miss the build/native/ targets
         // due to a LockFileBuilderCache collision. When both projects use AssetTargetFallback with
