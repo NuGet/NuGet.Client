@@ -34,7 +34,6 @@ namespace NuGet.Protocol.Tests.Converters
             => StjSerializer.Deserialize<StjWrapper>($"{{\"v\":{json}}}")!.Value;
 
         [Theory]
-        [InlineData("null", null)]
         [InlineData("\"\"", null)]
         [InlineData("\"   \"", null)]
         [InlineData("\"Alice\"", new[] { "Alice" })]
@@ -54,17 +53,18 @@ namespace NuGet.Protocol.Tests.Converters
         }
 
         [Theory]
+        [InlineData("null")]
         [InlineData("[\"Alice\",[],\"Bob\"]")]
         [InlineData("[\"Alice\",{},\"Bob\"]")]
         public void Read_NonConvertibleArrayElement_Throws(string json)
         {
             // Act
-            Action nsjAction = () => DeserializeWithNsj(json);
             Action stjAction = () => DeserializeWithStj(json);
+            Action nsjAction = () => DeserializeWithNsj(json);
 
             // Assert
-            nsjAction.Should().Throw<Exception>();
             stjAction.Should().Throw<System.Text.Json.JsonException>();
+            nsjAction.Should().Throw<Newtonsoft.Json.JsonException>();
         }
     }
 }

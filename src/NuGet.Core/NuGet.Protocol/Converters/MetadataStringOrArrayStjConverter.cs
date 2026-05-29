@@ -19,8 +19,15 @@ namespace NuGet.Protocol.Converters
     /// </remarks>
     internal sealed class MetadataStringOrArrayStjConverter : JsonConverter<IReadOnlyList<string>>
     {
+        public override bool HandleNull => true;
+
         public override IReadOnlyList<string>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+            }
+
             if (reader.TokenType == JsonTokenType.String)
             {
                 var str = reader.GetString();
