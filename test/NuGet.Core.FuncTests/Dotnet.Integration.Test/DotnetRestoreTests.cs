@@ -4206,8 +4206,66 @@ EndGlobal";
             buildResult.AllOutput.Should().Contain("NU1702");
         }
 
-        // When a referenced project has an empty/invalid TargetFramework, the error should be attributed
-        // to the offending project (ProjectB), not the referencing project (ProjectA) or the solution.
+        [Theory]
+        [InlineData(true)]  // Global NoWarn via project property
+        [InlineData(false)] // Per-reference NoWarn via ProjectReference metadata
+        public void DotnetBuild_WithAssetTargetFallbackProjectReference_NoWarnSuppressesNU1702(bool globalNoWarn)
+        {
+            // Global NoWarn works via MSBuild engine (MSBuildWarningsAsMessages picks up $(NoWarn)).
+            // Per-reference NoWarn works because MSBuild propagates item metadata from ProjectReference
+            // through _ProjectReferenceTargetFrameworkPossibilities to the task's AnnotatedProjectReferences input,
+            // and our task reads %(NoWarn) metadata from those items.
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            // Create referenced project targeting net472
+            var project2Name = "Project2";
+            var project2File = Path.Combine(pathContext.SolutionRoot, project2Name, $"{project2Name}.csproj");
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, project2Name, " classlib", testOutputHelper: _testOutputHelper);
+            using (var stream = File.Open(project2File, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net472");
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            // Create referring project targeting net10.0 (ATF to net472 is implicit)
+            var projectName = "ClassLibrary1";
+            var projectFile = Path.Combine(pathContext.SolutionRoot, projectName, $"{projectName}.csproj");
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, " classlib", testOutputHelper: _testOutputHelper);
+
+            using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net10.0");
+                var projectReferenceMetadata = new Dictionary<string, string>();
+
+                if (globalNoWarn)
+                {
+                    ProjectFileUtils.AddProperties(xml, new Dictionary<string, string> { { "NoWarn", "NU1702" } });
+                }
+                else
+                {
+                    projectReferenceMetadata["NoWarn"] = "NU1702";
+                }
+
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{project2Name}\\{project2Name}.csproj",
+                    string.Empty,
+                    [],
+                    projectReferenceMetadata);
+
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            // Act - restore then build
+            _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var buildResult = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"build {projectFile} --no-restore", testOutputHelper: _testOutputHelper);
+
+            // Assert - NU1702 should be suppressed
+            buildResult.AllOutput.Should().NotContain("NU1702");
+        }
         [Theory]
         [InlineData("", false, false)]
         [InlineData("invalid", false, false)]
