@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 #if NETFRAMEWORK
@@ -56,6 +57,26 @@ namespace NuGet.Build.Tasks
         /// The project references for property lookup.
         /// </summary>
         public ITaskItem[] AnnotatedProjectReferences { get; set; }
+
+        /// <summary>
+        /// The TreatWarningsAsErrors property from the project.
+        /// </summary>
+        public string TreatWarningsAsErrors { get; set; }
+
+        /// <summary>
+        /// The WarningsAsErrors property from the project.
+        /// </summary>
+        public string WarningsAsErrors { get; set; }
+
+        /// <summary>
+        /// The WarningsNotAsErrors property from the project.
+        /// </summary>
+        public string WarningsNotAsErrors { get; set; }
+
+        /// <summary>
+        /// The NoWarn property from the project.
+        /// </summary>
+        public string NoWarn { get; set; }
 
         /// <summary>
         /// The project references with assigned properties.
@@ -120,6 +141,10 @@ namespace NuGet.Build.Tasks
             var referencedProjectPlatformString = project.GetMetadata(TARGET_PLATFORM_MONIKERS);
 
             var referencedProjectFile = project.GetMetadata(MSBUILD_SOURCE_PROJECT_FILE);
+            // TODO: NoWarn metadata from a conditional ProjectReference (e.g. <ProjectReference Condition="..." NoWarn="NU1702" />)
+            // may not flow through the MSBuild task's TargetOutputs. Verify whether MSBuild preserves this metadata
+            // on _ProjectReferenceTargetFrameworkPossibilities items after calling GetTargetFrameworks.
+            var referenceNoWarn = project.GetMetadata("NoWarn");
 
             if (string.IsNullOrEmpty(referencedProjectFrameworkString))
             {
@@ -183,8 +208,9 @@ namespace NuGet.Build.Tasks
                     warning.LibraryId = referencedProjectFile;
                     warning.ProjectPath = CurrentProjectName;
 
-                    // log NU1702 for ATF on project reference
-                    logger.Log(warning);
+                    // log NU1702 for ATF on project reference, respecting NoWarn and WarningsAsErrors
+                    var filteredLogger = new PackCollectorLogger(logger, EvaluateWarningProperties(referenceNoWarn));
+                    filteredLogger.Log(warning);
 
                     itemWithProperties.SetMetadata(NEAREST_TARGET_FRAMEWORK, nearestNuGetFramework.TargetAlias);
                     return itemWithProperties;
@@ -246,6 +272,31 @@ namespace NuGet.Build.Tasks
                 targetPlatformMoniker.Equals("None", StringComparison.OrdinalIgnoreCase) ?
                     string.Empty :
                     targetPlatformMoniker);
+        }
+
+        private WarningProperties EvaluateWarningProperties(string referenceNoWarn)
+        {
+            var warnAsErrorCodes = new HashSet<NuGetLogCode>();
+            ReadNuGetLogCodes(WarningsAsErrors, warnAsErrorCodes);
+            var noWarnCodes = new HashSet<NuGetLogCode>();
+            ReadNuGetLogCodes(NoWarn, noWarnCodes);
+            ReadNuGetLogCodes(referenceNoWarn, noWarnCodes);
+            _ = bool.TryParse(TreatWarningsAsErrors, out bool allWarningsAsErrors);
+            var warningsNotAsErrorsCodes = new HashSet<NuGetLogCode>();
+            ReadNuGetLogCodes(WarningsNotAsErrors, warningsNotAsErrorsCodes);
+
+            return new WarningProperties(warnAsErrorCodes, noWarnCodes, allWarningsAsErrors, warningsNotAsErrorsCodes);
+        }
+
+        private static void ReadNuGetLogCodes(string str, HashSet<NuGetLogCode> hashCodes)
+        {
+            foreach (var code in MSBuildStringUtility.Split(str))
+            {
+                if (Enum.TryParse(code, out NuGetLogCode logCode))
+                {
+                    hashCodes.Add(logCode);
+                }
+            }
         }
     }
 }

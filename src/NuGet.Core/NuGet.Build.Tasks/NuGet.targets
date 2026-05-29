@@ -61,6 +61,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>true</GetReferenceNearestTargetFrameworkTaskSupportsTargetPlatformParameter>
     <!-- Mark that this targets file GetReferenceNearestTargetFrameworkTask task supports the TargetFramework -->
     <GetReferenceNearestTargetFrameworkTaskSupportsTargetFrameworkPropertyParameter>true</GetReferenceNearestTargetFrameworkTaskSupportsTargetFrameworkPropertyParameter>
+    <!-- Mark that this targets file GetReferenceNearestTargetFrameworkTask task supports warning properties (NoWarn, WarningsAsErrors, etc.) -->
+    <GetReferenceNearestTargetFrameworkTaskSupportsWarningPropertiesParameters>true</GetReferenceNearestTargetFrameworkTaskSupportsWarningPropertiesParameters>
     <!-- Flag if the Central package file is enabled -->
     <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
   </PropertyGroup>

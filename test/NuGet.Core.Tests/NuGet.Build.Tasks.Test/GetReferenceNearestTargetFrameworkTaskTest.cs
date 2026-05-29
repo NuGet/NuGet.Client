@@ -778,5 +778,181 @@ namespace NuGet.Build.Tasks.Test
             testLogger.Warnings.Should().Be(0);
             testLogger.Errors.Should().Be(1);
         }
+
+        [Fact]
+        public void GetReferenceNearestTargetFrameworkTask_WhenATFMatches_NoWarnSuppressesNU1702()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("net472");
+            reference.Setup(e => e.GetMetadata("TargetFrameworkMonikers")).Returns(".NETFramework,Version=v4.7.2");
+            reference.Setup(e => e.GetMetadata("TargetPlatformMonikers")).Returns("None");
+            reference.Setup(e => e.GetMetadata("MSBuildSourceProjectFile")).Returns("a.csproj");
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = ".NETCoreApp,Version=v10.0",
+                CurrentProjectTargetFrameworkProperty = "net10.0",
+                FallbackTargetFrameworks = new string[] { "net472" },
+                AnnotatedProjectReferences = references.ToArray(),
+                NoWarn = "NU1702"
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("net472");
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(0);
+        }
+
+        [Fact]
+        public void GetReferenceNearestTargetFrameworkTask_WhenATFMatches_WarningsAsErrorsElevatesNU1702()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("net472");
+            reference.Setup(e => e.GetMetadata("TargetFrameworkMonikers")).Returns(".NETFramework,Version=v4.7.2");
+            reference.Setup(e => e.GetMetadata("TargetPlatformMonikers")).Returns("None");
+            reference.Setup(e => e.GetMetadata("MSBuildSourceProjectFile")).Returns("a.csproj");
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = ".NETCoreApp,Version=v10.0",
+                CurrentProjectTargetFrameworkProperty = "net10.0",
+                FallbackTargetFrameworks = new string[] { "net472" },
+                AnnotatedProjectReferences = references.ToArray(),
+                WarningsAsErrors = "NU1702"
+            };
+
+            var result = task.Execute();
+            result.Should().BeFalse();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("net472");
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(1);
+        }
+
+        [Fact]
+        public void GetReferenceNearestTargetFrameworkTask_WhenATFMatches_TreatWarningsAsErrorsElevatesNU1702()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("net472");
+            reference.Setup(e => e.GetMetadata("TargetFrameworkMonikers")).Returns(".NETFramework,Version=v4.7.2");
+            reference.Setup(e => e.GetMetadata("TargetPlatformMonikers")).Returns("None");
+            reference.Setup(e => e.GetMetadata("MSBuildSourceProjectFile")).Returns("a.csproj");
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = ".NETCoreApp,Version=v10.0",
+                CurrentProjectTargetFrameworkProperty = "net10.0",
+                FallbackTargetFrameworks = new string[] { "net472" },
+                AnnotatedProjectReferences = references.ToArray(),
+                TreatWarningsAsErrors = "true"
+            };
+
+            var result = task.Execute();
+            result.Should().BeFalse();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("net472");
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(1);
+        }
+
+        [Fact]
+        public void GetReferenceNearestTargetFrameworkTask_WhenATFMatches_TreatWarningsAsErrorsWithWarningsNotAsErrors()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("net472");
+            reference.Setup(e => e.GetMetadata("TargetFrameworkMonikers")).Returns(".NETFramework,Version=v4.7.2");
+            reference.Setup(e => e.GetMetadata("TargetPlatformMonikers")).Returns("None");
+            reference.Setup(e => e.GetMetadata("MSBuildSourceProjectFile")).Returns("a.csproj");
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = ".NETCoreApp,Version=v10.0",
+                CurrentProjectTargetFrameworkProperty = "net10.0",
+                FallbackTargetFrameworks = new string[] { "net472" },
+                AnnotatedProjectReferences = references.ToArray(),
+                TreatWarningsAsErrors = "true",
+                WarningsNotAsErrors = "NU1702"
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("net472");
+
+            testLogger.Warnings.Should().Be(1);
+            testLogger.Errors.Should().Be(0);
+        }
+
+        [Fact]
+        public void GetReferenceNearestTargetFrameworkTask_WhenATFMatches_ReferenceNoWarnSuppressesNU1702()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var references = new List<ITaskItem>();
+            var reference = new Mock<ITaskItem>();
+            reference.SetupGet(e => e.ItemSpec).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("TargetFrameworks")).Returns("net472");
+            reference.Setup(e => e.GetMetadata("TargetFrameworkMonikers")).Returns(".NETFramework,Version=v4.7.2");
+            reference.Setup(e => e.GetMetadata("TargetPlatformMonikers")).Returns("None");
+            reference.Setup(e => e.GetMetadata("MSBuildSourceProjectFile")).Returns("a.csproj");
+            reference.Setup(e => e.GetMetadata("NoWarn")).Returns("NU1702");
+            references.Add(reference.Object);
+
+            var task = new GetReferenceNearestTargetFrameworkTask
+            {
+                BuildEngine = buildEngine,
+                CurrentProjectTargetFramework = ".NETCoreApp,Version=v10.0",
+                CurrentProjectTargetFrameworkProperty = "net10.0",
+                FallbackTargetFrameworks = new string[] { "net472" },
+                AnnotatedProjectReferences = references.ToArray()
+            };
+
+            var result = task.Execute();
+            result.Should().BeTrue();
+
+            task.AssignedProjects.Should().HaveCount(1);
+            task.AssignedProjects[0].GetMetadata("NearestTargetFramework").Should().Be("net472");
+
+            testLogger.Warnings.Should().Be(0);
+            testLogger.Errors.Should().Be(0);
+        }
     }
 }
