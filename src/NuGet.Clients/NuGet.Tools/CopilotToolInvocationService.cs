@@ -45,17 +45,19 @@ namespace NuGetVSExtension
                 return CopilotToolSessionResult.Failure(CopilotToolSessionError.ServiceBrokerNotAvailable);
             }
 
-            // 3. Acquire Copilot service — ownership transfers to CopilotToolSession on success
+            // 3. Acquire Copilot service â€” ownership transfers to CopilotToolSession on success
 #pragma warning disable ISB001 // Dispose objects before losing scope - ownership is transferred to CopilotToolSession on success
             ICopilotService? copilotService = await ServiceBroker.GetProxyAsync<ICopilotService>(CopilotDescriptors.CopilotService, cancellationToken);
 #pragma warning restore ISB001
-            if (copilotService is null)
-            {
-                return CopilotToolSessionResult.Failure(CopilotToolSessionError.CopilotServiceNotAvailable);
-            }
 
+            bool ownershipTransferred = false;
             try
             {
+                if (copilotService is null)
+                {
+                    return CopilotToolSessionResult.Failure(CopilotToolSessionError.CopilotServiceNotAvailable);
+                }
+
                 // 4. Acquire MCP tool function provider and get available functions
                 ICopilotFunctionProvider? cfp = await ServiceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
                 using (cfp as IDisposable)
@@ -76,17 +78,20 @@ namespace NuGetVSExtension
                     CopilotThreadOptions options = new(clientId);
                     CopilotThread thread = await copilotService.StartThreadAsync(options, cancellationToken);
 
-                    return CopilotToolSessionResult.Success(
-                        new CopilotToolSession(
-                            thread,
-                            functions,
-                            copilotServiceDisposable: copilotService as IDisposable));
+                    CopilotToolSession session = new(
+                        thread,
+                        functions,
+                        copilotServiceDisposable: copilotService as IDisposable);
+                    ownershipTransferred = true;
+                    return CopilotToolSessionResult.Success(session);
                 }
             }
-            catch
+            finally
             {
-                (copilotService as IDisposable)?.Dispose();
-                throw;
+                if (!ownershipTransferred)
+                {
+                    (copilotService as IDisposable)?.Dispose();
+                }
             }
         }
     }
