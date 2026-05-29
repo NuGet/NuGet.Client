@@ -16,8 +16,7 @@ namespace NuGetVSExtension
     /// If a future caller needs to keep this <see cref="Thread"/> (or the underlying
     /// <see cref="ICopilotService"/> proxy) alive for a long time, subscribe to
     /// <see cref="Microsoft.ServiceHub.Framework.IServiceBroker.AvailabilityChanged"/> (filtered
-    /// to <c>CopilotDescriptors.CopilotService.Moniker</c>) and dispose this session in
-    /// response. See the Copilot extensibility guidance.
+    /// to <c>CopilotDescriptors.CopilotService.Moniker</c>) and dispose this session in response.
     /// </remarks>
     internal sealed class CopilotToolSession : IAsyncDisposable
     {
