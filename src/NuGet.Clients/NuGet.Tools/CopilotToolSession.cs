@@ -12,6 +12,13 @@ namespace NuGetVSExtension
     /// Holds an active Copilot thread and the available MCP functions.
     /// Disposing this session releases all underlying Copilot/MCP resources.
     /// </summary>
+    /// <remarks>
+    /// If a future caller needs to keep this <see cref="Thread"/> (or the underlying
+    /// <see cref="ICopilotService"/> proxy) alive for a long time, subscribe to
+    /// <see cref="Microsoft.ServiceHub.Framework.IServiceBroker.AvailabilityChanged"/> (filtered
+    /// to <c>CopilotDescriptors.CopilotService.Moniker</c>) and dispose this session in
+    /// response. See the Copilot extensibility guidance.
+    /// </remarks>
     internal sealed class CopilotToolSession : IAsyncDisposable
     {
         private readonly IDisposable? _copilotServiceDisposable;
