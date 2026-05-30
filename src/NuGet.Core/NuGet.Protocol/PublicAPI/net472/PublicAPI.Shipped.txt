@@ -888,8 +888,8 @@ NuGet.Protocol.Plugins.CopyFilesInPackageRequest
 ~NuGet.Protocol.Plugins.CopyFilesInPackageRequest.PackageSourceRepository.get -> string
 ~NuGet.Protocol.Plugins.CopyFilesInPackageRequest.PackageVersion.get -> string
 NuGet.Protocol.Plugins.CopyFilesInPackageResponse
-~NuGet.Protocol.Plugins.CopyFilesInPackageResponse.CopiedFiles.get -> System.Collections.Generic.IEnumerable<string>
-~NuGet.Protocol.Plugins.CopyFilesInPackageResponse.CopyFilesInPackageResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, System.Collections.Generic.IEnumerable<string> copiedFiles) -> void
+NuGet.Protocol.Plugins.CopyFilesInPackageResponse.CopiedFiles.get -> System.Collections.Generic.IEnumerable<string!>?
+NuGet.Protocol.Plugins.CopyFilesInPackageResponse.CopyFilesInPackageResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, System.Collections.Generic.IEnumerable<string!>? copiedFiles) -> void
 NuGet.Protocol.Plugins.CopyFilesInPackageResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
 NuGet.Protocol.Plugins.CopyNupkgFileRequest
 ~NuGet.Protocol.Plugins.CopyNupkgFileRequest.CopyNupkgFileRequest(string packageSourceRepository, string packageId, string packageVersion, string destinationFilePath) -> void
@@ -914,13 +914,13 @@ NuGet.Protocol.Plugins.GetAuthenticationCredentialsRequest.IsNonInteractive.get 
 NuGet.Protocol.Plugins.GetAuthenticationCredentialsRequest.IsRetry.get -> bool
 ~NuGet.Protocol.Plugins.GetAuthenticationCredentialsRequest.Uri.get -> System.Uri
 NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse
-~NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.AuthenticationTypes.get -> System.Collections.Generic.IList<string>
-~NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.GetAuthenticationCredentialsResponse(string username, string password, string message, System.Collections.Generic.IList<string> authenticationTypes, NuGet.Protocol.Plugins.MessageResponseCode responseCode) -> void
+NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.AuthenticationTypes.get -> System.Collections.Generic.IList<string!>?
+NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.GetAuthenticationCredentialsResponse(string? username, string? password, string? message, System.Collections.Generic.IList<string!>? authenticationTypes, NuGet.Protocol.Plugins.MessageResponseCode responseCode) -> void
 NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.IsValid() -> bool
-~NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.Message.get -> string
-~NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.Password.get -> string
+NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.Message.get -> string?
+NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.Password.get -> string?
 NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
-~NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.Username.get -> string
+NuGet.Protocol.Plugins.GetAuthenticationCredentialsResponse.Username.get -> string?
 NuGet.Protocol.Plugins.GetCredentialsRequest
 ~NuGet.Protocol.Plugins.GetCredentialsRequest.GetCredentialsRequest(string packageSourceRepository, System.Net.HttpStatusCode statusCode) -> void
 ~NuGet.Protocol.Plugins.GetCredentialsRequest.PackageSourceRepository.get -> string
@@ -932,24 +932,24 @@ NuGet.Protocol.Plugins.GetCredentialsRequestHandler.Dispose() -> void
 ~NuGet.Protocol.Plugins.GetCredentialsRequestHandler.GetCredentialsRequestHandler(NuGet.Protocol.Plugins.IPlugin plugin, System.Net.IWebProxy proxy, NuGet.Configuration.ICredentialService credentialService) -> void
 ~NuGet.Protocol.Plugins.GetCredentialsRequestHandler.HandleResponseAsync(NuGet.Protocol.Plugins.IConnection connection, NuGet.Protocol.Plugins.Message request, NuGet.Protocol.Plugins.IResponseHandler responseHandler, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 NuGet.Protocol.Plugins.GetCredentialsResponse
-~NuGet.Protocol.Plugins.GetCredentialsResponse.AuthenticationTypes.get -> System.Collections.Generic.IReadOnlyList<string>
-~NuGet.Protocol.Plugins.GetCredentialsResponse.GetCredentialsResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, string username, string password, System.Collections.Generic.IReadOnlyList<string> authenticationTypes = null) -> void
-~NuGet.Protocol.Plugins.GetCredentialsResponse.Password.get -> string
+NuGet.Protocol.Plugins.GetCredentialsResponse.AuthenticationTypes.get -> System.Collections.Generic.IReadOnlyList<string!>?
+NuGet.Protocol.Plugins.GetCredentialsResponse.GetCredentialsResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, string? username, string? password, System.Collections.Generic.IReadOnlyList<string!>? authenticationTypes = null) -> void
+NuGet.Protocol.Plugins.GetCredentialsResponse.Password.get -> string?
 NuGet.Protocol.Plugins.GetCredentialsResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
-~NuGet.Protocol.Plugins.GetCredentialsResponse.Username.get -> string
+NuGet.Protocol.Plugins.GetCredentialsResponse.Username.get -> string?
 NuGet.Protocol.Plugins.GetFilesInPackageRequest
 ~NuGet.Protocol.Plugins.GetFilesInPackageRequest.GetFilesInPackageRequest(string packageSourceRepository, string packageId, string packageVersion) -> void
 ~NuGet.Protocol.Plugins.GetFilesInPackageRequest.PackageId.get -> string
 ~NuGet.Protocol.Plugins.GetFilesInPackageRequest.PackageSourceRepository.get -> string
 ~NuGet.Protocol.Plugins.GetFilesInPackageRequest.PackageVersion.get -> string
 NuGet.Protocol.Plugins.GetFilesInPackageResponse
-~NuGet.Protocol.Plugins.GetFilesInPackageResponse.Files.get -> System.Collections.Generic.IEnumerable<string>
-~NuGet.Protocol.Plugins.GetFilesInPackageResponse.GetFilesInPackageResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, System.Collections.Generic.IEnumerable<string> files) -> void
+NuGet.Protocol.Plugins.GetFilesInPackageResponse.Files.get -> System.Collections.Generic.IEnumerable<string!>?
+NuGet.Protocol.Plugins.GetFilesInPackageResponse.GetFilesInPackageResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, System.Collections.Generic.IEnumerable<string!>? files) -> void
 NuGet.Protocol.Plugins.GetFilesInPackageResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
 NuGet.Protocol.Plugins.GetOperationClaimsRequest
-~NuGet.Protocol.Plugins.GetOperationClaimsRequest.GetOperationClaimsRequest(string packageSourceRepository, Newtonsoft.Json.Linq.JObject serviceIndex) -> void
-~NuGet.Protocol.Plugins.GetOperationClaimsRequest.PackageSourceRepository.get -> string
-~NuGet.Protocol.Plugins.GetOperationClaimsRequest.ServiceIndex.get -> Newtonsoft.Json.Linq.JObject
+NuGet.Protocol.Plugins.GetOperationClaimsRequest.GetOperationClaimsRequest(string? packageSourceRepository, Newtonsoft.Json.Linq.JObject? serviceIndex) -> void
+NuGet.Protocol.Plugins.GetOperationClaimsRequest.PackageSourceRepository.get -> string?
+NuGet.Protocol.Plugins.GetOperationClaimsRequest.ServiceIndex.get -> Newtonsoft.Json.Linq.JObject?
 NuGet.Protocol.Plugins.GetOperationClaimsResponse
 ~NuGet.Protocol.Plugins.GetOperationClaimsResponse.Claims.get -> System.Collections.Generic.IReadOnlyList<NuGet.Protocol.Plugins.OperationClaim>
 ~NuGet.Protocol.Plugins.GetOperationClaimsResponse.GetOperationClaimsResponse(System.Collections.Generic.IEnumerable<NuGet.Protocol.Plugins.OperationClaim> claims) -> void
@@ -960,17 +960,17 @@ NuGet.Protocol.Plugins.GetPackageHashRequest
 ~NuGet.Protocol.Plugins.GetPackageHashRequest.PackageSourceRepository.get -> string
 ~NuGet.Protocol.Plugins.GetPackageHashRequest.PackageVersion.get -> string
 NuGet.Protocol.Plugins.GetPackageHashResponse
-~NuGet.Protocol.Plugins.GetPackageHashResponse.GetPackageHashResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, string hash) -> void
-~NuGet.Protocol.Plugins.GetPackageHashResponse.Hash.get -> string
+NuGet.Protocol.Plugins.GetPackageHashResponse.GetPackageHashResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, string? hash) -> void
+NuGet.Protocol.Plugins.GetPackageHashResponse.Hash.get -> string?
 NuGet.Protocol.Plugins.GetPackageHashResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
 NuGet.Protocol.Plugins.GetPackageVersionsRequest
 ~NuGet.Protocol.Plugins.GetPackageVersionsRequest.GetPackageVersionsRequest(string packageSourceRepository, string packageId) -> void
 ~NuGet.Protocol.Plugins.GetPackageVersionsRequest.PackageId.get -> string
 ~NuGet.Protocol.Plugins.GetPackageVersionsRequest.PackageSourceRepository.get -> string
 NuGet.Protocol.Plugins.GetPackageVersionsResponse
-~NuGet.Protocol.Plugins.GetPackageVersionsResponse.GetPackageVersionsResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, System.Collections.Generic.IEnumerable<string> versions) -> void
+NuGet.Protocol.Plugins.GetPackageVersionsResponse.GetPackageVersionsResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, System.Collections.Generic.IEnumerable<string!>? versions) -> void
 NuGet.Protocol.Plugins.GetPackageVersionsResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
-~NuGet.Protocol.Plugins.GetPackageVersionsResponse.Versions.get -> System.Collections.Generic.IEnumerable<string>
+NuGet.Protocol.Plugins.GetPackageVersionsResponse.Versions.get -> System.Collections.Generic.IEnumerable<string!>?
 NuGet.Protocol.Plugins.GetServiceIndexRequest
 ~NuGet.Protocol.Plugins.GetServiceIndexRequest.GetServiceIndexRequest(string packageSourceRepository) -> void
 ~NuGet.Protocol.Plugins.GetServiceIndexRequest.PackageSourceRepository.get -> string
@@ -981,16 +981,16 @@ NuGet.Protocol.Plugins.GetServiceIndexRequestHandler.Dispose() -> void
 ~NuGet.Protocol.Plugins.GetServiceIndexRequestHandler.GetServiceIndexRequestHandler(NuGet.Protocol.Plugins.IPlugin plugin) -> void
 ~NuGet.Protocol.Plugins.GetServiceIndexRequestHandler.HandleResponseAsync(NuGet.Protocol.Plugins.IConnection connection, NuGet.Protocol.Plugins.Message request, NuGet.Protocol.Plugins.IResponseHandler responseHandler, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 NuGet.Protocol.Plugins.GetServiceIndexResponse
-~NuGet.Protocol.Plugins.GetServiceIndexResponse.GetServiceIndexResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, Newtonsoft.Json.Linq.JObject serviceIndex) -> void
+NuGet.Protocol.Plugins.GetServiceIndexResponse.GetServiceIndexResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, Newtonsoft.Json.Linq.JObject? serviceIndex) -> void
 NuGet.Protocol.Plugins.GetServiceIndexResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
-~NuGet.Protocol.Plugins.GetServiceIndexResponse.ServiceIndex.get -> Newtonsoft.Json.Linq.JObject
+NuGet.Protocol.Plugins.GetServiceIndexResponse.ServiceIndex.get -> Newtonsoft.Json.Linq.JObject?
 NuGet.Protocol.Plugins.HandshakeRequest
 ~NuGet.Protocol.Plugins.HandshakeRequest.HandshakeRequest(NuGet.Versioning.SemanticVersion protocolVersion, NuGet.Versioning.SemanticVersion minimumProtocolVersion) -> void
 ~NuGet.Protocol.Plugins.HandshakeRequest.MinimumProtocolVersion.get -> NuGet.Versioning.SemanticVersion
 ~NuGet.Protocol.Plugins.HandshakeRequest.ProtocolVersion.get -> NuGet.Versioning.SemanticVersion
 NuGet.Protocol.Plugins.HandshakeResponse
-~NuGet.Protocol.Plugins.HandshakeResponse.HandshakeResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, NuGet.Versioning.SemanticVersion protocolVersion) -> void
-~NuGet.Protocol.Plugins.HandshakeResponse.ProtocolVersion.get -> NuGet.Versioning.SemanticVersion
+NuGet.Protocol.Plugins.HandshakeResponse.HandshakeResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode, NuGet.Versioning.SemanticVersion? protocolVersion) -> void
+NuGet.Protocol.Plugins.HandshakeResponse.ProtocolVersion.get -> NuGet.Versioning.SemanticVersion?
 NuGet.Protocol.Plugins.HandshakeResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
 NuGet.Protocol.Plugins.IConnection
 NuGet.Protocol.Plugins.IConnection.Close() -> void
@@ -1089,10 +1089,10 @@ NuGet.Protocol.Plugins.LogResponse
 NuGet.Protocol.Plugins.LogResponse.LogResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode) -> void
 NuGet.Protocol.Plugins.LogResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
 NuGet.Protocol.Plugins.Message
-~NuGet.Protocol.Plugins.Message.Message(string requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, Newtonsoft.Json.Linq.JObject payload = null) -> void
+NuGet.Protocol.Plugins.Message.Message(string! requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, Newtonsoft.Json.Linq.JObject? payload = null) -> void
 NuGet.Protocol.Plugins.Message.Method.get -> NuGet.Protocol.Plugins.MessageMethod
-~NuGet.Protocol.Plugins.Message.Payload.get -> Newtonsoft.Json.Linq.JObject
-~NuGet.Protocol.Plugins.Message.RequestId.get -> string
+NuGet.Protocol.Plugins.Message.Payload.get -> Newtonsoft.Json.Linq.JObject?
+NuGet.Protocol.Plugins.Message.RequestId.get -> string!
 NuGet.Protocol.Plugins.Message.Type.get -> NuGet.Protocol.Plugins.MessageType
 NuGet.Protocol.Plugins.MessageDispatcher
 NuGet.Protocol.Plugins.MessageDispatcher.Close() -> void
@@ -1313,12 +1313,12 @@ NuGet.Protocol.Plugins.Sender.Dispose() -> void
 ~NuGet.Protocol.Plugins.Sender.SendAsync(NuGet.Protocol.Plugins.Message message, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
 ~NuGet.Protocol.Plugins.Sender.Sender(System.IO.TextWriter writer) -> void
 NuGet.Protocol.Plugins.SetCredentialsRequest
-~NuGet.Protocol.Plugins.SetCredentialsRequest.PackageSourceRepository.get -> string
-~NuGet.Protocol.Plugins.SetCredentialsRequest.Password.get -> string
-~NuGet.Protocol.Plugins.SetCredentialsRequest.ProxyPassword.get -> string
-~NuGet.Protocol.Plugins.SetCredentialsRequest.ProxyUsername.get -> string
-~NuGet.Protocol.Plugins.SetCredentialsRequest.SetCredentialsRequest(string packageSourceRepository, string proxyUsername, string proxyPassword, string username, string password) -> void
-~NuGet.Protocol.Plugins.SetCredentialsRequest.Username.get -> string
+NuGet.Protocol.Plugins.SetCredentialsRequest.PackageSourceRepository.get -> string!
+NuGet.Protocol.Plugins.SetCredentialsRequest.Password.get -> string?
+NuGet.Protocol.Plugins.SetCredentialsRequest.ProxyPassword.get -> string?
+NuGet.Protocol.Plugins.SetCredentialsRequest.ProxyUsername.get -> string?
+NuGet.Protocol.Plugins.SetCredentialsRequest.SetCredentialsRequest(string! packageSourceRepository, string? proxyUsername, string? proxyPassword, string? username, string? password) -> void
+NuGet.Protocol.Plugins.SetCredentialsRequest.Username.get -> string?
 NuGet.Protocol.Plugins.SetCredentialsResponse
 NuGet.Protocol.Plugins.SetCredentialsResponse.ResponseCode.get -> NuGet.Protocol.Plugins.MessageResponseCode
 NuGet.Protocol.Plugins.SetCredentialsResponse.SetCredentialsResponse(NuGet.Protocol.Plugins.MessageResponseCode responseCode) -> void
@@ -2010,9 +2010,9 @@ static NuGet.Protocol.NullThrottle.Instance.get -> NuGet.Protocol.NullThrottle!
 ~static NuGet.Protocol.Plugins.JsonSerializationUtilities.Serializer.get -> Newtonsoft.Json.JsonSerializer
 ~static NuGet.Protocol.Plugins.JsonSerializationUtilities.ToObject<T>(Newtonsoft.Json.Linq.JObject jObject) -> T
 ~static NuGet.Protocol.Plugins.LogRequestHandler.GetLogLevel(NuGet.Common.ILogger logger) -> NuGet.Common.LogLevel
-~static NuGet.Protocol.Plugins.MessageUtilities.Create(string requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method) -> NuGet.Protocol.Plugins.Message
-~static NuGet.Protocol.Plugins.MessageUtilities.Create<TPayload>(string requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, TPayload payload) -> NuGet.Protocol.Plugins.Message
-~static NuGet.Protocol.Plugins.MessageUtilities.DeserializePayload<TPayload>(NuGet.Protocol.Plugins.Message message) -> TPayload
+static NuGet.Protocol.Plugins.MessageUtilities.Create(string! requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method) -> NuGet.Protocol.Plugins.Message!
+static NuGet.Protocol.Plugins.MessageUtilities.Create<TPayload>(string! requestId, NuGet.Protocol.Plugins.MessageType type, NuGet.Protocol.Plugins.MessageMethod method, TPayload! payload) -> NuGet.Protocol.Plugins.Message!
+static NuGet.Protocol.Plugins.MessageUtilities.DeserializePayload<TPayload>(NuGet.Protocol.Plugins.Message! message) -> TPayload?
 ~static NuGet.Protocol.Plugins.PluginDiscoveryUtility.GetConventionBasedPlugins(System.Collections.Generic.IEnumerable<string> directories) -> System.Collections.Generic.IEnumerable<string>
 ~static NuGet.Protocol.Plugins.PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildDirectory(string msbuildDirectoryPath) -> string
 ~static NuGet.Protocol.Plugins.PluginDiscoveryUtility.GetInternalPlugins() -> string
