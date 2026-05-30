@@ -292,7 +292,7 @@ namespace NuGet.Build.Tasks
         {
             foreach (var code in MSBuildStringUtility.Split(str))
             {
-                if (Enum.TryParse(code, out NuGetLogCode logCode))
+                if (code.StartsWith("NU", StringComparison.OrdinalIgnoreCase) && Enum.TryParse(code, out NuGetLogCode logCode))
                 {
                     hashCodes.Add(logCode);
                 }

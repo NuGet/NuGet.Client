@@ -4255,6 +4255,50 @@ EndGlobal";
             return projectFile;
         }
 
+        /// <summary>
+        /// Patches the SDK's Microsoft.Common.CurrentVersion.targets to pass warning properties
+        /// to GetReferenceNearestTargetFrameworkTask. This simulates the MSBuild-side change.
+        /// The patch is idempotent — safe to call multiple times.
+        /// </summary>
+        private void PatchSdkTargetsWithWarningProperties()
+        {
+            string targetsFile = Path.Combine(_dotnetFixture.SdkDirectory.FullName, "Microsoft.Common.CurrentVersion.targets");
+            string backupFile = targetsFile + ".original";
+
+            // Restore from backup if a previous partial patch left the file in a bad state
+            if (File.Exists(backupFile))
+            {
+                File.Copy(backupFile, targetsFile, overwrite: true);
+            }
+
+            string content = File.ReadAllText(targetsFile);
+
+            // Already fully patched — NoWarn="$(NoWarn)" only appears after our patch
+            if (content.Contains("NoWarn=\"$(NoWarn)\""))
+            {
+                return;
+            }
+
+            // Save backup before patching
+            File.Copy(targetsFile, backupFile, overwrite: true);
+
+            // Insert warning properties after every FallbackTargetFrameworks line in GetReferenceNearestTargetFrameworkTask invocations.
+            string patched = content.Replace(
+                "FallbackTargetFrameworks=\"$(AssetTargetFallback)\"",
+                "FallbackTargetFrameworks=\"$(AssetTargetFallback)\"\n" +
+                "                                            TreatWarningsAsErrors=\"$(TreatWarningsAsErrors)\"\n" +
+                "                                            WarningsAsErrors=\"$(WarningsAsErrors)\"\n" +
+                "                                            WarningsNotAsErrors=\"$(WarningsNotAsErrors)\"\n" +
+                "                                            NoWarn=\"$(NoWarn)\"");
+
+            if (patched == content)
+            {
+                throw new InvalidOperationException("Failed to patch Microsoft.Common.CurrentVersion.targets — FallbackTargetFrameworks attribute not found.");
+            }
+
+            File.WriteAllText(targetsFile, patched);
+        }
+
         [Fact]
         public void DotnetBuild_WithAssetTargetFallbackProjectReference_GlobalNoWarnSuppressesNU1702()
         {
@@ -4314,6 +4358,7 @@ EndGlobal";
         {
             // $(TreatWarningsAsErrors)=true should elevate NU1702 to an error.
             // This requires the MSBuild-side change to pass TreatWarningsAsErrors to the task.
+            PatchSdkTargetsWithWarningProperties();
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
 
             var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
@@ -4336,6 +4381,7 @@ EndGlobal";
             // $(WarningsNotAsErrors)=NU1702 should prevent NU1702 from being elevated
             // even when $(TreatWarningsAsErrors)=true is set.
             // This requires the MSBuild-side change to pass both properties to the task.
+            PatchSdkTargetsWithWarningProperties();
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
 
             var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
