@@ -4314,7 +4314,6 @@ EndGlobal";
         {
             // $(TreatWarningsAsErrors)=true should elevate NU1702 to an error.
             // This requires the MSBuild-side change to pass TreatWarningsAsErrors to the task.
-            // Note: We also suppress CS nullable warnings so TreatWarningsAsErrors doesn't fail the C# compile.
             using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
 
             var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
@@ -4329,6 +4328,30 @@ EndGlobal";
 
             // Assert - NU1702 should be elevated to an error
             buildResult.AllOutput.Should().Contain("error NU1702");
+        }
+
+        [Fact]
+        public void DotnetBuild_WithAssetTargetFallbackProjectReference_WarningsNotAsErrorsKeepsNU1702AsWarning()
+        {
+            // $(WarningsNotAsErrors)=NU1702 should prevent NU1702 from being elevated
+            // even when $(TreatWarningsAsErrors)=true is set.
+            // This requires the MSBuild-side change to pass both properties to the task.
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
+                referringProjectProperties: new Dictionary<string, string>
+                {
+                    { "TreatWarningsAsErrors", "true" },
+                    { "WarningsNotAsErrors", "NU1702" },
+                });
+
+            // Act
+            _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var buildResult = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"build {projectFile} --no-restore", testOutputHelper: _testOutputHelper);
+
+            // Assert - NU1702 should remain a warning, not elevated to error
+            buildResult.AllOutput.Should().Contain("warning NU1702");
+            buildResult.AllOutput.Should().NotContain("error NU1702");
         }
 
         [Theory]
