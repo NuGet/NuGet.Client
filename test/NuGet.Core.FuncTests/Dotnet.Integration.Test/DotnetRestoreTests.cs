@@ -4206,17 +4206,15 @@ EndGlobal";
             buildResult.AllOutput.Should().Contain("NU1702");
         }
 
-        [Theory]
-        [InlineData(true)]  // Global NoWarn via project property
-        [InlineData(false)] // Per-reference NoWarn via ProjectReference metadata
-        public void DotnetBuild_WithAssetTargetFallbackProjectReference_NoWarnSuppressesNU1702(bool globalNoWarn)
+        /// <summary>
+        /// Sets up a net10.0 project referencing a net472 project, which triggers AssetTargetFallback and NU1702.
+        /// Returns the referring project file path.
+        /// </summary>
+        private string SetupAssetTargetFallbackProjectReference(
+            SimpleTestPathContext pathContext,
+            Dictionary<string, string> referringProjectProperties = null,
+            Dictionary<string, string> projectReferenceMetadata = null)
         {
-            // Global NoWarn works via MSBuild engine (MSBuildWarningsAsMessages picks up $(NoWarn)).
-            // Per-reference NoWarn works because MSBuild propagates item metadata from ProjectReference
-            // through _ProjectReferenceTargetFrameworkPossibilities to the task's AnnotatedProjectReferences input,
-            // and our task reads %(NoWarn) metadata from those items.
-            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-
             // Create referenced project targeting net472
             var project2Name = "Project2";
             var project2File = Path.Combine(pathContext.SolutionRoot, project2Name, $"{project2Name}.csproj");
@@ -4228,7 +4226,7 @@ EndGlobal";
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            // Create referring project targeting net10.0 (ATF to net472 is implicit)
+            // Create referring project targeting net10.0 (ATF to net472 is implicit in SDK)
             var projectName = "ClassLibrary1";
             var projectFile = Path.Combine(pathContext.SolutionRoot, projectName, $"{projectName}.csproj");
             _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, " classlib", testOutputHelper: _testOutputHelper);
@@ -4237,15 +4235,10 @@ EndGlobal";
             {
                 var xml = XDocument.Load(stream);
                 ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net10.0");
-                var projectReferenceMetadata = new Dictionary<string, string>();
 
-                if (globalNoWarn)
+                if (referringProjectProperties != null)
                 {
-                    ProjectFileUtils.AddProperties(xml, new Dictionary<string, string> { { "NoWarn", "NU1702" } });
-                }
-                else
-                {
-                    projectReferenceMetadata["NoWarn"] = "NU1702";
+                    ProjectFileUtils.AddProperties(xml, referringProjectProperties);
                 }
 
                 ProjectFileUtils.AddItem(
@@ -4254,18 +4247,90 @@ EndGlobal";
                     $"..\\{project2Name}\\{project2Name}.csproj",
                     string.Empty,
                     [],
-                    projectReferenceMetadata);
+                    projectReferenceMetadata ?? []);
 
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
 
-            // Act - restore then build
+            return projectFile;
+        }
+
+        [Fact]
+        public void DotnetBuild_WithAssetTargetFallbackProjectReference_GlobalNoWarnSuppressesNU1702()
+        {
+            // Global $(NoWarn) with NU1702 suppresses the warning via MSBuild engine's
+            // MSBuildWarningsAsMessages mechanism (Microsoft.Common.CurrentVersion.targets line ~669).
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
+                referringProjectProperties: new Dictionary<string, string> { { "NoWarn", "NU1702" } });
+
+            // Act
             _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
             var buildResult = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"build {projectFile} --no-restore", testOutputHelper: _testOutputHelper);
 
             // Assert - NU1702 should be suppressed
             buildResult.AllOutput.Should().NotContain("NU1702");
         }
+
+        [Fact]
+        public void DotnetBuild_WithAssetTargetFallbackProjectReference_PerReferenceNoWarnSuppressesNU1702()
+        {
+            // Per-reference %(ProjectReference.NoWarn) suppresses NU1702 via MSBuild engine.
+            // MSBuild propagates NoWarn metadata to MSBuildWarningsAsMessages through item batching.
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
+                projectReferenceMetadata: new Dictionary<string, string> { { "NoWarn", "NU1702" } });
+
+            // Act
+            _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var buildResult = _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"build {projectFile} --no-restore", testOutputHelper: _testOutputHelper);
+
+            // Assert - NU1702 is suppressed
+            buildResult.AllOutput.Should().NotContain("NU1702");
+        }
+
+        [Fact]
+        public void DotnetBuild_WithAssetTargetFallbackProjectReference_WarningsAsErrorsElevatesNU1702()
+        {
+            // $(WarningsAsErrors)=NU1702 elevates NU1702 to an error via MSBuild engine's
+            // MSBuildWarningsAsErrors mechanism (Microsoft.Common.CurrentVersion.targets line ~670).
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
+                referringProjectProperties: new Dictionary<string, string> { { "WarningsAsErrors", "NU1702" } });
+
+            // Act
+            _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var buildResult = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, $"build {projectFile} --no-restore", testOutputHelper: _testOutputHelper);
+
+            // Assert - NU1702 is elevated to an error
+            buildResult.AllOutput.Should().Contain("error NU1702");
+        }
+
+        [Fact]
+        public void DotnetBuild_WithAssetTargetFallbackProjectReference_TreatWarningsAsErrorsElevatesNU1702()
+        {
+            // $(TreatWarningsAsErrors)=true should elevate NU1702 to an error.
+            // This requires the MSBuild-side change to pass TreatWarningsAsErrors to the task.
+            // Note: We also suppress CS nullable warnings so TreatWarningsAsErrors doesn't fail the C# compile.
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            var projectFile = SetupAssetTargetFallbackProjectReference(pathContext,
+                referringProjectProperties: new Dictionary<string, string>
+                {
+                    { "TreatWarningsAsErrors", "true" },
+                });
+
+            // Act
+            _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"restore {projectFile}", testOutputHelper: _testOutputHelper);
+            var buildResult = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, $"build {projectFile} --no-restore", testOutputHelper: _testOutputHelper);
+
+            // Assert - NU1702 should be elevated to an error
+            buildResult.AllOutput.Should().Contain("error NU1702");
+        }
+
         [Theory]
         [InlineData("", false, false)]
         [InlineData("invalid", false, false)]
