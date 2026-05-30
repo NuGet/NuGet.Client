@@ -578,6 +578,12 @@ namespace NuGet.SolutionRestoreManager
                                 }
                                 else
                                 {
+                                    if (DateTime.UtcNow - lastNominationReceived > BulkRestoreCoordinationTimeout)
+                                    {
+                                        restoreReason = ImplicitRestoreReason.NominationsIdleTimeout;
+                                        break;
+                                    }
+
                                     await Task.Delay(IdleTimeoutMs, token);
                                 }
                             }

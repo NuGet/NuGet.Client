@@ -623,5 +623,22 @@ namespace NuGet.PackageManagement.VisualStudio
                 _readerWriterLock.ExitReadLock();
             }
         }
+
+        public bool TryGetProjectRestoreInfoSource(string name, out object restoreInfoSource)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
+            }
+
+            restoreInfoSource = null;
+
+            if (TryGetCacheEntry(name, out CacheEntry cacheEntry))
+            {
+                restoreInfoSource = cacheEntry.ProjectRestoreInfoSource;
+            }
+
+            return restoreInfoSource != null;
+        }
     }
 }

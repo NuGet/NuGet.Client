@@ -138,6 +138,14 @@ namespace NuGet.VisualStudio
         bool AddProjectRestoreInfoSource(ProjectNames projectNames, object restoreInfoSource);
 
         /// <summary>
+        /// Retrieves the project restore info source associated with project name.
+        /// </summary>
+        /// <param name="name">Project name, full path, unique name, or project id (guid).</param>
+        /// <param name="restoreInfoSource">The restore info source object, or null if not found.</param>
+        /// <returns>True if found, false otherwise.</returns>
+        bool TryGetProjectRestoreInfoSource(string name, out object restoreInfoSource);
+
+        /// <summary>
         /// Retrieves collection of all project info sources stored in the cache.
         /// </summary>
         /// <returns>Collection of project restore info sources.</returns>
