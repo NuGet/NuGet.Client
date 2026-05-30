@@ -648,7 +648,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
                     {
                         _projectSystemCache.TryGetProjectRestoreInfoSource(oldName, out object restoreInfoSource);
-
                         RemoveVsProjectAdapterFromCache(oldName);
 
                         var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(envDTEProject);
