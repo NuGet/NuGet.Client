@@ -261,17 +261,14 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("locals -list")]
-        [InlineData("locals -clear")]
-        [InlineData("locals --l")]
-        [InlineData("locals --c")]
-        public void Locals_Success_InvalidFlags_HelpMessage(string args)
+        [InlineData("locals -list", "An invalid local resource name was provided.")]
+        [InlineData("locals -clear", "Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.")]
+        [InlineData("locals --l", "Please specify an operation i.e. --list or --clear.")]
+        [InlineData("locals --c", "Please specify an operation i.e. --list or --clear.")]
+        public void Locals_Success_InvalidFlags_HelpMessage(string args, string expectedResult)
         {
             DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
             XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
-
-            // Arrange
-            var expectedResult = $"Unrecognized option '{args.Split(null)[1]}'";
 
             // Act
             var result = CommandRunner.Run(

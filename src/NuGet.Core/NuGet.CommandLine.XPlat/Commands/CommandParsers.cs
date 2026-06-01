@@ -3,22 +3,22 @@
 
 #nullable enable
 
-using System;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
     internal static class CommandParsers
     {
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        // Registers placeholders on the legacy CommandLineApplication so that `dotnet nuget --help`
+        // still lists these verbs. They are implemented with System.CommandLine (see Verbs.cs).
+        public static void Register(CommandLineApplication app)
         {
-            AddVerbParser.Register(app, getLogger);
-            DisableVerbParser.Register(app, getLogger);
-            EnableVerbParser.Register(app, getLogger);
-            ListVerbParser.Register(app, getLogger);
-            RemoveVerbParser.Register(app, getLogger);
-            UpdateVerbParser.Register(app, getLogger);
+            AddVerbParser.Register(app);
+            DisableVerbParser.Register(app);
+            EnableVerbParser.Register(app);
+            ListVerbParser.Register(app);
+            RemoveVerbParser.Register(app);
+            UpdateVerbParser.Register(app);
         }
     }
 }

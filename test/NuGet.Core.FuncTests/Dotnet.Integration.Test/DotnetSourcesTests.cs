@@ -1222,24 +1222,14 @@ namespace Dotnet.Integration.Test
                 // 3rd - nextParam
                 string badCommand = commandSplit[badCommandIndex];
 
+                // System.CommandLine writes parse errors to stderr, so assert against the combined output.
                 // Assert command
-                Assert.Contains("'" + badCommand + "'", result.Output, StringComparison.InvariantCultureIgnoreCase);
+                Assert.Contains("'" + badCommand + "'", result.AllOutput, StringComparison.InvariantCultureIgnoreCase);
 
-
-                // Assert invalid argument message
-                string invalidMessage;
-                if (badCommand.StartsWith("-"))
-                {
-                    invalidMessage = ": Unrecognized option";
-                }
-                else
-                {
-                    invalidMessage = ": Unrecognized command";
-                }
-
-                Assert.True(result.Output.Contains(invalidMessage), "Expected error is " + invalidMessage + ". Actual error is " + result.Output);
-                // Verify traits of help message in stdout
-                Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
+                // Assert invalid argument message. System.CommandLine (and the legacy parser used for
+                // unrecognized verb subcommands) report unrecognized tokens with this message.
+                const string invalidMessage = "Unrecognized command or argument";
+                Assert.True(result.AllOutput.Contains(invalidMessage), "Expected error is " + invalidMessage + ". Actual error is " + result.AllOutput);
             }
         }
     }

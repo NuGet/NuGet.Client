@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 using NuGet.Common;
+using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,21 +26,17 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void VerifyCommandArgsParsing_MissingPackagePath_Throws()
+        public void VerifyCommandArgsParsing_MissingPackagePath_LogsError()
         {
-            VerifyCommandArgs(
-                (mockCommandRunner, testApp, getLogLevel) =>
-                {
-                    // Arrange
-                    var argList = new List<string>() { "verify" };
+            // Arrange
+            var log = new TestCommandOutputLogger(_testOutputHelper);
 
-                    // Act
-                    var ex = Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
+            // Act
+            int exitCode = Program.MainInternal(new[] { "verify" }, log, TestEnvironmentVariableReader.EmptyInstance);
 
-                    // Assert
-                    Assert.IsType<ArgumentException>(ex.InnerException);
-                    Assert.Equal("Unable to verify package. Argument '<package-paths>' not provided.", ex.InnerException.Message);
-                });
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Contains("Unable to verify package. Argument '<package-paths>' not provided.", log.ShowErrors());
         }
 
         [Theory]
@@ -47,16 +44,29 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("-Signatures")]
         [InlineData("-certificate-fingerprint")]
         [InlineData("--h")]
-        public void VerifyCommandArgsParsing_UnrcognizedOption_Throws(string unrecognizedOption)
+        public void VerifyCommandArgsParsing_UnrecognizedOption_TreatedAsPackagePath(string unrecognizedOption)
         {
             VerifyCommandArgs(
-                (mockCommandRunner, testApp, getLogLevel) =>
+                (mockCommandRunner, logger, rootCommand, getLogLevel) =>
                 {
                     //Arrange
+                    VerifyArgs capturedArgs = null!;
+                    mockCommandRunner
+                        .Setup(m => m.ExecuteCommandAsync(It.IsAny<VerifyArgs>()))
+                        .Callback<VerifyArgs>(a => capturedArgs = a)
+                        .Returns(Task.FromResult(0));
                     string[] args = new string[] { "verify", unrecognizedOption };
 
-                    // Act & Assert
-                    Assert.Throws<CommandParsingException>(() => testApp.Execute(args));
+                    // Act
+                    ParseResult parseResult = rootCommand.Parse(args);
+                    parseResult.Invoke();
+
+                    // Assert
+                    // System.CommandLine treats option-like tokens that don't match a defined option
+                    // as values for the package-paths argument.
+                    Assert.Empty(parseResult.Errors);
+                    Assert.NotNull(capturedArgs);
+                    Assert.Contains(unrecognizedOption, capturedArgs.PackagePaths);
                 });
         }
 
@@ -75,13 +85,14 @@ namespace NuGet.XPlat.FuncTest
         public void VerifyCommandArgsParsing_VerbosityOption(string option, string verbosity, LogLevel logLevel)
         {
             VerifyCommandArgs(
-                (mockCommandRunner, testApp, getLogLevel) =>
+                (mockCommandRunner, logger, rootCommand, getLogLevel) =>
                 {
-                    // Arrange                   
+                    // Arrange
                     var argList = new List<string> { "verify", "packageX.nupkg", option, verbosity };
 
                     // Act
-                    var result = testApp.Execute(argList.ToArray());
+                    ParseResult parseResult = rootCommand.Parse(argList.ToArray());
+                    int result = parseResult.Invoke();
 
                     // Assert
                     Assert.Equal(logLevel, getLogLevel());
@@ -89,25 +100,24 @@ namespace NuGet.XPlat.FuncTest
                 });
         }
 
-        private void VerifyCommandArgs(Action<Mock<IVerifyCommandRunner>, CommandLineApplication, Func<LogLevel>> verify)
+        private void VerifyCommandArgs(Action<Mock<IVerifyCommandRunner>, TestCommandOutputLogger, RootCommand, Func<LogLevel>> verify)
         {
             // Arrange
             var logLevel = LogLevel.Information;
             var logger = new TestCommandOutputLogger(_testOutputHelper);
-            var testApp = new CommandLineApplication();
+            var rootCommand = new RootCommand();
             var mockCommandRunner = new Mock<IVerifyCommandRunner>();
             mockCommandRunner
                 .Setup(m => m.ExecuteCommandAsync(It.IsAny<VerifyArgs>()))
                 .Returns(Task.FromResult(0));
 
-            testApp.Name = "dotnet nuget_test";
-            VerifyCommand.Register(testApp,
+            VerifyCommand.Register(rootCommand,
                 () => logger,
                 ll => logLevel = ll,
                 () => mockCommandRunner.Object);
 
             // Act & Assert
-            verify(mockCommandRunner, testApp, () => logLevel);
+            verify(mockCommandRunner, logger, rootCommand, () => logLevel);
         }
     }
 }

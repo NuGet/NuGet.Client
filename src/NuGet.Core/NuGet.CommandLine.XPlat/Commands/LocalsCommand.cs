@@ -4,8 +4,13 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Help;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.Commands;
 using NuGet.Commands;
 using NuGet.Common;
 
@@ -13,70 +18,107 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class LocalsCommand
     {
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        // Registers a placeholder on the legacy CommandLineApplication so that `dotnet nuget --help`
+        // still lists `locals`. The command is implemented with System.CommandLine (see overloads below).
+        internal static void Register(CommandLineApplication app)
         {
             app.Command("locals", locals =>
             {
                 locals.Description = Strings.LocalsCommand_Description;
-                locals.HelpOption(XPlatUtility.HelpOption);
+            });
+        }
 
-                locals.Option(
-                    CommandConstants.ForceEnglishOutputOption,
-                    Strings.ForceEnglishOutput_Description,
-                    CommandOptionType.NoValue);
+        internal static void Register(Command rootCommand, Func<ILogger> getLogger)
+        {
+            Register(rootCommand, getLogger, () => new LocalsCommandRunner());
+        }
 
-                var clear = locals.Option(
-                    "-c|--clear",
-                    Strings.LocalsCommand_ClearDescription,
-                    CommandOptionType.NoValue);
+        internal static void Register(Command rootCommand, Func<ILogger> getLogger, Func<ILocalsCommandRunner> getCommandRunner)
+        {
+            var localsCommand = new DocumentedCommand("locals", Strings.LocalsCommand_Description, "https://aka.ms/dotnet/nuget/locals");
 
-                var list = locals.Option(
-                    "-l|--list",
-                    Strings.LocalsCommand_ListDescription,
-                    CommandOptionType.NoValue);
+            var cacheLocationArgument = new Argument<string>("Cache Location(s)")
+            {
+                Description = Strings.LocalsCommand_ArgumentDescription,
+                Arity = ArgumentArity.ZeroOrOne,
+            };
 
-                var arguments = locals.Argument(
-                    "Cache Location(s)",
-                    Strings.LocalsCommand_ArgumentDescription,
-                    multipleValues: false);
+            var clearOption = new Option<bool>("--clear", "-c")
+            {
+                Description = Strings.LocalsCommand_ClearDescription,
+                Arity = ArgumentArity.Zero,
+            };
 
-                locals.OnExecute(() =>
+            var listOption = new Option<bool>("--list", "-l")
+            {
+                Description = Strings.LocalsCommand_ListDescription,
+                Arity = ArgumentArity.Zero,
+            };
+
+            var forceEnglishOutputOption = new Option<bool>(CommandConstants.ForceEnglishOutputOption)
+            {
+                Description = Strings.ForceEnglishOutput_Description,
+                Arity = ArgumentArity.Zero,
+            };
+
+            var helpOption = new HelpOption()
+            {
+                Arity = ArgumentArity.Zero,
+            };
+
+            localsCommand.Arguments.Add(cacheLocationArgument);
+            localsCommand.Options.Add(clearOption);
+            localsCommand.Options.Add(listOption);
+            localsCommand.Options.Add(forceEnglishOutputOption);
+            localsCommand.Options.Add(helpOption);
+
+            localsCommand.SetAction((parseResult, cancellationToken) =>
+            {
+                var logger = getLogger();
+
+                try
                 {
-                    var logger = getLogger();
-                    var setting = XPlatUtility.GetSettingsForCurrentWorkingDirectory();
+                    var settings = XPlatUtility.GetSettingsForCurrentWorkingDirectory();
+                    string? cacheLocation = parseResult.GetValue(cacheLocationArgument);
+                    bool clear = parseResult.GetValue(clearOption);
+                    bool list = parseResult.GetValue(listOption);
 
-                    // Using both -clear and -list command options, or neither one of them, is not supported.
-                    // We use MinArgs = 0 even though the first argument is required,
-                    // to avoid throwing a command argument validation exception and
-                    // immediately show usage help for this command instead.
-                    if ((arguments.Values.Count < 1) || string.IsNullOrWhiteSpace(arguments.Values[0]))
+                    // Using both --clear and --list, or neither one of them, is not supported.
+                    // The cache location argument is optional at parse time so we can surface a
+                    // NuGet-specific usage message instead of System.CommandLine's generic error.
+                    if (string.IsNullOrWhiteSpace(cacheLocation))
                     {
                         throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_NoArguments));
                     }
-                    else if (clear.HasValue() && list.HasValue())
+                    else if (clear && list)
                     {
                         throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_MultipleOperations));
                     }
-                    else if (!clear.HasValue() && !list.HasValue())
+                    else if (!clear && !list)
                     {
                         throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_NoOperation));
                     }
-                    else
-                    {
-                        var localsArgs = new LocalsArgs(arguments.Values,
-                            setting,
-                            logger.LogInformation,
-                            logger.LogError,
-                            clear.HasValue(),
-                            list.HasValue());
 
-                        var localsCommandRunner = new LocalsCommandRunner();
-                        localsCommandRunner.ExecuteCommand(localsArgs);
-                    }
+                    var localsArgs = new LocalsArgs(
+                        new List<string>() { cacheLocation },
+                        settings,
+                        logger.LogInformation,
+                        logger.LogError,
+                        clear,
+                        list);
 
-                    return 0;
-                });
+                    getCommandRunner().ExecuteCommand(localsArgs);
+
+                    return Task.FromResult(ExitCodes.Success);
+                }
+                catch (ArgumentException ex)
+                {
+                    logger.LogError(ex.Message);
+                    return Task.FromResult(ExitCodes.InvalidArguments);
+                }
             });
+
+            rootCommand.Subcommands.Add(localsCommand);
         }
     }
 }

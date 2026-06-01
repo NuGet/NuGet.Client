@@ -91,6 +91,10 @@ namespace NuGet.CommandLine.XPlat
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
+            NetworkProtocolUtility.SetConnectionLimit();
+
+            XPlatUtility.SetUserAgent();
+
             // TODO: Migrating from Microsoft.Extensions.CommandLineUtils.CommandLineApplication to System.Commandline.Command
             // If we are looking to add further commands here, we should also look to redesign this parsing logic at that time
             // See related issues:
@@ -133,6 +137,27 @@ namespace NuGet.CommandLine.XPlat
                     ConfigCommand.Register(rootCommand, getHidePrefixLogger);
                     Commands.Why.WhyCommand.Register(nugetCommand, lazyConsole, virtualProjectBuilder);
                     Commands.Why.WhyCommand.Register(rootCommand, lazyConsole, virtualProjectBuilder);
+                    LocalsCommand.Register(nugetCommand, getHidePrefixLogger);
+                    LocalsCommand.Register(rootCommand, getHidePrefixLogger);
+                    DeleteCommand.Register(nugetCommand, getHidePrefixLogger);
+                    DeleteCommand.Register(rootCommand, getHidePrefixLogger);
+                    PushCommand.Register(nugetCommand, getHidePrefixLogger);
+                    PushCommand.Register(rootCommand, getHidePrefixLogger);
+                    Action<LogLevel> setLogLevel = (logLevel) => log.VerbosityLevel = logLevel;
+                    VerifyCommand.Register(nugetCommand, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
+                    VerifyCommand.Register(rootCommand, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
+                    AddVerbParser.Register(nugetCommand, getHidePrefixLogger);
+                    AddVerbParser.Register(rootCommand, getHidePrefixLogger);
+                    DisableVerbParser.Register(nugetCommand, getHidePrefixLogger);
+                    DisableVerbParser.Register(rootCommand, getHidePrefixLogger);
+                    EnableVerbParser.Register(nugetCommand, getHidePrefixLogger);
+                    EnableVerbParser.Register(rootCommand, getHidePrefixLogger);
+                    ListVerbParser.Register(nugetCommand, getHidePrefixLogger);
+                    ListVerbParser.Register(rootCommand, getHidePrefixLogger);
+                    RemoveVerbParser.Register(nugetCommand, getHidePrefixLogger);
+                    RemoveVerbParser.Register(rootCommand, getHidePrefixLogger);
+                    UpdateVerbParser.Register(nugetCommand, getHidePrefixLogger);
+                    UpdateVerbParser.Register(rootCommand, getHidePrefixLogger);
                 }
 
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -140,14 +165,21 @@ namespace NuGet.CommandLine.XPlat
                 int exitCodeValue = 0;
                 ParseResult parseResult = rootCommand.Parse(args);
 
+                // The migrated delete/push/verify commands and the source/client-cert verbs invoke runners that throw
+                // on failure. Disable System.CommandLine's default exception handler for them so their exceptions flow
+                // to the handler below and are reported through NuGet's logger, matching the legacy parser's behavior.
+                bool useNuGetExceptionHandling = UseNuGetExceptionHandling(args);
+
                 try
                 {
-                    exitCodeValue = parseResult.Invoke();
+                    exitCodeValue = useNuGetExceptionHandling
+                        ? parseResult.Invoke(new InvocationConfiguration { EnableDefaultExceptionHandler = false })
+                        : parseResult.Invoke();
                 }
                 catch (Exception ex)
                 {
                     LogException(ex, log);
-                    exitCodeValue = ExitCodes.Error;
+                    exitCodeValue = useNuGetExceptionHandling ? ExitCodes.InvalidArguments : ExitCodes.Error;
                 }
 
                 return exitCodeValue;
@@ -164,10 +196,6 @@ namespace NuGet.CommandLine.XPlat
                     .Where(e => e != null)
                     .ToArray();
             }
-
-            NetworkProtocolUtility.SetConnectionLimit();
-
-            XPlatUtility.SetUserAgent();
 
             app.OnExecute(() =>
             {
@@ -261,7 +289,12 @@ namespace NuGet.CommandLine.XPlat
             }
 
             string arg0 = args[0];
-            if (arg0 == "config" || arg0 == "why")
+            if (arg0 == "config" || arg0 == "why" || arg0 == "locals" || arg0 == "delete" || arg0 == "push" || arg0 == "verify")
+            {
+                return true;
+            }
+
+            if (args.Length >= 2 && IsSourceOrClientCertVerb(arg0, args[1]))
             {
                 return true;
             }
@@ -284,6 +317,43 @@ namespace NuGet.CommandLine.XPlat
             return false;
         }
 
+        // Returns true for the source/client-cert management verbs that have been migrated to System.CommandLine.
+        // Only the exact verb/noun pairs that exist are routed, to preserve legacy behavior for unsupported pairs
+        // (e.g. `disable client-cert`).
+        private static bool IsSourceOrClientCertVerb(string verb, string noun)
+        {
+            switch (verb)
+            {
+                case "add":
+                case "list":
+                case "remove":
+                case "update":
+                    return noun == "source" || noun == "client-cert";
+                case "disable":
+                case "enable":
+                    return noun == "source";
+                default:
+                    return false;
+            }
+        }
+
+        // Returns true for the migrated commands whose runners throw on error and rely on NuGet's exception logging
+        // (rather than System.CommandLine's default exception handler) to report failures and return exit code 1.
+        private static bool UseNuGetExceptionHandling(string[] args)
+        {
+            if (args.Length == 0)
+            {
+                return false;
+            }
+
+            string arg0 = args[0];
+            if (arg0 == "delete" || arg0 == "push" || arg0 == "verify")
+            {
+                return true;
+            }
+
+            return args.Length >= 2 && IsSourceOrClientCertVerb(arg0, args[1]);
+        }
 
         internal static void LogException(Exception e, ILogger log)
         {
@@ -328,16 +398,16 @@ namespace NuGet.CommandLine.XPlat
             {
                 // "dotnet nuget *" commands
                 app.Name = DotnetNuGetAppName;
-                CommandParsers.Register(app, getHidePrefixLogger);
-                DeleteCommand.Register(app, getHidePrefixLogger);
-                PushCommand.Register(app, getHidePrefixLogger);
-                LocalsCommand.Register(app, getHidePrefixLogger);
-                VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
+                CommandParsers.Register(app);
                 TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
                 SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
                 // The commands below are implemented with System.CommandLine, and are here only for `dotnet nuget --help`
                 ConfigCommand.Register(app);
                 Commands.Why.WhyCommand.Register(app);
+                LocalsCommand.Register(app);
+                DeleteCommand.Register(app);
+                PushCommand.Register(app);
+                VerifyCommand.Register(app);
             }
 
             app.FullName = Strings.App_FullName;

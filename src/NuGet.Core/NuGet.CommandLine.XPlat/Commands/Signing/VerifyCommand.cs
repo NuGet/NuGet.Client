@@ -5,9 +5,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Help;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.CommandLine.XPlat.Commands;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
@@ -17,74 +20,107 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class VerifyCommand
     {
-        internal static void Register(CommandLineApplication app,
+        // Registers a placeholder on the legacy CommandLineApplication so that `dotnet nuget --help`
+        // still lists `verify`. The command is implemented with System.CommandLine (see overload below).
+        internal static void Register(CommandLineApplication app)
+        {
+            app.Command("verify", verifyCmd =>
+            {
+                verifyCmd.Description = Strings.VerifyCommandDescription;
+            });
+        }
+
+        internal static void Register(Command rootCommand,
                               Func<ILogger> getLogger,
                               Action<LogLevel> setLogLevel,
                               Func<IVerifyCommandRunner> getCommandRunner)
         {
-            app.Command("verify", verifyCmd =>
+            var verifyCommand = new DocumentedCommand("verify", Strings.VerifyCommandDescription, "https://aka.ms/dotnet/nuget/verify");
+
+            var packagePaths = new Argument<List<string>>("package-paths")
             {
-                CommandArgument packagePaths = verifyCmd.Argument(
-                    "<package-paths>",
-                    Strings.VerifyCommandPackagePathDescription,
-                    multipleValues: true);
+                Description = Strings.VerifyCommandPackagePathDescription,
+                Arity = ArgumentArity.ZeroOrMore,
+            };
 
-                CommandOption all = verifyCmd.Option(
-                    "--all",
-                    Strings.VerifyCommandAllDescription,
-                    CommandOptionType.NoValue);
+            var all = new Option<bool>("--all")
+            {
+                Description = Strings.VerifyCommandAllDescription,
+                Arity = ArgumentArity.Zero,
+            };
 
-                CommandOption fingerPrint = verifyCmd.Option(
-                    "--certificate-fingerprint",
-                    Strings.VerifyCommandCertificateFingerprintDescription,
-                    CommandOptionType.MultipleValue);
+            var fingerPrint = new Option<List<string>>("--certificate-fingerprint")
+            {
+                Description = Strings.VerifyCommandCertificateFingerprintDescription,
+                Arity = ArgumentArity.ZeroOrMore,
+                AllowMultipleArgumentsPerToken = true,
+            };
 
-                CommandOption configFile = verifyCmd.Option(
-                    "--configfile",
-                    Strings.Option_ConfigFile,
-                    CommandOptionType.SingleValue);
+            var configFile = new Option<string>("--configfile")
+            {
+                Description = Strings.Option_ConfigFile,
+                Arity = ArgumentArity.ExactlyOne,
+            };
 
-                CommandOption verbosity = verifyCmd.Option(
-                    "-v|--verbosity",
-                    Strings.Verbosity_Description,
-                    CommandOptionType.SingleValue);
+            var verbosity = new Option<string>("--verbosity", "-v")
+            {
+                Description = Strings.Verbosity_Description,
+                Arity = ArgumentArity.ExactlyOne,
+            };
 
-                verifyCmd.HelpOption(XPlatUtility.HelpOption);
-                verifyCmd.Description = Strings.VerifyCommandDescription;
+            var forceEnglishOutput = new Option<bool>(CommandConstants.ForceEnglishOutputOption)
+            {
+                Description = Strings.ForceEnglishOutput_Description,
+                Arity = ArgumentArity.Zero,
+            };
 
-                verifyCmd.OnExecute(async () =>
-                {
-                    ValidatePackagePaths(packagePaths);
+            var help = new HelpOption()
+            {
+                Arity = ArgumentArity.Zero,
+            };
 
-                    VerifyArgs args = new VerifyArgs();
-                    args.PackagePaths = packagePaths.Values;
-                    args.Verifications = all.HasValue() ?
-                        new List<Verification>() { Verification.All } :
-                        new List<Verification>() { Verification.Signatures };
-                    args.CertificateFingerprint = fingerPrint.Values;
-                    args.Logger = getLogger();
-                    args.Settings = XPlatUtility.ProcessConfigFile(configFile.Value());
-                    setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(verbosity.Value()));
+            verifyCommand.Arguments.Add(packagePaths);
+            verifyCommand.Options.Add(all);
+            verifyCommand.Options.Add(fingerPrint);
+            verifyCommand.Options.Add(configFile);
+            verifyCommand.Options.Add(verbosity);
+            verifyCommand.Options.Add(forceEnglishOutput);
+            verifyCommand.Options.Add(help);
 
-                    X509TrustStore.InitializeForDotNetSdk(args.Logger);
+            verifyCommand.SetAction(async (parseResult, cancellationToken) =>
+            {
+                List<string>? packagePathsValue = parseResult.GetValue(packagePaths);
 
-                    var runner = getCommandRunner();
-                    var verifyTask = runner.ExecuteCommandAsync(args);
-                    await verifyTask;
+                ValidatePackagePaths(packagePathsValue, "<package-paths>");
 
-                    return verifyTask.Result;
-                });
+                VerifyArgs args = new VerifyArgs();
+                args.PackagePaths = packagePathsValue!;
+                args.Verifications = parseResult.GetValue(all) ?
+                    new List<Verification>() { Verification.All } :
+                    new List<Verification>() { Verification.Signatures };
+                args.CertificateFingerprint = parseResult.GetValue(fingerPrint);
+                args.Logger = getLogger();
+                args.Settings = XPlatUtility.ProcessConfigFile(parseResult.GetValue(configFile));
+                setLogLevel(XPlatUtility.MSBuildVerbosityToNuGetLogLevel(parseResult.GetValue(verbosity)));
+
+                X509TrustStore.InitializeForDotNetSdk(args.Logger);
+
+                var runner = getCommandRunner();
+                return await runner.ExecuteCommandAsync(args);
             });
+
+            rootCommand.Subcommands.Add(verifyCommand);
         }
 
-        private static void ValidatePackagePaths(CommandArgument argument)
+        private static void ValidatePackagePaths(List<string>? packagePaths, string argumentName)
         {
-            if (argument.Values.Count == 0 ||
-                argument.Values.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
+            if (packagePaths == null ||
+                packagePaths.Count == 0 ||
+                packagePaths.Any<string>(packagePath => string.IsNullOrEmpty(packagePath)))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
                     "verify",
-                    argument.Name));
+                    argumentName));
             }
         }
     }
