@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,7 +11,7 @@ namespace NuGet.Protocol.Plugins
 {
     internal sealed class MessageConverter : JsonConverter<Message>
     {
-        private static readonly Dictionary<(MessageMethod, MessageType), Func<JsonElement, object>> _read = new()
+        private static readonly Dictionary<(MessageMethod, MessageType), Func<JsonElement, object?>> _read = new()
         {
             [(MessageMethod.Handshake, MessageType.Request)] = e => e.Deserialize(PluginJsonContext.Default.HandshakeRequest),
             [(MessageMethod.Handshake, MessageType.Response)] = e => e.Deserialize(PluginJsonContext.Default.HandshakeResponse),
@@ -140,7 +138,7 @@ namespace NuGet.Protocol.Plugins
                 throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Plugin_UnrecognizedEnumValue, methodStr));
             }
 
-            object payload = null;
+            object? payload = null;
             if (root.TryGetProperty("Payload", out var payloadProp) && payloadProp.ValueKind != JsonValueKind.Null)
             {
                 if (payloadProp.ValueKind != JsonValueKind.Object)

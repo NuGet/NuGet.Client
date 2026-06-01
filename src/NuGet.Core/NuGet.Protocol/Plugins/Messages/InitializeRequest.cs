@@ -29,7 +29,6 @@ namespace NuGet.Protocol.Plugins
         /// Gets the default request timeout for all subsequent requests.
         /// </summary>
         [JsonRequired]
-        [System.Text.Json.Serialization.JsonConverter(typeof(StjTimeSpanConverter))]
         public TimeSpan RequestTimeout { get; }
 
         /// <summary>
