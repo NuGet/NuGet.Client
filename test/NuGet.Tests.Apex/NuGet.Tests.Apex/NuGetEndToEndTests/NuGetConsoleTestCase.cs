@@ -867,16 +867,31 @@ namespace NuGet.Tests.Apex
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var packageName = "Rules";
-            var source = @"..\";
+
+            // Use a known, empty folder as the local source so that the relative source resolves deterministically and
+            // remains small. A bare "..\" would resolve relative to the console's working directory (the shared test
+            // temp folder), which accumulates many sibling solution directories and makes enumerating it as a local
+            // feed extremely slow, hanging the command until the test times out.
+            var emptySource = Path.Combine(testContext.SolutionRoot, "EmptySource");
+            Directory.CreateDirectory(emptySource);
+            var source = @".\EmptySource";
             var expectedMessage = $"Unable to find package '{packageName}'";
 
             var nugetConsole = GetConsole(testContext.Project);
 
+            // Anchor the console's working directory so the relative source above resolves to the empty folder.
+            nugetConsole.Execute($"Set-Location -LiteralPath '{testContext.SolutionRoot}'");
             nugetConsole.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Source {source}");
 
             Assert.IsTrue(
                 nugetConsole.IsMessageFoundInPMC(expectedMessage),
                 $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+
+            // Guard that the relative source actually resolved to the existing (but empty) folder, so this remains a
+            // "valid source, package not found" scenario rather than silently degrading to "source not found".
+            Assert.IsFalse(
+                nugetConsole.IsMessageFoundInPMC("Source not found"),
+                $"The relative source was expected to resolve to an existing folder. Actual output: {nugetConsole.GetText()}");
         }
 
         [TestMethod]

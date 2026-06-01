@@ -2521,7 +2521,9 @@ function Test-InstallPackagesConfigLocal
     $pathToPackagesConfig = Join-Path $context.RepositoryRoot "InstallPackagesConfigLocal\packages.config"
 
     # Act
-    $p | Install-Package $pathToPackagesConfig
+    # Scope the install to the test's local feed so the single-letter ids A and B
+    # resolve to the bundled test packages instead of unrelated packages on nuget.org.
+    $p | Install-Package $pathToPackagesConfig -Source $context.RepositoryPath
 
     # Assert
     Assert-Package $p A 1.0.0

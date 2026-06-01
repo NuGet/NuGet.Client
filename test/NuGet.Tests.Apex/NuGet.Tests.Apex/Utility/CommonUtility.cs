@@ -180,14 +180,15 @@ namespace NuGet.Tests.Apex
         {
             logger.WriteMessage($"Checking for PackageReference {packageName} {packageVersion}");
 
-            var matches = GetPackageReferences(project)
-                .Where(e => e.Name.Equals(packageName, StringComparison.OrdinalIgnoreCase)
-                        && e.LibraryRange.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageVersion)))
-                .ToList();
-
-            logger.WriteMessage($"Matches: {matches.Count}");
-
-            matches.Any().Should().BeTrue($"A PackageReference with {packageName}/{packageVersion} was not found in {project.FullPath}");
+            // The project file may be written asynchronously after a UI install/update completes, so poll until the
+            // expected PackageReference is observed instead of reading the project once and racing the write.
+            Omni.Common.WaitFor.IsTrue(
+                () => GetPackageReferences(project)
+                    .Any(e => e.Name.Equals(packageName, StringComparison.OrdinalIgnoreCase)
+                            && e.LibraryRange.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageVersion))),
+                Timeout,
+                Interval,
+                $"A PackageReference with {packageName}/{packageVersion} was not found in {project.FullPath}");
         }
 
         public static void AssertPackageReferenceDoesNotExist(ProjectTestExtension project, string packageName, string packageVersion, ITestLogger logger)

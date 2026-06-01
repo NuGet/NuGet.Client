@@ -198,3 +198,10 @@ stages:
         mergeTestResults: "true"
         testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
       condition: "succeededOrFailed()"
+
+    - task: PublishPipelineArtifact@1
+      displayName: "Publish EndToEnd test result logs"
+      inputs:
+        targetPath: "$(System.DefaultWorkingDirectory)\\testresults"
+        artifactName: "EndToEndTestResults-$(System.StageName)-$(System.JobAttempt)"
+      condition: "succeededOrFailed()"
