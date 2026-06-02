@@ -45,7 +45,7 @@ namespace NuGetVSExtension
                 return CopilotToolSessionResult.Failure(CopilotToolSessionError.ServiceBrokerNotAvailable);
             }
 
-            // 3. Acquire Copilot service â€” ownership transfers to CopilotToolSession on success
+            // 3. Acquire Copilot service, ownership transfers to CopilotToolSession on success
 #pragma warning disable ISB001 // Dispose objects before losing scope - ownership is transferred to CopilotToolSession on success
             ICopilotService? copilotService = await ServiceBroker.GetProxyAsync<ICopilotService>(CopilotDescriptors.CopilotService, cancellationToken);
 #pragma warning restore ISB001
@@ -67,8 +67,7 @@ namespace NuGetVSExtension
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpToolServiceNotAvailable);
                     }
 
-                    // 5. Verify the required tool is available. See McpToolMatcher for the
-                    // ServerNameOfFunction + Group rationale.
+                    // 5. Verify the required tool is available. See McpToolMatcher for the ServerNameOfFunction + Group rationale.
                     IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
                     if (functions is null)
                     {
