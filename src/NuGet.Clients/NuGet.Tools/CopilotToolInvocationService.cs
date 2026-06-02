@@ -28,7 +28,8 @@ namespace NuGetVSExtension
         public async Task<CopilotToolSessionResult> TryCreateToolSessionAsync(
             CopilotClientId clientId,
             CopilotCorrelationId correlationId,
-            string requiredToolName,
+            string requiredToolDisplayName,
+            IReadOnlyCollection<string> acceptableGroups,
             CancellationToken cancellationToken)
         {
             // 1. Check if the user is signed-in to GitHub Copilot
@@ -67,9 +68,23 @@ namespace NuGetVSExtension
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpToolServiceNotAvailable);
                     }
 
-                    // 5. Verify the required tool is available
+                    // 5. Verify the required tool is available.
+                    // The same logical NuGet MCP tool can be exposed under different Groups
+                    // depending on how the MCP server was installed (in-VS vs. MCP registry),
+                    // so match on the descriptor's DisplayName + Group rather than the
+                    // composed fully-qualified Name.
                     IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
-                    if (functions is null || !functions.Any(f => string.Equals(f.Name, requiredToolName, StringComparison.OrdinalIgnoreCase)))
+                    if (functions is null)
+                    {
+                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
+                    }
+
+                    bool toolFound = functions
+                        .OfType<CopilotMcpFunctionDescriptor>()
+                        .Any(f => !f.IsError
+                               && string.Equals(f.DisplayName, requiredToolDisplayName, StringComparison.Ordinal)
+                               && acceptableGroups.Contains(f.Group, StringComparer.Ordinal));
+                    if (!toolFound)
                     {
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
                     }
