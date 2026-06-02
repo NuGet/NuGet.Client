@@ -31,6 +31,10 @@ parameters:
   displayName: Run a static analysis
   type: boolean
   default: true
+- name: IsEscrow
+  displayName: Is this an escrow/release branch build
+  type: boolean
+  default: false
 variables:
   DOTNET_NOLOGO: 1
   NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
@@ -177,7 +181,7 @@ stages:
         testProjectName: Dotnet.Integration.Test
         timeoutInMinutes: 60
 
-- ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
+- ${{ if and(eq(parameters.RunFunctionalTestsOnWindows, true), eq(parameters.IsEscrow, false)) }}:
   - stage:
     displayName: Dotnet.Integration.Test on Windows (SDK Next)
     dependsOn: []
@@ -241,7 +245,7 @@ stages:
         testTargetFramework: net10.0
         timeoutInMinutes: 30
 
-- ${{ if eq(parameters.RunFunctionalTestsOnLinux, true) }}:
+- ${{ if and(eq(parameters.RunFunctionalTestsOnLinux, true), eq(parameters.IsEscrow, false)) }}:
   - stage:
     displayName: Dotnet.Integration.Test on Linux (SDK Next)
     dependsOn: []
@@ -283,7 +287,7 @@ stages:
         testTargetFramework: net10.0
         timeoutInMinutes: 30
 
-- ${{ if eq(parameters.RunFunctionalTestsOnMacOS, true) }}:
+- ${{ if and(eq(parameters.RunFunctionalTestsOnMacOS, true), eq(parameters.IsEscrow, false)) }}:
   - stage:
     displayName: Dotnet.Integration.Test on MacOS (SDK Next)
     dependsOn: []
