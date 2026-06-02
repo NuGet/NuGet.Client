@@ -20,13 +20,8 @@ namespace NuGet.Protocol.Tests.Plugins
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                // Arrange
                 var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
-
-                // Act
                 entry.LoadFromFile();
-
-                // Assert
                 Assert.Null(entry.OperationClaims);
             }
         }
@@ -54,7 +49,6 @@ namespace NuGet.Protocol.Tests.Plugins
         [MemberData(nameof(GetsRoundTripsValuesData))]
         public async Task PluginCacheEntry_RoundTripsValuesAsync(string[] values)
         {
-            // Arrange
             var list = new List<OperationClaim>();
             foreach (var val in values)
             {
@@ -65,14 +59,13 @@ namespace NuGet.Protocol.Tests.Plugins
             using (var testDirectory = TestDirectory.Create())
             {
                 var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
+                entry.LoadFromFile();
                 entry.OperationClaims = list;
-
-                // Act
                 await entry.UpdateCacheFileAsync();
+
                 var newEntry = new PluginCacheEntry(testDirectory.Path, "a", "b");
                 newEntry.LoadFromFile();
 
-                // Assert
                 Assert.True(EqualityUtility.SequenceEqualWithNullCheck(entry.OperationClaims, newEntry.OperationClaims));
             }
         }
@@ -80,12 +73,12 @@ namespace NuGet.Protocol.Tests.Plugins
         [Fact]
         public async Task PluginCacheEntry_DoesNotDeleteAnOpenedFile()
         {
-            // Arrange
             var list = new List<OperationClaim>() { OperationClaim.Authentication };
 
             using (var testDirectory = TestDirectory.Create())
             {
                 var entry = new PluginCacheEntry(testDirectory.Path, "a", "b");
+                entry.LoadFromFile();
                 entry.OperationClaims = list;
                 await entry.UpdateCacheFileAsync();
 
@@ -95,7 +88,6 @@ namespace NuGet.Protocol.Tests.Plugins
 
                 Assert.True(File.Exists(CacheFileName));
 
-                // Act
                 using (var fileStream = new FileStream(
                    CacheFileName,
                    FileMode.Open,
@@ -109,7 +101,6 @@ namespace NuGet.Protocol.Tests.Plugins
                     await entry.UpdateCacheFileAsync(); // this should not update
                 }
 
-                // Assert
                 entry.LoadFromFile();
                 Assert.True(EqualityUtility.SequenceEqualWithNullCheck(entry.OperationClaims, new List<OperationClaim>() { OperationClaim.Authentication }));
             }
