@@ -323,7 +323,8 @@ stages:
         displayName: Run Static Analysis
         timeoutInMinutes: 30
         pool:
-          vmImage: windows-latest
+          name: NetCore-Public
+          demands: ImageOverride -equals Windows.VS2026.Amd64.Open
         steps:
         - task: PowerShell@2
           displayName: Run configure.ps1
