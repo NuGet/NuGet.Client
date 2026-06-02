@@ -27,7 +27,7 @@ namespace NuGet.Protocol.Tests
         private const int MaxTries = 5;
         private const string TestUrl = "https://local.test/test.json";
         private static readonly TimeSpan SmallTimeout = TimeSpan.FromMilliseconds(50);
-        private static readonly TimeSpan LargeTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan LargeTimeout = TimeSpan.FromSeconds(5);
         private readonly ITestOutputHelper _testOutputHelper;
 
         public HttpRetryHandlerTests(ITestOutputHelper testOutputHelper)
