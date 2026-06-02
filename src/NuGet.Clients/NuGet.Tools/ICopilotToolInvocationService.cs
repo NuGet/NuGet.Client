@@ -20,14 +20,14 @@ namespace NuGetVSExtension
         /// </summary>
         /// <param name="clientId">The Copilot client identity for telemetry attribution.</param>
         /// <param name="correlationId">The correlation ID from the caller's <see cref="CopilotRequest"/> (used for function discovery).</param>
-        /// <param name="requiredToolDisplayName">The MCP tool display name (e.g. <c>fix_vulnerable_packages</c>) that must be available.</param>
+        /// <param name="requiredServerNameOfFunction">The MCP server's name for the tool (e.g. <c>fix_vulnerable_packages</c>) that must be available.</param>
         /// <param name="acceptableGroups">The set of MCP groups under which the tool is considered acceptable (e.g. the in-VS group and the MCP registry group).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A result indicating success (with session) or failure (with error type).</returns>
         Task<CopilotToolSessionResult> TryCreateToolSessionAsync(
             CopilotClientId clientId,
             CopilotCorrelationId correlationId,
-            string requiredToolDisplayName,
+            string requiredServerNameOfFunction,
             IReadOnlyCollection<string> acceptableGroups,
             CancellationToken cancellationToken);
     }
