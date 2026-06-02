@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string NuGetMcpRegistryGroupName = "com.microsoft/nuget";
 
         // Groups under which a NuGet MCP tool may legitimately be exposed.
-        public static readonly IReadOnlyCollection<string> NuGetSolverAcceptableGroups = new[]
+        public static readonly IReadOnlyCollection<string> NuGetMCPServerGroupNames = new[]
         {
             NuGetVisualStudioGroupName,
             NuGetMcpRegistryGroupName,
