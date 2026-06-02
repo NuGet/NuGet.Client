@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NuGet.Frameworks;
@@ -13,27 +14,28 @@ using NuGet.Packaging.Core;
 namespace NuGet.Protocol.Converters
 {
     /// <remarks>
-    /// NSJ deserializes <see cref="PackageDependencyGroup"/> via a private constructor attributed with
-    /// <c>[JsonConstructor]</c>. STJ source generation cannot access private constructors, so this
-    /// converter handles deserialization explicitly.
+    /// No explicit NSJ equivalent — NSJ relies on <c>[JsonConstructor]</c> and <c>[JsonProperty]</c> attributes
+    /// on <see cref="PackageDependencyGroup"/> in NuGet.Packaging. STJ ignores those attributes, requiring this converter.
     /// </remarks>
     internal sealed class PackageDependencyGroupStjConverter : JsonConverter<PackageDependencyGroup>
     {
+        private static readonly PackageDependencyStjConverter _dependencyConverter = new();
+
         public override PackageDependencyGroup Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                throw new JsonException();
             }
 
-            NuGetFramework? targetFramework = null;
+            NuGetFramework targetFramework = null;
             var packages = new List<PackageDependency>();
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType != JsonTokenType.PropertyName)
                 {
-                    throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                    continue;
                 }
 
                 var propName = reader.GetString();
@@ -43,8 +45,8 @@ namespace NuGet.Protocol.Converters
                 {
                     if (reader.TokenType != JsonTokenType.Null)
                     {
-                        string? fw = reader.GetString();
-                        targetFramework = string.IsNullOrEmpty(fw) ? null : NuGetFramework.Parse(fw!);
+                        var fw = reader.GetString();
+                        targetFramework = string.IsNullOrEmpty(fw) ? null : NuGetFramework.Parse(fw);
                     }
                 }
                 else if (string.Equals(propName, JsonProperties.Dependencies, StringComparison.OrdinalIgnoreCase))
@@ -53,16 +55,12 @@ namespace NuGet.Protocol.Converters
                     {
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            PackageDependency? dependency = JsonSerializer.Deserialize(ref reader, PackageSearchJsonContext.Default.PackageDependency);
-                            if (dependency != null)
-                            {
-                                packages.Add(dependency);
-                            }
+                            packages.Add(_dependencyConverter.Read(ref reader, typeof(PackageDependency), options));
                         }
                     }
-                    else if (reader.TokenType != JsonTokenType.Null)
+                    else
                     {
-                        throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
+                        reader.Skip();
                     }
                 }
                 else

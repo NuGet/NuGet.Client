@@ -8,22 +8,17 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol.Converters
 {
-    /// <remarks>
-    /// NSJ equivalent: <see cref="NuGetVersionConverter"/> (registered globally in <see cref="JsonExtensions.ObjectSerializationSettings"/>).
-    /// Used by <see cref="NuGetVersion"/> properties.
-    /// </remarks>
+    /// <remarks>NSJ equivalent: <see cref="NuGetVersionConverter"/>.</remarks>
     internal sealed class NuGetVersionStjConverter : JsonConverter<NuGetVersion>
     {
         public override NuGetVersion? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            string? str = reader.TokenType switch
+            if (reader.TokenType == JsonTokenType.Null)
             {
-                JsonTokenType.Null => null,
-                JsonTokenType.String => reader.GetString(),
-                JsonTokenType.Number => reader.CoerceScalarTokenToString(),
-                _ => throw new JsonException(string.Format(System.Globalization.CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType))
-            };
+                return null;
+            }
 
+            var str = reader.GetString();
             return str is null ? null : NuGetVersion.Parse(str);
         }
 

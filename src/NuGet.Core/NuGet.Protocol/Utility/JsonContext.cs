@@ -11,7 +11,7 @@ namespace NuGet.Protocol.Utility
 #pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-        Converters = [typeof(VersionRangeStjConverter), typeof(ServiceIndexEntryStringOrArrayConverter)])]
+        Converters = [typeof(VersionRangeStjConverter), typeof(ServiceIndexEntryStringOrArrayConverter), typeof(NuGetVersionStjConverter), typeof(PackageDependencyGroupStjConverter), typeof(PackageDependencyStjConverter)])]
 #pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSerializable(typeof(HttpFileSystemBasedFindPackageByIdResource.FlatContainerVersionList))]
     [JsonSerializable(typeof(IReadOnlyList<V3VulnerabilityIndexEntry>), TypeInfoPropertyName = "VulnerabilityIndex")]
@@ -19,6 +19,8 @@ namespace NuGet.Protocol.Utility
     [JsonSerializable(typeof(AutoCompleteModel))]
     [JsonSerializable(typeof(ServiceIndexModel))]
     [JsonSerializable(typeof(string[]))]
+    [JsonSerializable(typeof(RegistrationIndex))]
+    [JsonSerializable(typeof(RegistrationPage))]
     internal partial class JsonContext : JsonSerializerContext
     {
     }

@@ -6,6 +6,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -36,7 +37,8 @@ namespace NuGet.Protocol
                     regResource,
                     reportAbuseResource,
                     packageDetailsUriResource,
-                    readmeResource);
+                    readmeResource,
+                    EnvironmentVariableWrapper.Instance);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
