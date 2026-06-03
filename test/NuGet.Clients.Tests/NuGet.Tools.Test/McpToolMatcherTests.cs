@@ -77,15 +77,15 @@ namespace NuGet.Tools.Test
         }
 
         [Fact]
-        public void IsAvailable_WrongCaseGroup_ReturnsFalse()
+        public void IsAvailable_DifferentCaseGroup_ReturnsTrue()
         {
-            // Group comparison is Ordinal: "nuget" must not match "NuGet".
+            // Group comparison is OrdinalIgnoreCase to match VS behavior: "nuget" matches "NuGet".
             var functions = new List<CopilotFunctionDescriptor>
             {
-                CreateMcpDescriptor(group: "nuget"),
+                CreateMcpDescriptor(group: McpServerConstants.NuGetVisualStudioGroupName.ToLowerInvariant()),
             };
 
-            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.True(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
         }
 
         [Fact]
