@@ -56,10 +56,9 @@
     <PackageVersion Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19253.5" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <PackageVersion Include="Microsoft.Internal.VisualStudio.Shell.Framework" Version="17.10.40173" />
-    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
-    <!-- Microsoft.TeamFoundationServer.ExtendedClient has vulnerable dependencies Microsoft.IdentityModel.JsonWebTokens and System.IdentityModel.Tokens.Jwt . When it's upgraded, try removing the pinned packages -->
+    <!-- MicrosofDt.TeamFoundationServer.ExtendedClient has vulnerable dependencies Microsoft.IdentityModel.JsonWebTokens and System.IdentityModel.Tokens.Jwt . When it's upgraded, try removing the pinned packages -->
     <PackageVersion Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="16.153.0" />
     <PackageVersion Include="Microsoft.Test.Apex.VisualStudio" Version="18.0.0-preview-1-10723-180" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.1.0" />
@@ -98,12 +97,6 @@
     <!-- S.S.C.Xml is a dependency of MSBuild. Once MSBuild no longer has a transitive dependency on a vulnerable version, this can be removed -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
-    <!--
-      The Microsoft.VisualStudio.SDK metapackage brings in System.Threading.Tasks.Dataflow 4.11.1 (assembly version 4.9.5.0).
-      However, our MSBuild integration tests use Microsoft.Build 16.8.0, which requires System.Threading.Tasks.Dataflow 4.9.0 (assembly version 4.9.3.0).
-      To resolve runtime assembly binding failures, we'll downgrade the package from 4.11.1 to 4.9.0.
-    -->
-    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
     <PackageVersion Include="VsWebSite.Interop" Version="17.10.40173" />
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />

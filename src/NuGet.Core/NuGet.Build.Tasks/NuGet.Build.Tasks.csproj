@@ -44,7 +44,6 @@
     <ProjectReference Include="..\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.Build.Framework" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">
