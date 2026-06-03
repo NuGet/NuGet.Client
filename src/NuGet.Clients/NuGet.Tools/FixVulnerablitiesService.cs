@@ -56,7 +56,7 @@ namespace NuGetVSExtension
                 clientId,
                 request.CorrelationId,
                 McpServerConstants.NuGetSolverToolName,
-                McpServerConstants.NuGetMCPServerGroupNames,
+                McpServerConstants.NuGetMCPServerNames,
                 cancellationToken);
 
             if (!result.IsSuccess)

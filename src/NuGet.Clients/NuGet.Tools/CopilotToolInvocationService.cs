@@ -28,8 +28,8 @@ namespace NuGetVSExtension
         public async Task<CopilotToolSessionResult> TryCreateToolSessionAsync(
             CopilotClientId clientId,
             CopilotCorrelationId correlationId,
-            string requiredServerNameOfFunction,
-            IReadOnlyCollection<string> acceptableGroups,
+            string mcpToolName,
+            IReadOnlyCollection<string> acceptableMCPServerNames,
             CancellationToken cancellationToken)
         {
             // 1. Check if the user is signed-in to GitHub Copilot
@@ -72,7 +72,7 @@ namespace NuGetVSExtension
                     //    (the same logical NuGet MCP tool can be exposed under different Group values
                     //    depending on how it was installed â€” in-VS vs. Anthropic/GitHub MCP registry).
                     IReadOnlyList<CopilotFunctionDescriptor>? functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
-                    if (!IsAvailable(functions, requiredServerNameOfFunction, acceptableGroups))
+                    if (!IsAvailable(functions, mcpToolName, acceptableMCPServerNames))
                     {
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
                     }
@@ -100,14 +100,14 @@ namespace NuGetVSExtension
 
         internal static bool IsAvailable(
             IReadOnlyList<CopilotFunctionDescriptor>? functions,
-            string requiredServerNameOfFunction,
-            IReadOnlyCollection<string> acceptableGroups)
+            string mcpToolName,
+            IReadOnlyCollection<string> acceptableMCPServerNames)
         {
             return functions?
                 .OfType<CopilotMcpFunctionDescriptor>()
-                .Any(f => string.Equals(f.ServerNameOfFunction, requiredServerNameOfFunction, StringComparison.Ordinal)
+                .Any(f => string.Equals(f.ServerNameOfFunction, mcpToolName, StringComparison.Ordinal)
                        && f.Group is not null
-                       && acceptableGroups.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
+                       && acceptableMCPServerNames.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
         }
     }
 }

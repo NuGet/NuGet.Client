@@ -11,17 +11,17 @@ namespace NuGet.PackageManagement.VisualStudio
         // Must match the tool name defined in the NuGet MCP Server.
         public const string NuGetSolverToolName = "fix_vulnerable_packages";
 
-        // Group name when the NuGet MCP server is shipped inside Visual Studio.
-        public const string NuGetVisualStudioGroupName = "NuGet";
+        // This value must match the server name registered in mcp.json. Keep both in sync.
+        public const string NuGetMCPServerName = "NuGet";
 
-        // Group name when the NuGet MCP server is installed via the Anthropic or GitHub MCP Registry.
-        public const string NuGetMcpRegistryGroupName = "com.microsoft/nuget";
+        // MCP server name when the NuGet MCP server is installed via the Anthropic or GitHub MCP Registry.
+        public const string ComMicrosoftNuGetMCPServerName = "com.microsoft/nuget";
 
-        // Groups under which a NuGet MCP tool may legitimately be exposed.
-        public static readonly IReadOnlyCollection<string> NuGetMCPServerGroupNames = new[]
+        // MCP server names under which a NuGet MCP tool may legitimately be exposed.
+        public static readonly IReadOnlyCollection<string> NuGetMCPServerNames = new[]
         {
-            NuGetVisualStudioGroupName,
-            NuGetMcpRegistryGroupName,
+            NuGetMCPServerName,
+            ComMicrosoftNuGetMCPServerName,
         };
     }
 }

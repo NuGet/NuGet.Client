@@ -20,13 +20,13 @@ namespace NuGet.Tools.Test
         // so any test that accidentally relies on DisplayName matching breaks.
         private const string UnrelatedDisplayName = "User-Facing Fix Vulnerable Packages";
 
-        private static readonly IReadOnlyCollection<string> AcceptableGroups = McpServerConstants.NuGetMCPServerGroupNames;
+        private static readonly IReadOnlyCollection<string> AcceptableGroups = McpServerConstants.NuGetMCPServerNames;
 
         private static readonly ServiceMoniker TestServiceMoniker = new("test.moniker");
 
         private static CopilotMcpFunctionDescriptor CreateMcpDescriptor(
             string serverNameOfFunction = ToolName,
-            string group = McpServerConstants.NuGetVisualStudioGroupName,
+            string group = McpServerConstants.NuGetMCPServerName,
             string? displayName = null,
             string? name = null)
         {
@@ -48,7 +48,7 @@ namespace NuGet.Tools.Test
         {
             var functions = new List<CopilotFunctionDescriptor>
             {
-                CreateMcpDescriptor(group: McpServerConstants.NuGetVisualStudioGroupName),
+                CreateMcpDescriptor(group: McpServerConstants.NuGetMCPServerName),
             };
 
             Assert.True(CopilotToolInvocationService.IsAvailable(functions, ToolName, AcceptableGroups));
@@ -59,7 +59,7 @@ namespace NuGet.Tools.Test
         {
             var functions = new List<CopilotFunctionDescriptor>
             {
-                CreateMcpDescriptor(group: McpServerConstants.NuGetMcpRegistryGroupName),
+                CreateMcpDescriptor(group: McpServerConstants.ComMicrosoftNuGetMCPServerName),
             };
 
             Assert.True(CopilotToolInvocationService.IsAvailable(functions, ToolName, AcceptableGroups));
@@ -82,7 +82,7 @@ namespace NuGet.Tools.Test
             // Group comparison is OrdinalIgnoreCase to match VS behavior: "nuget" matches "NuGet".
             var functions = new List<CopilotFunctionDescriptor>
             {
-                CreateMcpDescriptor(group: McpServerConstants.NuGetVisualStudioGroupName.ToLowerInvariant()),
+                CreateMcpDescriptor(group: McpServerConstants.NuGetMCPServerName.ToLowerInvariant()),
             };
 
             Assert.True(CopilotToolInvocationService.IsAvailable(functions, ToolName, AcceptableGroups));
@@ -143,11 +143,11 @@ namespace NuGet.Tools.Test
             // A non-MCP descriptor (e.g. a local Copilot function) must not match even if its Name
             // collides with the composed fully-qualified MCP tool name.
             var localFn = new CopilotLocalFunctionDescriptor(
-                name: $"mcp_{McpServerConstants.NuGetVisualStudioGroupName}_{ToolName}",
+                name: $"mcp_{McpServerConstants.NuGetMCPServerName}_{ToolName}",
                 description: "desc",
                 confirmation: CopilotConfirmationRequirement.NotRequired)
             {
-                Group = McpServerConstants.NuGetVisualStudioGroupName,
+                Group = McpServerConstants.NuGetMCPServerName,
             };
 
             var functions = new List<CopilotFunctionDescriptor> { localFn };
@@ -161,7 +161,7 @@ namespace NuGet.Tools.Test
             var functions = new List<CopilotFunctionDescriptor>
             {
                 CreateMcpDescriptor(serverNameOfFunction: "unrelated_tool"),
-                CreateMcpDescriptor(group: McpServerConstants.NuGetMcpRegistryGroupName),
+                CreateMcpDescriptor(group: McpServerConstants.ComMicrosoftNuGetMCPServerName),
             };
 
             Assert.True(CopilotToolInvocationService.IsAvailable(functions, ToolName, AcceptableGroups));
