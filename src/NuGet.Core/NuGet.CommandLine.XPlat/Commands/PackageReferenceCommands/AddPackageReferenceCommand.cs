@@ -121,7 +121,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     Frameworks = CommandLineUtility.SplitAndJoinAcrossMultipleValues(frameworkValues),
                     Sources = CommandLineUtility.SplitAndJoinAcrossMultipleValues(sourceValues),
-                    PackageDirectory = parseResult.GetValue(packageDirectory) ?? string.Empty,
+                    PackageDirectory = parseResult.GetValue(packageDirectory),
                     NoRestore = noRestoreValue,
                     NoVersion = noVersion,
                     DgFilePath = dgFilePathValue,

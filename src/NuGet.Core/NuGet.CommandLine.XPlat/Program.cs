@@ -171,7 +171,7 @@ namespace NuGet.CommandLine.XPlat
             catch (Exception e)
             {
                 LogException(e, log);
-                exitCode = ExitCodes.InvalidArguments;
+                exitCode = ExitCodes.Error;
             }
 
             // Limit the exit code range to 0-255 to support POSIX

@@ -30,10 +30,15 @@ namespace NuGet.CommandLine.XPlat
         {
             var listCommand = new Command("list", Strings.ListPkg_Description);
 
+            // The .NET SDK always resolves and forwards a concrete project/solution path to this command
+            // (both `dotnet package list` and the classic `dotnet list package` route through the SDK's
+            // PackageListCommand, which defaults to the current directory and resolves it to a file before
+            // invoking NuGet). ExactlyOne therefore only affects direct invocation of this executable, where
+            // omitting the path previously threw an ArgumentNullException; it now produces a clean parse error.
             var path = new Argument<string>("<PROJECT | SOLUTION>")
             {
                 Description = Strings.ListPkg_PathDescription,
-                Arity = ArgumentArity.ZeroOrOne
+                Arity = ArgumentArity.ExactlyOne
             };
 
             var framework = new Option<string[]>("--framework")
