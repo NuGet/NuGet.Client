@@ -36,6 +36,7 @@ namespace NuGetVSExtension
             return functions
                 .OfType<CopilotMcpFunctionDescriptor>()
                 .Any(f => string.Equals(f.ServerNameOfFunction, requiredServerNameOfFunction, StringComparison.Ordinal)
+                       && f.Group is not null
                        && acceptableGroups.Contains(f.Group, StringComparer.Ordinal));
         }
     }

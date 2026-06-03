@@ -114,6 +114,18 @@ namespace NuGet.Tools.Test
         }
 
         [Fact]
+        public void IsAvailable_NullGroup_ReturnsFalse()
+        {
+            // A descriptor with no Group cannot belong to any acceptable group.
+            var functions = new List<CopilotFunctionDescriptor>
+            {
+                CreateMcpDescriptor(group: null!),
+            };
+
+            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+        }
+
+        [Fact]
         public void IsAvailable_NullFunctions_ReturnsFalse()
         {
             Assert.False(McpToolMatcher.IsAvailable(functions: null, ToolServerName, AcceptableGroups));
