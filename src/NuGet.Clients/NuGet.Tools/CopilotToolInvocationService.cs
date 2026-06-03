@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
@@ -67,14 +68,11 @@ namespace NuGetVSExtension
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpToolServiceNotAvailable);
                     }
 
-                    // 5. Verify the required tool is available. See McpToolMatcher for the ServerNameOfFunction + Group rationale.
-                    IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
-                    if (functions is null)
-                    {
-                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
-                    }
-
-                    if (!McpToolMatcher.IsAvailable(functions, requiredServerNameOfFunction, acceptableGroups))
+                    // 5. Verify the required tool is available. We match on ServerNameOfFunction + Group
+                    //    (the same logical NuGet MCP tool can be exposed under different Group values
+                    //    depending on how it was installed â€” in-VS vs. Anthropic/GitHub MCP registry).
+                    IReadOnlyList<CopilotFunctionDescriptor>? functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
+                    if (!IsAvailable(functions, requiredServerNameOfFunction, acceptableGroups))
                     {
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
                     }
@@ -98,6 +96,18 @@ namespace NuGetVSExtension
                     (copilotService as IDisposable)?.Dispose();
                 }
             }
+        }
+
+        internal static bool IsAvailable(
+            IReadOnlyList<CopilotFunctionDescriptor>? functions,
+            string requiredServerNameOfFunction,
+            IReadOnlyCollection<string> acceptableGroups)
+        {
+            return functions?
+                .OfType<CopilotMcpFunctionDescriptor>()
+                .Any(f => string.Equals(f.ServerNameOfFunction, requiredServerNameOfFunction, StringComparison.Ordinal)
+                       && f.Group is not null
+                       && acceptableGroups.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
         }
     }
 }
