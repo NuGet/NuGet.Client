@@ -1409,7 +1409,9 @@ namespace NuGet.Tests.Apex
             nugetConsole.Clear();
 
             string escapedAbsoluteSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
-            string escapedParentDirectory = EscapePowerShellSingleQuotedString(Directory.GetParent(testContext.PackageSource)!.FullName);
+            DirectoryInfo? parentDirectory = Directory.GetParent(testContext.PackageSource);
+            Assert.IsNotNull(parentDirectory, $"Package source path '{testContext.PackageSource}' is expected to have a parent directory.");
+            string escapedParentDirectory = EscapePowerShellSingleQuotedString(parentDirectory.FullName);
             string escapedSourceLeafName = EscapePowerShellSingleQuotedString(Path.GetFileName(testContext.PackageSource));
             string escapedPackageName = EscapePowerShellSingleQuotedString(packageName);
 
@@ -1788,6 +1790,10 @@ namespace NuGet.Tests.Apex
             return line.Substring(start);
         }
 
+        /// <summary>
+        /// Creates a stable and prerelease package set used by Get-Package list and update scenarios.
+        /// Versions created: 1.0.0-a, 1.0.0-b, 1.0.0, 1.0.1-a.
+        /// </summary>
         private static async Task CreatePrereleaseTestPackageSetAsync(ApexTestContext testContext, string packageName)
         {
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0-a");
@@ -1796,6 +1802,9 @@ namespace NuGet.Tests.Apex
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.1-a");
         }
 
+        /// <summary>
+        /// Escapes single quotes for inclusion in PowerShell single-quoted strings.
+        /// </summary>
         private static string EscapePowerShellSingleQuotedString(string value)
         {
             return value.Replace("'", "''");
