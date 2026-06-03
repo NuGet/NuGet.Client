@@ -14,7 +14,7 @@ namespace NuGet.Tools.Test
 {
     public class McpToolMatcherTests
     {
-        private const string ToolServerName = McpServerConstants.NuGetSolverToolName;
+        private const string ToolName = McpServerConstants.NuGetSolverToolName;
 
         // Default DisplayName used by the test helper deliberately distinct from ToolServerName
         // so any test that accidentally relies on DisplayName matching breaks.
@@ -25,7 +25,7 @@ namespace NuGet.Tools.Test
         private static readonly ServiceMoniker TestServiceMoniker = new("test.moniker");
 
         private static CopilotMcpFunctionDescriptor CreateMcpDescriptor(
-            string serverNameOfFunction = ToolServerName,
+            string serverNameOfFunction = ToolName,
             string group = McpServerConstants.NuGetVisualStudioGroupName,
             string? displayName = null,
             string? name = null)
@@ -51,7 +51,7 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(group: McpServerConstants.NuGetVisualStudioGroupName),
             };
 
-            Assert.True(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.True(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(group: McpServerConstants.NuGetMcpRegistryGroupName),
             };
 
-            Assert.True(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.True(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(group: "someone.else/nuget"),
             };
 
-            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.False(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(group: McpServerConstants.NuGetVisualStudioGroupName.ToLowerInvariant()),
             };
 
-            Assert.True(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.True(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(serverNameOfFunction: "some_other_tool"),
             };
 
-            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.False(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -107,10 +107,10 @@ namespace NuGet.Tools.Test
             // different must not match.
             var functions = new List<CopilotFunctionDescriptor>
             {
-                CreateMcpDescriptor(serverNameOfFunction: "some_other_tool", displayName: ToolServerName),
+                CreateMcpDescriptor(serverNameOfFunction: "some_other_tool", displayName: ToolName),
             };
 
-            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.False(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -122,19 +122,19 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(group: null!),
             };
 
-            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.False(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
         public void IsAvailable_NullFunctions_ReturnsFalse()
         {
-            Assert.False(McpToolMatcher.IsAvailable(functions: null, ToolServerName, AcceptableGroups));
+            Assert.False(McpToolMatcher.IsAvailable(functions: null, ToolName, AcceptableGroups));
         }
 
         [Fact]
         public void IsAvailable_EmptyFunctions_ReturnsFalse()
         {
-            Assert.False(McpToolMatcher.IsAvailable(new List<CopilotFunctionDescriptor>(), ToolServerName, AcceptableGroups));
+            Assert.False(McpToolMatcher.IsAvailable(new List<CopilotFunctionDescriptor>(), ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace NuGet.Tools.Test
             // A non-MCP descriptor (e.g. a local Copilot function) must not match even if its Name
             // collides with the composed fully-qualified MCP tool name.
             var localFn = new CopilotLocalFunctionDescriptor(
-                name: $"mcp_{McpServerConstants.NuGetVisualStudioGroupName}_{ToolServerName}",
+                name: $"mcp_{McpServerConstants.NuGetVisualStudioGroupName}_{ToolName}",
                 description: "desc",
                 confirmation: CopilotConfirmationRequirement.NotRequired)
             {
@@ -152,7 +152,7 @@ namespace NuGet.Tools.Test
 
             var functions = new List<CopilotFunctionDescriptor> { localFn };
 
-            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.False(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(group: McpServerConstants.NuGetMcpRegistryGroupName),
             };
 
-            Assert.True(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
+            Assert.True(McpToolMatcher.IsAvailable(functions, ToolName, AcceptableGroups));
         }
     }
 }
