@@ -97,6 +97,7 @@
     <!-- S.S.C.Xml is a dependency of MSBuild. Once MSBuild no longer has a transitive dependency on a vulnerable version, this can be removed -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
+    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
     <PackageVersion Include="VsWebSite.Interop" Version="17.10.40173" />
     <PackageVersion Include="xunit" Version="2.9.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
