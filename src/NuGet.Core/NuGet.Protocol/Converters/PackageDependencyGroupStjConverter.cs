@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,7 +26,7 @@ namespace NuGet.Protocol.Converters
                 throw new JsonException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnexpectedJsonToken, reader.TokenType));
             }
 
-            NuGetFramework targetFramework = null;
+            NuGetFramework? targetFramework = null;
             var packages = new List<PackageDependency>();
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
@@ -45,8 +43,8 @@ namespace NuGet.Protocol.Converters
                 {
                     if (reader.TokenType != JsonTokenType.Null)
                     {
-                        var fw = reader.GetString();
-                        targetFramework = string.IsNullOrEmpty(fw) ? null : NuGetFramework.Parse(fw);
+                        string? fw = reader.GetString();
+                        targetFramework = string.IsNullOrEmpty(fw) ? null : NuGetFramework.Parse(fw!);
                     }
                 }
                 else if (string.Equals(propName, JsonProperties.Dependencies, StringComparison.OrdinalIgnoreCase))
@@ -55,7 +53,11 @@ namespace NuGet.Protocol.Converters
                     {
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            packages.Add(JsonSerializer.Deserialize(ref reader, PackageSearchJsonContext.Default.PackageDependency));
+                            PackageDependency? dependency = JsonSerializer.Deserialize(ref reader, PackageSearchJsonContext.Default.PackageDependency);
+                            if (dependency != null)
+                            {
+                                packages.Add(dependency);
+                            }
                         }
                     }
                     else if (reader.TokenType != JsonTokenType.Null)
