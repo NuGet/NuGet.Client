@@ -566,7 +566,7 @@ namespace Dotnet.Integration.Test
                     $"add {projectA.ProjectPath} package packageX --no-restore",
                     testOutputHelper: _testOutputHelper);
 
-                // Disable implicit reference assembly packages to avoid needing Microsoft.NETFramework.ReferenceAssemblies from NuGet
+                // Disable implicit reference assembly packages to avoid needing Microsoft.NETFramework.ReferenceAssemblies
                 var doc = XDocument.Load(projectA.ProjectPath);
                 doc.Root.Element(XName.Get("PropertyGroup")).Add(new XElement(XName.Get("AutomaticallyUseReferenceAssemblyPackages"), "false"));
                 doc.Save(projectA.ProjectPath);
@@ -641,7 +641,6 @@ namespace Dotnet.Integration.Test
         {
             using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
-
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net461");
 
                 projectA.Properties.Add("RuntimeIdentifiers", "win;win-x86;win-x64");
