@@ -29,7 +29,7 @@ namespace NuGetVSExtension
             CopilotClientId clientId,
             CopilotCorrelationId correlationId,
             string mcpToolName,
-            IReadOnlyCollection<string> acceptableMCPServerNames,
+            IReadOnlyCollection<string> acceptableGroups,
             CancellationToken cancellationToken)
         {
             // 1. Check if the user is signed-in to GitHub Copilot
@@ -72,7 +72,7 @@ namespace NuGetVSExtension
                     //    (the same logical NuGet MCP tool can be exposed under different Group values
                     //    depending on how it was installed â€” in-VS vs. Anthropic/GitHub MCP registry).
                     IReadOnlyList<CopilotFunctionDescriptor>? functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
-                    if (!IsAvailable(functions, mcpToolName, acceptableMCPServerNames))
+                    if (!IsAvailable(functions, mcpToolName, acceptableGroups))
                     {
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
                     }
