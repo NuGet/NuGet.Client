@@ -1392,6 +1392,244 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [DataTestMethod]
+        [DataRow("absolute")]
+        [DataRow("relativeLeafFromParent")]
+        [DataRow("relativeDotFromSource")]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageFromPMCWithPathSource_ReturnsAvailablePackagesAsync(string sourceMode)
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "PathSourcePackage";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string escapedAbsoluteSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            string escapedParentDirectory = EscapePowerShellSingleQuotedString(Directory.GetParent(testContext.PackageSource)!.FullName);
+            string escapedSourceLeafName = EscapePowerShellSingleQuotedString(Path.GetFileName(testContext.PackageSource));
+            string escapedPackageName = EscapePowerShellSingleQuotedString(packageName);
+
+            switch (sourceMode)
+            {
+                case "absolute":
+                    nugetConsole.Execute($"Get-Package -ListAvailable -Source '{escapedAbsoluteSource}' -Filter '{escapedPackageName}'");
+                    break;
+                case "relativeLeafFromParent":
+                    nugetConsole.Execute($"Set-Location '{escapedParentDirectory}'");
+                    nugetConsole.Execute($"Get-Package -ListAvailable -Source '{escapedSourceLeafName}' -Filter '{escapedPackageName}'");
+                    break;
+                case "relativeDotFromSource":
+                    nugetConsole.Execute($"Set-Location '{escapedAbsoluteSource}'");
+                    nugetConsole.Execute($"Get-Package -ListAvailable -Source '.' -Filter '{escapedPackageName}'");
+                    break;
+                default:
+                    Assert.Fail($"Unknown source mode: {sourceMode}");
+                    return;
+            }
+
+            string pmcText = nugetConsole.GetText();
+            ParseGetPackageTableOutput(pmcText).Should().ContainSingle(p => p.Id == packageName, because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageFromPMCWithListAvailableFilter_FindsReleaseNotesPackageAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "ReleaseNotesPackage";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0");
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -ListAvailable -Source '{escapedSource}' -Filter '{packageName}'");
+
+            string pmcText = nugetConsole.GetText();
+            ParseGetPackageTableOutput(pmcText).Should().ContainSingle(p => p.Id == packageName, because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageFromPMCWithoutPrereleaseSwitch_HidesPrereleaseVersionsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "PreReleaseListPackage";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -ListAvailable -Source '{escapedSource}' -Filter '{packageName}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.0", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.1-a", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.0-a", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.0-b", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageFromPMCWithAllVersionsWithoutPrereleaseSwitch_HidesPrereleaseVersionsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "PreReleaseAllVersionsPackage";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -ListAvailable -AllVersions -Source '{escapedSource}' -Filter '{packageName}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.0", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.1-a", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.0-a", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.0-b", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageFromPMCWithPrereleaseSwitch_ShowsPrereleaseVersionAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "PreReleaseEnabledPackage";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -ListAvailable -Prerelease -Source '{escapedSource}' -Filter '{packageName}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.1-a", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageFromPMCWithAllVersionsAndPrereleaseSwitch_ShowsAllVersionsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "PreReleaseAllWithFlagPackage";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -ListAvailable -AllVersions -Prerelease -Source '{escapedSource}' -Filter '{packageName}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.1-a", because: pmcText);
+            packageEntry.Versions.Should().Contain("1.0.0", because: pmcText);
+            packageEntry.Versions.Should().Contain("1.0.0-a", because: pmcText);
+            packageEntry.Versions.Should().Contain("1.0.0-b", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageUpdatesFromPMCWithoutPrereleaseSwitch_DoesNotReturnPrereleaseUpdateAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "PreReleaseUpdatePackageNoFlag";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.InstallPackageFromPMC(packageName, "1.0.0-b");
+
+            nugetConsole.Clear();
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -Updates -Source '{escapedSource}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.0", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.1-a", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageUpdatesFromPMCWithPrereleaseSwitch_ReturnsPrereleaseUpdateAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "PreReleaseUpdatePackageWithFlag";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.InstallPackageFromPMC(packageName, "1.0.0-a");
+
+            nugetConsole.Clear();
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -Updates -Prerelease -Source '{escapedSource}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.1-a", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageUpdatesFromPMCWithAllVersionsSwitch_ReturnsStableVersionAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "PreReleaseUpdatePackageAllVersions";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.InstallPackageFromPMC(packageName, "1.0.0-a");
+
+            nugetConsole.Clear();
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -Updates -AllVersions -Source '{escapedSource}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.0", because: pmcText);
+            packageEntry.Versions.Should().NotContain("1.0.1-a", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task GetPackageUpdatesFromPMCWithAllVersionsAndPrereleaseSwitch_ReturnsAllEligibleUpdatesAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "PreReleaseUpdatePackageAllFlags";
+            await CreatePrereleaseTestPackageSetAsync(testContext, packageName);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.InstallPackageFromPMC(packageName, "1.0.0-b");
+
+            nugetConsole.Clear();
+            string escapedSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
+            nugetConsole.Execute($"Get-Package -Updates -AllVersions -Prerelease -Source '{escapedSource}'");
+
+            string pmcText = nugetConsole.GetText();
+            var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
+            packageEntry.Versions.Should().Contain("1.0.1-a", because: pmcText);
+            packageEntry.Versions.Should().Contain("1.0.0", because: pmcText);
+        }
+
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void GetProject_CanAccessProjectName()
@@ -1548,6 +1786,19 @@ namespace NuGet.Tests.Apex
             }
 
             return line.Substring(start);
+        }
+
+        private static async Task CreatePrereleaseTestPackageSetAsync(ApexTestContext testContext, string packageName)
+        {
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0-a");
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0-b");
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0");
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.1-a");
+        }
+
+        private static string EscapePowerShellSingleQuotedString(string value)
+        {
+            return value.Replace("'", "''");
         }
     }
 }
