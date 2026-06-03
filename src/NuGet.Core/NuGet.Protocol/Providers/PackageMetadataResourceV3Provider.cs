@@ -13,9 +13,17 @@ namespace NuGet.Protocol
 {
     public class PackageMetadataResourceV3Provider : ResourceProvider
     {
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
+
         public PackageMetadataResourceV3Provider()
+            : this(null)
+        {
+        }
+
+        internal PackageMetadataResourceV3Provider(IEnvironmentVariableReader environmentVariableReader)
             : base(typeof(PackageMetadataResource), nameof(PackageMetadataResourceV3Provider), nameof(PackageMetadataResourceV2FeedProvider))
         {
+            _environmentVariableReader = environmentVariableReader;
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -38,7 +46,7 @@ namespace NuGet.Protocol
                     reportAbuseResource,
                     packageDetailsUriResource,
                     readmeResource,
-                    EnvironmentVariableWrapper.Instance);
+                    _environmentVariableReader);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

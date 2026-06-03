@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Converters;
 using NuGet.Protocol.Model;
 
@@ -11,7 +12,7 @@ namespace NuGet.Protocol.Utility
 #pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-        Converters = [typeof(VersionRangeStjConverter), typeof(ServiceIndexEntryStringOrArrayConverter), typeof(NuGetVersionStjConverter), typeof(PackageDependencyGroupStjConverter), typeof(PackageDependencyStjConverter)])]
+        Converters = [typeof(VersionRangeStjConverter), typeof(ServiceIndexEntryStringOrArrayConverter), typeof(NuGetVersionStjConverter), typeof(PackageDependencyGroupStjConverter)])]
 #pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSerializable(typeof(HttpFileSystemBasedFindPackageByIdResource.FlatContainerVersionList))]
     [JsonSerializable(typeof(IReadOnlyList<V3VulnerabilityIndexEntry>), TypeInfoPropertyName = "VulnerabilityIndex")]
@@ -21,6 +22,7 @@ namespace NuGet.Protocol.Utility
     [JsonSerializable(typeof(string[]))]
     [JsonSerializable(typeof(RegistrationIndex))]
     [JsonSerializable(typeof(RegistrationPage))]
+    [JsonSerializable(typeof(PackageDependency))]
     internal partial class JsonContext : JsonSerializerContext
     {
     }
