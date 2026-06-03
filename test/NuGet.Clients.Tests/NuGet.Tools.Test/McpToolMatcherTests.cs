@@ -27,7 +27,6 @@ namespace NuGet.Tools.Test
         private static CopilotMcpFunctionDescriptor CreateMcpDescriptor(
             string serverNameOfFunction = ToolServerName,
             string group = McpServerConstants.NuGetVisualStudioGroupName,
-            bool isError = false,
             string? displayName = null,
             string? name = null)
         {
@@ -41,7 +40,6 @@ namespace NuGet.Tools.Test
                 confirmation: CopilotConfirmationRequirement.NotRequired)
             {
                 Group = group,
-                IsError = isError,
             };
         }
 
@@ -110,17 +108,6 @@ namespace NuGet.Tools.Test
             var functions = new List<CopilotFunctionDescriptor>
             {
                 CreateMcpDescriptor(serverNameOfFunction: "some_other_tool", displayName: ToolServerName),
-            };
-
-            Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
-        }
-
-        [Fact]
-        public void IsAvailable_IsErrorTrue_ReturnsFalse()
-        {
-            var functions = new List<CopilotFunctionDescriptor>
-            {
-                CreateMcpDescriptor(isError: true),
             };
 
             Assert.False(McpToolMatcher.IsAvailable(functions, ToolServerName, AcceptableGroups));
