@@ -194,6 +194,7 @@ stages:
         testType: Functional
         testTargetFramework: sdkNext
         testProjectName: Dotnet.Integration.Test
+        useDotNetBuild: true
         timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
