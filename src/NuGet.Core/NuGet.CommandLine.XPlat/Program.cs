@@ -171,7 +171,10 @@ namespace NuGet.CommandLine.XPlat
             catch (Exception e)
             {
                 LogException(e, log);
-                exitCode = ExitCodes.Error;
+                // Commands that let exceptions propagate to here (e.g. push, source, client-cert)
+                // have historically returned exit code 1 on failure. Preserve that contract rather
+                // than returning ExitCodes.Error (2), which is reserved for commands that set it explicitly.
+                exitCode = 1;
             }
 
             // Limit the exit code range to 0-255 to support POSIX
