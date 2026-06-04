@@ -125,6 +125,10 @@ namespace NuGet.PackageManagement.Test.Telemetry
         [InlineData(FixVulnerabilitiesWithCopilotErrorType.CopilotServiceNotAvailable)]
         [InlineData(FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable)]
         [InlineData(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied)]
+        [InlineData(FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable)]
+        [InlineData(FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable)]
+        [InlineData(FixVulnerabilitiesWithCopilotErrorType.McpServerStateNotAvailable)]
+        [InlineData(FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive)]
         public void CreateWithVulnerabilityInfoBarFixWithCopilot_WithAllErrorTypes_CreatesEventWithCorrectProperties(FixVulnerabilitiesWithCopilotErrorType errorType)
         {
             // Arrange

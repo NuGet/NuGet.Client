@@ -133,6 +133,24 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet MCP Server is not active. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again..
+        /// </summary>
+        internal static string Error_McpServerNotActive {
+            get {
+                return ResourceManager.GetString("Error_McpServerNotActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet MCP Server is not available. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again..
+        /// </summary>
+        internal static string Error_McpServerStateNotAvailable {
+            get {
+                return ResourceManager.GetString("Error_McpServerStateNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MCP Tool Service is not available. Please ensure GitHub Copilot is installed and signed in..
         /// </summary>
         internal static string Error_McpToolServiceNotAvailable {

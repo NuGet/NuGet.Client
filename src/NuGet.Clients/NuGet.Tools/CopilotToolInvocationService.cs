@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
+using Microsoft.VisualStudio.Copilot.Internal.Mcp;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using NuGet.VisualStudio;
@@ -22,7 +23,7 @@ namespace NuGetVSExtension
         private const string AuthStatusDetermined = "c936efcc-6baa-4ad3-9c2b-7ba750acf18f";
         private static readonly Guid CopilotReadyUIContext = new(AuthStatusDetermined);
 
-        [Import(typeof(SVsFullAccessServiceBroker))]
+        [Import(typeof(SVsFullAccessServiceBroker), AllowDefault = true)]
         public IServiceBroker? ServiceBroker { get; set; }
 
         public async Task<CopilotToolSessionResult> TryCreateToolSessionAsync(
@@ -54,12 +55,33 @@ namespace NuGetVSExtension
             bool ownershipTransferred = false;
             try
             {
+                // 3. Verify the required MCP server is registered and active
+                IMcpServerInfoService? mcpServerInfoService = await ServiceBroker.GetProxyAsync<IMcpServerInfoService>(McpServiceIdentities.ServerInfoService.Descriptor, cancellationToken);
+                using (mcpServerInfoService as IDisposable)
+                {
+                    if (mcpServerInfoService is null)
+                    {
+                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerInfoServiceNotAvailable);
+                    }
+
+                    McpServerState? state = await mcpServerInfoService.GetServerStateAsync(requiredServerName, cancellationToken);
+                    if (state is null)
+                    {
+                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerStateNotAvailable);
+                    }
+
+                    if (!(state.Value == McpServerState.Active || state.Value == McpServerState.Suspended))
+                    {
+                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerNotActive);
+                    }
+                }
+
                 if (copilotService is null)
                 {
                     return CopilotToolSessionResult.Failure(CopilotToolSessionError.CopilotServiceNotAvailable);
                 }
 
-                // 4. Acquire MCP tool function provider and get available functions
+                // 5. Acquire MCP tool function provider and get available functions
                 ICopilotFunctionProvider? cfp = await ServiceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
                 using (cfp as IDisposable)
                 {
@@ -77,7 +99,7 @@ namespace NuGetVSExtension
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
                     }
 
-                    // 6. Start Copilot thread
+                    // 7. Start Copilot thread
                     CopilotThreadOptions options = new(clientId);
                     CopilotThread thread = await copilotService.StartThreadAsync(options, cancellationToken);
 

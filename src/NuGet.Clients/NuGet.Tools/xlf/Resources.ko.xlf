@@ -37,6 +37,16 @@
         <target state="translated">GitHub Copilot 서비스를 사용할 수 없습니다. GitHub Copilot이 설치되어 있고 로그인되어 있는지 확인하세요.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
+      <trans-unit id="Error_McpServerNotActive">
+        <source>The NuGet MCP Server is not active. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
+        <target state="new">The NuGet MCP Server is not active. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
+      <trans-unit id="Error_McpServerStateNotAvailable">
+        <source>The NuGet MCP Server is not available. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
+        <target state="new">The NuGet MCP Server is not available. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
       <trans-unit id="Error_McpToolServiceNotAvailable">
         <source>MCP Tool Service is not available. Please ensure GitHub Copilot is installed and signed in.</source>
         <target state="translated">MCP 도구 서비스를 사용할 수 없습니다. GitHub Copilot이 설치되어 있고 로그인되어 있는지 확인하세요.</target>
