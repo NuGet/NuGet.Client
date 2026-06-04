@@ -29,7 +29,7 @@ namespace NuGetVSExtension
             CopilotClientId clientId,
             CopilotCorrelationId correlationId,
             string mcpToolName,
-            IReadOnlyCollection<string> acceptableGroups,
+            IReadOnlyCollection<string> acceptableMcpServerNames,
             CancellationToken cancellationToken)
         {
             // 1. Check if the user is signed-in to GitHub Copilot
@@ -72,7 +72,7 @@ namespace NuGetVSExtension
                     //    (the same logical NuGet MCP tool can be exposed under different Group values
                     //    depending on how it was installed â€” in-VS vs. Anthropic/GitHub MCP registry).
                     IReadOnlyList<CopilotFunctionDescriptor>? functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
-                    if (!IsAvailable(functions, mcpToolName, acceptableGroups))
+                    if (!IsAvailable(functions, mcpToolName, acceptableMcpServerNames))
                     {
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
                     }
@@ -101,13 +101,13 @@ namespace NuGetVSExtension
         internal static bool IsAvailable(
             IReadOnlyList<CopilotFunctionDescriptor>? functions,
             string mcpToolName,
-            IReadOnlyCollection<string> acceptableMCPServerNames)
+            IReadOnlyCollection<string> acceptableMcpServerNames)
         {
             return functions?
                 .OfType<CopilotMcpFunctionDescriptor>()
                 .Any(f => string.Equals(f.ServerNameOfFunction, mcpToolName, StringComparison.Ordinal)
                        && f.Group is not null
-                       && acceptableMCPServerNames.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
+                       && acceptableMcpServerNames.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
         }
     }
 }
