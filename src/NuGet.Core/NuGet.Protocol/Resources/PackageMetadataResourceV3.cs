@@ -172,24 +172,23 @@ namespace NuGet.Protocol
         /// <param name="stream">Stream data to read.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private async Task<T> DeserializeStreamDataAsync<T>(Stream stream, CancellationToken token)
+        private Task<T> DeserializeStreamDataAsync<T>(Stream stream, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
             if (stream == null)
             {
-                return default(T);
+                return Task.FromResult(default(T));
             }
 
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
             {
-                return await DeserializeStreamDataWithStjAsync<T>(stream, token);
+                return DeserializeStreamDataWithStjAsync<T>(stream, token);
             }
-            else
-            {
-                return DeserializeStreamDataWithNsj<T>(stream);
-            }
+
+            return NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader)
+                ? DeserializeStreamDataWithStjAsync<T>(stream, token)
+                : Task.FromResult(DeserializeStreamDataWithNsj<T>(stream));
         }
 
         private static async Task<T> DeserializeStreamDataWithStjAsync<T>(Stream stream, CancellationToken token)

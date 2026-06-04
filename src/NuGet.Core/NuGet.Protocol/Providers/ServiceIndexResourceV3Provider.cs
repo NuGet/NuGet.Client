@@ -193,17 +193,16 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
+        private Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
             {
-                return await ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token);
+                return ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token);
             }
-            else
-            {
-                return await ConsumeServiceIndexStreamNsjAsync(stream, utcNow, source, token);
-            }
+
+            return NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader)
+                ? ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token)
+                : ConsumeServiceIndexStreamNsjAsync(stream, utcNow, source, token);
         }
 
         private static async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamStjAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)

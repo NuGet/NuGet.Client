@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json.Serialization;
+#if !NET8_0_OR_GREATER
 using Newtonsoft.Json;
+#endif
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
@@ -37,7 +39,9 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Range of versions allowed for the depenency
         /// </summary>
+#if !NET8_0_OR_GREATER
         [JsonProperty(PropertyName = "range")]
+#endif
         [JsonPropertyName("range")]
         public VersionRange VersionRange
         {
@@ -49,7 +53,9 @@ namespace NuGet.Packaging.Core
         {
         }
 
+#if !NET8_0_OR_GREATER
         [Newtonsoft.Json.JsonConstructor]
+#endif
         [System.Text.Json.Serialization.JsonConstructor]
         public PackageDependency(string id, VersionRange? versionRange)
             : this(id, versionRange, include: null, exclude: null)

@@ -9,6 +9,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NuGet.Protocol.Converters;
+using NuGet.Shared;
 
 namespace NuGet.Protocol
 {
@@ -25,30 +26,57 @@ namespace NuGet.Protocol
 #endif
         private static class NsjSettingsHolder
         {
-            internal static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
-            {
-                MaxDepth = JsonSerializationMaxDepth,
-                NullValueHandling = NullValueHandling.Ignore,
-                TypeNameHandling = TypeNameHandling.None,
-                Converters = new List<JsonConverter>
-                {
-                    new NuGetVersionConverter(),
-                    new VersionInfoConverter(),
-                    new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
-                    new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
-                    new FingerprintsConverter(),
-                    new VersionRangeConverter(),
-                    new PackageVulnerabilityInfoConverter(),
-                    new NuGetFrameworkConverter()
-                },
-            };
-
+            internal static readonly JsonSerializerSettings Settings = CreateSettings();
             internal static readonly JsonSerializer Serializer = JsonSerializer.Create(Settings);
+
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+            private static JsonSerializerSettings CreateSettings()
+            {
+                return new JsonSerializerSettings
+                {
+                    MaxDepth = JsonSerializationMaxDepth,
+                    NullValueHandling = NullValueHandling.Ignore,
+                    TypeNameHandling = TypeNameHandling.None,
+                    Converters = new List<JsonConverter>
+                    {
+                        new NuGetVersionConverter(),
+                        new VersionInfoConverter(),
+                        new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
+                        new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
+                        new FingerprintsConverter(),
+                        new VersionRangeConverter(),
+                        new PackageVulnerabilityInfoConverter(),
+                        new NuGetFrameworkConverter()
+                    },
+                };
+            }
         }
 
-        public static JsonSerializerSettings ObjectSerializationSettings => NsjSettingsHolder.Settings;
+        public static JsonSerializerSettings ObjectSerializationSettings
+        {
+            get
+            {
+                if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+                {
+                    throw new InvalidOperationException("ObjectSerializationSettings should not be accessed when STJ is enabled.");
+                }
 
-        internal static JsonSerializer JsonObjectSerializer => NsjSettingsHolder.Serializer;
+                return NsjSettingsHolder.Settings;
+            }
+        }
+
+        internal static JsonSerializer JsonObjectSerializer
+        {
+            get
+            {
+                if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+                {
+                    throw new InvalidOperationException("JsonObjectSerializer should not be accessed when STJ is enabled.");
+                }
+
+                return NsjSettingsHolder.Serializer;
+            }
+        }
 
         /// <summary>
         /// Serialize object to the JSON.

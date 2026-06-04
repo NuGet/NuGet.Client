@@ -286,22 +286,21 @@ namespace NuGet.Protocol
             return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token)).Data;
         }
 
-        private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
+        private Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
         {
             if (httpInitialResponse == null)
             {
-                return null;
+                return Task.FromResult<V3SearchResults>(null);
             }
 
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
             {
-                return await ProcessHttpStreamWithStjAsync(httpInitialResponse, take, token);
+                return ProcessHttpStreamWithStjAsync(httpInitialResponse, take, token);
             }
-            else
-            {
-                return await ProcessHttpStreamWithNsjAsync(httpInitialResponse, take, token);
-            }
+
+            return NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader)
+                ? ProcessHttpStreamWithStjAsync(httpInitialResponse, take, token)
+                : ProcessHttpStreamWithNsjAsync(httpInitialResponse, take, token);
         }
 
         private static async Task<V3SearchResults> ProcessHttpStreamWithStjAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)

@@ -5,11 +5,12 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Xml;
-using Newtonsoft.Json;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 
 namespace NuGet.Protocol
 {
@@ -27,6 +28,44 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(stream));
             }
 
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                ValidateJsonWithStj(uri, stream);
+                return;
+            }
+
+            ValidateJsonWithNsj(uri, stream);
+        }
+
+        private static void ValidateJsonWithStj(string uri, Stream stream)
+        {
+            try
+            {
+                using (var doc = JsonDocument.Parse(stream))
+                {
+                    if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                    {
+                        throw new JsonException("The JSON document is not an object.");
+                    }
+                }
+            }
+            catch (Exception e) when (!(e is InvalidDataException))
+            {
+                string message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Protocol_InvalidJsonObject,
+                    uri);
+
+                throw new InvalidDataException(message, e);
+            }
+        }
+
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "This code path is only reachable when the STJ feature switch is disabled.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "This code path is only reachable when the STJ feature switch is disabled.")]
+#endif
+        private static void ValidateJsonWithNsj(string uri, Stream stream)
+        {
             try
             {
                 using (var reader = new StreamReader(
@@ -35,12 +74,12 @@ namespace NuGet.Protocol
                     detectEncodingFromByteOrderMarks: false,
                     bufferSize: 4096,
                     leaveOpen: true))
-                using (var jsonReader = new JsonTextReader(reader) { CloseInput = false })
+                using (var jsonReader = new Newtonsoft.Json.JsonTextReader(reader) { CloseInput = false })
                 {
                     var firstTokenFound = jsonReader.Read();
-                    if (!firstTokenFound || jsonReader.TokenType != JsonToken.StartObject)
+                    if (!firstTokenFound || jsonReader.TokenType != Newtonsoft.Json.JsonToken.StartObject)
                     {
-                        throw new JsonReaderException("The JSON document is not an object.");
+                        throw new Newtonsoft.Json.JsonReaderException("The JSON document is not an object.");
                     }
 
                     while (jsonReader.Read())
@@ -49,7 +88,7 @@ namespace NuGet.Protocol
 
                     if (jsonReader.Depth != 0)
                     {
-                        throw new JsonReaderException("The JSON document is not complete.");
+                        throw new Newtonsoft.Json.JsonReaderException("The JSON document is not complete.");
                     }
                 }
             }
@@ -173,7 +212,7 @@ namespace NuGet.Protocol
 
                     if (xmlReader.Depth != 0)
                     {
-                        throw new JsonReaderException("The XML document is not complete.");
+                        throw new XmlException("The XML document is not complete.");
                     }
                 }
             }

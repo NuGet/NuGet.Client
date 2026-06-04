@@ -12,6 +12,10 @@ namespace NuGet.RuntimeModel
     ///
     /// This is non-private only to facilitate unit testing.
     /// </summary>
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("JsonObjectWriter uses Newtonsoft.Json which is not compatible with trimming/AOT.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("JsonObjectWriter uses Newtonsoft.Json which is not compatible with trimming/AOT.")]
+#endif
     public sealed class JsonObjectWriter : IObjectWriter, IDisposable
     {
         private readonly JsonWriter _writer;

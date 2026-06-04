@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+#if !NET8_0_OR_GREATER
 using Newtonsoft.Json;
+#endif
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
@@ -19,7 +21,9 @@ namespace NuGet.Packaging
         private readonly NuGetFramework _targetFramework;
         private readonly IEnumerable<PackageDependency> _packages;
 
+#if !NET8_0_OR_GREATER
         [JsonConstructor]
+#endif
         private PackageDependencyGroup(NuGetFramework? targetFramework)
         {
             if (targetFramework == null)
@@ -58,7 +62,9 @@ namespace NuGet.Packaging
         /// <summary>
         /// Dependency group target framework
         /// </summary>
+#if !NET8_0_OR_GREATER
         [JsonProperty(PropertyName = "targetFramework")]
+#endif
         public NuGetFramework TargetFramework
         {
             get { return _targetFramework; }
@@ -67,7 +73,9 @@ namespace NuGet.Packaging
         /// <summary>
         /// Package dependencies
         /// </summary>
+#if !NET8_0_OR_GREATER
         [JsonProperty(PropertyName = "dependencies")]
+#endif
         public IEnumerable<PackageDependency> Packages
         {
             get { return _packages; }

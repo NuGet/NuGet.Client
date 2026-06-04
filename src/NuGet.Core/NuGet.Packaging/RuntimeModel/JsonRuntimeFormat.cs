@@ -14,6 +14,12 @@ namespace NuGet.RuntimeModel
 {
     public static class JsonRuntimeFormat
     {
+        private const string NsjRucMessage = "This method uses Newtonsoft.Json which is not compatible with trimming/AOT. Use the System.Text.Json-based overloads when NuGet.UseSystemTextJsonDeserialization is enabled.";
+
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjRucMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjRucMessage)]
+#endif
         public static RuntimeGraph ReadRuntimeGraph(string filePath)
         {
             using (var fileStream = File.OpenRead(filePath))
@@ -22,6 +28,10 @@ namespace NuGet.RuntimeModel
             }
         }
 
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjRucMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjRucMessage)]
+#endif
         public static RuntimeGraph ReadRuntimeGraph(Stream stream)
         {
             using (var streamReader = new StreamReader(stream))
@@ -30,6 +40,10 @@ namespace NuGet.RuntimeModel
             }
         }
 
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjRucMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjRucMessage)]
+#endif
         public static RuntimeGraph ReadRuntimeGraph(TextReader textReader)
         {
             var loadSettings = new JsonLoadSettings()
@@ -44,6 +58,10 @@ namespace NuGet.RuntimeModel
             }
         }
 
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjRucMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjRucMessage)]
+#endif
         public static void WriteRuntimeGraph(string filePath, RuntimeGraph runtimeGraph)
         {
             using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -58,6 +76,10 @@ namespace NuGet.RuntimeModel
             }
         }
 
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjRucMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjRucMessage)]
+#endif
         public static RuntimeGraph ReadRuntimeGraph(JToken json)
         {
             return new RuntimeGraph(

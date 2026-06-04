@@ -7,9 +7,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
@@ -231,13 +235,111 @@ namespace NuGet.Protocol
             var runtimeGraphFile = Path.Combine(expandedPath, RuntimeGraph.RuntimeGraphFileName);
             if (File.Exists(runtimeGraphFile))
             {
-                using (var stream = File.OpenRead(runtimeGraphFile))
+                if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
                 {
-                    return JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                    return ReadRuntimeGraphWithStj(runtimeGraphFile);
                 }
+
+                return ReadRuntimeGraphWithNsj(runtimeGraphFile);
             }
 
             return null;
+        }
+
+        private static RuntimeGraph ReadRuntimeGraphWithStj(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            using var doc = JsonDocument.Parse(stream);
+            var root = doc.RootElement;
+
+            var runtimes = new List<RuntimeDescription>();
+            var supports = new List<CompatibilityProfile>();
+
+            if (root.TryGetProperty("runtimes", out JsonElement runtimesElement))
+            {
+                foreach (JsonProperty runtimeProp in runtimesElement.EnumerateObject())
+                {
+                    runtimes.Add(ReadRuntimeDescriptionStj(runtimeProp));
+                }
+            }
+
+            if (root.TryGetProperty("supports", out JsonElement supportsElement))
+            {
+                foreach (JsonProperty supportProp in supportsElement.EnumerateObject())
+                {
+                    supports.Add(ReadCompatibilityProfileStj(supportProp));
+                }
+            }
+
+            return new RuntimeGraph(runtimes, supports);
+        }
+
+        private static RuntimeDescription ReadRuntimeDescriptionStj(JsonProperty prop)
+        {
+            List<string>? inheritedRuntimes = null;
+            List<RuntimeDependencySet>? dependencies = null;
+
+            foreach (JsonProperty child in prop.Value.EnumerateObject())
+            {
+                if (child.Name == "#import")
+                {
+                    inheritedRuntimes = new List<string>();
+                    foreach (JsonElement import in child.Value.EnumerateArray())
+                    {
+                        inheritedRuntimes.Add(import.GetString()!);
+                    }
+                }
+                else
+                {
+                    dependencies ??= new List<RuntimeDependencySet>();
+                    dependencies.Add(ReadRuntimeDependencySetStj(child));
+                }
+            }
+
+            return new RuntimeDescription(prop.Name, inheritedRuntimes, dependencies);
+        }
+
+        private static RuntimeDependencySet ReadRuntimeDependencySetStj(JsonProperty prop)
+        {
+            var deps = new List<RuntimePackageDependency>();
+            foreach (JsonProperty depProp in prop.Value.EnumerateObject())
+            {
+                deps.Add(new RuntimePackageDependency(depProp.Name, VersionRange.Parse(depProp.Value.GetString()!)));
+            }
+
+            return new RuntimeDependencySet(prop.Name, deps);
+        }
+
+        private static CompatibilityProfile ReadCompatibilityProfileStj(JsonProperty prop)
+        {
+            var sets = new List<FrameworkRuntimePair>();
+            foreach (JsonProperty frameworkProp in prop.Value.EnumerateObject())
+            {
+                var framework = NuGetFramework.Parse(frameworkProp.Name);
+                if (frameworkProp.Value.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (JsonElement elem in frameworkProp.Value.EnumerateArray())
+                    {
+                        sets.Add(new FrameworkRuntimePair(framework, elem.GetString()!));
+                    }
+                }
+                else if (frameworkProp.Value.ValueKind == JsonValueKind.String)
+                {
+                    sets.Add(new FrameworkRuntimePair(framework, frameworkProp.Value.GetString()!));
+                }
+            }
+
+            return new CompatibilityProfile(prop.Name, sets);
+        }
+
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "This code path is only reachable when the STJ feature switch is disabled (NSJ is active).")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "This code path is only reachable when the STJ feature switch is disabled (NSJ is active).")]
+#endif
+        private static RuntimeGraph ReadRuntimeGraphWithNsj(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            return JsonRuntimeFormat.ReadRuntimeGraph(stream);
         }
     }
 }
