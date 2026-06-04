@@ -14,14 +14,14 @@ namespace NuGet.Tools.Test
 {
     public class CopilotToolInvocationServiceTests
     {
-        private const string ToolName = McpServerConstants.NuGetSolverToolName;
+        private const string ValidNuGetToolName = McpServerConstants.NuGetSolverToolName;
 
         private static readonly IReadOnlyCollection<string> AcceptableGroups = McpServerConstants.NuGetMcpServerNames;
 
         private static readonly ServiceMoniker TestServiceMoniker = new("test.moniker");
 
         private static CopilotMcpFunctionDescriptor CreateMcpDescriptor(
-            string serverNameOfFunction = ToolName,
+            string serverNameOfFunction = ValidNuGetToolName,
             string group = McpServerConstants.NuGetMcpServerName,
             string? name = null)
         {
@@ -40,17 +40,17 @@ namespace NuGet.Tools.Test
 
         [Theory]
         // Group matching
-        [InlineData(McpServerConstants.NuGetMcpServerName, ToolName, null, true)]   // Visual Studio group
-        [InlineData(McpServerConstants.ComMicrosoftNuGetMcpServerName, ToolName, null, true)]   // MCP registry group
-        [InlineData("nuget", ToolName, null, true)]   // Group match is case-insensitive
-        [InlineData("someone.else/nuget", ToolName, null, false)]  // Unknown group
-        [InlineData(null, ToolName, null, false)]  // Null group
+        [InlineData(McpServerConstants.NuGetMcpServerName, ValidNuGetToolName, null, true)]   // Visual Studio group
+        [InlineData(McpServerConstants.ComMicrosoftNuGetMcpServerName, ValidNuGetToolName, null, true)]   // MCP registry group
+        [InlineData("nuget", ValidNuGetToolName, null, true)]   // Group match is case-insensitive
+        [InlineData("someone.else/nuget", ValidNuGetToolName, null, false)]  // Unknown group
+        [InlineData(null, ValidNuGetToolName, null, false)]  // Null group
         // ServerNameOfFunction matching
         [InlineData(McpServerConstants.NuGetMcpServerName, "some_other_tool", null, false)]  // Wrong ServerNameOfFunction
         [InlineData(McpServerConstants.NuGetMcpServerName, "FIX_VULNERABLE_PACKAGES", null, true)]  // ServerNameOfFunction match is case-insensitive
         // Regression guard: previous impl matched on CopilotFunctionDescriptor.Name; now we match on ServerNameOfFunction.
-        [InlineData(McpServerConstants.NuGetMcpServerName, "some_other_tool", ToolName, false)]  // Name matches but ServerNameOfFunction does not
-        public void IsAvailable_SingleMcpDescriptor_ReturnsExpected(
+        [InlineData(McpServerConstants.NuGetMcpServerName, "some_other_tool", ValidNuGetToolName, false)]  // Name matches but ServerNameOfFunction does not
+        public void IsToolAvailable_SingleMcpDescriptor_ReturnsExpected(
             string? group,
             string serverNameOfFunction,
             string? name,
@@ -61,23 +61,23 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(serverNameOfFunction: serverNameOfFunction, group: group!, name: name),
             };
 
-            Assert.Equal(expected, CopilotToolInvocationService.IsAvailable(functions, ToolName, AcceptableGroups));
+            Assert.Equal(expected, CopilotToolInvocationService.IsToolAvailable(functions, ValidNuGetToolName, AcceptableGroups));
         }
 
         [Fact]
-        public void IsAvailable_NullOrEmptyFunctions_ReturnsFalse()
+        public void IsToolAvailable_NullOrEmptyFunctions_ReturnsFalse()
         {
-            Assert.False(CopilotToolInvocationService.IsAvailable(functions: null, ToolName, AcceptableGroups));
-            Assert.False(CopilotToolInvocationService.IsAvailable(new List<CopilotFunctionDescriptor>(), ToolName, AcceptableGroups));
+            Assert.False(CopilotToolInvocationService.IsToolAvailable(functions: null, ValidNuGetToolName, AcceptableGroups));
+            Assert.False(CopilotToolInvocationService.IsToolAvailable(new List<CopilotFunctionDescriptor>(), ValidNuGetToolName, AcceptableGroups));
         }
 
         [Fact]
-        public void IsAvailable_NonMcpDescriptorWithMatchingName_ReturnsFalse()
+        public void IsToolAvailable_NonMcpDescriptorWithMatchingName_ReturnsFalse()
         {
             // A non-MCP descriptor (e.g. a local Copilot function) must not match even if its Name
             // collides with the composed fully-qualified MCP tool name.
             var localFn = new CopilotLocalFunctionDescriptor(
-                name: $"mcp_{McpServerConstants.NuGetMcpServerName}_{ToolName}",
+                name: $"mcp_{McpServerConstants.NuGetMcpServerName}_{ValidNuGetToolName}",
                 description: "desc",
                 confirmation: CopilotConfirmationRequirement.NotRequired)
             {
@@ -86,11 +86,11 @@ namespace NuGet.Tools.Test
 
             var functions = new List<CopilotFunctionDescriptor> { localFn };
 
-            Assert.False(CopilotToolInvocationService.IsAvailable(functions, ToolName, AcceptableGroups));
+            Assert.False(CopilotToolInvocationService.IsToolAvailable(functions, ValidNuGetToolName, AcceptableGroups));
         }
 
         [Fact]
-        public void IsAvailable_NoiseBeforeMatch_ReturnsTrue()
+        public void IsToolAvailable_NoiseBeforeMatch_ReturnsTrue()
         {
             var functions = new List<CopilotFunctionDescriptor>
             {
@@ -98,7 +98,7 @@ namespace NuGet.Tools.Test
                 CreateMcpDescriptor(group: McpServerConstants.ComMicrosoftNuGetMcpServerName),
             };
 
-            Assert.True(CopilotToolInvocationService.IsAvailable(functions, ToolName, AcceptableGroups));
+            Assert.True(CopilotToolInvocationService.IsToolAvailable(functions, ValidNuGetToolName, AcceptableGroups));
         }
     }
 }

@@ -72,7 +72,7 @@ namespace NuGetVSExtension
                     //    (the same logical NuGet MCP tool can be exposed under different Group values
                     //    depending on how it was installed â€” in-VS vs. Anthropic/GitHub MCP registry).
                     IReadOnlyList<CopilotFunctionDescriptor>? functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
-                    if (!IsAvailable(functions, mcpToolName, acceptableMcpServerNames))
+                    if (!IsToolAvailable(functions, mcpToolName, acceptableMcpServerNames))
                     {
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.ToolNotAvailable);
                     }
@@ -98,7 +98,7 @@ namespace NuGetVSExtension
             }
         }
 
-        internal static bool IsAvailable(
+        internal static bool IsToolAvailable(
             IReadOnlyList<CopilotFunctionDescriptor>? functions,
             string mcpToolName,
             IReadOnlyCollection<string> acceptableMcpServerNames)
