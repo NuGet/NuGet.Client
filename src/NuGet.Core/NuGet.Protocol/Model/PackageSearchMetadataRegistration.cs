@@ -20,6 +20,6 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.SubjectId)]
         [System.Text.Json.Serialization.JsonPropertyName("@id")]
         [System.Text.Json.Serialization.JsonInclude]
-        public Uri CatalogUri { get; private set; }
+        public Uri CatalogUri { get; internal set; }
     }
 }
