@@ -105,7 +105,7 @@ namespace NuGetVSExtension
         {
             return functions?
                 .OfType<CopilotMcpFunctionDescriptor>()
-                .Any(f => string.Equals(f.ServerNameOfFunction, mcpToolName, StringComparison.Ordinal)
+                .Any(f => string.Equals(f.ServerNameOfFunction, mcpToolName, StringComparison.OrdinalIgnoreCase)
                        && f.Group is not null
                        && acceptableMcpServerNames.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
         }
