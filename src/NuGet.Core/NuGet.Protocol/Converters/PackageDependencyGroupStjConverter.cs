@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol.Converters
 {
@@ -54,7 +53,7 @@ namespace NuGet.Protocol.Converters
                     {
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            PackageDependency? dependency = JsonSerializer.Deserialize(ref reader, JsonContext.Default.PackageDependency);
+                            PackageDependency? dependency = JsonSerializer.Deserialize(ref reader, PackageSearchJsonContext.Default.PackageDependency);
                             if (dependency != null)
                             {
                                 packages.Add(dependency);
