@@ -125,19 +125,25 @@ namespace NuGet.SolutionRestoreManager
 
         public void UpdateSolution_QueryDelayBuildAction(uint dwAction, out IVsTask pDelayTask)
         {
-            if (!_isMEFInitialized)
-            {
-                ThreadHelper.JoinableTaskFactory.Run(async () =>
+            // Force a yield before any work so this method returns immediately. Without the
+            // explicit switch to a background thread, awaits inside the lambda (e.g.
+            // GetComponentModelAsync once the service is cached) can complete synchronously and
+            // run MEF composition on the caller's thread before pDelayTask is assigned.
+            pDelayTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsyncAsVsTask(
+                VsTaskRunContext.UIThreadBackgroundPriority,
+                async (token) =>
                 {
-                    var componentModel = await _serviceProvider.GetComponentModelAsync();
-                    componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
+                    await TaskScheduler.Default.SwitchTo(alwaysYield: true);
+
+                    if (!_isMEFInitialized)
+                    {
+                        var componentModel = await _serviceProvider.GetComponentModelAsync();
+                        componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
+                        _isMEFInitialized = true;
+                    }
+
+                    return await RestoreAsync(dwAction, token);
                 });
-
-                _isMEFInitialized = true;
-            }
-
-            pDelayTask = SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsyncAsVsTask(
-                VsTaskRunContext.UIThreadBackgroundPriority, (token) => RestoreAsync(dwAction, token));
         }
 
         #endregion IVsUpdateSolutionEvents5
