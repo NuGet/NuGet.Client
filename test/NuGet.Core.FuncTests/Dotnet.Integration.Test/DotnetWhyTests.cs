@@ -208,11 +208,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
-#if SDK_CURRENT
-            Assert.Contains($"Required argument missing for command: 'why'.", result.AllOutput);
-#else
             result.AllOutput.Should().Contain("Unable to run 'dotnet nuget why'. Missing or invalid path '--package'.");
-#endif
         }
 
         [Fact]
