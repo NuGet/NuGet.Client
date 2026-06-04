@@ -14,32 +14,50 @@ namespace NuGet.Protocol
 {
     public static class JsonExtensions
     {
+        internal const string NsjSerializationMessage = "This method uses Newtonsoft.Json reflection-based serialization which is incompatible with trimming.";
+        internal const string NsjDynamicCodeMessage = "This method uses Newtonsoft.Json which requires dynamic code generation.";
+
         public const int JsonSerializationMaxDepth = 512;
 
-        public static readonly JsonSerializerSettings ObjectSerializationSettings = new JsonSerializerSettings
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This type is only loaded when the NSJ code path is active (feature switch disabled). The linker removes it when trimming with the switch enabled.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This type is only loaded when the NSJ code path is active (feature switch disabled). The linker removes it when trimming with the switch enabled.")]
+#endif
+        private static class NsjSettingsHolder
         {
-            MaxDepth = JsonSerializationMaxDepth,
-            NullValueHandling = NullValueHandling.Ignore,
-            TypeNameHandling = TypeNameHandling.None,
-            Converters = new List<JsonConverter>
+            internal static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
             {
-                new NuGetVersionConverter(),
-                new VersionInfoConverter(),
-                new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
-                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
-                new FingerprintsConverter(),
-                new VersionRangeConverter(),
-                new PackageVulnerabilityInfoConverter(),
-                new NuGetFrameworkConverter()
-            },
-        };
+                MaxDepth = JsonSerializationMaxDepth,
+                NullValueHandling = NullValueHandling.Ignore,
+                TypeNameHandling = TypeNameHandling.None,
+                Converters = new List<JsonConverter>
+                {
+                    new NuGetVersionConverter(),
+                    new VersionInfoConverter(),
+                    new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
+                    new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
+                    new FingerprintsConverter(),
+                    new VersionRangeConverter(),
+                    new PackageVulnerabilityInfoConverter(),
+                    new NuGetFrameworkConverter()
+                },
+            };
 
-        internal static readonly JsonSerializer JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
+            internal static readonly JsonSerializer Serializer = JsonSerializer.Create(Settings);
+        }
+
+        public static JsonSerializerSettings ObjectSerializationSettings => NsjSettingsHolder.Settings;
+
+        internal static JsonSerializer JsonObjectSerializer => NsjSettingsHolder.Serializer;
 
         /// <summary>
         /// Serialize object to the JSON.
         /// </summary>
         /// <param name="obj">The object.</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static string ToJson(this object obj, Formatting formatting = Formatting.None)
         {
             return JsonConvert.SerializeObject(obj, formatting, JsonExtensions.ObjectSerializationSettings);
@@ -50,6 +68,10 @@ namespace NuGet.Protocol
         /// </summary>
         /// <typeparam name="T">Type of object</typeparam>
         /// <param name="json">JSON representation of object</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static T? FromJson<T>(this string json)
         {
             return JsonConvert.DeserializeObject<T>(json, JsonExtensions.ObjectSerializationSettings);
@@ -61,6 +83,10 @@ namespace NuGet.Protocol
         /// <typeparam name="T">Type of object</typeparam>
         /// <param name="json">JSON representation of object</param>
         /// <param name="settings">The settings.</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static T? FromJson<T>(this string json, JsonSerializerSettings settings)
         {
             return JsonConvert.DeserializeObject<T>(json, settings);
@@ -71,6 +97,10 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="json">JSON representation of object</param>
         /// <param name="type">The object type.</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static object? FromJson(this string json, Type type)
         {
             return JsonConvert.DeserializeObject(json, type, JsonExtensions.ObjectSerializationSettings);
@@ -80,6 +110,10 @@ namespace NuGet.Protocol
         /// Serialize object to JToken.
         /// </summary>
         /// <param name="obj">The object.</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static JToken ToJToken(this object obj)
         {
             return JToken.FromObject(obj, JsonExtensions.JsonObjectSerializer);
@@ -90,6 +124,10 @@ namespace NuGet.Protocol
         /// </summary>
         /// <typeparam name="T">Type of object.</typeparam>
         /// <param name="jtoken">The JToken to be deserialized.</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static T? FromJToken<T>(this JToken jtoken)
         {
             return jtoken.ToObject<T>(JsonExtensions.JsonObjectSerializer);
@@ -100,6 +138,10 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="jtoken">The JToken to be deserialized.</param>
         /// <param name="type">The object type.</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static object? FromJToken(this JToken jtoken, Type type)
         {
             return jtoken.ToObject(type, JsonExtensions.JsonObjectSerializer);
@@ -111,6 +153,10 @@ namespace NuGet.Protocol
         /// <typeparam name="T">Type of property to return.</typeparam>
         /// <param name="jobject">The JObject to be deserialized.</param>
         /// <param name="propertyName">The property name.</param>
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(NsjSerializationMessage)]
+        [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(NsjDynamicCodeMessage)]
+#endif
         public static T? GetJObjectProperty<T>(this JObject jobject, string propertyName)
         {
             var targetProperty = jobject.GetValue(propertyName: propertyName, comparison: StringComparison.OrdinalIgnoreCase);

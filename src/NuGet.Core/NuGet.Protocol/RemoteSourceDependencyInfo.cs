@@ -94,7 +94,7 @@ namespace NuGet.Protocol.Core.Types
 
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0} : {1}", Identity, String.Join(" ,", DependencyGroups));
+            return string.Format(CultureInfo.InvariantCulture, "{0} : {1}", Identity, string.Join(" ,", DependencyGroups));
         }
     }
 }

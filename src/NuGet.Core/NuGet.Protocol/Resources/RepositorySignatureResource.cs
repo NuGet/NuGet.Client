@@ -23,6 +23,10 @@ namespace NuGet.Protocol
 
         public IEnumerable<IRepositoryCertificateInfo> RepositoryCertificateInfos { get; }
 
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This constructor is only called from NSJ code paths in RepositorySignatureResourceProvider, gated by the feature switch.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This constructor is only called from NSJ code paths in RepositorySignatureResourceProvider, gated by the feature switch.")]
+#endif
         public RepositorySignatureResource(JObject repoSignInformationContent, SourceRepository source)
         {
             var allRepositorySigned = repoSignInformationContent.GetBoolean(JsonProperties.AllRepositorySigned) ??

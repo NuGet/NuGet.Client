@@ -7,6 +7,7 @@ using System.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.LocalRepositories;
 using NuGet.Protocol.Providers;
+using NuGet.Shared;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -79,8 +80,13 @@ namespace NuGet.Protocol.Core.Types
                 yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider());
                 yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2FeedProvider());
                 yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
-                yield return new Lazy<INuGetResourceProvider>(() => new PluginResourceProvider());
-                yield return new Lazy<INuGetResourceProvider>(() => new RepositorySignatureResourceProvider());
+
+                if (!NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+                {
+                    yield return new Lazy<INuGetResourceProvider>(() => new PluginResourceProvider());
+                    yield return new Lazy<INuGetResourceProvider>(() => new RepositorySignatureResourceProvider());
+                }
+
                 yield return new Lazy<INuGetResourceProvider>(() => new VulnerabilityInfoResourceV3Provider());
                 yield return new Lazy<INuGetResourceProvider>(() => new OwnerDetailsUriResourceV3Provider());
 

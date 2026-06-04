@@ -2032,7 +2032,7 @@ static readonly NuGet.Protocol.HttpRetryHandlerRequest.DefaultDownloadTimeout ->
 static readonly NuGet.Protocol.HttpRetryHandlerRequest.DefaultMaxTries -> int
 static readonly NuGet.Protocol.HttpSourceAuthenticationHandler.MaxAuthRetries -> int
 static readonly NuGet.Protocol.HttpSourceRequest.DefaultRequestTimeout -> System.TimeSpan
-static readonly NuGet.Protocol.JsonExtensions.ObjectSerializationSettings -> Newtonsoft.Json.JsonSerializerSettings!
+static NuGet.Protocol.JsonExtensions.ObjectSerializationSettings.get -> Newtonsoft.Json.JsonSerializerSettings!
 static readonly NuGet.Protocol.Plugins.PluginConstants.CloseTimeout -> System.TimeSpan
 static readonly NuGet.Protocol.Plugins.PluginConstants.IdleTimeout -> System.TimeSpan
 ~static readonly NuGet.Protocol.Plugins.PluginConstants.PluginArguments -> System.Collections.Generic.IEnumerable<string>

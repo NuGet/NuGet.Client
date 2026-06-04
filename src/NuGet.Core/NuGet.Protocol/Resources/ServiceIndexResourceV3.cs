@@ -310,13 +310,13 @@ namespace NuGet.Protocol
                 {
                     if (entry.Type == JTokenType.String)
                     {
-                        yield return entry.ToObject<string>();
+                        yield return (string)entry;
                     }
                 }
             }
             else if (token?.Type == JTokenType.String)
             {
-                yield return token.ToObject<string>();
+                yield return (string)token;
             }
         }
     }

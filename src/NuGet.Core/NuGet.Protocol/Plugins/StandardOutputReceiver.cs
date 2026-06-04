@@ -116,7 +116,9 @@ namespace NuGet.Protocol.Plugins
                     }
                     else
                     {
+#pragma warning disable IL2026, IL3050 // Gated by feature switch above; linker removes this branch when trimming with switch enabled.
                         message = JsonSerializationUtilities.Deserialize<Message>(e.Line);
+#pragma warning restore IL2026, IL3050
                     }
 
                     if (message != null)

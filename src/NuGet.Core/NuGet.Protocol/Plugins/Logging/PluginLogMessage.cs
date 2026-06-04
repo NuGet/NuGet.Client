@@ -9,6 +9,10 @@ using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Plugins
 {
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Plugin logging is only used in NSJ code paths gated by the feature switch.")]
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Plugin logging is only used in NSJ code paths gated by the feature switch.")]
+#endif
     internal abstract class PluginLogMessage : IPluginLogMessage
     {
         private static readonly StringEnumConverter _enumConverter = new StringEnumConverter();
@@ -20,6 +24,10 @@ namespace NuGet.Protocol.Plugins
             _now = now.UtcDateTime;
         }
 
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Plugin logging is only used in NSJ code paths gated by the feature switch.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Plugin logging is only used in NSJ code paths gated by the feature switch.")]
+#endif
         protected string ToString(string type, JObject message)
         {
             if (string.IsNullOrEmpty(type))

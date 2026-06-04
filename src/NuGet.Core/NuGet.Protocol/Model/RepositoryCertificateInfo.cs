@@ -3,9 +3,9 @@
 
 using System;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using NuGet.Packaging.Core;
-using System.Text.Json.Serialization;
 
 namespace NuGet.Protocol
 {

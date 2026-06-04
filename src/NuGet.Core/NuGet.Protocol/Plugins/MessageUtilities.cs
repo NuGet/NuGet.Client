@@ -5,6 +5,7 @@
 
 using System;
 using Newtonsoft.Json.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -86,6 +87,20 @@ namespace NuGet.Protocol.Plugins
                 return null;
             }
 
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return message.PayloadObject?.ToString();
+            }
+
+            return SerializePayloadWithNsj(message);
+        }
+
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+#endif
+        private static string SerializePayloadWithNsj(Message message)
+        {
             if (message.PayloadObject is JObject jobj)
             {
                 return jobj.ToString(Newtonsoft.Json.Formatting.None);
@@ -119,6 +134,20 @@ namespace NuGet.Protocol.Plugins
                 return default(TPayload);
             }
 
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return (TPayload)message.PayloadObject;
+            }
+
+            return DeserializePayloadWithNsj<TPayload>(message);
+        }
+
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+#endif
+        private static TPayload DeserializePayloadWithNsj<TPayload>(Message message)
+        {
             if (message.PayloadObject is Newtonsoft.Json.Linq.JObject jobj)
             {
                 return JsonSerializationUtilities.ToObject<TPayload>(jobj);

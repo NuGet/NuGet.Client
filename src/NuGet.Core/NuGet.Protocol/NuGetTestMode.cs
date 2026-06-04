@@ -23,13 +23,13 @@ namespace NuGet.Protocol.Core.Types
 #pragma warning disable RS0030 // Do not use banned APIs
             var testMode = Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
 #pragma warning restore RS0030 // Do not use banned APIs
-            if (String.IsNullOrEmpty(testMode))
+            if (string.IsNullOrEmpty(testMode))
             {
                 return false;
             }
 
             bool isEnabled;
-            return Boolean.TryParse(testMode, out isEnabled) && isEnabled;
+            return bool.TryParse(testMode, out isEnabled) && isEnabled;
         }
 
 

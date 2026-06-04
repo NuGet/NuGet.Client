@@ -99,14 +99,23 @@ namespace NuGet.Protocol
                     }
                     else
                     {
-                        using var reader = new StreamReader(await stream.AsSeekableStreamAsync(token));
-                        using var jsonReader = new JsonTextReader(reader);
-                        var serializer = Newtonsoft.Json.JsonSerializer.Create();
-                        return serializer.Deserialize<string[]>(jsonReader);
+                        return await DeserializeWithNsjAsync(stream, token);
                     }
                 },
                 logger,
                 token);
+        }
+
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+#endif
+        private static async Task<string[]> DeserializeWithNsjAsync(System.IO.Stream stream, CancellationToken token)
+        {
+            using var reader = new StreamReader(await stream.AsSeekableStreamAsync(token));
+            using var jsonReader = new JsonTextReader(reader);
+            var serializer = Newtonsoft.Json.JsonSerializer.Create();
+            return serializer.Deserialize<string[]>(jsonReader);
         }
     }
 }

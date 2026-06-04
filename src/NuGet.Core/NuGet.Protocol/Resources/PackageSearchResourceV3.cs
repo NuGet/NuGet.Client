@@ -78,11 +78,7 @@ namespace NuGet.Protocol
             }
             else
             {
-#pragma warning disable CS0618
-                var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
-#pragma warning restore CS0618
-                searchResultMetadata = searchResultJsonObjects
-                    .Select(s => s.FromJToken<PackageSearchMetadata>());
+                searchResultMetadata = await SearchWithNsj(searchTerm, filter, skip, take, cancellationToken);
             }
 
             var searchResults = searchResultMetadata
@@ -109,6 +105,38 @@ namespace NuGet.Protocol
                 versions.Add(new VersionInfo(metadata.Version, metadata.DownloadCount));
             }
             return versions;
+        }
+
+        /// <summary>
+        /// Legacy NSJ search path for the obsolete <see cref="RawSearchResourceV3"/> constructor.
+        /// Separated into its own method so the trimmer can eliminate NSJ references
+        /// when the feature switch is active.
+        /// </summary>
+        /// <summary>
+        /// Legacy NSJ search path for the obsolete <see cref="RawSearchResourceV3"/> constructor.
+        /// Separated into its own non-async method so the trimmer can eliminate the call to
+        /// <see cref="SearchWithNsjCore"/> when the feature switch is active.
+        /// </summary>
+        private Task<IEnumerable<PackageSearchMetadata>> SearchWithNsj(string searchTerm, SearchFilter filter, int skip, int take, CancellationToken cancellationToken)
+        {
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_MissingSearchService));
+            }
+
+            return SearchWithNsjCore(searchTerm, filter, skip, take, cancellationToken);
+        }
+
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This method is only called from the NSJ code path gated by the feature switch.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This method is only called from the NSJ code path gated by the feature switch.")]
+#endif
+        private async Task<IEnumerable<PackageSearchMetadata>> SearchWithNsjCore(string searchTerm, SearchFilter filter, int skip, int take, CancellationToken cancellationToken)
+        {
+#pragma warning disable CS0618
+            var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
+#pragma warning restore CS0618
+            return searchResultJsonObjects.Select(s => s.FromJToken<PackageSearchMetadata>());
         }
 
         private async Task<T> SearchPage<T>(
@@ -293,6 +321,10 @@ namespace NuGet.Protocol
             return results;
         }
 
+#if NET5_0_OR_GREATER
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL3050", Justification = "This method is only called from the NSJ code path gated by the feature switch. The linker removes it when trimming with the switch enabled.")]
+#endif
         private static async Task<V3SearchResults> ProcessHttpStreamWithNsjAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
         {
             var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
