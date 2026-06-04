@@ -194,7 +194,7 @@ namespace NuGet.Protocol
 
         private static async Task<T> DeserializeStreamDataWithStjAsync<T>(Stream stream, CancellationToken token)
         {
-            var typeInfo = (JsonTypeInfo<T>)Utility.JsonContext.Default.GetTypeInfo(typeof(T));
+            var typeInfo = (JsonTypeInfo<T>)Converters.PackageSearchJsonContext.Default.GetTypeInfo(typeof(T));
             return await System.Text.Json.JsonSerializer.DeserializeAsync(stream, typeInfo, token);
         }
 
