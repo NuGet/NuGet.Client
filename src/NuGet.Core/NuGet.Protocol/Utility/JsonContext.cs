@@ -12,6 +12,7 @@ namespace NuGet.Protocol.Utility
 #pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+        GenerationMode = JsonSourceGenerationMode.Metadata,
         Converters = [typeof(VersionRangeStjConverter), typeof(ServiceIndexEntryStringOrArrayConverter), typeof(NuGetVersionStjConverter), typeof(PackageDependencyGroupStjConverter)])]
 #pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
     [JsonSerializable(typeof(HttpFileSystemBasedFindPackageByIdResource.FlatContainerVersionList))]

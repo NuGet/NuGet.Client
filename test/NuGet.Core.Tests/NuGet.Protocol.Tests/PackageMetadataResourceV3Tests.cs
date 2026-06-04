@@ -10,10 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -26,18 +26,17 @@ namespace NuGet.Protocol.Tests
         private static IEnumerable<Lazy<INuGetResourceProvider>> CreateProvidersWithEnvReader(string useStj)
         {
             var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns(useStj);
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns(useStj);
 
-            var providers = CreateProvidersWithEnvReader(useStj).ToList();
-            providers.RemoveAll(p => p.Value is PackageMetadataResourceV3Provider);
-            providers.Add(new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider(envReader.Object)));
-            return providers;
+            return Repository.Provider.GetCoreV3()
+                .Where(p => p.Value is not PackageMetadataResourceV3Provider)
+                .Append(new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider(envReader.Object)));
         }
 
         [Theory]
-        [InlineData("true")]  // STJ path
-        [InlineData("false")] // NSJ path
-                public async Task PackageMetadataResourceV3_GetMetadataAsync(string useStj)
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync(string useStj)
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -77,9 +76,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Theory]
-        [InlineData("true")]  // STJ path
-        [InlineData("false")] // NSJ path
-                public async Task PackageMetadataResourceV3_GetMetadataAsync_Unlisted(string useStj)
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_Unlisted(string useStj)
         {
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
@@ -104,9 +103,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Theory]
-        [InlineData("true")]  // STJ path
-        [InlineData("false")] // NSJ path
-                public async Task PackageMetadataResourceV3_UsesReferenceCache(string useStj)
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_UsesReferenceCache(string useStj)
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -133,9 +132,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Theory]
-        [InlineData("true")]  // STJ path
-        [InlineData("false")] // NSJ path
-                public async Task PackageMetadataResourceV3_GetMetadataAsync_NotFound(string useStj)
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_NotFound(string useStj)
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -274,8 +273,8 @@ namespace NuGet.Protocol.Tests
         }
 
         [Theory]
-        [InlineData("true")]  // STJ path
-        [InlineData("false")] // NSJ path
+        [InlineData("true")]
+        [InlineData("false")]
         public async Task PackageMetadataResourceV3_GetMetadataAsync_NotFoundHandleNullStream(string useStj)
         {
             // Arrange
@@ -313,8 +312,8 @@ namespace NuGet.Protocol.Tests
         }
 
         [Theory]
-        [InlineData("true")]  // STJ path
-        [InlineData("false")] // NSJ path
+        [InlineData("true")]
+        [InlineData("false")]
         public async Task PackageMetadataResourceV3_GetMetadataAsync_NoContentHandleNullStream(string useStj)
         {
             // Arrange
@@ -352,9 +351,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Theory]
-        [InlineData("true")]  // STJ path
-        [InlineData("false")] // NSJ path
-                public async Task PackageMetadataResourceV3_GetMetadataAsync_DependencyRangeNull(string useStj)
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_DependencyRangeNull(string useStj)
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -384,4 +383,3 @@ namespace NuGet.Protocol.Tests
         }
     }
 }
-
