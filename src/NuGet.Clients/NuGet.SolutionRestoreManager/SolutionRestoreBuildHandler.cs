@@ -35,6 +35,8 @@ namespace NuGet.SolutionRestoreManager
     {
         private const uint VSCOOKIE_NIL = 0;
 
+        // These imports are handled explicitly inside of UpdateSolution_QueryDelayBuildAction
+        // Any new imports required must also be handled explicitly there.
         [Import]
         private Lazy<ISettings> Settings { get; set; }
 
@@ -137,8 +139,14 @@ namespace NuGet.SolutionRestoreManager
 
                     if (!_isMEFInitialized)
                     {
-                        var componentModel = await _serviceProvider.GetComponentModelAsync();
-                        componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
+                        // Resolve imports directly from the export provider rather than calling
+                        // SatisfyImportsOnce(this), which reflects over this type, validates
+                        // composability of the import graph, and is significantly more expensive.
+                        // The [Import] attributes above are kept for documentation only.
+                        var exportProvider = (await _serviceProvider.GetComponentModelAsync()).DefaultExportProvider;
+                        Settings = exportProvider.GetExport<ISettings>();
+                        SolutionRestoreWorker = exportProvider.GetExport<ISolutionRestoreWorker>();
+                        SolutionRestoreChecker = exportProvider.GetExport<ISolutionRestoreChecker>();
                         _isMEFInitialized = true;
                     }
 
