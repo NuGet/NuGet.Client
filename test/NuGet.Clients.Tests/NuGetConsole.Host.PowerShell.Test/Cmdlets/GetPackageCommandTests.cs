@@ -68,11 +68,11 @@ namespace NuGetConsole.Host.PowerShell.Test
             // Arrange
             using var pathContext = new SimpleTestPathContext();
 
-            var packageA = new SimpleTestPackageContext("TestPackageA", "1.0.0");
-            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                new SimpleTestPackageContext("TestPackageA", "1.0.0"));
 
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
-            _componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider);
+            _componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource)));
+            _solutionManager.SetupGet(x => x.SolutionDirectory).Returns(pathContext.SolutionRoot);
 
             using var fixture = new CmdletRunspaceFixture(activeSource: pathContext.PackageSource);
 
