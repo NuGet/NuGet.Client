@@ -4,6 +4,9 @@ parameters:
   - name: SigningType
     displayName: Type of signing to use
     type: string
+  - name: PublishEndToEndTestData
+    type: boolean
+    default: false
 
 steps:
   - task: PowerShell@1
@@ -130,6 +133,50 @@ steps:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\11.Pack.binlog /property:MicroBuild_SigningEnabled=false"
+
+  - ${{ if and(eq(parameters.PublishEndToEndTestData, true), not(parameters.BuildRTM)) }}:
+    # The EndToEnd test data package bundles nested .nupkg fixtures as content. It is generated into a
+    # staging directory that is deliberately OUTSIDE the repo 'artifacts' tree so it is never signed
+    # (SignTool would recurse into and corrupt the nested fixtures), never picked up by BAR publishing,
+    # and never scanned by the product SBOM. It is published unsigned to the dnceng nuget-build feed
+    # via the '- output: nuget' block in pipeline.yml.
+    - task: PowerShell@1
+      displayName: "Prepare EndToEnd TestData output directory"
+      condition: "succeeded()"
+      inputs:
+        scriptType: "inlineScript"
+        inlineScript: |
+          $dir = "$(Build.StagingDirectory)\e2etestdata"
+          if (Test-Path $dir) { Remove-Item -Path $dir -Recurse -Force }
+          New-Item -ItemType Directory -Path $dir -Force | Out-Null
+
+    - task: MSBuild@1
+      displayName: "Build GenerateTestPackages"
+      condition: "succeeded()"
+      inputs:
+        solution: "test\\TestExtensions\\GenerateTestPackages\\GenerateTestPackages.csproj"
+        configuration: "$(BuildConfiguration)"
+        msbuildArguments: "/restore:true /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\GenerateTestPackages.binlog /property:MicroBuild_SigningEnabled=false"
+
+    - task: PowerShell@1
+      displayName: "Generate EndToEnd TestData Package"
+      condition: "succeeded()"
+      inputs:
+        scriptName: "$(Build.Repository.LocalPath)\\scripts\\e2etests\\CreateTestDataPackage.ps1"
+        arguments: "-configuration '$(BuildConfiguration)' -outputDirectoryPath '$(Build.StagingDirectory)\\e2etestdata'"
+
+    - task: PowerShell@1
+      displayName: "Verify EndToEnd TestData Package exists"
+      condition: "succeeded()"
+      inputs:
+        scriptType: "inlineScript"
+        inlineScript: |
+          $packages = @(Get-ChildItem -Path "$(Build.StagingDirectory)\e2etestdata\NuGet.Client.EndToEnd.TestData.*.nupkg" -ErrorAction SilentlyContinue)
+          if ($packages.Count -ne 1) {
+            Write-Host "##vso[task.LogIssue type=error;]Expected exactly one NuGet.Client.EndToEnd.TestData package, but found $($packages.Count)."
+            exit 1
+          }
+          Write-Host "Found EndToEnd TestData package: $($packages[0].Name)"
 
   - task: PowerShell@1
     displayName: "Check expected packages exist for publishing"

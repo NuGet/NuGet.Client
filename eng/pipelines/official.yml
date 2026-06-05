@@ -10,6 +10,10 @@ parameters:
   values:
   - Real
   - Test
+- name: PublishEndToEndTestData
+  displayName: Publish EndToEnd TestData Package
+  type: boolean
+  default: false
 
 resources:
   repositories:
@@ -56,3 +60,4 @@ extends:
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
         SigningType: ${{ parameters.SigningType }}
         TryRunOneLocBuild: true
+        PublishEndToEndTestData: ${{ parameters.PublishEndToEndTestData }}

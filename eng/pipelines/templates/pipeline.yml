@@ -16,6 +16,10 @@ parameters:
   values:
   - Real
   - Test
+- name: PublishEndToEndTestData
+  displayName: Publish EndToEnd TestData Package
+  type: boolean
+  default: false
 
 stages:
 - stage: Initialize
@@ -183,11 +187,24 @@ stages:
         targetPath: "$(Build.StagingDirectory)/sbom"
         sbomEnabled: false
 
+      # Publishes the generated EndToEnd test data package (and its SBOM) as a pipeline artifact. The
+      # NuGet.Client-Release pipeline downloads this artifact and pushes it to the public dnceng nuget-build
+      # feed. The package is generated into $(Build.StagingDirectory)\e2etestdata by Build.yml (outside the
+      # signed/BAR/product-SBOM artifacts tree).
+      - ${{ if eq(parameters.PublishEndToEndTestData, true) }}:
+        - output: pipelineArtifact
+          displayName: 'Publish EndToEnd TestData package'
+          condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+          targetPath: '$(Build.StagingDirectory)\e2etestdata'
+          artifactName: 'EndToEndTestData'
+          sbomBuildDropPath: '$(Build.StagingDirectory)\e2etestdata'
+
     steps:
     - template: /eng/pipelines/templates/Build.yml@self
       parameters:
         BuildRTM: false
         SigningType: ${{ parameters.SigningType }}
+        PublishEndToEndTestData: ${{ parameters.PublishEndToEndTestData }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
@@ -250,6 +267,7 @@ stages:
       parameters:
         BuildRTM: true
         SigningType: ${{ parameters.SigningType }}
+        PublishEndToEndTestData: ${{ parameters.PublishEndToEndTestData }}
 
 - ${{ if eq(parameters.isOfficialBuild, true) }}:
   - template: /eng/common/templates-official/post-build/post-build.yml

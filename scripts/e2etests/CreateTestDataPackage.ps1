@@ -58,7 +58,19 @@ Function Get-File([string[]] $pathParts)
 
 Function Get-GenerateTestPackagesFile()
 {
-    Return Get-File($repositoryRootDirectoryPath, 'artifacts', 'GenerateTestPackages', "$toolsetVersion.0", 'bin', $configuration, 'net472', 'GenerateTestPackages.exe')
+    $filePathWithToolset = [System.IO.Path]::Combine($repositoryRootDirectoryPath, 'artifacts', 'GenerateTestPackages', "$toolsetVersion.0", 'bin', $configuration, 'net472', 'GenerateTestPackages.exe')
+    if (Test-Path $filePathWithToolset)
+    {
+        Return [System.IO.FileInfo]::new($filePathWithToolset)
+    }
+
+    $filePathWithoutToolset = [System.IO.Path]::Combine($repositoryRootDirectoryPath, 'artifacts', 'GenerateTestPackages', 'bin', $configuration, 'net472', 'GenerateTestPackages.exe')
+    if (Test-Path $filePathWithoutToolset)
+    {
+        Return [System.IO.FileInfo]::new($filePathWithoutToolset)
+    }
+
+    throw [System.IO.FileNotFoundException]::new("Could not find GenerateTestPackages.exe.  Please build first.  Probed:`n  $filePathWithToolset`n  $filePathWithoutToolset", $filePathWithoutToolset)
 }
 
 Function Get-NuGetFile()
