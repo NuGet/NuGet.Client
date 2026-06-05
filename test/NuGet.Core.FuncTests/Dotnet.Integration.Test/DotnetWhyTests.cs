@@ -201,14 +201,18 @@ namespace Dotnet.Integration.Test
             // Arrange
             var pathContext = new SimpleTestPathContext();
 
-            string whyCommandArgs = $"nuget why --package package";
+            string whyCommandArgs = $"nuget why";
 
             // Act
             CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, whyCommandArgs, testOutputHelper: _testOutputHelper);
 
             // Assert
             Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
-            result.AllOutput.Should().Contain("Unable to run 'dotnet nuget why'. Missing or invalid path '--package'.");
+#if SDK_CURRENT
+            Assert.Contains($"Required argument missing for command: 'why'.", result.Errors);
+#else
+            Assert.Contains("Required argument 'PACKAGE' missing for command: 'why'", result.Errors);
+#endif
         }
 
         [Fact]
