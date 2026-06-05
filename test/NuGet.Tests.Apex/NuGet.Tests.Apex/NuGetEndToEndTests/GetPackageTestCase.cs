@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
 {
@@ -372,13 +371,6 @@ namespace NuGet.Tests.Apex
             var packageEntry = ParseGetPackageTableOutput(pmcText).Single(p => p.Id == packageName);
             packageEntry.Versions.Should().Contain("1.0.1-a", because: pmcText);
             packageEntry.Versions.Should().Contain("1.0.0", because: pmcText);
-        }
-
-        private static NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
-        {
-            var nugetConsole = project.GetComponentModelService<NuGetApexTestService>().NuGetConsole;
-            nugetConsole.WaitForInitialize();
-            return nugetConsole;
         }
 
         /// <summary>
