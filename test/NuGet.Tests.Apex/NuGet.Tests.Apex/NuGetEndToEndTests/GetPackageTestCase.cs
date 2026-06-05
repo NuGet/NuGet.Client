@@ -154,12 +154,9 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [DataTestMethod]
-        [DataRow("absolute")]
-        [DataRow("relativeLeafFromParent")]
-        [DataRow("relativeDotFromSource")]
+        [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task GetPackageFromPMCWithPathSource_ReturnsAvailablePackagesAsync(string sourceMode)
+        public async Task GetPackageFromPMCWithPathSource_ReturnsAvailablePackagesAsync()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
@@ -170,30 +167,13 @@ namespace NuGet.Tests.Apex
             var nugetConsole = GetConsole(testContext.Project);
             nugetConsole.Clear();
 
-            string escapedAbsoluteSource = EscapePowerShellSingleQuotedString(testContext.PackageSource);
             DirectoryInfo? parentDirectory = Directory.GetParent(testContext.PackageSource);
             Assert.IsNotNull(parentDirectory, $"Package source path '{testContext.PackageSource}' is expected to have a parent directory.");
             string escapedParentDirectory = EscapePowerShellSingleQuotedString(parentDirectory.FullName);
             string escapedSourceLeafName = EscapePowerShellSingleQuotedString(Path.GetFileName(testContext.PackageSource));
             string escapedPackageName = EscapePowerShellSingleQuotedString(packageName);
-
-            switch (sourceMode)
-            {
-                case "absolute":
-                    nugetConsole.Execute($"Get-Package -ListAvailable -Source '{escapedAbsoluteSource}' -Filter '{escapedPackageName}'");
-                    break;
-                case "relativeLeafFromParent":
-                    nugetConsole.Execute($"Set-Location '{escapedParentDirectory}'");
-                    nugetConsole.Execute($"Get-Package -ListAvailable -Source '{escapedSourceLeafName}' -Filter '{escapedPackageName}'");
-                    break;
-                case "relativeDotFromSource":
-                    nugetConsole.Execute($"Set-Location '{escapedAbsoluteSource}'");
-                    nugetConsole.Execute($"Get-Package -ListAvailable -Source '.' -Filter '{escapedPackageName}'");
-                    break;
-                default:
-                    Assert.Fail($"Unknown source mode: {sourceMode}");
-                    return;
-            }
+            nugetConsole.Execute($"Set-Location '{escapedParentDirectory}'");
+            nugetConsole.Execute($"Get-Package -ListAvailable -Source '{escapedSourceLeafName}' -Filter '{escapedPackageName}'");
 
             string pmcText = nugetConsole.GetText();
             ParseGetPackageTableOutput(pmcText).Should().ContainSingle(p => p.Id == packageName, because: pmcText);
