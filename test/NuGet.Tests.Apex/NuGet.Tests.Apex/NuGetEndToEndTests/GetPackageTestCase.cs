@@ -168,7 +168,7 @@ namespace NuGet.Tests.Apex
             nugetConsole.Clear();
 
             DirectoryInfo? parentDirectory = Directory.GetParent(testContext.PackageSource);
-            Assert.IsNotNull(parentDirectory, $"Package source path '{testContext.PackageSource}' is expected to have a parent directory.");
+            Assert.IsNotNull(parentDirectory, "Package source path must have a parent directory for this test scenario.");
             string escapedParentDirectory = EscapePowerShellSingleQuotedString(parentDirectory.FullName);
             string escapedSourceLeafName = EscapePowerShellSingleQuotedString(Path.GetFileName(testContext.PackageSource));
             string escapedPackageName = EscapePowerShellSingleQuotedString(packageName);

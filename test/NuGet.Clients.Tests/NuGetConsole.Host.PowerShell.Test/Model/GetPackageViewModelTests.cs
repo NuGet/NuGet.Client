@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -98,7 +96,6 @@ namespace NuGetConsole.Host.PowerShell.Test
             var metadata = new Mock<IPackageSearchMetadata>();
             metadata.SetupGet(m => m.Identity).Returns(new PackageIdentity(id, NuGetVersion.Parse(versions[0])));
             metadata.SetupGet(m => m.Summary).Returns(id);
-            metadata.SetupGet(m => m.LicenseUrl).Returns((System.Uri)null);
             metadata.Setup(m => m.GetVersionsAsync()).ReturnsAsync(
                 versions.Select(v => new VersionInfo(NuGetVersion.Parse(v))).ToList());
 
@@ -112,11 +109,21 @@ namespace NuGetConsole.Host.PowerShell.Test
             {
             }
 
-            public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token) => Task.FromResult<IEnumerable<PackageReference>>(Enumerable.Empty<PackageReference>());
+            public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+                => Task.FromResult<IEnumerable<PackageReference>>(Enumerable.Empty<PackageReference>());
 
-            public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token) => Task.FromResult(false);
+            public override Task<bool> InstallPackageAsync(
+                PackageIdentity packageIdentity,
+                DownloadResourceResult downloadResourceResult,
+                INuGetProjectContext nuGetProjectContext,
+                CancellationToken token)
+                => Task.FromResult(false);
 
-            public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token) => Task.FromResult(false);
+            public override Task<bool> UninstallPackageAsync(
+                PackageIdentity packageIdentity,
+                INuGetProjectContext nuGetProjectContext,
+                CancellationToken token)
+                => Task.FromResult(false);
         }
     }
 }
