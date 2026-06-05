@@ -99,7 +99,10 @@ namespace NuGetVSExtension
                     string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
                     CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
                     IReadOnlyList<CopilotFunctionDescriptor> functions = await cfp.GetFunctionsAsync(request.CorrelationId, cancellationToken);
-                    if (functions is null || !functions.Any(f => string.Equals(f.Name, McpServerConstants.NuGetSolverFullyQualifiedToolName, StringComparison.OrdinalIgnoreCase)))
+                    if (!IsToolAvailable(
+                            functions,
+                            mcpToolName: McpServerConstants.NuGetSolverToolName,
+                            acceptableMcpServerNames: McpServerConstants.NuGetMcpServerNames))
                     {
                         SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable);
                         ShowWarningMessage(Resources.Error_NuGetSolverNotAvailable);
@@ -140,5 +143,17 @@ namespace NuGetVSExtension
         }
 
         private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
+
+        internal static bool IsToolAvailable(
+            IReadOnlyList<CopilotFunctionDescriptor>? functions,
+            string mcpToolName,
+            IReadOnlyCollection<string> acceptableMcpServerNames)
+        {
+            return functions?
+                .OfType<CopilotMcpFunctionDescriptor>()
+                .Any(f => string.Equals(f.ServerNameOfFunction, mcpToolName, StringComparison.OrdinalIgnoreCase)
+                       && f.Group is not null
+                       && acceptableMcpServerNames.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
+        }
     }
 }
