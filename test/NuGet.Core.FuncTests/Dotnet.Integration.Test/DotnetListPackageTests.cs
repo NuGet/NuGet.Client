@@ -513,7 +513,7 @@ namespace Dotnet.Integration.Test
 	<AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include=""PackageX"" Version=""2.0.0""/>   
+		<PackageReference Include=""PackageX"" Version=""2.0.0""/>
      </ItemGroup>
      <ItemGroup Condition = ""'$(TargetFramework)' == 'net46'"">
          <PackageReference Include=""PackageY"" Version=""3.0.0""/>

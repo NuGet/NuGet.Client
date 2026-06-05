@@ -19,6 +19,7 @@ using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
+    [UseCulture("en-US")] // We are asserting exception messages in English
     [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetWhyTests
     {
