@@ -12,4 +12,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
