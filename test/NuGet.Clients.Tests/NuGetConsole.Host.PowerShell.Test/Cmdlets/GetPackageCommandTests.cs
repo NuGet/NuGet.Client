@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -639,14 +637,14 @@ namespace NuGetConsole.Host.PowerShell.Test
             SetupMultipleInstalledPackages("TestProject", new[] { (packageId, packageVersion) });
         }
 
-        public Task<object> GetServiceAsync(Type serviceType)
+        public Task<object?> GetServiceAsync(Type serviceType)
         {
-            if (_services.TryGetValue(serviceType, out Task<object> task))
+            if (_services.TryGetValue(serviceType, out Task<object>? task))
             {
-                return task;
+                return task!;
             }
 
-            return Task.FromResult<object>(null);
+            return Task.FromResult<object?>(null);
         }
 
         #endregion
@@ -710,7 +708,7 @@ namespace NuGetConsole.Host.PowerShell.Test
             public override Guid InstanceId => _instanceId;
             public override string Name => "TestNuGetHost";
             public override PSObject PrivateData => _privateData;
-            public override PSHostUserInterface UI => null;
+            public override PSHostUserInterface? UI => null;
             public override Version Version => new Version(1, 0);
 
             public override void EnterNestedPrompt() { }
