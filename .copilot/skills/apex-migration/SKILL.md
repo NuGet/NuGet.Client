@@ -29,15 +29,16 @@ Choose the target file by **interaction surface**, not project type:
 
 | Interaction surface | Apex file |
 |---|---|
-| PMC commands (Install-Package, Update-Package, etc.) | `NuGetConsoleTestCase.cs` |
+| `Get-Package` command scenarios (`-ListAvailable`, `-Updates`, `-Filter`, path source variants, prerelease behaviors) | `GetPackageTestCase.cs` |
+| Other PMC commands (Install-Package, Update-Package, Uninstall-Package, Get-Project) | `NuGetConsoleTestCase.cs` |
 | NuGet UI / Package Manager dialog | `NuGetUITestCase.cs` |
 | IVsPackageInstaller / IVsServices API | `IVsServicesTestCase.cs` |
 | Sync/binding redirect scenarios | `SyncPackageTestCase.cs` |
 | Audit / vulnerability scenarios | `NuGetAuditTests.cs` |
 | .NET Core project-creation / restore / source-mapping | `NetCoreProjectTestCase.cs` |
 
-PMC tests for PackageReference projects still go in `NuGetConsoleTestCase.cs` — the deciding
-factor is whether the test exercises the PMC console, not the project's package management style.
+PMC tests for PackageReference projects still follow command-based placement. For `Get-Package`
+scenarios use `GetPackageTestCase.cs`; for other PMC commands use `NuGetConsoleTestCase.cs`.
 
 ## Template mapping
 
