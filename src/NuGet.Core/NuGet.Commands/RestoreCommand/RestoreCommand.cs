@@ -1408,7 +1408,7 @@ namespace NuGet.Commands
                     _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
                     SdkAnalysisLevelMinimums.V11_0_100))
             {
-                await _request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1005, Strings.Warning_RestoreLockedModeAndForceEvaluate));
+                await _request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1512, Strings.Warning_RestoreLockedModeAndForceEvaluate));
             }
 
             // read packages.lock.json file if exists and RestoreForceEvaluate flag is not set to true

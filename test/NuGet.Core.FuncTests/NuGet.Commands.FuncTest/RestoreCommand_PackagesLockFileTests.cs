@@ -71,7 +71,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WithForceEvaluate_WarnsWithNU1005_AndForceEvaluateWins()
+        public async Task RestoreCommand_PackagesLockFile_InLockedMode_WithForceEvaluate_WarnsWithNU1512_AndForceEvaluateWins()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -112,7 +112,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert. Force-evaluate wins (restore succeeds) but the user is warned that locked mode is being ignored.
                 result.Success.Should().BeTrue();
                 logger.WarningMessages.Should().ContainSingle(e =>
-                    e.Contains("NU1005") && e.Contains("RestoreLockedMode") && e.Contains("RestoreForceEvaluate"));
+                    e.Contains("NU1512") && e.Contains("RestoreLockedMode") && e.Contains("RestoreForceEvaluate"));
             }
         }
 
@@ -158,9 +158,9 @@ namespace NuGet.Commands.FuncTest
                 // Act.
                 result = await new RestoreCommand(request).ExecuteAsync();
 
-                // Assert. Old behavior is preserved: force-evaluate wins and no NU1005 warning is raised.
+                // Assert. Old behavior is preserved: force-evaluate wins and no NU1512 warning is raised.
                 result.Success.Should().BeTrue();
-                logger.WarningMessages.Should().NotContain(e => e.Contains("NU1005"));
+                logger.WarningMessages.Should().NotContain(e => e.Contains("NU1512"));
             }
         }
 
