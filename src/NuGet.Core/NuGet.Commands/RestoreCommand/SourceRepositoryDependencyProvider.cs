@@ -4,7 +4,9 @@
 #nullable disable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,9 +38,33 @@ namespace NuGet.Commands
         private bool _ignoreWarning;
         private bool _isFallbackFolderSource;
         private bool _useLegacyAssetTargetFallbackBehavior;
+        private readonly bool _refreshHttpCacheOnMissEnabled;
 
         private readonly TaskResultCache<LibraryRangeCacheKey, LibraryDependencyInfo> _dependencyInfoCache = new();
         private readonly TaskResultCache<LibraryRange, LibraryIdentity> _libraryMatchCache = new();
+
+        // Refresh-on-miss coordination, scoped to this provider instance. Because the provider is
+        // cached and shared across all projects in a restore operation (see RestoreCommandProvidersCache),
+        // these collections are effectively operation-wide. See https://github.com/NuGet/Home/issues/3116.
+
+        // Package ids for which the HTTP cache has already been refreshed once during this operation.
+        // Used to guarantee at most one refresh-on-miss per id per operation.
+        private readonly ConcurrentDictionary<string, byte> _idsRefreshedOnMiss = new(StringComparer.OrdinalIgnoreCase);
+
+        // Package ids whose version list was already fetched with a fresh cache during this operation.
+        // A later miss for such an id must not trigger another refresh: the data is already authoritative.
+        private readonly ConcurrentDictionary<string, byte> _idsFetchedThisOperation = new(StringComparer.OrdinalIgnoreCase);
+
+        // Opt-out for refresh-on-miss. When set to "false"/"0" (case-insensitive), NuGet will not refresh
+        // the HTTP cache when the cached versions list does not satisfy an exact requested version.
+        private const string RefreshHttpCacheOnMissEnvVar = "NUGET_HTTP_CACHE_REFRESH_ON_MISS";
+
+        internal static bool IsRefreshOnMissEnabled(IEnvironmentVariableReader environmentVariableReader)
+        {
+            string value = environmentVariableReader.GetEnvironmentVariable(RefreshHttpCacheOnMissEnvVar);
+            return !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "0", StringComparison.Ordinal);
+        }
 
         // Limiting concurrent requests to limit the amount of files open at a time.
         private readonly static SemaphoreSlim _throttle = GetThrottleSemaphoreSlim(EnvironmentVariableWrapper.Instance);
@@ -138,6 +164,7 @@ namespace NuGet.Commands
             _packageFileCache = fileCache;
             _isFallbackFolderSource = isFallbackFolderSource;
             _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
+            _refreshHttpCacheOnMissEnabled = IsRefreshOnMissEnabled(environmentVariableReader);
         }
 
         /// <summary>
@@ -238,6 +265,75 @@ namespace NuGet.Commands
         {
             await EnsureResource(cancellationToken);
 
+            string id = libraryRange.Name;
+
+            LibraryIdentity result = await FindLibraryFromFeedAsync(libraryRange, cacheContext, logger, cancellationToken);
+
+            // If this lookup already consulted a fresh cache (an explicit refresh-on-miss, --no-cache,
+            // or the existing download-retry path), record the id so a later miss for the same id does
+            // not trigger another, redundant refresh during this operation.
+            if (cacheContext.RefreshMemoryCache)
+            {
+                _idsFetchedThisOperation[id] = 0;
+            }
+
+            if (result != null)
+            {
+                return result;
+            }
+
+            // Refresh-on-miss: the cached versions list for this HTTP source did not contain the
+            // requested exact version. Refresh the HTTP cache once per id per restore operation and
+            // retry before declaring the package unresolved. This eliminates spurious NU1102 failures
+            // for the publish-then-consume scenario. See https://github.com/NuGet/Home/issues/3116.
+            if (ShouldRefreshHttpCacheOnMiss(libraryRange, cacheContext)
+                && !_idsFetchedThisOperation.ContainsKey(id)
+                && _idsRefreshedOnMiss.TryAdd(id, 0))
+            {
+                logger.LogMinimal(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_RefreshingHttpCacheOnMiss,
+                    id,
+                    libraryRange.VersionRange.ToString()));
+
+                SourceCacheContext refreshedCacheContext = cacheContext.WithRefreshCacheTrue();
+
+                result = await FindLibraryFromFeedAsync(libraryRange, refreshedCacheContext, logger, cancellationToken);
+
+                _idsFetchedThisOperation[id] = 0;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Determines whether a cache miss for the given <paramref name="libraryRange" /> should trigger a
+        /// one-time HTTP cache refresh. Only exact (non-floating, min-inclusive) version requests against an
+        /// HTTP source qualify: those are the ones where "the cache says the version doesn't exist" is
+        /// unambiguous. Floating ranges may be legitimately satisfied by an older cached version.
+        /// </summary>
+        private bool ShouldRefreshHttpCacheOnMiss(LibraryRange libraryRange, SourceCacheContext cacheContext)
+        {
+            if (!_refreshHttpCacheOnMissEnabled
+                || !IsHttp
+                || cacheContext.RefreshMemoryCache)
+            {
+                return false;
+            }
+
+            VersionRange versionRange = libraryRange.VersionRange;
+            return versionRange != null
+                && !versionRange.IsFloating
+                && versionRange.IsMinInclusive
+                && versionRange.MinVersion != null;
+        }
+
+        private async Task<LibraryIdentity> FindLibraryFromFeedAsync(
+            LibraryRange libraryRange,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
             if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
             {
                 // first check if the exact min version exist then simply return that

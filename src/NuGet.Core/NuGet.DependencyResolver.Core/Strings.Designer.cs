@@ -86,14 +86,5 @@ namespace NuGet.DependencyResolver {
                 return ResourceManager.GetString("Log_NoMatchingSourceFoundForPackage", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Cached versions for &apos;{0}&apos; did not contain a version satisfying &apos;{1}&apos;; refreshing the HTTP cache once before failing..
-        /// </summary>
-        internal static string Log_RefreshingHttpCacheOnMiss {
-            get {
-                return ResourceManager.GetString("Log_RefreshingHttpCacheOnMiss", resourceCulture);
-            }
-        }
     }
 }

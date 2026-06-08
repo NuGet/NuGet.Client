@@ -17,23 +17,6 @@ namespace NuGet.DependencyResolver
 {
     public static class ResolverUtility
     {
-        // Opt-out for refresh-on-miss. See https://github.com/NuGet/Home/issues/3116.
-        // When set to "false" (case-insensitive), NuGet will not refresh the HTTP cache when
-        // the cached versions list does not satisfy the requested version range.
-        private const string RefreshHttpCacheOnMissEnvVar = "NUGET_HTTP_CACHE_REFRESH_ON_MISS";
-
-        private static readonly Lazy<bool> s_refreshHttpCacheOnMissEnabled = new(static () =>
-            IsRefreshOnMissEnabled(EnvironmentVariableWrapper.Instance));
-
-        internal static bool IsRefreshHttpCacheOnMissEnabled => s_refreshHttpCacheOnMissEnabled.Value;
-
-        internal static bool IsRefreshOnMissEnabled(IEnvironmentVariableReader environmentVariableReader)
-        {
-            string? value = environmentVariableReader.GetEnvironmentVariable(RefreshHttpCacheOnMissEnvVar);
-            return !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(value, "0", StringComparison.Ordinal);
-        }
-
         public static Task<GraphItem<RemoteResolveResult>> FindLibraryCachedAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
@@ -72,8 +55,6 @@ namespace NuGet.DependencyResolver
                 LogIfPackageSourceMappingIsEnabled(libraryRange.Name, context, remoteDependencyProviders);
             }
 
-            bool httpCacheRefreshedOnMiss = false;
-
             // Try up to two times to get the package. The second
             // retry will refresh the cache if a package is listed
             // but fails to download. This can happen if the feed prunes
@@ -93,97 +74,38 @@ namespace NuGet.DependencyResolver
                     context.Logger,
                     cancellationToken);
 
-                bool isStaleCacheMiss = match == null || IsCacheStaleForExactVersion(match, libraryRange);
-
-                if (isStaleCacheMiss
-                    && !httpCacheRefreshedOnMiss
-                    && IsRefreshHttpCacheOnMissEnabled
-                    && libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
-                    && libraryRange.VersionRange != null
-                    && remoteDependencyProviders.Any(p => p.IsHttp))
-                {
-                    // The cached versions list for at least one HTTP-backed source did not contain
-                    // the requested version. Refresh the HTTP cache once and retry before declaring
-                    // the package unresolved. See https://github.com/NuGet/Home/issues/3116.
-                    httpCacheRefreshedOnMiss = true;
-                    currentCacheContext = currentCacheContext.WithRefreshCacheTrue();
-
-                    context.Logger.LogMinimal(string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Log_RefreshingHttpCacheOnMiss,
-                        libraryRange.Name,
-                        libraryRange.VersionRange.ToString()));
-
-                    // Restart the loop so we re-query providers with a fresh cache.
-                    i = -1;
-                    continue;
-                }
-
                 if (match == null)
                 {
                     return CreateUnresolvedResult(libraryRange);
                 }
+                else
+                {
 
-                if (match.Library?.Type == LibraryType.Unresolved)
-                {
-                    // Already exhausted the refresh-on-miss path (or it wasn't applicable) and we still
-                    // have an unresolved match. Return it as unresolved rather than attempting download.
-                    return CreateUnresolvedResult(libraryRange);
-                }
+                    try
+                    {
+                        graphItem = await CreateGraphItemAsync(match, framework, currentCacheContext, context.Logger, cancellationToken);
+                    }
+                    catch (InvalidCacheProtocolException) when (i == 0)
+                    {
+                        // 1st failure, invalidate the cache and try again.
+                        // Clear the on disk and memory caches during the next request.
+                        currentCacheContext = currentCacheContext.WithRefreshCacheTrue();
+                    }
+                    catch (PackageNotFoundProtocolException ex) when (match.Provider.IsHttp && match.Provider.Source != null)
+                    {
+                        // 2nd failure, the feed is likely corrupt or removing packages too fast to keep up with.
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                                                    Strings.Error_PackageNotFoundWhenExpected,
+                                                        match.Provider.Source,
+                                                    ex.PackageIdentity.ToString());
+                        context.Logger.LogError(message);
 
-                try
-                {
-                    graphItem = await CreateGraphItemAsync(match, framework, currentCacheContext, context.Logger, cancellationToken);
-                }
-                catch (InvalidCacheProtocolException) when (i == 0)
-                {
-                    // 1st failure, invalidate the cache and try again.
-                    // Clear the on disk and memory caches during the next request.
-                    currentCacheContext = currentCacheContext.WithRefreshCacheTrue();
-                }
-                catch (PackageNotFoundProtocolException ex) when (match.Provider.IsHttp && match.Provider.Source != null)
-                {
-                    // 2nd failure, the feed is likely corrupt or removing packages too fast to keep up with.
-                    var message = string.Format(CultureInfo.CurrentCulture,
-                                                Strings.Error_PackageNotFoundWhenExpected,
-                                                    match.Provider.Source,
-                                                ex.PackageIdentity.ToString());
-                    context.Logger.LogError(message);
-
-                    throw new FatalProtocolException(message, ex);
+                        throw new FatalProtocolException(message, ex);
+                    }
                 }
             }
 
             return graphItem!;
-        }
-
-        /// <summary>
-        /// Returns <see langword="true" /> when the resolved match for an exact-version request
-        /// does not satisfy the requested minimum version, which strongly suggests the cached
-        /// versions list on at least one HTTP source is stale.
-        /// </summary>
-        /// <remarks>
-        /// Only exact (non-floating, min-inclusive) version requests qualify: those are the ones
-        /// where "the cache says the version doesn't exist" is unambiguous. Floating ranges may
-        /// be legitimately satisfied by an older cached version.
-        /// </remarks>
-        private static bool IsCacheStaleForExactVersion(RemoteMatch? match, LibraryRange libraryRange)
-        {
-            if (match?.Library?.Type != LibraryType.Unresolved)
-            {
-                return false;
-            }
-
-            var versionRange = libraryRange.VersionRange;
-            if (versionRange == null
-                || versionRange.IsFloating
-                || !versionRange.IsMinInclusive
-                || versionRange.MinVersion == null)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private static async Task<GraphItem<RemoteResolveResult>> CreateGraphItemAsync(

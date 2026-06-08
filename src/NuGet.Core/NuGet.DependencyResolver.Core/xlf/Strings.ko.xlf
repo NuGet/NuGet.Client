@@ -17,11 +17,6 @@
         <target state="translated">‘{0}’ 패키지 ID에 대한 패키지 소스 맵 일치 검색 결과가 없습니다.</target>
         <note>{0} - Package id</note>
       </trans-unit>
-      <trans-unit id="Log_RefreshingHttpCacheOnMiss">
-        <source>Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</source>
-        <target state="new">Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</target>
-        <note>{0} - Package id, {1} - version range string</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

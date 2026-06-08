@@ -1001,6 +1001,374 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public async Task FindLibraryAsync_WhenExactVersionMissesStaleHttpCache_RefreshesOnceAndResolves()
+        {
+            // Regression test for https://github.com/NuGet/Home/issues/3116.
+            // A stale cache misses the exact version on the first pass; after the provider refreshes
+            // the HTTP cache once, the same source returns the now-published version.
+            var testLogger = new TestLogger();
+            var cacheContext = new SourceCacheContext();
+
+            int existsCallCount = 0;
+            int refreshedExistsCallCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.DoesPackageExistAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NuGetVersion>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, NuGetVersion, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    existsCallCount++;
+                    if (ctx.RefreshMemoryCache)
+                    {
+                        refreshedExistsCallCount++;
+                        return Task.FromResult(true);
+                    }
+
+                    return Task.FromResult(false);
+                });
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                testLogger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true);
+
+            var libraryRange = new LibraryRange("x", new VersionRange(new NuGetVersion(1, 0, 0)), LibraryDependencyTarget.Package);
+
+            // Act
+            var result = await provider.FindLibraryAsync(
+                libraryRange,
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                testLogger,
+                CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("x", result.Name);
+            Assert.Equal("1.0.0", result.Version.ToString());
+            // One stale pass and exactly one refreshed pass.
+            Assert.Equal(2, existsCallCount);
+            Assert.Equal(1, refreshedExistsCallCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenExactVersionGenuinelyMissing_RefreshesOnceAndReturnsNull()
+        {
+            // When refresh-on-miss runs and the version is genuinely absent, we return unresolved
+            // without performing more than one refresh.
+            var testLogger = new TestLogger();
+            var cacheContext = new SourceCacheContext();
+
+            int existsCallCount = 0;
+            int refreshedPassCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.DoesPackageExistAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NuGetVersion>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, NuGetVersion, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    existsCallCount++;
+                    if (ctx.RefreshMemoryCache)
+                    {
+                        refreshedPassCount++;
+                    }
+
+                    return Task.FromResult(false);
+                });
+            findResource.Setup(s => s.GetAllVersionsAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Enumerable.Empty<NuGetVersion>());
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                testLogger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true);
+
+            var libraryRange = new LibraryRange("x", new VersionRange(new NuGetVersion(1, 0, 0)), LibraryDependencyTarget.Package);
+
+            // Act
+            var result = await provider.FindLibraryAsync(
+                libraryRange,
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                testLogger,
+                CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
+            // Exactly one stale pass and one refreshed pass.
+            Assert.Equal(2, existsCallCount);
+            Assert.Equal(1, refreshedPassCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenSameIdMissesForMultipleProjects_RefreshesAtMostOncePerOperation()
+        {
+            // The provider instance is shared across projects in a restore operation, so a second project
+            // resolving a different (still missing) version of the same id must not trigger another refresh.
+            var testLogger = new TestLogger();
+            var cacheContext = new SourceCacheContext();
+
+            int refreshedPassCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.DoesPackageExistAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NuGetVersion>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, NuGetVersion, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    if (ctx.RefreshMemoryCache)
+                    {
+                        refreshedPassCount++;
+                    }
+
+                    return Task.FromResult(false);
+                });
+            findResource.Setup(s => s.GetAllVersionsAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Enumerable.Empty<NuGetVersion>());
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                testLogger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true);
+
+            var firstProjectRange = new LibraryRange("x", new VersionRange(new NuGetVersion(1, 0, 0)), LibraryDependencyTarget.Package);
+            var secondProjectRange = new LibraryRange("x", new VersionRange(new NuGetVersion(2, 0, 0)), LibraryDependencyTarget.Package);
+
+            // Act - two projects sharing the same provider resolve different missing versions of "x".
+            var firstResult = await provider.FindLibraryAsync(
+                firstProjectRange, NuGetFramework.Parse("net45"), cacheContext, testLogger, CancellationToken.None);
+            var secondResult = await provider.FindLibraryAsync(
+                secondProjectRange, NuGetFramework.Parse("net45"), cacheContext, testLogger, CancellationToken.None);
+
+            // Assert
+            Assert.Null(firstResult);
+            Assert.Null(secondResult);
+            // Only the first miss should have triggered a refresh.
+            Assert.Equal(1, refreshedPassCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenFloatingRangeMisses_DoesNotRefresh()
+        {
+            // Floating ranges must not trigger refresh-on-miss; this guards against amplifying traffic.
+            var testLogger = new TestLogger();
+            var cacheContext = new SourceCacheContext();
+
+            int refreshedPassCount = 0;
+            int getAllVersionsCallCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.GetAllVersionsAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, SourceCacheContext, ILogger, CancellationToken>((_, ctx, _, _) =>
+                {
+                    getAllVersionsCallCount++;
+                    if (ctx.RefreshMemoryCache)
+                    {
+                        refreshedPassCount++;
+                    }
+
+                    return Task.FromResult(Enumerable.Empty<NuGetVersion>());
+                });
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                testLogger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true);
+
+            var libraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0-*"), LibraryDependencyTarget.Package);
+
+            // Act
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, testLogger, CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
+            Assert.Equal(0, refreshedPassCount);
+            Assert.Equal(1, getAllVersionsCallCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenRefreshOnMissIsOptedOut_DoesNotRefresh()
+        {
+            // NUGET_HTTP_CACHE_REFRESH_ON_MISS=false disables the behavior.
+            var testLogger = new TestLogger();
+            var cacheContext = new SourceCacheContext();
+
+            int existsCallCount = 0;
+            int refreshedPassCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.DoesPackageExistAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NuGetVersion>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, NuGetVersion, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    existsCallCount++;
+                    if (ctx.RefreshMemoryCache)
+                    {
+                        refreshedPassCount++;
+                    }
+
+                    return Task.FromResult(false);
+                });
+            findResource.Setup(s => s.GetAllVersionsAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Enumerable.Empty<NuGetVersion>());
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "NUGET_HTTP_CACHE_REFRESH_ON_MISS", "false" }
+            });
+
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                testLogger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true,
+                fileCache: null,
+                isFallbackFolderSource: false,
+                environment);
+
+            var libraryRange = new LibraryRange("x", new VersionRange(new NuGetVersion(1, 0, 0)), LibraryDependencyTarget.Package);
+
+            // Act
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, testLogger, CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
+            Assert.Equal(0, refreshedPassCount);
+            Assert.Equal(1, existsCallCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenSourceIsNotHttp_DoesNotRefreshOnMiss()
+        {
+            // Only HTTP-backed sources have an HTTP cache to refresh.
+            var testLogger = new TestLogger();
+            var cacheContext = new SourceCacheContext();
+
+            int existsCallCount = 0;
+            int refreshedPassCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource.Setup(s => s.DoesPackageExistAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NuGetVersion>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, NuGetVersion, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    existsCallCount++;
+                    if (ctx.RefreshMemoryCache)
+                    {
+                        refreshedPassCount++;
+                    }
+
+                    return Task.FromResult(false);
+                });
+            findResource.Setup(s => s.GetAllVersionsAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Enumerable.Empty<NuGetVersion>());
+
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource(@"C:\local\packages"));
+
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                testLogger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true);
+
+            var libraryRange = new LibraryRange("x", new VersionRange(new NuGetVersion(1, 0, 0)), LibraryDependencyTarget.Package);
+
+            // Act
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, testLogger, CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
+            Assert.Equal(0, refreshedPassCount);
+            Assert.Equal(1, existsCallCount);
+        }
+
         private sealed class SourceRepositoryDependencyProviderTest : IDisposable
         {
             internal TestLogger Logger { get; }

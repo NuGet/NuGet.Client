@@ -884,6 +884,11 @@ Bu özelliği kullanmak için .NET SDK'nizi yükseltin veya RestoreUseLegacyDepe
         <target state="translated">{0} adlı proje dosyası okunuyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Log_RefreshingHttpCacheOnMiss">
+        <source>Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</source>
+        <target state="new">Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</target>
+        <note>{0} - Package id, {1} - version range string</note>
+      </trans-unit>
       <trans-unit id="Log_ResolverConflict">
         <source>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</source>
         <target state="translated">'{0}' için çakışan istekler giderilemiyor: {1} Çerçevesi: {2}</target>
