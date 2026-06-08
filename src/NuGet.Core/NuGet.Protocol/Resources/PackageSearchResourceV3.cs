@@ -26,12 +26,6 @@ namespace NuGet.Protocol
         private readonly Uri[] _searchEndpoints;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
-        [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
-        public PackageSearchResourceV3(RawSearchResourceV3 searchResource)
-            : base()
-        {
-        }
-
         internal PackageSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
             : this(client, searchEndpoints, environmentVariableReader: null)
         {

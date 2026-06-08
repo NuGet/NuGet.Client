@@ -825,7 +825,6 @@ NuGet.Protocol.PackageSearchResourceV2Feed
 NuGet.Protocol.PackageSearchResourceV2FeedProvider
 NuGet.Protocol.PackageSearchResourceV2FeedProvider.PackageSearchResourceV2FeedProvider() -> void
 NuGet.Protocol.PackageSearchResourceV3
-~NuGet.Protocol.PackageSearchResourceV3.PackageSearchResourceV3(NuGet.Protocol.RawSearchResourceV3 searchResource) -> void
 NuGet.Protocol.PackageSearchResourceV3Provider
 NuGet.Protocol.PackageSearchResourceV3Provider.PackageSearchResourceV3Provider() -> void
 NuGet.Protocol.PackageUpdateResourceV2Provider
