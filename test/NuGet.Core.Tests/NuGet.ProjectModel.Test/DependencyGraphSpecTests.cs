@@ -607,6 +607,24 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(firstHash, secondHash);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetHash_WithDifferentRestoreEnableAnalyzerAssetsValues_ReturnsDifferentHashes(bool useLegacyHashFunction)
+        {
+            // Arrange
+            DependencyGraphSpec first = CreateDependencyGraphSpec();
+            DependencyGraphSpec second = CreateDependencyGraphSpec();
+            second.GetProjectSpec("a").RestoreMetadata.RestoreEnableAnalyzerAssets = true;
+
+            // Act
+            string firstHash = GetHash(first, useLegacyHashFunction);
+            string secondHash = GetHash(second, useLegacyHashFunction);
+
+            // Assert
+            Assert.NotEqual(firstHash, secondHash);
+        }
+
         [Fact]
         public void AddProject_WhenRestoreMetadataIsNull_AddsProject()
         {

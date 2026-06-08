@@ -96,6 +96,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] UsingMicrosoftNETSdk = Encoding.UTF8.GetBytes("UsingMicrosoftNETSdk");
         private static readonly byte[] UseLegacyDependencyResolverPropertyName = Encoding.UTF8.GetBytes("restoreUseLegacyDependencyResolver");
         private static readonly byte[] RestoreDoNotWriteDependencyGraphSpecPropertyName = Encoding.UTF8.GetBytes("restoreDoNotWriteDependencyGraphSpec");
+        private static readonly byte[] RestoreEnableAnalyzerAssetsPropertyName = Encoding.UTF8.GetBytes("restoreEnableAnalyzerAssets");
         private static readonly byte[] PackagesToPrunePropertyName = Encoding.UTF8.GetBytes("packagesToPrune");
 
         internal static PackageSpec GetPackageSpecUtf8JsonStreamReader(Stream stream, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
@@ -777,6 +778,7 @@ namespace NuGet.ProjectModel
             NuGetVersion sdkAnalysisLevel = null;
             bool useLegacyDependencyResolver = false;
             bool restoreDoNotWriteDependencyGraphSpec = false;
+            bool restoreEnableAnalyzerAssets = false;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -1039,6 +1041,10 @@ namespace NuGet.ProjectModel
                     {
                         restoreDoNotWriteDependencyGraphSpec = jsonReader.ReadNextTokenAsBoolOrThrowAnException(RestoreDoNotWriteDependencyGraphSpecPropertyName, Strings.Invalid_AttributeValue);
                     }
+                    else if (jsonReader.ValueTextEquals(RestoreEnableAnalyzerAssetsPropertyName))
+                    {
+                        restoreEnableAnalyzerAssets = jsonReader.ReadNextTokenAsBoolOrThrowAnException(RestoreEnableAnalyzerAssetsPropertyName, Strings.Invalid_AttributeValue);
+                    }
                     else
                     {
                         jsonReader.Skip();
@@ -1068,6 +1074,7 @@ namespace NuGet.ProjectModel
             msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
             msbuildMetadata.UseLegacyDependencyResolver = useLegacyDependencyResolver;
             msbuildMetadata.RestoreDoNotWriteDependencyGraphSpec = restoreDoNotWriteDependencyGraphSpec;
+            msbuildMetadata.RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets;
 
             if (configFilePaths != null)
             {

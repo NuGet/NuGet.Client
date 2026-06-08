@@ -160,5 +160,48 @@ namespace Msbuild.Integration.Test
             // Assert
             resultText.Should().Be(expected);
         }
+
+        [Theory]
+        // .NET 11 and greater: opt-in is honored.
+        [InlineData("net11.0", "true")]
+        [InlineData("net12.0", "true")]
+        // Older .NET (Core): opt-in is forced off.
+        [InlineData("net10.0", "false")]
+        [InlineData("net9.0", "false")]
+        [InlineData("net8.0", "false")]
+        [InlineData("netcoreapp3.1", "false")]
+        // .NET Standard: not available.
+        [InlineData("netstandard2.1", "false")]
+        [InlineData("netstandard2.0", "false")]
+        // .NET Framework: not available.
+        [InlineData("net48", "false")]
+        public void AnalyzerAssetsAvailability_RestoreEnableAnalyzerAssets_OnlyAvailableForNet11OrGreater(string targetFramework, string expected)
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+
+            // The opt-in is set in the project so that the gating in NuGet.targets (imported afterwards) can override it.
+            string projectText = @"<Project>
+    <PropertyGroup>
+        <RestoreEnableAnalyzerAssets>true</RestoreEnableAnalyzerAssets>
+    </PropertyGroup>
+    <Import Project=""$(NuGetRestoreTargets)"" />
+</Project>";
+            var projectFilePath = Path.Combine(testDirectory, "my.proj");
+            File.WriteAllText(projectFilePath, projectText);
+
+            string args = $"{projectFilePath} -getProperty:RestoreEnableAnalyzerAssets";
+
+            var framework = NuGetFramework.Parse(targetFramework);
+            args += $" -p:TargetFrameworkIdentifier={framework.Framework}";
+            args += $" -p:TargetFrameworkVersion={framework.Version}";
+
+            // Act
+            var result = _fixture.RunMsBuild(testDirectory, args);
+            var resultText = result.Output.Trim();
+
+            // Assert
+            resultText.Should().Be(expected);
+        }
     }
 }

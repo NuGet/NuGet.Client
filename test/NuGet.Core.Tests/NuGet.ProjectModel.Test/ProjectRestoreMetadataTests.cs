@@ -868,5 +868,40 @@ namespace NuGet.ProjectModel.Test
             clone.RestoreDoNotWriteDependencyGraphSpec.Should().Be(true);
             AssertEquality(true, original, clone);
         }
+
+        [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(false, false, true)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
+        public void Equals_WithRestoreEnableAnalyzerAssets(bool left, bool right, bool expected)
+        {
+            var leftSide = new ProjectRestoreMetadata
+            {
+                RestoreEnableAnalyzerAssets = left
+            };
+
+            var rightSide = new ProjectRestoreMetadata
+            {
+                RestoreEnableAnalyzerAssets = right
+            };
+
+            AssertEquality(expected, leftSide, rightSide);
+            AssertHashCode(expected, leftSide, rightSide);
+        }
+
+        [Fact]
+        public void Clone_WithAnalyzerAssetRestoreMetadata_CopiesValues()
+        {
+            var original = new ProjectRestoreMetadata
+            {
+                RestoreEnableAnalyzerAssets = true
+            };
+
+            var clone = original.Clone();
+
+            clone.RestoreEnableAnalyzerAssets.Should().BeTrue();
+            AssertEquality(true, original, clone);
+        }
     }
 }

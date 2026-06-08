@@ -227,6 +227,61 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Write_ReadWrite_RestoreEnableAnalyzerAssets_True()
+        {
+            // Arrange
+            var json = @"{
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""restoreEnableAnalyzerAssets"": true,
+    ""frameworks"": {
+      ""net45"": {
+        ""framework"": ""net45"",
+        ""projectReferences"": {}
+      }
+    }
+  }
+}";
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void Write_ReadWrite_RestoreEnableAnalyzerAssets_DefaultFalse_NotWritten()
+        {
+            // Arrange
+            var json = @"{
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""frameworks"": {
+      ""net45"": {
+        ""framework"": ""net45"",
+        ""projectReferences"": {}
+      }
+    }
+  }
+}";
+            // Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.csproj");
+
+            // Assert
+            spec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
+
+            var output = GetJsonString(spec);
+            output.Should().NotContain("restoreEnableAnalyzerAssets");
+        }
+
+        [Fact]
         public void Write_SerializesMembersAsJson()
         {
             // Arrange && Act

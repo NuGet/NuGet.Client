@@ -153,6 +153,10 @@ namespace NuGet.Commands
         private const string PackagePruningRemovablePackagesCount = "Pruning.RemovablePackages.Count";
         private const string PackagePruningDirectCount = "Pruning.Pruned.Direct.Count";
 
+        // Analyzer assets names
+        private const string AnalyzerAssetsEnabled = "AnalyzerAssets.Enabled";
+        private const string AnalyzerAssetsCount = "AnalyzerAssets.Count";
+
         internal readonly bool _enableNewDependencyResolver;
         private readonly bool _isLockFileEnabled;
 
@@ -357,6 +361,7 @@ namespace NuGet.Commands
 
                 telemetry.TelemetryEvent[UpdatedAssetsFile] = restoreResult._isAssetsFileDirty.Value;
                 telemetry.TelemetryEvent[UpdatedMSBuildFiles] = restoreResult._dirtyMSBuildFiles.Value.Count > 0;
+                telemetry.TelemetryEvent[AnalyzerAssetsCount] = CountAnalyzerAssets(assetsFile);
 
                 return restoreResult;
             }
@@ -411,6 +416,7 @@ namespace NuGet.Commands
             }
 
             telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
+            telemetry.TelemetryEvent[AnalyzerAssetsEnabled] = _request.Project.RestoreMetadata?.RestoreEnableAnalyzerAssets ?? false;
 
             PopulatePruningEnabledTelemetry(_request.Project, telemetry.TelemetryEvent);
         }
@@ -454,6 +460,37 @@ namespace NuGet.Commands
             telemetryEvent[PackagePruningFrameworksEnabledCount] = pruningEnabledCount;
             telemetryEvent[PackagePruningFrameworksDisabledCount] = pruningDisabledCount;
             telemetryEvent[PackagePruningFrameworksUnsupportedCount] = pruningNotApplicableCount;
+        }
+
+        /// <summary>
+        /// Counts the analyzer assets written to the assets file, excluding '_._' placeholders that
+        /// represent analyzers excluded from the project. Reflects the depth of analyzer-assets adoption.
+        /// </summary>
+        private static int CountAnalyzerAssets(LockFile assetsFile)
+        {
+            int count = 0;
+
+            foreach (LockFileTarget target in assetsFile.Targets)
+            {
+                foreach (LockFileTargetLibrary library in target.Libraries)
+                {
+                    IList<LockFileItem> analyzerAssets = library.AnalyzerAssets;
+                    if (analyzerAssets == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (LockFileItem asset in analyzerAssets)
+                    {
+                        if (!asset.Path.EndsWith("_._", StringComparison.Ordinal))
+                        {
+                            count++;
+                        }
+                    }
+                }
+            }
+
+            return count;
         }
 
         private async Task<(RestoreResult, bool, CacheFile)> EvaluateNoOpAsync(TelemetryActivity telemetry, CacheFile cacheFile, Stopwatch restoreTime)

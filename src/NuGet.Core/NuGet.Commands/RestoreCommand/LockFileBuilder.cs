@@ -155,7 +155,9 @@ namespace NuGet.Commands
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
-            var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
+            var restoreMetadata = project.RestoreMetadata;
+            var rootProjectStyle = restoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
+            bool restoreEnableAnalyzerAssets = restoreMetadata?.RestoreEnableAnalyzerAssets == true;
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
@@ -238,6 +240,7 @@ namespace NuGet.Commands
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
+                            restoreEnableAnalyzerAssets: restoreEnableAnalyzerAssets,
                             cache: lockFileBuilderCache);
 
                         target.Libraries.Add(targetLibrary);
@@ -258,6 +261,7 @@ namespace NuGet.Commands
                                     targetFrameworkOverride: nonFallbackFramework,
                                     dependencyType: includeFlags,
                                     dependencies: graphItem.Data.Dependencies,
+                                    restoreEnableAnalyzerAssets: restoreEnableAnalyzerAssets,
                                     cache: lockFileBuilderCache);
                                 usedFallbackFramework = !targetLibrary.Equals(targetLibraryWithoutFallback);
                             }

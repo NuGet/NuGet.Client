@@ -172,6 +172,7 @@ namespace NuGet.ProjectModel
             SetValueIfFalse(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
             SetValueIfTrue(writer, "restoreUseLegacyDependencyResolver", msbuildMetadata.UseLegacyDependencyResolver);
             SetValueIfTrue(writer, "restoreDoNotWriteDependencyGraphSpec", msbuildMetadata.RestoreDoNotWriteDependencyGraphSpec);
+            SetValueIfTrue(writer, "restoreEnableAnalyzerAssets", msbuildMetadata.RestoreEnableAnalyzerAssets);
         }
 
 
