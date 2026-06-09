@@ -24,7 +24,7 @@ public static class NuGetCommands
     /// <param name="virtualProjectBuilder">For handling file-based apps.</param>
     /// <remarks>Many of NuGet's commands are defined in the dotnet/sdk repo, and those run NuGet.CommandLine.XPlat.dll as a child process.
     /// Those commands are not added by this method.</remarks>
-    public static void Add(Command command, Option<bool> interactiveOption, IVirtualProjectBuilder? virtualProjectBuilder = null)
+    public static void Add(Command command, Option<bool> interactiveOption, IVirtualProjectBuilder? virtualProjectBuilder)
     {
         var packageCommand = command.Subcommands.FirstOrDefault(c => c.Name == "package");
         if (packageCommand is null)
@@ -38,7 +38,7 @@ public static class NuGetCommands
     }
 
     // For binary backcompat. To delete once the SDK starts using the Command overload.
-    public static void Add(RootCommand rootCommand, Option<bool> interactiveOption, IVirtualProjectBuilder? virtualProjectBuilder = null)
+    public static void Add(RootCommand rootCommand, Option<bool> interactiveOption, IVirtualProjectBuilder? virtualProjectBuilder)
     {
         Add((Command)rootCommand, interactiveOption, virtualProjectBuilder);
     }
@@ -57,6 +57,6 @@ public static class NuGetCommands
             Description = Strings.AddPkg_InteractiveDescription,
             DefaultValueFactory = _ => Console.IsOutputRedirected
         };
-        Add((Command)rootCommand, interactiveOption);
+        Add((Command)rootCommand, interactiveOption, virtualProjectBuilder: null);
     }
 }

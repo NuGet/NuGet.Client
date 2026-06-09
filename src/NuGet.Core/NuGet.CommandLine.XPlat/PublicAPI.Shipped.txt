@@ -15,4 +15,4 @@ static NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(System.Comm
 static NuGet.CommandLine.XPlat.Program.Run(string![]! args, NuGet.CommandLine.XPlat.IVirtualProjectBuilder! virtualProjectBuilder) -> int
 static NuGet.CommandLine.XPlat.NuGetCommands.Add(System.CommandLine.RootCommand! rootCommand) -> void
 static NuGet.CommandLine.XPlat.NuGetCommands.Add(System.CommandLine.RootCommand! rootCommand, System.CommandLine.Option<bool>! interactiveOption) -> void
-static NuGet.CommandLine.XPlat.NuGetCommands.Add(System.CommandLine.RootCommand! rootCommand, System.CommandLine.Option<bool>! interactiveOption, NuGet.CommandLine.XPlat.IVirtualProjectBuilder? virtualProjectBuilder = null) -> void
+static NuGet.CommandLine.XPlat.NuGetCommands.Add(System.CommandLine.RootCommand! rootCommand, System.CommandLine.Option<bool>! interactiveOption, NuGet.CommandLine.XPlat.IVirtualProjectBuilder? virtualProjectBuilder) -> void
