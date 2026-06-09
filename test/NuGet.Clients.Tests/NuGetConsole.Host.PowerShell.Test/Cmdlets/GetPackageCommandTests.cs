@@ -587,6 +587,46 @@ namespace NuGetConsole.Host.PowerShell.Test
             package.Id.Should().Be("ReleaseNotesPackage");
         }
 
+        /// <summary>
+        /// Migrated from Test-GetPackageWithoutOpenSolutionThrows in GetPackageTest.ps1.
+        /// Verifies that Get-Package (installed) throws when no solution is open.
+        /// </summary>
+        [Fact]
+        public void GetPackage_WithNoOpenSolution_Throws()
+        {
+            // Arrange — override the default IsSolutionOpen = true to simulate no solution
+            _solutionManager.SetupGet(x => x.IsSolutionOpen).Returns(false);
+
+            using var fixture = new CmdletRunspaceFixture(activeSource: "https://api.nuget.org/v3/index.json");
+
+            // Act + Assert — terminating error is surfaced as a RuntimeException
+            var act = () => fixture.Invoke("Get-Package", new Dictionary<string, object>());
+            act.Should().Throw<RuntimeException>()
+                .Which.ErrorRecord.Exception.Message.Should()
+                .Contain("The current environment doesn't have a solution open.");
+        }
+
+        /// <summary>
+        /// Migrated from Test-GetPackageDoesNotThrowIfSolutionIsTemporary in GetPackageTest.ps1.
+        /// Verifies that Get-Package (installed) throws when the solution exists but is not yet saved
+        /// (e.g., a text file was opened without saving the solution).
+        /// </summary>
+        [Fact]
+        public void GetPackage_WithUnsavedSolution_Throws()
+        {
+            // Arrange — solution is open but not saved (IsSolutionAvailableAsync returns false)
+            _solutionManager.SetupGet(x => x.IsSolutionOpen).Returns(true);
+            _solutionManager.Setup(x => x.IsSolutionAvailableAsync()).ReturnsAsync(false);
+
+            using var fixture = new CmdletRunspaceFixture(activeSource: "https://api.nuget.org/v3/index.json");
+
+            // Act + Assert — terminating error is surfaced as a RuntimeException
+            var act = () => fixture.Invoke("Get-Package", new Dictionary<string, object>());
+            act.Should().Throw<RuntimeException>()
+                .Which.ErrorRecord.Exception.Message.Should()
+                .Contain("Solution is not saved.");
+        }
+
         #region Helpers
 
         private void SetupSourceRepositoryProvider(string localSourcePath)
