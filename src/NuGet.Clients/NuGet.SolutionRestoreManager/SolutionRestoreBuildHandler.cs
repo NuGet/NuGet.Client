@@ -150,7 +150,10 @@ namespace NuGet.SolutionRestoreManager
                         _isMEFInitialized = true;
                     }
 
-                    return await RestoreAsync(dwAction, token);
+                    // Re-enter the worker's JoinableTaskFactory so the restore work is tracked by
+                    // its JoinableTaskCollection.
+                    return await SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsync(
+                        () => RestoreAsync(dwAction, token));
                 });
         }
 
