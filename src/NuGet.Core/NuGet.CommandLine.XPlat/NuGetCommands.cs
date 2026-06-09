@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.CommandLine;
 using System.Linq;
 using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
@@ -34,5 +35,28 @@ public static class NuGetCommands
 
         PackageUpdateCommand.Register(packageCommand, interactiveOption, virtualProjectBuilder);
         PackageDownloadCommand.Register(packageCommand, interactiveOption);
+    }
+
+    // For binary backcompat. To delete once the SDK starts using the Command overload.
+    public static void Add(RootCommand rootCommand, Option<bool> interactiveOption, IVirtualProjectBuilder? virtualProjectBuilder = null)
+    {
+        Add((Command)rootCommand, interactiveOption, virtualProjectBuilder);
+    }
+
+    // For binary backcompat. To delete once the SDK starts using the Command overload.
+    public static void Add(RootCommand rootCommand, Option<bool> interactiveOption)
+    {
+        Add((Command)rootCommand, interactiveOption, virtualProjectBuilder: null);
+    }
+
+    // For binary backcompat. To delete once the SDK starts using the Command overload.
+    public static void Add(RootCommand rootCommand)
+    {
+        var interactiveOption = new Option<bool>("--interactive")
+        {
+            Description = Strings.AddPkg_InteractiveDescription,
+            DefaultValueFactory = _ => Console.IsOutputRedirected
+        };
+        Add((Command)rootCommand, interactiveOption);
     }
 }
