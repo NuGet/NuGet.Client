@@ -189,25 +189,6 @@ namespace NuGet.Protocol
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
-        private async Task<T> Search<T>(
-            Func<HttpSource, Uri, Task<T>> getResultAsync,
-            string searchTerm,
-            SearchFilter filters,
-            int skip,
-            int take,
-            Common.ILogger log,
-            CancellationToken cancellationToken)
-        {
-            return await SearchPage(
-                uri => getResultAsync(_client, uri),
-                searchTerm,
-                filters,
-                skip,
-                take,
-                log,
-                cancellationToken);
-        }
-
         /// <summary>
         /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result 
         /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result. 
@@ -227,8 +208,8 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
-            return await Search(
-                (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
+            return await SearchPage(
+                uri => _client.ProcessHttpStreamAsync(
                     new HttpSourceRequest(uri, Common.NullLogger.Instance),
                     s => ProcessHttpStreamTakeCountedItemAsync(s, take, cancellationToken),
                     Common.NullLogger.Instance,
