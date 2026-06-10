@@ -64,17 +64,20 @@ namespace NuGet.Protocol
                 cancellationToken);
 
             List<IPackageSearchMetadata> searchResults = new(searchResultMetadata.Count);
-            searchResults.AddRange(searchResultMetadata
-                .Select(m => m.WithVersions(() => GetVersions(m, filter)))
-                .Select(m => { ((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)m).CacheStrings(metadataCache); return m; }));
+            foreach (var metadata in searchResultMetadata)
+            {
+                var withVersions = metadata.WithVersions(() => GetVersions(metadata, filter));
+                ((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)withVersions).CacheStrings(metadataCache);
+                searchResults.Add(withVersions);
+            }
 
             return searchResults;
         }
 
         private static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
         {
-            var uniqueVersions = new HashSet<Versioning.NuGetVersion>();
-            var versions = new List<VersionInfo>();
+            var uniqueVersions = new HashSet<Versioning.NuGetVersion>(metadata.ParsedVersions.Length + 1);
+            var versions = new List<VersionInfo>(metadata.ParsedVersions.Length + 1);
             foreach (var ver in metadata.ParsedVersions)
             {
                 if ((filter.IncludePrerelease || !ver.Version.IsPrerelease) && uniqueVersions.Add(ver.Version))
@@ -124,7 +127,7 @@ namespace NuGet.Protocol
                     "q=" + searchTerm +
                     "&skip=" + skip.ToString(CultureInfo.CurrentCulture) +
                     "&take=" + take.ToString(CultureInfo.CurrentCulture) +
-                    "&prerelease=" + filters.IncludePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant();
+                    "&prerelease=" + (filters.IncludePrerelease ? "true" : "false");
 
                 if (filters.IncludeDelisted)
                 {
