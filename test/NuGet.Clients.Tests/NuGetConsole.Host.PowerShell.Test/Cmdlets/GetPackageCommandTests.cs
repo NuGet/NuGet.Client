@@ -588,7 +588,6 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         /// <summary>
-        /// Migrated from Test-GetPackageWithoutOpenSolutionThrows in GetPackageTest.ps1.
         /// Verifies that Get-Package (installed) throws when no solution is open.
         /// </summary>
         [Fact]
@@ -597,7 +596,7 @@ namespace NuGetConsole.Host.PowerShell.Test
             // Arrange — override the default IsSolutionOpen = true to simulate no solution
             _solutionManager.SetupGet(x => x.IsSolutionOpen).Returns(false);
 
-            using var fixture = new CmdletRunspaceFixture(activeSource: "https://api.nuget.org/v3/index.json");
+            using var fixture = new CmdletRunspaceFixture(activeSource: "https://contoso.com/v3/index.json");
 
             // Act + Assert — terminating error is surfaced as a RuntimeException
             var act = () => fixture.Invoke("Get-Package", new Dictionary<string, object>());
@@ -607,7 +606,6 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         /// <summary>
-        /// Migrated from Test-GetPackageDoesNotThrowIfSolutionIsTemporary in GetPackageTest.ps1.
         /// Verifies that Get-Package (installed) throws when the solution exists but is not yet saved
         /// (e.g., a text file was opened without saving the solution).
         /// </summary>
@@ -618,7 +616,7 @@ namespace NuGetConsole.Host.PowerShell.Test
             _solutionManager.SetupGet(x => x.IsSolutionOpen).Returns(true);
             _solutionManager.Setup(x => x.IsSolutionAvailableAsync()).ReturnsAsync(false);
 
-            using var fixture = new CmdletRunspaceFixture(activeSource: "https://api.nuget.org/v3/index.json");
+            using var fixture = new CmdletRunspaceFixture(activeSource: "https://contoso.com/v3/index.json");
 
             // Act + Assert — terminating error is surfaced as a RuntimeException
             var act = () => fixture.Invoke("Get-Package", new Dictionary<string, object>());
@@ -698,7 +696,7 @@ namespace NuGetConsole.Host.PowerShell.Test
         {
             private readonly Runspace _runspace;
 
-            public CmdletRunspaceFixture(string activeSource = "https://api.nuget.org/v3/index.json")
+            public CmdletRunspaceFixture(string activeSource = "https://contoso.com/v3/index.json")
             {
                 var host = new TestPSHost(activeSource);
                 var initialSessionState = InitialSessionState.CreateDefault();

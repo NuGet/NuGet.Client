@@ -66,9 +66,7 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         /// <summary>
-        /// Migrated from Test-FindPackageByIdjQuery, Test-FindPackageByIdMVC, and Test-FindPackageByIdaspnet
-        /// in FindPackageTest.ps1. All three tested the same behavior (find packages by an ID keyword
-        /// and assert at least one result is returned), so they are combined here.
+        /// Verifies that Find-Package returns packages matching an ID keyword.
         /// </summary>
         [Fact]
         public async Task FindPackage_ById_ReturnsMatchingPackagesAsync()
@@ -104,7 +102,6 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         /// <summary>
-        /// Migrated from Test-FindPackageByIdAndVersion in FindPackageTest.ps1.
         /// Verifies that Find-Package returns a result with the expected version.
         /// </summary>
         [Fact]
@@ -138,7 +135,6 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         /// <summary>
-        /// Migrated from Test-FindPackageByIdWithAllVersions in FindPackageTest.ps1.
         /// Verifies that Find-Package -AllVersions returns multiple versions for a package.
         /// </summary>
         [Fact]
@@ -177,7 +173,6 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         /// <summary>
-        /// Migrated from Test-FindPackageByIdAndPrereleaseVersion (SkipTest) in FindPackageTest.ps1.
         /// Verifies that Find-Package without -IncludePrerelease hides prerelease-only packages.
         /// </summary>
         [Fact]
@@ -209,7 +204,6 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         /// <summary>
-        /// Migrated from Test-FindPackageByIdAndPrereleaseVersion (SkipTest) in FindPackageTest.ps1.
         /// Verifies that Find-Package -IncludePrerelease returns prerelease packages.
         /// </summary>
         [Fact]
@@ -273,7 +267,7 @@ namespace NuGetConsole.Host.PowerShell.Test
         {
             private readonly Runspace _runspace;
 
-            public CmdletRunspaceFixture(string activeSource = "https://api.nuget.org/v3/index.json")
+            public CmdletRunspaceFixture(string activeSource = "https://contoso.com/v3/index.json")
             {
                 var host = new TestPSHost(activeSource);
                 var initialSessionState = InitialSessionState.CreateDefault();
