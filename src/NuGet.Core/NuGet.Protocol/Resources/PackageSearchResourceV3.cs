@@ -21,22 +21,20 @@ namespace NuGet.Protocol
     public class PackageSearchResourceV3 : PackageSearchResource
     {
         private readonly HttpSource _client;
-        private readonly Uri[] _searchEndpoints;
-        private readonly HashSet<Uri>? _packageTypeCapableEndpoints;
+        private readonly IReadOnlyList<Uri> _searchEndpoints;
+        private readonly IReadOnlyList<Uri>? _packageTypeCapableEndpoints;
         private readonly IEnvironmentVariableReader? _environmentVariableReader;
 
         internal PackageSearchResourceV3(
             HttpSource client,
-            IEnumerable<Uri> searchEndpoints,
-            IEnumerable<Uri>? packageTypeCapableEndpoints = null,
+            IReadOnlyList<Uri> searchEndpoints,
+            IReadOnlyList<Uri>? packageTypeCapableEndpoints = null,
             IEnvironmentVariableReader? environmentVariableReader = null)
             : base()
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
-            _searchEndpoints = searchEndpoints?.ToArray() ?? throw new ArgumentNullException(nameof(searchEndpoints));
-            _packageTypeCapableEndpoints = packageTypeCapableEndpoints == null
-                ? null
-                : new HashSet<Uri>(packageTypeCapableEndpoints);
+            _searchEndpoints = searchEndpoints ?? throw new ArgumentNullException(nameof(searchEndpoints));
+            _packageTypeCapableEndpoints = packageTypeCapableEndpoints;
             _environmentVariableReader = environmentVariableReader;
         }
 
@@ -115,13 +113,13 @@ namespace NuGet.Protocol
 
             // When package type filtering is requested, only iterate endpoints that advertise
             // SearchQueryService/3.5.0. Otherwise, use the full set of search endpoints.
-            var endpoints = packageTypeFilterRequested
-                ? _packageTypeCapableEndpoints!.ToArray()
+            IReadOnlyList<Uri> endpoints = packageTypeFilterRequested
+                ? _packageTypeCapableEndpoints ?? []
                 : _searchEndpoints;
 
-            log.LogVerbose($"Found {endpoints.Length} search endpoints.");
+            log.LogVerbose($"Found {endpoints.Count} search endpoints.");
 
-            for (var i = 0; i < endpoints.Length; i++)
+            for (var i = 0; i < endpoints.Count; i++)
             {
                 var endpoint = endpoints[i];
 
@@ -170,7 +168,7 @@ namespace NuGet.Protocol
                 {
                     throw;
                 }
-                catch when (i < endpoints.Length - 1)
+                catch when (i < endpoints.Count - 1)
                 {
                     // Ignore all failures until the last endpoint
                 }
