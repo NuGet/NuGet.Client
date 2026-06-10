@@ -96,11 +96,12 @@ namespace NuGet.Protocol
                     Common.ILogger log,
                     CancellationToken cancellationToken)
         {
-            var packageTypeFilterRequested = filters.PackageTypes != null && filters.PackageTypes.Any();
+            int packageTypeCount = filters.PackageTypes?.Count() ?? 0;
+            bool packageTypeFilterRequested = packageTypeCount > 0;
 
             if (packageTypeFilterRequested)
             {
-                if (filters.PackageTypes!.Count() > 1)
+                if (packageTypeCount > 1)
                 {
                     throw new ArgumentException(Strings.Protocol_PackageTypeFilterMultipleNotSupported, nameof(filters));
                 }
