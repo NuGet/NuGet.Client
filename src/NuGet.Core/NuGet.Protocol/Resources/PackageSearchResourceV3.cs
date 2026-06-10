@@ -117,8 +117,6 @@ namespace NuGet.Protocol
                 ? _packageTypeCapableEndpoints ?? []
                 : _searchEndpoints;
 
-            log.LogVerbose($"Found {endpoints.Count} search endpoints.");
-
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var endpoint = endpoints[i];
