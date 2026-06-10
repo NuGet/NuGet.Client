@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -24,14 +22,14 @@ namespace NuGet.Protocol
     {
         private readonly HttpSource _client;
         private readonly Uri[] _searchEndpoints;
-        private readonly HashSet<Uri> _packageTypeCapableEndpoints;
-        private readonly IEnvironmentVariableReader _environmentVariableReader;
+        private readonly HashSet<Uri>? _packageTypeCapableEndpoints;
+        private readonly IEnvironmentVariableReader? _environmentVariableReader;
 
         internal PackageSearchResourceV3(
             HttpSource client,
             IEnumerable<Uri> searchEndpoints,
-            IEnumerable<Uri> packageTypeCapableEndpoints = null,
-            IEnvironmentVariableReader environmentVariableReader = null)
+            IEnumerable<Uri>? packageTypeCapableEndpoints = null,
+            IEnvironmentVariableReader? environmentVariableReader = null)
             : base()
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -104,7 +102,7 @@ namespace NuGet.Protocol
 
             if (packageTypeFilterRequested)
             {
-                if (filters.PackageTypes.Count() > 1)
+                if (filters.PackageTypes!.Count() > 1)
                 {
                     throw new ArgumentException(Strings.Protocol_PackageTypeFilterMultipleNotSupported, nameof(filters));
                 }
@@ -118,7 +116,7 @@ namespace NuGet.Protocol
             // When package type filtering is requested, only iterate endpoints that advertise
             // SearchQueryService/3.5.0. Otherwise, use the full set of search endpoints.
             var endpoints = packageTypeFilterRequested
-                ? _packageTypeCapableEndpoints.ToArray()
+                ? _packageTypeCapableEndpoints!.ToArray()
                 : _searchEndpoints;
 
             log.LogVerbose($"Found {endpoints.Length} search endpoints.");
@@ -154,7 +152,7 @@ namespace NuGet.Protocol
                 {
                     // SearchQueryService/3.5.0 specifies a single 'packageType' parameter.
                     // Multi-value inputs are rejected above; here the collection has exactly one entry.
-                    queryString += "&packageType=" + filters.PackageTypes.First();
+                    queryString += "&packageType=" + filters.PackageTypes!.First();
                 }
 
                 queryString += "&semVerLevel=2.0.0";
@@ -247,17 +245,18 @@ namespace NuGet.Protocol
                 cancellationToken);
         }
 
-        internal async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
+        internal async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage? httpInitialResponse, int take, CancellationToken token)
         {
             if (take <= 0)
             {
                 return Enumerable.Empty<PackageSearchMetadata>();
             }
 
-            return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token)).Data;
+            var results = await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token);
+            return results?.Data ?? Enumerable.Empty<PackageSearchMetadata>();
         }
 
-        private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
+        private async Task<V3SearchResults?> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage? httpInitialResponse, uint take, CancellationToken token)
         {
             if (httpInitialResponse == null)
             {
@@ -275,7 +274,7 @@ namespace NuGet.Protocol
             }
         }
 
-        private static async Task<V3SearchResults> ProcessHttpStreamWithStjAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
+        private static async Task<V3SearchResults?> ProcessHttpStreamWithStjAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
         {
 #if NETCOREAPP2_0_OR_GREATER
             using var stream = await httpInitialResponse.Content.ReadAsStreamAsync(token);
@@ -292,7 +291,7 @@ namespace NuGet.Protocol
             return results;
         }
 
-        private static async Task<V3SearchResults> ProcessHttpStreamWithNsjAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
+        private static async Task<V3SearchResults?> ProcessHttpStreamWithNsjAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
         {
             var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
             _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
