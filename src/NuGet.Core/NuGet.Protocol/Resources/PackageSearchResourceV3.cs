@@ -63,10 +63,10 @@ namespace NuGet.Protocol
                 log,
                 cancellationToken);
 
-            var searchResults = searchResultMetadata
+            List<IPackageSearchMetadata> searchResults = new(searchResultMetadata.Count);
+            searchResults.AddRange(searchResultMetadata
                 .Select(m => m.WithVersions(() => GetVersions(m, filter)))
-                .Select(m => { ((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)m).CacheStrings(metadataCache); return m; })
-                .ToArray();
+                .Select(m => { ((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)m).CacheStrings(metadataCache); return m; }));
 
             return searchResults;
         }
@@ -203,7 +203,7 @@ namespace NuGet.Protocol
         /// <param name="log">Logger instance.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>List of package meta data.</returns>
-        internal async Task<IEnumerable<PackageSearchMetadata>> Search(
+        internal async Task<IReadOnlyList<PackageSearchMetadata>> Search(
             string searchTerm,
             SearchFilter filters,
             int skip,
@@ -225,15 +225,15 @@ namespace NuGet.Protocol
                 cancellationToken);
         }
 
-        internal async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage? httpInitialResponse, int take, CancellationToken token)
+        internal async Task<IReadOnlyList<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage? httpInitialResponse, int take, CancellationToken token)
         {
             if (take <= 0)
             {
-                return Enumerable.Empty<PackageSearchMetadata>();
+                return [];
             }
 
             var results = await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token);
-            return results?.Data ?? Enumerable.Empty<PackageSearchMetadata>();
+            return results?.Data ?? [];
         }
 
         private async Task<V3SearchResults?> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage? httpInitialResponse, uint take, CancellationToken token)
