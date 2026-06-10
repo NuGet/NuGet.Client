@@ -98,16 +98,10 @@ namespace NuGet.Protocol
                     Common.ILogger log,
                     CancellationToken cancellationToken)
         {
-            int packageTypeCount = filters.PackageTypes?.Count() ?? 0;
-            bool packageTypeFilterRequested = packageTypeCount > 0;
+            bool packageTypeFilterRequested = !string.IsNullOrEmpty(filters.PackageType);
 
             if (packageTypeFilterRequested)
             {
-                if (packageTypeCount > 1)
-                {
-                    throw new ArgumentException(Strings.Protocol_PackageTypeFilterMultipleNotSupported, nameof(filters));
-                }
-
                 if (_packageTypeCapableEndpoints == null || _packageTypeCapableEndpoints.Count == 0)
                 {
                     throw new NotSupportedException(Strings.Protocol_PackageTypeFilterNotSupported);
@@ -149,9 +143,7 @@ namespace NuGet.Protocol
 
                 if (packageTypeFilterRequested)
                 {
-                    // SearchQueryService/3.5.0 specifies a single 'packageType' parameter.
-                    // Multi-value inputs are rejected above; here the collection has exactly one entry.
-                    queryString += "&packageType=" + filters.PackageTypes!.First();
+                    queryString += "&packageType=" + filters.PackageType;
                 }
 
                 queryString += "&semVerLevel=2.0.0";

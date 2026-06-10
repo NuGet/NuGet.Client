@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken cancellationToken);
 
         /// <summary>
-        /// Indicates whether filtering on <see cref="SearchFilter.PackageTypes"/> is supported by the current package source.
+        /// Indicates whether filtering on <see cref="SearchFilter.PackageType"/> is supported by the current package source.
         /// </summary>
         public abstract bool SupportsPackageTypeFiltering { get; }
     }
