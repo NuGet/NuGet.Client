@@ -134,6 +134,11 @@ Když nechcete, aby aplikace NuGet obnovovala balíčky během vytváření sest
         <target state="translated">Řešení není uložené. Než začnete spravovat balíčky NuGet, řešení uložte.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WaitingForBackgroundRestore">
+        <source>Waiting for NuGet package restore to finish before building...</source>
+        <target state="new">Waiting for NuGet package restore to finish before building...</target>
+        <note>Shown in the Build output window when a build is blocked on an already-running background NuGet restore.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

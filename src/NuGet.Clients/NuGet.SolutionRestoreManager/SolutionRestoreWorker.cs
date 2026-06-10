@@ -428,6 +428,30 @@ namespace NuGet.SolutionRestoreManager
                         if (IsBusy && request.RestoreSource == RestoreOperationSource.OnBuild)
                         {
                             await NotifyWaitingForBackgroundRestoreAsync();
+
+                            // Ride on the in-flight restore instead of queuing another one behind it,
+                            // unless the build explicitly asked for a forced restore.
+                            if (!request.ForceRestore)
+                            {
+                                Task<bool> inflight = _activeRestoreTask;
+                                bool inflightSucceeded = await inflight.WithCancellation(token);
+                                if (inflightSucceeded)
+                                {
+                                    bool queueEmpty;
+                                    lock (_lockPendingRequestsObj)
+                                    {
+                                        // If there are no pending requests and _activeRestoreTask is the same one we awaited, then we have a valid restore for the purpose of build.
+                                        // If the tasks *don't* match, it means another restore has been kicked off since we awaited, so we should queue a new restore to be safe.
+                                        // This case should be rare.
+                                        queueEmpty = _pendingRequests.Value.Count == 0 && ReferenceEquals(_activeRestoreTask, inflight);
+                                    }
+
+                                    if (queueEmpty)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
                         }
 
                         await PromoteTaskToActiveAsync(restoreOperation, token);

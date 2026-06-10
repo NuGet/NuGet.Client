@@ -134,6 +134,11 @@ Per impedire che NuGet ripristini i pacchetti durante la compilazione, aprire la
         <target state="translated">Soluzione non salvata. Salvarla prima di gestire i pacchetti NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WaitingForBackgroundRestore">
+        <source>Waiting for NuGet package restore to finish before building...</source>
+        <target state="new">Waiting for NuGet package restore to finish before building...</target>
+        <note>Shown in the Build output window when a build is blocked on an already-running background NuGet restore.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

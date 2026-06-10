@@ -134,6 +134,11 @@ Aby uniemożliwić narzędziu NuGet przywracanie pakietów podczas kompilacji, o
         <target state="translated">Nie zapisano rozwiązania. Zapisz rozwiązanie zanim zaczniesz zarządzać pakietami NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WaitingForBackgroundRestore">
+        <source>Waiting for NuGet package restore to finish before building...</source>
+        <target state="new">Waiting for NuGet package restore to finish before building...</target>
+        <note>Shown in the Build output window when a build is blocked on an already-running background NuGet restore.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

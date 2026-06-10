@@ -134,6 +134,11 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
         <target state="translated">Решение не сохранено. Сохраните свое решение, прежде чем управлять пакетами NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WaitingForBackgroundRestore">
+        <source>Waiting for NuGet package restore to finish before building...</source>
+        <target state="new">Waiting for NuGet package restore to finish before building...</target>
+        <note>Shown in the Build output window when a build is blocked on an already-running background NuGet restore.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
