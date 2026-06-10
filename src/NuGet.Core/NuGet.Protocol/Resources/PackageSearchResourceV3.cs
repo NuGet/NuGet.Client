@@ -38,6 +38,8 @@ namespace NuGet.Protocol
             _environmentVariableReader = environmentVariableReader;
         }
 
+        public override bool SupportsPackageTypeFiltering => _packageTypeCapableEndpoints?.Count > 0;
+
         /// <summary>
         /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result 
         /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result. 

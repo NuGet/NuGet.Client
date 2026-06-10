@@ -21,5 +21,10 @@ namespace NuGet.Protocol.Core.Types
             int take,
             Common.ILogger log,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Indicates whether filtering on <see cref="SearchFilter.PackageTypes"/> is supported by the current package source.
+        /// </summary>
+        public abstract bool SupportsPackageTypeFiltering { get; }
     }
 }
