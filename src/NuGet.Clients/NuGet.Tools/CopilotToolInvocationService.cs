@@ -47,7 +47,25 @@ namespace NuGetVSExtension
                 return CopilotToolSessionResult.Failure(CopilotToolSessionError.ServiceBrokerNotAvailable);
             }
 
-            // 3. Acquire Copilot service, ownership transfers to CopilotToolSession on success
+            // 3. Verify the required MCP server is registered and active
+            IMcpServerInfoService? mcpServerInfoService = await ServiceBroker.GetProxyAsync<IMcpServerInfoService>(McpServiceIdentities.ServerInfoService.Descriptor, cancellationToken);
+            using (mcpServerInfoService as IDisposable)
+            {
+                if (mcpServerInfoService is null)
+                {
+                    return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerInfoServiceNotAvailable);
+                }
+
+                // The NuGet MCP server may be registered under different names depending on how it
+                // was installed (in-VS vs. Anthropic/GitHub MCP registry). It is considered available
+                // if any of the acceptable names reports an Active or Suspended state.
+                if (!await IsServerAvailableAsync(mcpServerInfoService, acceptableMcpServerNames, cancellationToken))
+                {
+                    return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerNotActive);
+                }
+            }
+
+            // 4. Acquire Copilot service, ownership transfers to CopilotToolSession on success
 #pragma warning disable ISB001 // Dispose objects before losing scope - ownership is transferred to CopilotToolSession on success
             ICopilotService? copilotService = await ServiceBroker.GetProxyAsync<ICopilotService>(CopilotDescriptors.CopilotService, cancellationToken);
 #pragma warning restore ISB001
@@ -55,27 +73,6 @@ namespace NuGetVSExtension
             bool ownershipTransferred = false;
             try
             {
-                // 3. Verify the required MCP server is registered and active
-                IMcpServerInfoService? mcpServerInfoService = await ServiceBroker.GetProxyAsync<IMcpServerInfoService>(McpServiceIdentities.ServerInfoService.Descriptor, cancellationToken);
-                using (mcpServerInfoService as IDisposable)
-                {
-                    if (mcpServerInfoService is null)
-                    {
-                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerInfoServiceNotAvailable);
-                    }
-
-                    McpServerState? state = await mcpServerInfoService.GetServerStateAsync(requiredServerName, cancellationToken);
-                    if (state is null)
-                    {
-                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerStateNotAvailable);
-                    }
-
-                    if (!(state.Value == McpServerState.Active || state.Value == McpServerState.Suspended))
-                    {
-                        return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpServerNotActive);
-                    }
-                }
-
                 if (copilotService is null)
                 {
                     return CopilotToolSessionResult.Failure(CopilotToolSessionError.CopilotServiceNotAvailable);
@@ -90,9 +87,9 @@ namespace NuGetVSExtension
                         return CopilotToolSessionResult.Failure(CopilotToolSessionError.McpToolServiceNotAvailable);
                     }
 
-                    // 5. Verify the required tool is available. We match on ServerNameOfFunction + Group
+                    // 6. Verify the required tool is available. We match on ServerNameOfFunction + Group
                     //    (the same logical NuGet MCP tool can be exposed under different Group values
-                    //    depending on how it was installed â€” in-VS vs. Anthropic/GitHub MCP registry).
+                    //    depending on how it was installed - in-VS vs. Anthropic/GitHub MCP registry).
                     IReadOnlyList<CopilotFunctionDescriptor>? functions = await cfp.GetFunctionsAsync(correlationId, cancellationToken);
                     if (!IsToolAvailable(functions, mcpToolName, acceptableMcpServerNames))
                     {
@@ -130,6 +127,23 @@ namespace NuGetVSExtension
                 .Any(f => string.Equals(f.ServerNameOfFunction, mcpToolName, StringComparison.OrdinalIgnoreCase)
                        && f.Group is not null
                        && acceptableMcpServerNames.Contains(f.Group, StringComparer.OrdinalIgnoreCase)) ?? false;
+        }
+
+        internal static async Task<bool> IsServerAvailableAsync(
+            IMcpServerInfoService mcpServerInfoService,
+            IReadOnlyCollection<string> acceptableMcpServerNames,
+            CancellationToken cancellationToken)
+        {
+            foreach (string serverName in acceptableMcpServerNames)
+            {
+                McpServerState? state = await mcpServerInfoService.GetServerStateAsync(serverName, cancellationToken);
+                if (state is McpServerState.Active or McpServerState.Suspended)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
