@@ -422,6 +422,14 @@ namespace NuGet.SolutionRestoreManager
 
                     using (var restoreOperation = new BackgroundRestoreOperation())
                     {
+                        // If a background restore is already running, the caller (typically a build)
+                        // would otherwise sit silently until that restore completes. Surface a hint
+                        // in the Build output window so the user knows why the build is paused.
+                        if (IsBusy && request.RestoreSource == RestoreOperationSource.OnBuild)
+                        {
+                            await NotifyWaitingForBackgroundRestoreAsync();
+                        }
+
                         await PromoteTaskToActiveAsync(restoreOperation, token);
                         var restoreTrackingData = GetRestoreTrackingData(
                             restoreReason: ImplicitRestoreReason.None,
@@ -714,6 +722,21 @@ namespace NuGet.SolutionRestoreManager
             return restoreTask;
         }
 
+        private async Task NotifyWaitingForBackgroundRestoreAsync()
+        {
+            try
+            {
+                IOutputConsole buildConsole = await _outputConsoleProvider.Value.CreateBuildOutputConsoleAsync();
+                await buildConsole.ActivateAsync();
+                await buildConsole.WriteLineAsync(Resources.WaitingForBackgroundRestore);
+            }
+            catch (Exception ex)
+            {
+                // Notification is informational; never let it fail the restore/build path.
+                Logger.LogError(ex.ToString());
+            }
+        }
+
         private async Task PromoteTaskToActiveAsync(BackgroundRestoreOperation restoreOperation, CancellationToken token)
         {
             var pendingTask = restoreOperation.Task;
@@ -726,12 +749,18 @@ namespace NuGet.SolutionRestoreManager
                 // Grab local copy of active task
                 var activeTask = _activeRestoreTask;
 
-                // Await for the completion of the active *unbound* task
-                var cancelTcs = new TaskCompletionSource<bool>();
+                // Await for the completion of the active *unbound* task.
+                // Use RunContinuationsAsynchronously so cancellation callbacks don't run
+                // the continuation inline on the thread that triggered the cancellation.
+                var cancelTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using (var ctr = token.Register(() => cancelTcs.TrySetCanceled()))
                 {
                     await Task.WhenAny(activeTask, cancelTcs.Task);
                 }
+
+                // If the wait ended because of cancellation, surface it to the caller
+                // instead of silently leaving _activeRestoreTask unchanged.
+                token.ThrowIfCancellationRequested();
 
                 // Try replacing active task with the new one.
                 // Retry from the beginning if the active task has changed.

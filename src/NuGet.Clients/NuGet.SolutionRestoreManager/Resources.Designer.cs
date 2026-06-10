@@ -287,5 +287,14 @@ namespace NuGet.SolutionRestoreManager {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Waiting for NuGet package restore to finish before building....
+        /// </summary>
+        internal static string WaitingForBackgroundRestore {
+            get {
+                return ResourceManager.GetString("WaitingForBackgroundRestore", resourceCulture);
+            }
+        }
     }
 }
