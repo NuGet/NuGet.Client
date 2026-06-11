@@ -154,7 +154,7 @@ namespace NuGet.Protocol.Plugins
                     else
                     {
                         using var jsonWriter = new Newtonsoft.Json.JsonTextWriter(_textWriter) { CloseOutput = false };
-#pragma warning disable IL2026, IL3050 // NSJ code path is unreachable when feature switch is true; ILC trims this branch in AOT
+#pragma warning disable IL2026, IL3050 // Legacy Newtonsoft.Json code path is unreachable when feature switch is true; ILC trims this branch in AOT
                         JsonSerializationUtilities.Serialize(jsonWriter, message);
 #pragma warning restore IL2026, IL3050
 

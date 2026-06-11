@@ -125,7 +125,7 @@ namespace NuGet.Protocol
                                     else
                                     {
                                         var json = await httpSourceResult.Stream.AsJObjectAsync(token);
-#pragma warning disable IL2026, IL3050 // NSJ code path is unreachable when feature switch is true; ILC trims this branch in AOT
+#pragma warning disable IL2026, IL3050 // Legacy Newtonsoft.Json code path is unreachable when feature switch is true; ILC trims this branch in AOT
                                         return new RepositorySignatureResource(json, source);
 #pragma warning restore IL2026, IL3050
                                     }
