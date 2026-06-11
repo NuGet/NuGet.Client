@@ -15,7 +15,6 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using SystemTask = System.Threading.Tasks.Task;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.SolutionRestoreManager
@@ -30,21 +29,17 @@ namespace NuGet.SolutionRestoreManager
     /// UpdateSolution_Cancel
     /// UpdateSolution_Done
     /// </remarks>
+    [Export]
     public sealed class SolutionRestoreBuildHandler
         : IVsUpdateSolutionEvents5, IDisposable
     {
         private const uint VSCOOKIE_NIL = 0;
 
-        // These imports are handled explicitly inside of UpdateSolution_QueryDelayBuildAction
-        // Any new imports required must also be handled explicitly there.
-        [Import]
-        private Lazy<ISettings> Settings { get; set; }
+        private ISettings Settings { get; }
 
-        [Import]
-        private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
+        private ISolutionRestoreWorker SolutionRestoreWorker { get; }
 
-        [Import]
-        private Lazy<ISolutionRestoreChecker> SolutionRestoreChecker { get; set; }
+        private ISolutionRestoreChecker SolutionRestoreChecker { get; }
 
         /// <summary>
         /// The <see cref="IVsSolutionBuildManager3"/> object controlling the update solution events.
@@ -56,12 +51,16 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         private uint _updateSolutionEventsCookieEx;
 
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider _serviceProvider;
-
-        private bool _isMEFInitialized;
-
-        private SolutionRestoreBuildHandler()
+        [ImportingConstructor]
+        internal SolutionRestoreBuildHandler(ISettings settings, ISolutionRestoreWorker restoreWorker, ISolutionRestoreChecker solutionRestoreChecker)
         {
+            Assumes.Present(settings);
+            Assumes.Present(restoreWorker);
+            Assumes.Present(solutionRestoreChecker);
+
+            Settings = settings;
+            SolutionRestoreWorker = restoreWorker;
+            SolutionRestoreChecker = solutionRestoreChecker;
         }
 
         // A constructor utilized for running unit-tests
@@ -76,12 +75,10 @@ namespace NuGet.SolutionRestoreManager
             Assumes.Present(buildManager);
             Assumes.Present(solutionRestoreChecker);
 
-            Settings = new Lazy<ISettings>(() => settings);
-            SolutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(() => restoreWorker);
-            SolutionRestoreChecker = new Lazy<ISolutionRestoreChecker>(() => solutionRestoreChecker);
+            Settings = settings;
+            SolutionRestoreWorker = restoreWorker;
+            SolutionRestoreChecker = solutionRestoreChecker;
             _solutionBuildManager = buildManager;
-
-            _isMEFInitialized = true;
         }
 
         public void Dispose()
@@ -99,23 +96,12 @@ namespace NuGet.SolutionRestoreManager
         }
 
         // A factory method invoked internally only
-        internal static async Task<IDisposable> InitializeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
+        internal async Task InitializeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
         {
             Assumes.Present(serviceProvider);
 
-            var instance = new SolutionRestoreBuildHandler();
-
-            await instance.SubscribeAsync(serviceProvider);
-
-            return instance;
-        }
-
-        private async SystemTask SubscribeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
-        {
             // Don't use CPS thread helper because of RPS perf regression
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            _serviceProvider = serviceProvider;
 
             _solutionBuildManager = await serviceProvider.GetServiceAsync<SVsSolutionBuildManager, IVsSolutionBuildManager3>();
             Assumes.Present(_solutionBuildManager);
@@ -127,34 +113,9 @@ namespace NuGet.SolutionRestoreManager
 
         public void UpdateSolution_QueryDelayBuildAction(uint dwAction, out IVsTask pDelayTask)
         {
-            // Force a yield before any work so this method returns immediately. Without the
-            // explicit switch to a background thread, awaits inside the lambda (e.g.
-            // GetComponentModelAsync once the service is cached) can complete synchronously and
-            // run MEF composition on the caller's thread before pDelayTask is assigned.
-            pDelayTask = NuGetUIThreadHelper.JoinableTaskFactory.RunAsyncAsVsTask(
+            pDelayTask = SolutionRestoreWorker.JoinableTaskFactory.RunAsyncAsVsTask(
                 VsTaskRunContext.UIThreadBackgroundPriority,
-                async (token) =>
-                {
-                    await TaskScheduler.Default.SwitchTo(alwaysYield: true);
-
-                    if (!_isMEFInitialized)
-                    {
-                        // Resolve imports directly from the export provider rather than calling
-                        // SatisfyImportsOnce(this), which reflects over this type, validates
-                        // composability of the import graph, and is significantly more expensive.
-                        // The [Import] attributes above are kept for documentation only.
-                        var exportProvider = (await _serviceProvider.GetComponentModelAsync()).DefaultExportProvider;
-                        Settings = exportProvider.GetExport<ISettings>();
-                        SolutionRestoreWorker = exportProvider.GetExport<ISolutionRestoreWorker>();
-                        SolutionRestoreChecker = exportProvider.GetExport<ISolutionRestoreChecker>();
-                        _isMEFInitialized = true;
-                    }
-
-                    // Re-enter the worker's JoinableTaskFactory so the restore work is tracked by
-                    // its JoinableTaskCollection.
-                    return await SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsync(
-                        () => RestoreAsync(dwAction, token));
-                });
+                async (token) => await RestoreAsync(dwAction, token));
         }
 
         #endregion IVsUpdateSolutionEvents5
@@ -168,8 +129,8 @@ namespace NuGet.SolutionRestoreManager
                 (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0)
             {
                 // Clear the transitive restore cache on clean to ensure that the next build restores again
-                await SolutionRestoreWorker.Value.CleanCacheAsync();
-                SolutionRestoreChecker.Value.CleanCache();
+                await SolutionRestoreWorker.CleanCacheAsync();
+                SolutionRestoreChecker.CleanCache();
             }
             else if ((buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD) != 0 &&
                     (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0 &&
@@ -178,8 +139,8 @@ namespace NuGet.SolutionRestoreManager
                 // start a restore task
                 var forceRestore = (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE) != 0;
 
-                var restoreTask = SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsync(() =>
-                    SolutionRestoreWorker.Value.RestoreAsync(
+                var restoreTask = SolutionRestoreWorker.JoinableTaskFactory.RunAsync(() =>
+                    SolutionRestoreWorker.RestoreAsync(
                         SolutionRestoreRequest.OnBuild(forceRestore),
                         token));
 
@@ -197,7 +158,7 @@ namespace NuGet.SolutionRestoreManager
         {
             get
             {
-                var packageRestoreConsent = new PackageRestoreConsent(Settings.Value);
+                var packageRestoreConsent = new PackageRestoreConsent(Settings);
                 return packageRestoreConsent.IsAutomatic;
             }
         }
