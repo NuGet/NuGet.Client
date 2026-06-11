@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Moq;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.PowerShellCmdlets;
