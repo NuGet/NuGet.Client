@@ -21,6 +21,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.VisualStudio;
 using Test.Utility;
