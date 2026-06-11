@@ -22,6 +22,7 @@
             "owners": "aspnet, EntityFramework, Microsoft",
             "totalDownloads": "248620082",
             "verified": "true",
+            "listed": "true",
             "packageTypes": [
                 {
                     "name": "Dependency"
