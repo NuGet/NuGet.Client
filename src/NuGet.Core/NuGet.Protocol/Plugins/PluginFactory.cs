@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,8 +25,6 @@ namespace NuGet.Protocol.Plugins
         private readonly TimeSpan _pluginIdleTimeout;
         private readonly ConcurrentDictionary<string, Lazy<Task<IPlugin>>> _plugins;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
-
-        internal PluginFactory() { }
 
         /// <summary>
         /// Instantiates a new <see cref="PluginFactory" /> class.
@@ -207,10 +203,10 @@ namespace NuGet.Protocol.Plugins
             {
                 // Process ID is unavailable until we start the process; however, we want to wire up this event before
                 // attempting to start the process in case the process immediately exits.
-                EventHandler<IPluginProcess> onExited = null;
-                Connection connection = null;
+                EventHandler<IPluginProcess>? onExited = null;
+                Connection? connection = null;
 
-                onExited = (object eventSender, IPluginProcess exitedProcess) =>
+                onExited = (object? eventSender, IPluginProcess exitedProcess) =>
                 {
                     exitedProcess.Exited -= onExited;
 
@@ -381,9 +377,7 @@ namespace NuGet.Protocol.Plugins
 
             UnregisterEventHandlers(plugin as Plugin);
 
-            Lazy<Task<IPlugin>> lazyTask;
-
-            if (_plugins.TryRemove(plugin.FilePath, out lazyTask))
+            if (_plugins.TryRemove(plugin.FilePath, out Lazy<Task<IPlugin>>? lazyTask))
             {
                 if (lazyTask.IsValueCreated && lazyTask.Value.Status == TaskStatus.RanToCompletion)
                 {
@@ -402,7 +396,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        private void OnPluginFaulted(object sender, FaultedPluginEventArgs e)
+        private void OnPluginFaulted(object? sender, FaultedPluginEventArgs e)
         {
             var message = string.Format(
                 CultureInfo.CurrentCulture,
@@ -415,12 +409,12 @@ namespace NuGet.Protocol.Plugins
             Dispose(e.Plugin);
         }
 
-        private void OnPluginExited(object sender, PluginEventArgs e)
+        private void OnPluginExited(object? sender, PluginEventArgs e)
         {
             Dispose(e.Plugin);
         }
 
-        private void OnPluginIdle(object sender, PluginEventArgs e)
+        private void OnPluginIdle(object? sender, PluginEventArgs e)
         {
             if (_logger.IsEnabled)
             {
@@ -458,7 +452,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        private void UnregisterEventHandlers(Plugin plugin)
+        private void UnregisterEventHandlers(Plugin? plugin)
         {
             if (plugin != null)
             {
