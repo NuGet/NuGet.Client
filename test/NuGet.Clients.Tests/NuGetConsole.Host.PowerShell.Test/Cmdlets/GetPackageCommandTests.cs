@@ -596,6 +596,8 @@ namespace NuGetConsole.Host.PowerShell.Test
             // Arrange — override the default IsSolutionOpen = true to simulate no solution
             _solutionManager.SetupGet(x => x.IsSolutionOpen).Returns(false);
 
+            SetupSourceRepositoryProvider("https://contoso.com/v3/index.json");
+
             using var fixture = new CmdletRunspaceFixture(activeSource: "https://contoso.com/v3/index.json");
 
             // Act + Assert — terminating error is surfaced as a RuntimeException
@@ -615,6 +617,8 @@ namespace NuGetConsole.Host.PowerShell.Test
             // Arrange — solution is open but not saved (IsSolutionAvailableAsync returns false)
             _solutionManager.SetupGet(x => x.IsSolutionOpen).Returns(true);
             _solutionManager.Setup(x => x.IsSolutionAvailableAsync()).ReturnsAsync(false);
+
+            SetupSourceRepositoryProvider("https://contoso.com/v3/index.json");
 
             using var fixture = new CmdletRunspaceFixture(activeSource: "https://contoso.com/v3/index.json");
 
