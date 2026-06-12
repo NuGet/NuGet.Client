@@ -166,14 +166,49 @@ namespace NuGet.Tests.Apex
 
         private static string GetProjectXml(string packageName, string packageVersion)
         {
-            return $@"<Project Sdk=""Microsoft.NET.Sdk"">
-  <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include=""{packageName}"" Version=""{packageVersion}"" />
-  </ItemGroup>
-</Project>";
+            // Raw string literal with a doubled interpolation prefix ($$), so {{ }} delimit the
+            // interpolation holes and the inline task's single braces are treated as literal text.
+            return $$"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>net472</TargetFramework>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <PackageReference Include="{{packageName}}" Version="{{packageVersion}}" />
+                  </ItemGroup>
+
+                  <!--
+                    Verifies that every assembly shipped next to MSBuild.exe can be loaded in the environment under
+                    test. Runs before CollectPackageReference (i.e. as part of restore) so the test catches machines
+                    where an assembly in the MSBuild directory fails to load. Each load is wrapped in a try-catch so
+                    an individual assembly that cannot be loaded is skipped rather than failing the build.
+                  -->
+                  <UsingTask TaskName="LoadMSBuildAssemblies" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+                    <ParameterGroup>
+                      <Directory ParameterType="System.String" Required="true" />
+                    </ParameterGroup>
+                    <Task>
+                      <Code Type="Fragment" Language="cs"><![CDATA[
+                        foreach (string file in System.IO.Directory.GetFiles(Directory, "*.dll"))
+                        {
+                            try
+                            {
+                                System.Reflection.Assembly.LoadFrom(file);
+                            }
+                            catch
+                            {
+                                // Skip assemblies that fail to load.
+                            }
+                        }
+                      ]]></Code>
+                    </Task>
+                  </UsingTask>
+
+                  <Target Name="LoadMSBuildAssembliesBeforeRestore" BeforeTargets="CollectPackageReference">
+                    <LoadMSBuildAssemblies Directory="$(MSBuildBinPath)" />
+                  </Target>
+                </Project>
+                """;
         }
 
         /// <summary>
