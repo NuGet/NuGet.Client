@@ -53,11 +53,7 @@ namespace NuGet.Protocol.Plugins
         [RequiresUnreferencedCode("Uses Newtonsoft.Json reflection-based deserialization.")]
         [RequiresDynamicCode("Uses Newtonsoft.Json reflection-based deserialization.")]
 #endif
-<<<<<<< HEAD
-        public static T Deserialize<T>(string json)
-=======
         public static T? Deserialize<T>(string json)
->>>>>>> 0c62525b82 (Enable nullable for NuGet.Protocol Plugins runtime)
             where T : class
         {
             if (string.IsNullOrEmpty(json))
