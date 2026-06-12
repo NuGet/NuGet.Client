@@ -4,11 +4,15 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
@@ -16,10 +20,14 @@ namespace NuGet.Tests.Apex
     /// <summary>
     /// Verifies that NuGet restore works on the machine under test by running
     /// <c>msbuild -t:restore</c> using the MSBuild that ships with the Visual Studio
-    /// installation under test. This means if you modify restore and run this test locally,
-    /// it will not test your changes. Use MSBuild.Integration.Tests or unit tests to test
-    /// other changes. This test is intended to catch issues that may be specific to the environment
-    /// on the machine, such as upgrading packages to a version incompatible with MSBuild.
+    /// installation under test, restoring a <c>PackageReference</c> from an HTTP package feed
+    /// (a <see cref="FileSystemBackedV3MockServer" />). The test package contains a file under
+    /// <c>contentFiles/</c> matched by a wildcard in its nuspec, and the test asserts (via
+    /// <see cref="LockFileFormat" />) that restore selected that content file. This means if you
+    /// modify restore and run this test locally, it will not test your changes. Use
+    /// MSBuild.Integration.Tests or unit tests to test other changes. This test is intended to catch
+    /// issues that may be specific to the environment on the machine, such as upgrading packages to a
+    /// version incompatible with MSBuild.
     /// </summary>
     [TestClass]
     public class MSBuildRestoreTestCase
@@ -50,7 +58,36 @@ namespace NuGet.Tests.Apex
 
             string packageName = "TestPackage";
             string packageVersion = "1.0.0";
-            await CommonUtility.CreatePackageInSourceAsync(pathContext.PackageSource, packageName, packageVersion);
+            string contentFileName = "sample.txt";
+            string contentFilePackagePath = "contentFiles/any/any/" + contentFileName;
+
+            // Build a package with a file under contentFiles/ and a nuspec that uses a wildcard
+            // include to match it, so restore exercises the contentFiles glob-matching code path.
+            var package = new SimpleTestPackageContext(packageName, packageVersion);
+            package.Files.Clear();
+            package.AddFile("lib/net472/_._");
+            package.AddFile(contentFilePackagePath, "// content file served by the test package");
+            package.Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <metadata>
+    <id>{packageName}</id>
+    <version>{packageVersion}</version>
+    <title>{packageName}</title>
+    <authors>NuGet</authors>
+    <description>{packageName}</description>
+    <contentFiles>
+      <files include=""any/any/*.txt"" buildAction=""Content"" copyToOutput=""true"" flatten=""false"" />
+    </contentFiles>
+  </metadata>
+</package>");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, package);
+
+            // Serve the package over HTTP via a mock V3 feed and remove the default local folder source,
+            // so the test exercises an HTTP restore rather than a file-system restore.
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            mockServer.Start();
+            pathContext.Settings.RemoveSource(SimpleTestSettingsContext.DefaultPackageSourceName);
+            pathContext.Settings.AddSource("mockSource", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
 
             string projectName = "test";
             string projectPath = Path.Combine(pathContext.SolutionRoot, projectName + ".csproj");
@@ -77,11 +114,25 @@ namespace NuGet.Tests.Apex
                 File.Exists(assetsFilePath),
                 $"Expected restore to generate '{assetsFilePath}'.{Environment.NewLine}{result.AllOutput}");
 
-            string assetsFileContent = File.ReadAllText(assetsFilePath);
-            StringAssert.Contains(
-                assetsFileContent,
-                packageName,
-                $"Expected the assets file to reference '{packageName}'.{Environment.NewLine}{result.AllOutput}");
+            // Parse the assets file and verify the package was restored and its content file was
+            // selected for the project's target (i.e. the wildcard contentFiles include matched).
+            LockFile lockFile = new LockFileFormat().Read(assetsFilePath);
+
+            LockFileTargetLibrary? library = lockFile.Targets
+                .SelectMany(target => target.Libraries)
+                .FirstOrDefault(lib => StringComparer.OrdinalIgnoreCase.Equals(lib.Name, packageName));
+
+            Assert.IsNotNull(
+                library,
+                $"Expected the assets file to contain a target library for '{packageName}'.{Environment.NewLine}{result.AllOutput}");
+
+            bool selectedContentFile = library!.ContentFiles
+                .Any(contentFile => StringComparer.OrdinalIgnoreCase.Equals(contentFile.Path, contentFilePackagePath));
+
+            Assert.IsTrue(
+                selectedContentFile,
+                $"Expected the assets file to select content file '{contentFilePackagePath}' for '{packageName}', " +
+                $"but found: {string.Join(", ", library!.ContentFiles.Select(c => c.Path))}.{Environment.NewLine}{result.AllOutput}");
         }
 
         private void CaptureMSBuildOutput(CommandRunnerResult result, CapturingTestOutputHelper outputCapture)
