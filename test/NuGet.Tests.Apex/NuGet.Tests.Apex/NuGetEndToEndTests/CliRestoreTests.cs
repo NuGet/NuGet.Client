@@ -18,21 +18,19 @@ using Xunit.Abstractions;
 namespace NuGet.Tests.Apex
 {
     /// <summary>
-    /// Verifies that NuGet restore works on the machine under test by running
-    /// <c>msbuild -t:restore</c> using the MSBuild that ships with the Visual Studio
-    /// installation under test, restoring a <c>PackageReference</c> from an HTTP package feed
-    /// (a <see cref="FileSystemBackedV3MockServer" />). The test package contains a file under
-    /// <c>contentFiles/</c> matched by a wildcard in its nuspec, and the test asserts (via
-    /// <see cref="LockFileFormat" />) that restore selected that content file. This means if you
-    /// modify restore and run this test locally, it will not test your changes. Use
-    /// MSBuild.Integration.Tests or unit tests to test other changes. This test is intended to catch
-    /// issues that may be specific to the environment on the machine, such as upgrading packages to a
-    /// version incompatible with MSBuild.
+    /// These tests are intended to validate that restore works with the MSBuild when NuGet is installed in VS normally.
+    /// MSBuild.Integration.Tests should be used for more exhaustive testing of restore with MSBuild.
     /// </summary>
+    /// <remarks>
+    /// These tests locate MSBuild.exe using vswhere.exe, so when running these tests locally, they will not take into
+    /// account any changes you have made to any product code. It will only test the NuGet that is installed in the VS
+    /// installation directory.
+    /// </remarks>
     [TestClass]
-    public class MSBuildRestoreTestCase
+    public class CliRestoreTests
     {
         private const int DefaultTimeout = 5 * 60 * 1000; // 5 minutes
+        private const string LoadMSBuildAssembliesMarkerFileName = "LoadMSBuildAssemblies.ran";
 
         /// <summary>
         /// Set by the MSTest framework. Used to write the MSBuild output into the test results
@@ -40,9 +38,21 @@ namespace NuGet.Tests.Apex
         /// </summary>
         public TestContext TestContext { get; set; } = null!;
 
+        /// <summary>
+        /// This test simulates a task running as part of the CollectPackageReferences target, which loads assemblies
+        /// out of MSBuild's bin directory, so the assemblies are loaded before NuGet's Restore task starts. It is intended
+        /// to validate whether MSBuild ships any assemblies that cause assembly loading conflicts with NuGet's Restore task.
+        /// </summary>
+        /// <remarks>
+        /// Key assemblies tested:
+        /// <list type="bullet">
+        /// <item>Newtonsoft.Json: NuGet.Protocol's HTTP deserialization</item>
+        /// <item>Microsoft.Extensions.FileSystemGlobbing: contentFiles with a wildcard include</item>
+        /// </list>
+        /// </remarks>
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task RestoreWithPackageReference_UsingVsUnderTestMSBuild_Succeeds()
+        public async Task RestoreRunsWhenMSBuildDepdendenciesAreLoaded()
         {
             // Arrange
             string? msbuildPath = LocateVisualStudioUnderTestMSBuild();
@@ -61,8 +71,8 @@ namespace NuGet.Tests.Apex
             string contentFileName = "sample.txt";
             string contentFilePackagePath = "contentFiles/any/any/" + contentFileName;
 
-            // Build a package with a file under contentFiles/ and a nuspec that uses a wildcard
-            // include to match it, so restore exercises the contentFiles glob-matching code path.
+            // Ensure Microsoft.Extensions.FileSystemGlobbing.dll can be loaded by using
+            // contentFiles with a wildcard include.
             var package = new SimpleTestPackageContext(packageName, packageVersion);
             package.Files.Clear();
             package.AddFile("lib/net472/_._");
@@ -82,8 +92,7 @@ namespace NuGet.Tests.Apex
 </package>");
             await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, package);
 
-            // Serve the package over HTTP via a mock V3 feed and remove the default local folder source,
-            // so the test exercises an HTTP restore rather than a file-system restore.
+            // Test Newtonsoft.Json can be loaded by using a V3 HTTP feed, so json has to be deserialized.
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
             pathContext.Settings.RemoveSource(SimpleTestSettingsContext.DefaultPackageSourceName);
@@ -99,6 +108,7 @@ namespace NuGet.Tests.Apex
                 filename: msbuildPath!,
                 workingDirectory: pathContext.SolutionRoot,
                 arguments: $"-t:restore \"{projectPath}\"",
+                timeOutInMilliseconds: DefaultTimeout,
                 testOutputHelper: outputCapture);
 
             CaptureMSBuildOutput(result, outputCapture);
@@ -109,15 +119,33 @@ namespace NuGet.Tests.Apex
                 result.ExitCode,
                 $"msbuild -t:restore failed (exit code {result.ExitCode}).{Environment.NewLine}{result.AllOutput}");
 
+            string markerFilePath = Path.Combine(pathContext.SolutionRoot, "obj", LoadMSBuildAssembliesMarkerFileName);
+            Assert.IsTrue(
+                File.Exists(markerFilePath),
+                $"Expected LoadMSBuildAssemblies to create '{markerFilePath}'.{Environment.NewLine}{result.AllOutput}");
+
+            string markerFileContents = File.ReadAllText(markerFilePath);
+            Assert.IsTrue(
+                int.TryParse(markerFileContents, NumberStyles.Integer, CultureInfo.InvariantCulture, out int loadedAssemblyCount),
+                $"Expected LoadMSBuildAssemblies marker file '{markerFilePath}' to contain an integer, but found '{markerFileContents}'." +
+                Environment.NewLine +
+                result.AllOutput);
+
+            Assert.IsTrue(
+                loadedAssemblyCount > 0,
+                $"Expected LoadMSBuildAssemblies to load at least one assembly, but it loaded {loadedAssemblyCount}." +
+                Environment.NewLine +
+                result.AllOutput);
+
             string assetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", "project.assets.json");
             Assert.IsTrue(
                 File.Exists(assetsFilePath),
                 $"Expected restore to generate '{assetsFilePath}'.{Environment.NewLine}{result.AllOutput}");
 
-            // Parse the assets file and verify the package was restored and its content file was
-            // selected for the project's target (i.e. the wildcard contentFiles include matched).
             LockFile lockFile = new LockFileFormat().Read(assetsFilePath);
 
+            // If restore successfully included the test package, this means it succesfully downloaded and parsed the flat
+            // container's index.json version list, which validates that Newtonsoft.Json could be loaded.
             LockFileTargetLibrary? library = lockFile.Targets
                 .SelectMany(target => target.Libraries)
                 .FirstOrDefault(lib => StringComparer.OrdinalIgnoreCase.Equals(lib.Name, packageName));
@@ -126,13 +154,18 @@ namespace NuGet.Tests.Apex
                 library,
                 $"Expected the assets file to contain a target library for '{packageName}'.{Environment.NewLine}{result.AllOutput}");
 
-            bool selectedContentFile = library!.ContentFiles
-                .Any(contentFile => StringComparer.OrdinalIgnoreCase.Equals(contentFile.Path, contentFilePackagePath));
+            // If the package's sample.txt is included as a content file with the correct action and copyToOutput value,
+            // this means Microsoft.Extensions.FileSystemGlobbing could be loaded
+            LockFileContentFile? selectedContentFile = library!.ContentFiles
+                .FirstOrDefault(contentFile => StringComparer.OrdinalIgnoreCase.Equals(contentFile.Path, contentFilePackagePath));
 
-            Assert.IsTrue(
+            Assert.IsNotNull(
                 selectedContentFile,
                 $"Expected the assets file to select content file '{contentFilePackagePath}' for '{packageName}', " +
                 $"but found: {string.Join(", ", library!.ContentFiles.Select(c => c.Path))}.{Environment.NewLine}{result.AllOutput}");
+
+            Assert.AreEqual("Content", selectedContentFile.BuildAction.Value, ignoreCase: true);
+            Assert.AreEqual(true, selectedContentFile.CopyToOutput);
         }
 
         private void CaptureMSBuildOutput(CommandRunnerResult result, CapturingTestOutputHelper outputCapture)
@@ -172,40 +205,52 @@ namespace NuGet.Tests.Apex
                 <Project Sdk="Microsoft.NET.Sdk">
                   <PropertyGroup>
                     <TargetFramework>net472</TargetFramework>
+                    <LoadMSBuildAssembliesMarkerFile>$(MSBuildProjectDirectory)\obj\{{LoadMSBuildAssembliesMarkerFileName}}</LoadMSBuildAssembliesMarkerFile>
                   </PropertyGroup>
                   <ItemGroup>
                     <PackageReference Include="{{packageName}}" Version="{{packageVersion}}" />
                   </ItemGroup>
 
                   <!--
-                    Verifies that every assembly shipped next to MSBuild.exe can be loaded in the environment under
-                    test. Runs before CollectPackageReference (i.e. as part of restore) so the test catches machines
-                    where an assembly in the MSBuild directory fails to load. Each load is wrapped in a try-catch so
-                    an individual assembly that cannot be loaded is skipped rather than failing the build.
+                    Simulate a task that loads all the assemblies in the MSBuild bin directory.
                   -->
                   <UsingTask TaskName="LoadMSBuildAssemblies" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
                     <ParameterGroup>
                       <Directory ParameterType="System.String" Required="true" />
+                      <MarkerFile ParameterType="System.String" Required="true" />
                     </ParameterGroup>
                     <Task>
                       <Code Type="Fragment" Language="cs"><![CDATA[
+                        int loadedAssemblyCount = 0;
+
                         foreach (string file in System.IO.Directory.GetFiles(Directory, "*.dll"))
                         {
                             try
                             {
                                 System.Reflection.Assembly.LoadFrom(file);
+                                loadedAssemblyCount++;
                             }
                             catch
                             {
                                 // Skip assemblies that fail to load.
                             }
                         }
+
+                        string markerDirectory = System.IO.Path.GetDirectoryName(MarkerFile);
+                        if (!string.IsNullOrEmpty(markerDirectory))
+                        {
+                            System.IO.Directory.CreateDirectory(markerDirectory);
+                        }
+
+                        System.IO.File.WriteAllText(
+                            MarkerFile,
+                            loadedAssemblyCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
                       ]]></Code>
                     </Task>
                   </UsingTask>
 
-                  <Target Name="LoadMSBuildAssembliesBeforeRestore" BeforeTargets="CollectPackageReference">
-                    <LoadMSBuildAssemblies Directory="$(MSBuildBinPath)" />
+                  <Target Name="LoadMSBuildAssembliesBeforeRestore" BeforeTargets="CollectPackageReferences">
+                    <LoadMSBuildAssemblies Directory="$(MSBuildBinPath)" MarkerFile="$(LoadMSBuildAssembliesMarkerFile)" />
                   </Target>
                 </Project>
                 """;
@@ -331,8 +376,9 @@ namespace NuGet.Tests.Apex
         }
 
         /// <summary>
-        /// Captures the lines forwarded by <see cref="CommandRunner" /> into a single buffer,
-        /// preserving the chronological order in which stdout and stderr were written.
+        /// CommandRunnerResult doesn't maintain the correct order of stderr and stdout messages, and this test project
+        /// uses MSTest, whereas CommandRunner takes in xUnit's ITestOutputHelper. So, this helper is a simple buffer
+        /// that captures both stdout and stderr in the order they were received.
         /// </summary>
         private sealed class CapturingTestOutputHelper : ITestOutputHelper
         {
