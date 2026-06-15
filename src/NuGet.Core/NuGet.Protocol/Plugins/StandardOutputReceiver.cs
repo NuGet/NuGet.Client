@@ -110,7 +110,7 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
                     {
-                        message = System.Text.Json.JsonSerializer.Deserialize(e.Line, PluginJsonContext.Default.Message);
+                        message = System.Text.Json.JsonSerializer.Deserialize(line, PluginJsonContext.Default.Message);
                     }
                     else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
                     {
@@ -119,7 +119,7 @@ namespace NuGet.Protocol.Plugins
                     else
                     {
 #pragma warning disable IL2026, IL3050 // Legacy Newtonsoft.Json code path is unreachable when feature switch is true; ILC trims this branch in AOT
-                        message = JsonSerializationUtilities.Deserialize<Message>(e.Line);
+                        message = JsonSerializationUtilities.Deserialize<Message>(line);
 #pragma warning restore IL2026, IL3050
                     }
 
