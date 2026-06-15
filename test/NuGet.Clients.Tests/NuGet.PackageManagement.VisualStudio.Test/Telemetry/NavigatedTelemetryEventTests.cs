@@ -127,7 +127,6 @@ namespace NuGet.PackageManagement.Test.Telemetry
         [InlineData(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied)]
         [InlineData(FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable)]
         [InlineData(FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable)]
-        [InlineData(FixVulnerabilitiesWithCopilotErrorType.McpServerStateNotAvailable)]
         [InlineData(FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive)]
         public void CreateWithVulnerabilityInfoBarFixWithCopilot_WithAllErrorTypes_CreatesEventWithCorrectProperties(FixVulnerabilitiesWithCopilotErrorType errorType)
         {

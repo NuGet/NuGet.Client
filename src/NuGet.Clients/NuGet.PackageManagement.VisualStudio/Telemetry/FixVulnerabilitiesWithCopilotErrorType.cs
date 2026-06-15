@@ -13,7 +13,6 @@ namespace NuGet.PackageManagement.Telemetry
         CopilotAccessDenied,
         NuGetSolverNotAvailable,
         McpServerInfoServiceNotAvailable,
-        McpServerStateNotAvailable,
         McpServerNotActive,
     }
 }
