@@ -38,6 +38,7 @@ namespace NuGet.Protocol.Plugins
         }
 
         // Parameterless constructor used by Moq to mock this type.
+        [Obsolete("This constructor exists only for Moq via reflection. Do not call directly.", error: true)]
         internal PluginFactory()
         {
             _logger = null!;
