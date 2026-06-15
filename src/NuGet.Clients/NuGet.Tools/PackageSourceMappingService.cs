@@ -51,7 +51,8 @@ namespace NuGetVSExtension
             CopilotToolSessionResult result = await ToolInvocationService.TryCreateToolSessionAsync(
                 clientId,
                 request.CorrelationId,
-                McpServerConstants.PackageSourceMappingFullyQualifiedToolName,
+                McpServerConstants.PackageSourceMappingToolName,
+                McpServerConstants.NuGetMcpServerNames,
                 cancellationToken);
 
             if (!result.IsSuccess)
