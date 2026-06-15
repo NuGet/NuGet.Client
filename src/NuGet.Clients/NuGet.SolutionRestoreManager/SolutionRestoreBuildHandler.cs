@@ -35,11 +35,11 @@ namespace NuGet.SolutionRestoreManager
     {
         private const uint VSCOOKIE_NIL = 0;
 
-        private ISettings Settings { get; }
+        private Lazy<ISettings> Settings { get; set; }
 
-        private ISolutionRestoreWorker SolutionRestoreWorker { get; }
+        private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
 
-        private ISolutionRestoreChecker SolutionRestoreChecker { get; }
+        private Lazy<ISolutionRestoreChecker> SolutionRestoreChecker { get; set; }
 
         /// <summary>
         /// The <see cref="IVsSolutionBuildManager3"/> object controlling the update solution events.
@@ -52,7 +52,7 @@ namespace NuGet.SolutionRestoreManager
         private uint _updateSolutionEventsCookieEx;
 
         [ImportingConstructor]
-        internal SolutionRestoreBuildHandler(ISettings settings, ISolutionRestoreWorker restoreWorker, ISolutionRestoreChecker solutionRestoreChecker)
+        internal SolutionRestoreBuildHandler(Lazy<ISettings> settings, Lazy<ISolutionRestoreWorker> restoreWorker, Lazy<ISolutionRestoreChecker> solutionRestoreChecker)
         {
             Assumes.Present(settings);
             Assumes.Present(restoreWorker);
@@ -75,9 +75,9 @@ namespace NuGet.SolutionRestoreManager
             Assumes.Present(buildManager);
             Assumes.Present(solutionRestoreChecker);
 
-            Settings = settings;
-            SolutionRestoreWorker = restoreWorker;
-            SolutionRestoreChecker = solutionRestoreChecker;
+            Settings = new Lazy<ISettings>(() => settings);
+            SolutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(() => restoreWorker);
+            SolutionRestoreChecker = new Lazy<ISolutionRestoreChecker>(() => solutionRestoreChecker);
             _solutionBuildManager = buildManager;
         }
 
@@ -113,7 +113,7 @@ namespace NuGet.SolutionRestoreManager
 
         public void UpdateSolution_QueryDelayBuildAction(uint dwAction, out IVsTask pDelayTask)
         {
-            pDelayTask = SolutionRestoreWorker.JoinableTaskFactory.RunAsyncAsVsTask(
+            pDelayTask = SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsyncAsVsTask(
                 VsTaskRunContext.UIThreadBackgroundPriority,
                 async (token) => await RestoreAsync(dwAction, token));
         }
@@ -129,8 +129,8 @@ namespace NuGet.SolutionRestoreManager
                 (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0)
             {
                 // Clear the transitive restore cache on clean to ensure that the next build restores again
-                await SolutionRestoreWorker.CleanCacheAsync();
-                SolutionRestoreChecker.CleanCache();
+                await SolutionRestoreWorker.Value.CleanCacheAsync();
+                SolutionRestoreChecker.Value.CleanCache();
             }
             else if ((buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD) != 0 &&
                     (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0 &&
@@ -139,8 +139,8 @@ namespace NuGet.SolutionRestoreManager
                 // start a restore task
                 var forceRestore = (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE) != 0;
 
-                var restoreTask = SolutionRestoreWorker.JoinableTaskFactory.RunAsync(() =>
-                    SolutionRestoreWorker.RestoreAsync(
+                var restoreTask = SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsync(() =>
+                    SolutionRestoreWorker.Value.RestoreAsync(
                         SolutionRestoreRequest.OnBuild(forceRestore),
                         token));
 
@@ -158,7 +158,7 @@ namespace NuGet.SolutionRestoreManager
         {
             get
             {
-                var packageRestoreConsent = new PackageRestoreConsent(Settings);
+                var packageRestoreConsent = new PackageRestoreConsent(Settings.Value);
                 return packageRestoreConsent.IsAutomatic;
             }
         }
