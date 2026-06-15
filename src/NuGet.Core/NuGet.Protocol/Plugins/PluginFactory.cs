@@ -37,6 +37,14 @@ namespace NuGet.Protocol.Plugins
         {
         }
 
+        // Parameterless constructor used by Moq to mock this type.
+        internal PluginFactory()
+        {
+            _logger = null!;
+            _plugins = null!;
+            _environmentVariableReader = null!;
+        }
+
         internal PluginFactory(TimeSpan pluginIdleTimeout, IEnvironmentVariableReader environmentVariableReader)
         {
             _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
