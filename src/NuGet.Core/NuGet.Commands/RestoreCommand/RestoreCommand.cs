@@ -482,7 +482,7 @@ namespace NuGet.Commands
 
                     foreach (LockFileItem asset in analyzerAssets)
                     {
-                        if (!asset.Path.EndsWith("_._", StringComparison.Ordinal))
+                        if (!asset.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, StringComparison.Ordinal))
                         {
                             count++;
                         }

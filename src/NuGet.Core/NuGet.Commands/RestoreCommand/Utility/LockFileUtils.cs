@@ -810,11 +810,11 @@ namespace NuGet.Commands
             string codeLanguage = ManagedCodeConventions.PropertyNames.AnyValue;
             string compilerApiVersion = null;
 
-            int lastSeparator = path.LastIndexOf('/');
+            int lastSeparator = path.LastIndexOf(Path.AltDirectorySeparatorChar);
             int segmentStart = 0;
             while (segmentStart < lastSeparator)
             {
-                int separator = path.IndexOf('/', segmentStart);
+                int separator = path.IndexOf(Path.AltDirectorySeparatorChar, segmentStart);
                 int segmentLength = separator - segmentStart;
                 ReadOnlySpan<char> segment = path.AsSpan(segmentStart, segmentLength);
 
