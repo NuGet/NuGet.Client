@@ -304,4 +304,8 @@
     <value>The NuGet MCP Server is not active. Enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</value>
     <comment>Do not translate GitHub or Copilot</comment>
   </data>
+  <data name="VSOptions_Button_PackageSourceMappingOnboard" xml:space="preserve">
+    <value>Onboard with GitHub Copilot</value>
+    <comment>Do not translate "GitHub Copilot"</comment>
+  </data>
 </root>

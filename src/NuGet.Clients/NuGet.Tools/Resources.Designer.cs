@@ -590,5 +590,14 @@ namespace NuGetVSExtension {
                 return ResourceManager.GetString("Title_FixVulnerabilitiesWithCopilot", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Onboard with GitHub Copilot.
+        /// </summary>
+        internal static string VSOptions_Button_PackageSourceMappingOnboard {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_PackageSourceMappingOnboard", resourceCulture);
+            }
+        }
     }
 }
