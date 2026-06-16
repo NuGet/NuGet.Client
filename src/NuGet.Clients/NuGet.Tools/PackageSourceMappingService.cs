@@ -57,7 +57,11 @@ namespace NuGetVSExtension
 
             if (!result.IsSuccess)
             {
-                // TODO: Add telemetry and user-facing error messages
+                CopilotToolInvocationService.HandleSessionError(
+                    result.Error,
+                    Resources.Error_PackageSourceMappingToolNotAvailable,
+                    Resources.Title_PackageSourceMappingWithCopilot,
+                    telemetryEvent: null); //TODO: Telemetry
                 return;
             }
 
@@ -76,8 +80,6 @@ namespace NuGetVSExtension
                 ActivityLogger?.LogError(ex.Message);
             }
         }
-
-        //TODO: Telemetry
 
         private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
     }
