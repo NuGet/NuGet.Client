@@ -272,6 +272,11 @@
         <target state="translated">使用 GitHub Copilot 修復漏洞</target>
         <note />
       </trans-unit>
+      <trans-unit id="VSOptions_Button_PackageSourceMappingOnboard">
+        <source>Onboard with GitHub Copilot</source>
+        <target state="new">Onboard with GitHub Copilot</target>
+        <note>Do not translate "GitHub Copilot"</note>
+      </trans-unit>
       <trans-unit id="clearLocalResources">
         <source>Clear NuGet local resources</source>
         <target state="translated">清除 NuGet 本機資源</target>
