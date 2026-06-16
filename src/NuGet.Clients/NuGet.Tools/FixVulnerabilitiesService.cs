@@ -75,7 +75,7 @@ namespace NuGetVSExtension
                     result.Error,
                     Resources.Error_NuGetSolverNotAvailable,
                     Resources.Title_FixVulnerabilitiesWithCopilot,
-                    NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(MapSessionErrorToTelemetry(result.Error)));
+                    NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(result.Error));
                 return;
             }
 
@@ -97,43 +97,6 @@ namespace NuGetVSExtension
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_FixVulnerabilitiesWithCopilot);
             }
-        }
-
-        //TODO private static void HandleSessionError(CopilotToolSessionError error, NavigationOrigin navigationOrigin)
-        private static FixVulnerabilitiesWithCopilotErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
-        private static CopilotToolSessionErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
-        {
-            return error switch
-            {
-                CopilotToolSessionError.CopilotNotReady => (FixVulnerabilitiesWithCopilotErrorType.CopilotNotReady, Resources.Error_CopilotNotReady),
-                CopilotToolSessionError.ServiceBrokerNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.ServiceBrokerNotAvailable, Resources.Error_ServiceBrokerNotAvailable),
-                CopilotToolSessionError.CopilotServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.CopilotServiceNotAvailable, Resources.Error_CopilotServiceNotAvailable),
-                CopilotToolSessionError.McpToolServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable, Resources.Error_McpToolServiceNotAvailable),
-                CopilotToolSessionError.McpServerInfoServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable, Resources.Error_McpServerInfoServiceNotAvailable),
-                CopilotToolSessionError.McpServerNotActive => (FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive, Resources.Error_McpServerNotActive),
-                CopilotToolSessionError.ToolNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable, Resources.Error_NuGetSolverNotAvailable),
-                _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
-            };
-
-            SendTelemetryEvent(telemetryError, navigationOrigin);
-            ShowWarningMessage(message);
-        }
-
-        private static void ShowWarningMessage(string message)
-        private static void SendTelemetryEvent(CopilotToolSessionErrorType errorType)
-        {
-            if (string.IsNullOrEmpty(message))
-            {
-                return;
-            }
-
-            MessageHelper.ShowWarningMessage(message, Resources.Title_FixVulnerabilitiesWithCopilot);
-        }
-
-        private static void SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType errorType, NavigationOrigin navigationOrigin)
-        {
-            var evt = NavigatedTelemetryEvent.CreateWithFixVulnerabilitiesWithCopilot(navigationOrigin, errorType);
-            TelemetryActivity.EmitTelemetryEvent(evt);
         }
 
         private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;

@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.Telemetry
         /// <summary>
         /// Navigating from the Package Source Mapping VS Options page using the button for the command to Onboard to the feature.
         /// </summary>
-        public static NavigatedTelemetryEvent CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionErrorType errorType)
+        public static NavigatedTelemetryEvent CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError errorType)
         {
             NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapperCommand_Onboard);
             navigatedTelemetryEvent[ErrorTypePropertyName] = errorType;

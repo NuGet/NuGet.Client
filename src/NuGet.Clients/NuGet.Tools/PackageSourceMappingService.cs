@@ -62,7 +62,7 @@ namespace NuGetVSExtension
                     result.Error,
                     Resources.Error_PackageSourceMappingToolNotAvailable,
                     Resources.Title_PackageSourceMappingWithCopilot,
-                    telemetryEvent: NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(result.Error));
+                    NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(result.Error));
                 return;
             }
 
@@ -75,10 +75,15 @@ namespace NuGetVSExtension
             try
             {
                 _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
+                TelemetryActivity.EmitTelemetryEvent(
+                    NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError.None));
             }
             catch (UnauthorizedAccessException ex)
             {
+                TelemetryActivity.EmitTelemetryEvent(
+                    NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError.CopilotAccessDenied));
                 ActivityLogger?.LogError(ex.Message);
+                MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_PackageSourceMappingWithCopilot);
             }
         }
 
