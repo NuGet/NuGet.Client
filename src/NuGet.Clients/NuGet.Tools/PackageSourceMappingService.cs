@@ -40,7 +40,7 @@ namespace NuGetVSExtension
         {
             CopilotClientId clientId = new("Microsoft.VisualStudio.NuGet.PackageSourceMapper");
 
-            CopilotRequest request = new("Onboard this repository to package source mapping.")
+            CopilotRequest request = new(Resources.Prompt_PackageSourceMappingOnboard)
             {
                 Guidance = "Use absolute paths when invoking MCP Tools.",
                 DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
