@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Copilot.Internal.Mcp;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio;
 
 namespace NuGetVSExtension

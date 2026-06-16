@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.Telemetry
         /// <summary>
         /// Navigating from the Vulnerability InfoBar to Fix Vulnerabilities with GitHub Copilot.
         /// </summary>
-        public static NavigatedTelemetryEvent CreateWithVulnerabilityInfoBarFixWithCopilot(CopilotToolSessionErrorType errorType)
+        public static NavigatedTelemetryEvent CreateWithVulnerabilityInfoBarFixWithCopilot(CopilotToolSessionError errorType)
         {
             NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, NavigationOrigin.VulnerabilityInfoBar_FixVulnerabilitiesWithCopilot);
             navigatedTelemetryEvent[ErrorTypePropertyName] = errorType;
@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.Telemetry
         /// <summary>
         /// Navigating from the Package Source Mapping VS Options page using the button for the command to Onboard to the feature.
         /// </summary>
-        public static NavigatedTelemetryEvent CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionErrorType errorType)
+        public static NavigatedTelemetryEvent CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError errorType)
         {
             NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapperCommand_Onboard);
             navigatedTelemetryEvent[ErrorTypePropertyName] = errorType;
