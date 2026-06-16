@@ -203,7 +203,7 @@ namespace NuGetVSExtension
 
             if (NuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization))
             {
-                AppContext.SetSwitch(NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch, isEnabled: true);
+                AppContext.SetSwitch(NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, isEnabled: true);
             }
 
             VSSettings vsSettings = Settings.Value as VSSettings;
