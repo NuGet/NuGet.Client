@@ -28,12 +28,12 @@ namespace NuGetVSExtension
                     CopilotDefaultTypes.StringName);
 
         [Import(typeof(ICopilotToolInvocationService))]
-        public ICopilotToolInvocationService? ToolInvocationService { get; set; }
+        public ICopilotToolInvocationService ToolInvocationService { get; set; } = null!;
 
-        [Import(typeof(IVsSolutionManager))]
+        [Import(typeof(IVsSolutionManager), AllowDefault = true)]
         public IVsSolutionManager? SolutionManager { get; set; }
 
-        [Import(typeof(VisualStudioActivityLogger))]
+        [Import(typeof(VisualStudioActivityLogger), AllowDefault = true)]
         public ILogger? ActivityLogger { get; set; }
 
         public async Task LaunchOnboardPackageSourceMappingAsync(CancellationToken cancellationToken)
