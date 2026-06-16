@@ -308,4 +308,7 @@
     <value>Onboard with GitHub Copilot</value>
     <comment>Do not translate "GitHub Copilot"</comment>
   </data>
+  <data name="Prompt_PackageSourceMappingOnboard" xml:space="preserve">
+    <value>Onboard this repository to package source mapping.</value>
+  </data>
 </root>

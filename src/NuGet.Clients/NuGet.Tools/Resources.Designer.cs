@@ -376,6 +376,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Onboard this repository to package source mapping..
+        /// </summary>
+        internal static string Prompt_PackageSourceMappingOnboard {
+            get {
+                return ResourceManager.GetString("Prompt_PackageSourceMappingOnboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to These settings are stored in %NuGet.Config% files.
         /// </summary>
         internal static string SettingsStoredInNuGetConfiguration {
