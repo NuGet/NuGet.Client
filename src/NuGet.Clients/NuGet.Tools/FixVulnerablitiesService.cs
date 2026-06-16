@@ -93,7 +93,7 @@ namespace NuGetVSExtension
                 CopilotToolSessionError.ServiceBrokerNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.ServiceBrokerNotAvailable, Resources.Error_ServiceBrokerNotAvailable),
                 CopilotToolSessionError.CopilotServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.CopilotServiceNotAvailable, Resources.Error_CopilotServiceNotAvailable),
                 CopilotToolSessionError.McpToolServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable, Resources.Error_McpToolServiceNotAvailable),
-                CopilotToolSessionError.McpServerInfoServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable, Resources.Error_McpServerStateNotAvailable),
+                CopilotToolSessionError.McpServerInfoServiceNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable, Resources.Error_McpServerInfoServiceNotAvailable),
                 CopilotToolSessionError.McpServerNotActive => (FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive, Resources.Error_McpServerNotActive),
                 CopilotToolSessionError.ToolNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable, Resources.Error_NuGetSolverNotAvailable),
                 _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),

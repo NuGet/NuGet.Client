@@ -37,14 +37,14 @@
         <target state="translated">GitHub Copilot サービスを利用できません。GitHub Copilot がインストールされ、サインインしていることを確認してください。</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
+      <trans-unit id="Error_McpServerInfoServiceNotAvailable">
+        <source>Unable to determine the status of the NuGet MCP Server. Please ensure GitHub Copilot is installed and signed in.</source>
+        <target state="new">Unable to determine the status of the NuGet MCP Server. Please ensure GitHub Copilot is installed and signed in.</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
       <trans-unit id="Error_McpServerNotActive">
         <source>The NuGet MCP Server is not active. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
         <target state="new">The NuGet MCP Server is not active. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</target>
-        <note>Do not translate GitHub or Copilot</note>
-      </trans-unit>
-      <trans-unit id="Error_McpServerStateNotAvailable">
-        <source>The NuGet MCP Server is not available. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
-        <target state="new">The NuGet MCP Server is not available. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="Error_McpToolServiceNotAvailable">

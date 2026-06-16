@@ -296,8 +296,8 @@
     <value>The NuGet Solver tool is unavailable. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</value>
     <comment>Do not translate GitHub or Copilot</comment>
   </data>
-  <data name="Error_McpServerStateNotAvailable" xml:space="preserve">
-    <value>The NuGet MCP Server is not available. Please enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</value>
+  <data name="Error_McpServerInfoServiceNotAvailable" xml:space="preserve">
+    <value>Unable to determine the status of the NuGet MCP Server. Please ensure GitHub Copilot is installed and signed in.</value>
     <comment>Do not translate GitHub or Copilot</comment>
   </data>
   <data name="Error_McpServerNotActive" xml:space="preserve">
