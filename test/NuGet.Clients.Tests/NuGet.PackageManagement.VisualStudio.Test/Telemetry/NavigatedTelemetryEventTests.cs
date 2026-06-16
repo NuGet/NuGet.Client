@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.Test.Telemetry
             var navigationType = NavigationType.Button;
             var navigationOrigin = NavigationOrigin.VulnerabilityInfoBar_FixVulnerabilitiesWithCopilot;
 
-            var evt = NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(FixVulnerabilitiesWithCopilotErrorType.None);
+            var evt = NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(CopilotToolSessionErrorType.None);
 
             // Act
             nuGetTelemetryService.EmitTelemetryEvent(evt);

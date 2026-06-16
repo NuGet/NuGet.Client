@@ -79,17 +79,17 @@ namespace NuGetVSExtension
             try
             {
                 _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
-                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None);
+                SendTelemetryEvent(CopilotToolSessionErrorType.None);
             }
             catch (UnauthorizedAccessException ex)
             {
-                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied);
+                SendTelemetryEvent(CopilotToolSessionErrorType.CopilotAccessDenied);
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_FixVulnerabilitiesWithCopilot);
             }
         }
 
-        private static FixVulnerabilitiesWithCopilotErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
+        private static CopilotToolSessionErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
         {
             return error switch
             {
@@ -104,7 +104,7 @@ namespace NuGetVSExtension
             };
         }
 
-        private static void SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType errorType)
+        private static void SendTelemetryEvent(CopilotToolSessionErrorType errorType)
         {
             var evt = NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(errorType);
             TelemetryActivity.EmitTelemetryEvent(evt);
