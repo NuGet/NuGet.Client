@@ -156,6 +156,54 @@ namespace NuGet.PackageManagement.Test.Telemetry
         }
 
         [Fact]
+        public void CreateWithPackageSourceMapperCommandOnboard_WithValidProperties_CreatedWithoutPiiData()
+        {
+            // Arrange
+            var nuGetTelemetryService = SetupTelemetryListener();
+
+            var navigationType = NavigationType.Button;
+            var navigationOrigin = NavigationOrigin.Options_PackageSourceMapperCommand_Onboard;
+
+            var evt = NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError.None);
+
+            // Act
+            nuGetTelemetryService.EmitTelemetryEvent(evt);
+
+            // Assert
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(navigationType, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(navigationOrigin, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
+            Assert.Null(_lastTelemetryEvent[NavigatedTelemetryEvent.HyperLinkTypePropertyName]);
+            Assert.Null(_lastTelemetryEvent[NavigatedTelemetryEvent.CurrentTabPropertyName]);
+            Assert.Null(_lastTelemetryEvent[NavigatedTelemetryEvent.IsSolutionViewPropertyName]);
+            Assert.Empty(_lastTelemetryEvent.GetPiiData());
+        }
+
+        [Theory]
+        [InlineData(CopilotToolSessionError.None)]
+        [InlineData(CopilotToolSessionError.CopilotNotReady)]
+        [InlineData(CopilotToolSessionError.ServiceBrokerNotAvailable)]
+        [InlineData(CopilotToolSessionError.CopilotServiceNotAvailable)]
+        [InlineData(CopilotToolSessionError.McpToolServiceNotAvailable)]
+        [InlineData(CopilotToolSessionError.CopilotAccessDenied)]
+        public void CreateWithPackageSourceMapperCommandOnboard_WithAllErrorTypes_CreatesEventWithCorrectProperties(CopilotToolSessionError errorType)
+        {
+            // Arrange
+            var nuGetTelemetryService = SetupTelemetryListener();
+
+            // Act
+            var evt = NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(errorType);
+            nuGetTelemetryService.EmitTelemetryEvent(evt);
+
+            // Assert
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(3, _lastTelemetryEvent.Count);
+            Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(NavigationOrigin.Options_PackageSourceMapperCommand_Onboard, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
+            Assert.Equal(errorType, _lastTelemetryEvent[NavigatedTelemetryEvent.ErrorTypePropertyName]);
+        }
+
+        [Fact]
         public void CreateWithAddPackageSourceMapping_WithValidProperties_CreatedWithoutPiiData()
         {
             // Arrange
