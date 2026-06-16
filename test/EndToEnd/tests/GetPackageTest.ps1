@@ -8,7 +8,6 @@ function Test-GetPackageRetunsMoreThanServerPagingLimit {
 }
 
 
-
 function Test-GetPackageCollapsesPackageVersionsForListAvailable {
     [SkipTest('https://github.com/NuGet/Home/issues/8849')]
     param()
@@ -51,7 +50,6 @@ function GetPackageAcceptsAllAsSourceName {
     # Assert
     Assert-True (1 -le $p.Count)
 }
-
 
 function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPackageId
 {
