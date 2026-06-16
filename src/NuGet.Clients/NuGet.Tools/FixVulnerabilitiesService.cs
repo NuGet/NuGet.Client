@@ -69,7 +69,13 @@ namespace NuGetVSExtension
 
             if (!result.IsSuccess)
             {
+                //TODO
                 HandleSessionError(result.Error, navigationOrigin);
+                CopilotToolInvocationService.HandleSessionError(
+                    result.Error,
+                    Resources.Error_NuGetSolverNotAvailable,
+                    Resources.Title_FixVulnerabilitiesWithCopilot,
+                    NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(MapSessionErrorToTelemetry(result.Error)));
                 return;
             }
 
@@ -89,13 +95,14 @@ namespace NuGetVSExtension
             {
                 SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied, navigationOrigin);
                 ActivityLogger?.LogError(ex.Message);
-                ShowWarningMessage(Resources.Error_CopilotAccessDenied);
+                MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_FixVulnerabilitiesWithCopilot);
             }
         }
 
-        private static void HandleSessionError(CopilotToolSessionError error, NavigationOrigin navigationOrigin)
+        //TODO private static void HandleSessionError(CopilotToolSessionError error, NavigationOrigin navigationOrigin)
+        private static FixVulnerabilitiesWithCopilotErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
         {
-            (FixVulnerabilitiesWithCopilotErrorType telemetryError, string message) = error switch
+            return error switch
             {
                 CopilotToolSessionError.CopilotNotReady => (FixVulnerabilitiesWithCopilotErrorType.CopilotNotReady, Resources.Error_CopilotNotReady),
                 CopilotToolSessionError.ServiceBrokerNotAvailable => (FixVulnerabilitiesWithCopilotErrorType.ServiceBrokerNotAvailable, Resources.Error_ServiceBrokerNotAvailable),
