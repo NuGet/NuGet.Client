@@ -9,6 +9,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
 using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -61,7 +62,7 @@ namespace NuGetVSExtension
                     result.Error,
                     Resources.Error_PackageSourceMappingToolNotAvailable,
                     Resources.Title_PackageSourceMappingWithCopilot,
-                    telemetryEvent: null); //TODO: Telemetry
+                    telemetryEvent: NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(result.Error));
                 return;
             }
 

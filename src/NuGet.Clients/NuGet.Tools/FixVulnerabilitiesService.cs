@@ -101,6 +101,7 @@ namespace NuGetVSExtension
 
         //TODO private static void HandleSessionError(CopilotToolSessionError error, NavigationOrigin navigationOrigin)
         private static FixVulnerabilitiesWithCopilotErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
+        private static CopilotToolSessionErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
         {
             return error switch
             {
@@ -119,6 +120,7 @@ namespace NuGetVSExtension
         }
 
         private static void ShowWarningMessage(string message)
+        private static void SendTelemetryEvent(CopilotToolSessionErrorType errorType)
         {
             if (string.IsNullOrEmpty(message))
             {
