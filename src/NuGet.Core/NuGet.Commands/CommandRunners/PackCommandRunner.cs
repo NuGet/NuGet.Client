@@ -117,7 +117,7 @@ namespace NuGet.Commands
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             // Warn if the package ID doesn't adhere to the restricted character set (NU5052)
-            if (!symbolsPackage && !PackageIdValidator.IsValidPackageId(builder.Id, useRestrictedCharacterSet: true))
+            if (!symbolsPackage && _packArgs.UsingMicrosoftNETSdk && !PackageIdValidator.IsValidPackageId(builder.Id, useRestrictedCharacterSet: true))
             {
                 if (SdkAnalysisLevelMinimums.IsEnabled(_packArgs.SdkAnalysisLevel, _packArgs.UsingMicrosoftNETSdk, SdkAnalysisLevelMinimums.V11_0_100))
                 {

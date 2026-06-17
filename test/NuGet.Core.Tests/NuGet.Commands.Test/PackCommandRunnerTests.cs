@@ -264,7 +264,7 @@ namespace NuGet.Commands.Test
         [InlineData("Contöso.Utilities", "11.0.100", true, true)]       // non-ASCII ö, enabled → emits
         [InlineData("\u0421ontoso.Utilities", "11.0.100", true, true)]   // Cyrillic С, enabled → emits
         [InlineData("Contöso.Utilities", "10.0.100", true, false)]      // below threshold → suppressed
-        [InlineData("Contöso.Utilities", null, false, true)]            // non-SDK project (nuget.exe) → emits
+        [InlineData("Contöso.Utilities", null, false, false)]            // non-SDK project (nuget.exe) → not emitted (SDK-only warning)
         [InlineData("Contöso.Utilities", null, true, false)]            // SDK project, no level (assumes 8.0.400) → suppressed
         public void BuildPackage_PackageIdWithInvalidCharacters_EmitsNU5052_BasedOnSdkAnalysisLevel(string packageId, string? sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool expectWarning)
         {
