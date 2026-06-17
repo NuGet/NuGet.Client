@@ -22,8 +22,7 @@ Before starting, verify:
 
 ## Critical rules
 
-- **Never push without explicit user permission.** If the user hasn't explicitly said "push" in a standalone message, ask before pushing.
-- **Never create a branch without explicit user permission.** Always ask first.
+- **"Create a PR" implies permission to push and create a branch.** The user asking for a PR means they expect the branch to be pushed.
 - **Never force-push.** If `git push` is rejected, inform the user and stop.
 - **Always use `--body-file`** for PR body content. Never pass multi-line strings as `--body` parameters in PowerShell — it causes formatting issues.
 - This is a Windows environment. Use PowerShell syntax (`$env:GH_PAGER`, backtick line continuations).
@@ -33,8 +32,9 @@ Before starting, verify:
 ### 1. Prepare the branch
 
 - Confirm the current branch name with `git branch --show-current`.
+- If on `dev` or another shared branch, create a feature branch following the naming convention.
 - Ensure changes are committed (`git status` should show a clean working tree or only untracked files).
-- If changes are uncommitted, **ask the user** whether to commit. Do not commit automatically.
+- If changes are uncommitted, commit them with a descriptive message. The user asking for a PR implies they want their changes committed.
 - Push the branch with `git push -u origin <branch-name>`.
 
 ### 2. Determine PR metadata
@@ -115,7 +115,6 @@ See `docs/workflow.md` for full workflow guidelines.
 | `gh auth` not logged in | Tell the user to run `gh auth login` |
 | `git push` rejected | Inform the user; never force-push |
 | PR already exists | Follow step 5 (Handle existing PRs) |
-| Uncommitted changes | Ask the user whether to commit first |
 
 ## Notes
 
