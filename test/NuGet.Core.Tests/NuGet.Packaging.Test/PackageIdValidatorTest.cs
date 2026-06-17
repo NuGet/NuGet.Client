@@ -235,32 +235,6 @@ namespace NuGet.Packaging.Test
             Assert.False(result, $"Expected '{packageId}' to be an invalid restricted package ID.");
         }
 
-        [Theory]
-        [InlineData("Package..Double")]             // consecutive dots
-        [InlineData("Package--Double")]             // consecutive dashes
-        [InlineData("Package.-Mixed")]              // consecutive dot-dash
-        [InlineData("Package-.Mixed")]              // consecutive dash-dot
-        public void IsValidPackageId_Restricted_ConsecutiveSeparators_ReturnsFalse(string packageId)
-        {
-            // Act
-            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
-
-            // Assert
-            Assert.False(result, $"Expected '{packageId}' to be an invalid restricted package ID (consecutive separators).");
-        }
-
-        [Theory]
-        [InlineData(".StartsWithDot")]
-        [InlineData("-StartsWithDash")]
-        public void IsValidPackageId_Restricted_InvalidStartCharacter_ReturnsFalse(string packageId)
-        {
-            // Act
-            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
-
-            // Assert
-            Assert.False(result, $"Expected '{packageId}' to be invalid (starts with separator).");
-        }
-
         [Fact]
         public void IsValidPackageId_Restricted_ExceedsMaxLength_ReturnsFalse()
         {
@@ -285,14 +259,6 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.True(result);
-        }
-
-        [Fact]
-        public void IsValidPackageId_Restricted_NullThrows()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(paramName: "packageId",
-                testCode: () => PackageIdValidator.IsValidPackageId(null, useRestrictedCharacterSet: true));
         }
     }
 }

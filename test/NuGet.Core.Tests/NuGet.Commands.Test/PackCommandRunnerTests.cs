@@ -261,57 +261,16 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData("Contöso.Utilities")]
-        [InlineData("\u0421ontoso.Utilities")]       // Cyrillic С
-        public void BuildPackage_PackageIdWithInvalidCharacters_WithSdkAnalysisLevelEnabled_EmitsNU5052(string packageId)
+        [InlineData("Contöso.Utilities", "11.0.100", true, true)]       // non-ASCII ö, enabled → emits
+        [InlineData("\u0421ontoso.Utilities", "11.0.100", true, true)]   // Cyrillic С, enabled → emits
+        [InlineData("Contöso.Utilities", "10.0.100", true, false)]      // below threshold → suppressed
+        [InlineData("Contöso.Utilities", null, false, true)]            // non-SDK project (nuget.exe) → emits
+        [InlineData("Contöso.Utilities", null, true, false)]            // SDK project, no level (assumes 8.0.400) → suppressed
+        public void BuildPackage_PackageIdWithInvalidCharacters_EmitsNU5052_BasedOnSdkAnalysisLevel(string packageId, string? sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool expectWarning)
         {
             using (var testDirectory = TestDirectory.Create())
             {
                 // Arrange
-                var nuspecPath = Path.Combine(testDirectory.Path, $"{packageId}.nuspec");
-                File.WriteAllText(nuspecPath, $@"<?xml version=""1.0""?>
-<package>
-    <metadata>
-        <id>{packageId}</id>
-        <version>1.0.0</version>
-        <description>test</description>
-        <authors>test</authors>
-        <dependencies>
-            <dependency id=""TestDep"" version=""1.0.0"" />
-        </dependencies>
-    </metadata>
-</package>");
-
-                var logger = new TestLogger();
-                var args = new PackArgs()
-                {
-                    CurrentDirectory = testDirectory.Path,
-                    Exclude = Enumerable.Empty<string>(),
-                    Logger = new PackCollectorLogger(logger, new WarningProperties()),
-                    Path = nuspecPath,
-                    SdkAnalysisLevel = new NuGetVersion("11.0.100"),
-                    UsingMicrosoftNETSdk = true,
-                };
-                var runner = new PackCommandRunner(args, createProjectFactory: null);
-
-                // Act
-                runner.RunPackageBuild();
-
-                // Assert
-                logger.WarningMessages.Should().Contain(m => m.Contains("NU5052"));
-            }
-        }
-
-        [Theory]
-        [InlineData("10.0.100", true, false)]   // SdkAnalysisLevel below 11, SDK project → suppressed
-        [InlineData(null, false, true)]          // Non-SDK project (nuget.exe) → emits (latest defaults)
-        [InlineData(null, true, false)]          // SDK project, no SdkAnalysisLevel (assumes 8.0.400) → suppressed
-        public void BuildPackage_PackageIdWithInvalidCharacters_EmitsNU5052_BasedOnSdkAnalysisLevel(string? sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool expectWarning)
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                string packageId = "Contöso.Utilities";
                 var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
                 File.WriteAllText(nuspecPath, $@"<?xml version=""1.0""?>
 <package>
