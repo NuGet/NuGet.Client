@@ -178,6 +178,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package ID &apos;{0}&apos; does not adhere to the restricted set of characters allowed in package IDs. Package IDs must start with a letter, digit, or underscore and contain only ASCII letters, digits, dots (.), and dashes (-) with no consecutive dots or dashes. Rename the package to use only characters from the restricted set..
+        /// </summary>
+        internal static string RestrictedPackageIdWarning {
+            get {
+                return ResourceManager.GetString("RestrictedPackageIdWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;dependencies&gt; element must not contain both &lt;group&gt; and &lt;dependency&gt; child elements..
         /// </summary>
         internal static string Manifest_DependenciesHasMixedElements {

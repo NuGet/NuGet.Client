@@ -19,6 +19,10 @@ namespace NuGet.Packaging
             options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
             matchTimeout: TimeSpan.FromSeconds(10));
 
+        private static readonly Regex RestrictedIdRegex = new Regex(pattern: @"^[A-Za-z0-9_](?!.*[.\-]{2})[A-Za-z0-9.\-]{0,99}$",
+            options: RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
+            matchTimeout: TimeSpan.FromSeconds(10));
+
         public static bool IsValidPackageId(string packageId)
         {
             if (packageId == null)
@@ -26,6 +30,22 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(packageId));
             }
             return IdRegex.IsMatch(packageId);
+        }
+
+        /// <summary>
+        /// Checks whether the package ID adheres to the restricted set of characters allowed in package IDs.
+        /// The restricted set requires: starting with a letter, digit, or underscore; containing only ASCII letters,
+        /// digits, dots, and dashes; no consecutive dots or dashes; and being 100 characters or less.
+        /// </summary>
+        /// <param name="packageId">The package ID to validate.</param>
+        /// <returns><c>true</c> if the package ID adheres to the restricted character set; otherwise, <c>false</c>.</returns>
+        public static bool IsRestrictedPackageId(string packageId)
+        {
+            if (packageId == null)
+            {
+                throw new ArgumentNullException(nameof(packageId));
+            }
+            return RestrictedIdRegex.IsMatch(packageId);
         }
 
         public static void ValidatePackageId(string packageId)

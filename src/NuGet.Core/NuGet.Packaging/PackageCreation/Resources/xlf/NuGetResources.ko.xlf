@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../NuGetResources.resx">
     <body>
@@ -195,6 +195,11 @@
       <trans-unit id="ReadmeNoFileElement">
         <source>The readme file '{0}' does not exist in the package.</source>
         <target state="translated">추가 정보 파일 '{0}'이(가) 패키지에 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RestrictedPackageIdWarning">
+        <source>The package ID '{0}' does not adhere to the restricted set of characters allowed in package IDs. Package IDs must start with a letter, digit, or underscore and contain only ASCII letters, digits, dots (.), and dashes (-) with no consecutive dots or dashes. Rename the package to use only characters from the restricted set.</source>
+        <target state="new">The package ID '{0}' does not adhere to the restricted set of characters allowed in package IDs. Package IDs must start with a letter, digit, or underscore and contain only ASCII letters, digits, dots (.), and dashes (-) with no consecutive dots or dashes. Rename the package to use only characters from the restricted set.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownSchemaVersion">

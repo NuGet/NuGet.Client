@@ -139,6 +139,9 @@
   <data name="InvalidPackageId" xml:space="preserve">
     <value>The package ID '{0}' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.</value>
   </data>
+  <data name="RestrictedPackageIdWarning" xml:space="preserve">
+    <value>The package ID '{0}' does not adhere to the restricted set of characters allowed in package IDs. Package IDs must start with a letter, digit, or underscore and contain only ASCII letters, digits, dots (.), and dashes (-) with no consecutive dots or dashes. Rename the package to use only characters from the restricted set.</value>
+  </data>
   <data name="IncompatibleSchema" xml:space="preserve">
     <value>The schema version of '{0}' is incompatible with version {1} of NuGet. Upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.</value>
   </data>
