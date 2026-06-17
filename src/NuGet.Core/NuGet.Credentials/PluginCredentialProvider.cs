@@ -14,7 +14,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -216,8 +216,10 @@ namespace NuGet.Credentials
             try
             {
                 // Mono will add utf-16 byte order mark to the start of stdOut, remove it here.
-                credentialResponse =
-                    JsonConvert.DeserializeObject<PluginCredentialResponse>(stdOut.Trim(new char[] { '\uFEFF' }))
+                var trimmedOutput = stdOut.Trim(new char[] { '\uFEFF' });
+                credentialResponse = string.IsNullOrWhiteSpace(trimmedOutput)
+                    ? new PluginCredentialResponse()
+                    : JsonSerializer.Deserialize(trimmedOutput, PluginCredentialResponseJsonContext.Default.PluginCredentialResponse)
                     ?? new PluginCredentialResponse();
             }
             catch (Exception)
