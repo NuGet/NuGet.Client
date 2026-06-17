@@ -228,12 +228,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 ProcessRecordCore();
             }
-            catch (PipelineStoppedException)
-            {
-                // Let terminating errors (from ThrowTerminatingError) propagate unchanged so that
-                // the original ErrorRecord and its exception message are preserved for callers.
-                throw;
-            }
             catch (Exception ex)
             {
                 ExceptionHelper.WriteErrorToActivityLog(ex);
