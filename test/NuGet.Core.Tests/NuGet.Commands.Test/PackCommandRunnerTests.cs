@@ -263,7 +263,7 @@ namespace NuGet.Commands.Test
         [Theory]
         [InlineData("Contöso.Utilities")]
         [InlineData("\u0421ontoso.Utilities")]       // Cyrillic С
-        public void BuildPackage_NonRestrictedPackageId_WithSdkAnalysisLevelEnabled_EmitsNU5052(string packageId)
+        public void BuildPackage_PackageIdWithInvalidCharacters_WithSdkAnalysisLevelEnabled_EmitsNU5052(string packageId)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -302,8 +302,9 @@ namespace NuGet.Commands.Test
             }
         }
 
-        [Fact]
-        public void BuildPackage_NonRestrictedPackageId_WithSdkAnalysisLevelBelow11_DoesNotEmitNU5052()
+        [Theory]
+        [MemberData(nameof(NU5052_EmitsWarning_GatingData))]
+        public void BuildPackage_PackageIdWithInvalidCharacters_EmitsNU5052_BasedOnSdkAnalysisLevel(string? sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool expectWarning)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -330,99 +331,36 @@ namespace NuGet.Commands.Test
                     Exclude = Enumerable.Empty<string>(),
                     Logger = new PackCollectorLogger(logger, new WarningProperties()),
                     Path = nuspecPath,
-                    SdkAnalysisLevel = new NuGetVersion("10.0.100"),
-                    UsingMicrosoftNETSdk = true,
+                    SdkAnalysisLevel = sdkAnalysisLevel != null ? new NuGetVersion(sdkAnalysisLevel) : null,
+                    UsingMicrosoftNETSdk = usingMicrosoftNETSdk,
                 };
                 var runner = new PackCommandRunner(args, createProjectFactory: null);
 
                 // Act
                 runner.RunPackageBuild();
 
-                // Assert - SdkAnalysisLevel < 11.0.100, warning should not be emitted
-                logger.WarningMessages.Should().NotContain(m => m.Contains("NU5052"));
+                // Assert
+                if (expectWarning)
+                {
+                    logger.WarningMessages.Should().Contain(m => m.Contains("NU5052"));
+                }
+                else
+                {
+                    logger.WarningMessages.Should().NotContain(m => m.Contains("NU5052"));
+                }
             }
         }
 
-        [Fact]
-        public void BuildPackage_NonRestrictedPackageId_NonSdkProject_EmitsNU5052()
+        public static IEnumerable<object?[]> NU5052_EmitsWarning_GatingData()
         {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                string packageId = "Contöso.Utilities";
-                var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
-                File.WriteAllText(nuspecPath, $@"<?xml version=""1.0""?>
-<package>
-    <metadata>
-        <id>{packageId}</id>
-        <version>1.0.0</version>
-        <description>test</description>
-        <authors>test</authors>
-        <dependencies>
-            <dependency id=""TestDep"" version=""1.0.0"" />
-        </dependencies>
-    </metadata>
-</package>");
-
-                var logger = new TestLogger();
-                var args = new PackArgs()
-                {
-                    CurrentDirectory = testDirectory.Path,
-                    Exclude = Enumerable.Empty<string>(),
-                    Logger = new PackCollectorLogger(logger, new WarningProperties()),
-                    Path = nuspecPath,
-                    SdkAnalysisLevel = null,
-                    UsingMicrosoftNETSdk = false,
-                };
-                var runner = new PackCommandRunner(args, createProjectFactory: null);
-
-                // Act
-                runner.RunPackageBuild();
-
-                // Assert - Non-SDK project, warning should be emitted (latest defaults)
-                logger.WarningMessages.Should().Contain(m => m.Contains("NU5052"));
-            }
-        }
-
-        [Fact]
-        public void BuildPackage_NonRestrictedPackageId_SdkProjectNoAnalysisLevel_DoesNotEmitNU5052()
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                string packageId = "Contöso.Utilities";
-                var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
-                File.WriteAllText(nuspecPath, $@"<?xml version=""1.0""?>
-<package>
-    <metadata>
-        <id>{packageId}</id>
-        <version>1.0.0</version>
-        <description>test</description>
-        <authors>test</authors>
-        <dependencies>
-            <dependency id=""TestDep"" version=""1.0.0"" />
-        </dependencies>
-    </metadata>
-</package>");
-
-                var logger = new TestLogger();
-                var args = new PackArgs()
-                {
-                    CurrentDirectory = testDirectory.Path,
-                    Exclude = Enumerable.Empty<string>(),
-                    Logger = new PackCollectorLogger(logger, new WarningProperties()),
-                    Path = nuspecPath,
-                    SdkAnalysisLevel = null,
-                    UsingMicrosoftNETSdk = true,
-                };
-                var runner = new PackCommandRunner(args, createProjectFactory: null);
-
-                // Act
-                runner.RunPackageBuild();
-
-                // Assert - SDK project with no SdkAnalysisLevel assumes 8.0.400, warning should not be emitted
-                logger.WarningMessages.Should().NotContain(m => m.Contains("NU5052"));
-            }
+            // SdkAnalysisLevel >= 11.0.100, SDK project → emits
+            yield return new object?[] { "11.0.100", true, true };
+            // SdkAnalysisLevel < 11.0.100, SDK project → does not emit
+            yield return new object?[] { "10.0.100", true, false };
+            // Non-SDK project (null level, UsingMicrosoftNETSdk=false) → emits (latest defaults)
+            yield return new object?[] { null, false, true };
+            // SDK project with no SdkAnalysisLevel (assumes 8.0.400) → does not emit
+            yield return new object?[] { null, true, false };
         }
     }
 }
