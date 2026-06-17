@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using Newtonsoft.Json;
 using Xunit;
 
@@ -10,17 +8,17 @@ namespace NuGet.Credentials.Test
 {
     public class PluginCredentialResponseDeserializationTests
     {
-        private static PluginCredentialResponse DeserializeWithStj(string json)
+        private static PluginCredentialResponse? DeserializeWithStj(string json)
         {
             return System.Text.Json.JsonSerializer.Deserialize(json, PluginCredentialResponseJsonContext.Default.PluginCredentialResponse);
         }
 
-        private static PluginCredentialResponse DeserializeWithNsj(string json)
+        private static PluginCredentialResponse? DeserializeWithNsj(string json)
         {
             return JsonConvert.DeserializeObject<PluginCredentialResponse>(json);
         }
 
-        private static void AssertResponsesEqual(PluginCredentialResponse nsj, PluginCredentialResponse stj)
+        private static void AssertResponsesEqual(PluginCredentialResponse? nsj, PluginCredentialResponse? stj)
         {
             Assert.Equal(nsj?.Username, stj?.Username);
             Assert.Equal(nsj?.Password, stj?.Password);
@@ -49,8 +47,8 @@ namespace NuGet.Credentials.Test
         [InlineData(@"{""Username"":""u"",""Password"":""p"",""AuthTypes"":[""basic"",""digest"",""negotiate"",""ntlm""]}")]
         public void StjAndNsjProduceSameResult(string json)
         {
-            var nsjResult = DeserializeWithNsj(json);
-            var stjResult = DeserializeWithStj(json);
+            PluginCredentialResponse? nsjResult = DeserializeWithNsj(json);
+            PluginCredentialResponse? stjResult = DeserializeWithStj(json);
 
             AssertResponsesEqual(nsjResult, stjResult);
         }
@@ -59,8 +57,8 @@ namespace NuGet.Credentials.Test
         [InlineData("null")]
         public void StjAndNsjBothReturnNull(string json)
         {
-            var nsjResult = DeserializeWithNsj(json);
-            var stjResult = DeserializeWithStj(json);
+            PluginCredentialResponse? nsjResult = DeserializeWithNsj(json);
+            PluginCredentialResponse? stjResult = DeserializeWithStj(json);
 
             Assert.Null(nsjResult);
             Assert.Null(stjResult);
