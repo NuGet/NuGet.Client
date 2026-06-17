@@ -19,10 +19,6 @@ namespace NuGet.Packaging
             options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
             matchTimeout: TimeSpan.FromSeconds(10));
 
-        private static readonly Regex RestrictedIdRegex = new Regex(pattern: @"^[A-Za-z0-9_](?!.*[.\-]{2})[A-Za-z0-9.\-]{0,99}$",
-            options: RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
-            matchTimeout: TimeSpan.FromSeconds(10));
-
         public static bool IsValidPackageId(string packageId)
         {
             if (packageId == null)
@@ -33,19 +29,23 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Checks whether the package ID adheres to the restricted set of characters allowed in package IDs.
-        /// The restricted set requires: starting with a letter, digit, or underscore; containing only ASCII letters,
-        /// digits, dots, and dashes; no consecutive dots or dashes; and being 100 characters or less.
+        /// Validates the package ID. When <paramref name="useRestrictedCharacterSet"/> is <c>true</c>,
+        /// additionally checks that the ID contains only ASCII letters, digits, dots, dashes, and underscores,
+        /// with no consecutive dots or dashes, and is 100 characters or less.
         /// </summary>
-        /// <param name="packageId">The package ID to validate.</param>
-        /// <returns><c>true</c> if the package ID adheres to the restricted character set; otherwise, <c>false</c>.</returns>
-        public static bool IsRestrictedPackageId(string packageId)
+        public static bool IsValidPackageId(string packageId, bool useRestrictedCharacterSet)
         {
-            if (packageId == null)
+            if (!IsValidPackageId(packageId))
             {
-                throw new ArgumentNullException(nameof(packageId));
+                return false;
             }
-            return RestrictedIdRegex.IsMatch(packageId);
+
+            if (useRestrictedCharacterSet)
+            {
+                return IsRestrictedId(packageId);
+            }
+
+            return true;
         }
 
         public static void ValidatePackageId(string packageId)
@@ -59,6 +59,44 @@ namespace NuGet.Packaging
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, packageId));
             }
+        }
+
+        private static bool IsRestrictedId(string packageId)
+        {
+            if (packageId.Length == 0 || packageId.Length > MaxPackageIdLength)
+            {
+                return false;
+            }
+
+            char first = packageId[0];
+            if (!IsAsciiLetterOrDigit(first) && first != '_')
+            {
+                return false;
+            }
+
+            char prev = first;
+            for (int i = 1; i < packageId.Length; i++)
+            {
+                char c = packageId[i];
+                if (!IsAsciiLetterOrDigit(c) && c != '.' && c != '-' && c != '_')
+                {
+                    return false;
+                }
+
+                if ((c == '.' || c == '-') && (prev == '.' || prev == '-'))
+                {
+                    return false;
+                }
+
+                prev = c;
+            }
+
+            return true;
+        }
+
+        private static bool IsAsciiLetterOrDigit(char c)
+        {
+            return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
         }
     }
 }

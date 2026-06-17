@@ -210,10 +210,10 @@ namespace NuGet.Packaging.Test
         [InlineData("1.2.3")]
         [InlineData("NuGet.Core")]
         [InlineData("Microsoft.Extensions.Logging")]
-        public void IsRestrictedPackageId_ValidIds_ReturnsTrue(string packageId)
+        public void IsValidPackageId_Restricted_ValidIds_ReturnsTrue(string packageId)
         {
             // Act
-            bool result = PackageIdValidator.IsRestrictedPackageId(packageId);
+            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
 
             // Assert
             Assert.True(result, $"Expected '{packageId}' to be a valid restricted package ID.");
@@ -226,10 +226,10 @@ namespace NuGet.Packaging.Test
         [InlineData("Paquet.Français")]             // non-ASCII ç
         [InlineData("Paquete.Español")]             // non-ASCII ñ
         [InlineData("パッケージ")]                   // Japanese characters
-        public void IsRestrictedPackageId_NonAsciiIds_ReturnsFalse(string packageId)
+        public void IsValidPackageId_Restricted_NonAsciiIds_ReturnsFalse(string packageId)
         {
             // Act
-            bool result = PackageIdValidator.IsRestrictedPackageId(packageId);
+            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
 
             // Assert
             Assert.False(result, $"Expected '{packageId}' to be an invalid restricted package ID.");
@@ -240,10 +240,10 @@ namespace NuGet.Packaging.Test
         [InlineData("Package--Double")]             // consecutive dashes
         [InlineData("Package.-Mixed")]              // consecutive dot-dash
         [InlineData("Package-.Mixed")]              // consecutive dash-dot
-        public void IsRestrictedPackageId_ConsecutiveSeparators_ReturnsFalse(string packageId)
+        public void IsValidPackageId_Restricted_ConsecutiveSeparators_ReturnsFalse(string packageId)
         {
             // Act
-            bool result = PackageIdValidator.IsRestrictedPackageId(packageId);
+            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
 
             // Assert
             Assert.False(result, $"Expected '{packageId}' to be an invalid restricted package ID (consecutive separators).");
@@ -252,47 +252,47 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData(".StartsWithDot")]
         [InlineData("-StartsWithDash")]
-        public void IsRestrictedPackageId_InvalidStartCharacter_ReturnsFalse(string packageId)
+        public void IsValidPackageId_Restricted_InvalidStartCharacter_ReturnsFalse(string packageId)
         {
             // Act
-            bool result = PackageIdValidator.IsRestrictedPackageId(packageId);
+            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
 
             // Assert
             Assert.False(result, $"Expected '{packageId}' to be invalid (starts with separator).");
         }
 
         [Fact]
-        public void IsRestrictedPackageId_ExceedsMaxLength_ReturnsFalse()
+        public void IsValidPackageId_Restricted_ExceedsMaxLength_ReturnsFalse()
         {
             // Arrange
             string packageId = new string('A', 101);
 
             // Act
-            bool result = PackageIdValidator.IsRestrictedPackageId(packageId);
+            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void IsRestrictedPackageId_ExactMaxLength_ReturnsTrue()
+        public void IsValidPackageId_Restricted_ExactMaxLength_ReturnsTrue()
         {
             // Arrange
             string packageId = "A" + new string('b', 99);
 
             // Act
-            bool result = PackageIdValidator.IsRestrictedPackageId(packageId);
+            bool result = PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: true);
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void IsRestrictedPackageId_NullThrows()
+        public void IsValidPackageId_Restricted_NullThrows()
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(paramName: "packageId",
-                testCode: () => PackageIdValidator.IsRestrictedPackageId(null));
+                testCode: () => PackageIdValidator.IsValidPackageId(null, useRestrictedCharacterSet: true));
         }
     }
 }
