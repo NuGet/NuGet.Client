@@ -303,7 +303,9 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [MemberData(nameof(NU5052_EmitsWarning_GatingData))]
+        [InlineData("10.0.100", true, false)]   // SdkAnalysisLevel below 11, SDK project → suppressed
+        [InlineData(null, false, true)]          // Non-SDK project (nuget.exe) → emits (latest defaults)
+        [InlineData(null, true, false)]          // SDK project, no SdkAnalysisLevel (assumes 8.0.400) → suppressed
         public void BuildPackage_PackageIdWithInvalidCharacters_EmitsNU5052_BasedOnSdkAnalysisLevel(string? sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool expectWarning)
         {
             using (var testDirectory = TestDirectory.Create())
@@ -351,16 +353,93 @@ namespace NuGet.Commands.Test
             }
         }
 
-        public static IEnumerable<object?[]> NU5052_EmitsWarning_GatingData()
+        [Fact]
+        public void BuildPackage_PackageIdWithInvalidCharacters_NoWarnSuppressesNU5052()
         {
-            // SdkAnalysisLevel >= 11.0.100, SDK project → emits
-            yield return new object?[] { "11.0.100", true, true };
-            // SdkAnalysisLevel < 11.0.100, SDK project → does not emit
-            yield return new object?[] { "10.0.100", true, false };
-            // Non-SDK project (null level, UsingMicrosoftNETSdk=false) → emits (latest defaults)
-            yield return new object?[] { null, false, true };
-            // SDK project with no SdkAnalysisLevel (assumes 8.0.400) → does not emit
-            yield return new object?[] { null, true, false };
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                string packageId = "Contöso.Utilities";
+                var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+                File.WriteAllText(nuspecPath, $@"<?xml version=""1.0""?>
+<package>
+    <metadata>
+        <id>{packageId}</id>
+        <version>1.0.0</version>
+        <description>test</description>
+        <authors>test</authors>
+        <dependencies>
+            <dependency id=""TestDep"" version=""1.0.0"" />
+        </dependencies>
+    </metadata>
+</package>");
+
+                var warningProperties = new WarningProperties();
+                warningProperties.NoWarn.Add(NuGetLogCode.NU5052);
+
+                var logger = new TestLogger();
+                var args = new PackArgs()
+                {
+                    CurrentDirectory = testDirectory.Path,
+                    Exclude = Enumerable.Empty<string>(),
+                    Logger = new PackCollectorLogger(logger, warningProperties),
+                    Path = nuspecPath,
+                    SdkAnalysisLevel = new NuGetVersion("11.0.100"),
+                    UsingMicrosoftNETSdk = true,
+                };
+                var runner = new PackCommandRunner(args, createProjectFactory: null);
+
+                // Act
+                runner.RunPackageBuild();
+
+                // Assert
+                logger.WarningMessages.Should().NotContain(m => m.Contains("NU5052"));
+            }
+        }
+
+        [Fact]
+        public void BuildPackage_PackageIdWithInvalidCharacters_TreatWarningsAsErrors_RaisesNU5052AsError()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                string packageId = "Contöso.Utilities";
+                var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+                File.WriteAllText(nuspecPath, $@"<?xml version=""1.0""?>
+<package>
+    <metadata>
+        <id>{packageId}</id>
+        <version>1.0.0</version>
+        <description>test</description>
+        <authors>test</authors>
+        <dependencies>
+            <dependency id=""TestDep"" version=""1.0.0"" />
+        </dependencies>
+    </metadata>
+</package>");
+
+                var warningProperties = new WarningProperties();
+                warningProperties.AllWarningsAsErrors = true;
+
+                var logger = new TestLogger();
+                var args = new PackArgs()
+                {
+                    CurrentDirectory = testDirectory.Path,
+                    Exclude = Enumerable.Empty<string>(),
+                    Logger = new PackCollectorLogger(logger, warningProperties),
+                    Path = nuspecPath,
+                    SdkAnalysisLevel = new NuGetVersion("11.0.100"),
+                    UsingMicrosoftNETSdk = true,
+                };
+                var runner = new PackCommandRunner(args, createProjectFactory: null);
+
+                // Act
+                runner.RunPackageBuild();
+
+                // Assert - warning is upgraded to error
+                logger.ErrorMessages.Should().Contain(m => m.Contains("NU5052"));
+                logger.WarningMessages.Should().NotContain(m => m.Contains("NU5052"));
+            }
         }
     }
 }
