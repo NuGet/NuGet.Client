@@ -6663,5 +6663,32 @@ namespace ClassLibrary
 
             ProjectFileUtils.WriteXmlToFile(xml, stream);
         }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageIdWithNonAsciiCharacters_NU5052()
+        {
+            using var testDirectory = _dotnetFixture.CreateTestDirectory();
+            var projectName = "ClassLibrary1";
+            var workingDirectory = Path.Combine(testDirectory, projectName);
+
+            _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", testOutputHelper: _testOutputHelper);
+            var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+            using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddProperty(xml, "PackageId", "Contöso.Utilities");
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName, testOutputHelper: _testOutputHelper);
+            var result = _dotnetFixture.PackProjectExpectSuccess(workingDirectory, projectName, $"-o {workingDirectory}", testOutputHelper: _testOutputHelper);
+
+#if SDK_NEXT
+            result.AllOutput.Should().Contain("NU5052");
+#else
+            result.AllOutput.Should().NotContain("NU5052");
+#endif
+        }
     }
 }
