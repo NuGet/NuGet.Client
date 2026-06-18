@@ -156,15 +156,15 @@ namespace NuGet.PackageManagement.Test.Telemetry
         }
 
         [Fact]
-        public void CreateWithPackageSourceMapperCommandOnboard_WithValidProperties_CreatedWithoutPiiData()
+        public void CreateWithReviewPackageSourceMappingCommand_WithValidProperties_CreatedWithoutPiiData()
         {
             // Arrange
             var nuGetTelemetryService = SetupTelemetryListener();
 
             var navigationType = NavigationType.Button;
-            var navigationOrigin = NavigationOrigin.Options_PackageSourceMapperCommand_Onboard;
+            var navigationOrigin = NavigationOrigin.Options_PackageSourceMapping_Review;
 
-            var evt = NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError.None);
+            var evt = NavigatedTelemetryEvent.CreateWithReviewPackageSourceMappingCommand(CopilotToolSessionError.None);
 
             // Act
             nuGetTelemetryService.EmitTelemetryEvent(evt);
@@ -186,20 +186,20 @@ namespace NuGet.PackageManagement.Test.Telemetry
         [InlineData(CopilotToolSessionError.CopilotServiceNotAvailable)]
         [InlineData(CopilotToolSessionError.McpToolServiceNotAvailable)]
         [InlineData(CopilotToolSessionError.CopilotAccessDenied)]
-        public void CreateWithPackageSourceMapperCommandOnboard_WithAllErrorTypes_CreatesEventWithCorrectProperties(CopilotToolSessionError errorType)
+        public void CreateWithReviewPackageSourceMappingCommand_WithAllErrorTypes_CreatesEventWithCorrectProperties(CopilotToolSessionError errorType)
         {
             // Arrange
             var nuGetTelemetryService = SetupTelemetryListener();
 
             // Act
-            var evt = NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(errorType);
+            var evt = NavigatedTelemetryEvent.CreateWithReviewPackageSourceMappingCommand(errorType);
             nuGetTelemetryService.EmitTelemetryEvent(evt);
 
             // Assert
             Assert.NotNull(_lastTelemetryEvent);
             Assert.Equal(3, _lastTelemetryEvent.Count);
             Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
-            Assert.Equal(NavigationOrigin.Options_PackageSourceMapperCommand_Onboard, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
+            Assert.Equal(NavigationOrigin.Options_PackageSourceMapping_Review, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
             Assert.Equal(errorType, _lastTelemetryEvent[NavigatedTelemetryEvent.ErrorTypePropertyName]);
         }
 

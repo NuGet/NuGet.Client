@@ -37,11 +37,11 @@ namespace NuGetVSExtension
         [Import(typeof(VisualStudioActivityLogger), AllowDefault = true)]
         public ILogger? ActivityLogger { get; set; }
 
-        public async Task LaunchOnboardPackageSourceMappingAsync(CancellationToken cancellationToken)
+        public async Task LaunchReviewPackageSourceMappingAsync(CancellationToken cancellationToken)
         {
             CopilotClientId clientId = new("Microsoft.VisualStudio.NuGet.PackageSourceMapper");
 
-            CopilotRequest request = new(Resources.Prompt_PackageSourceMappingOnboard)
+            CopilotRequest request = new(Resources.Prompt_ReviewPackageSourceMapping)
             {
                 Guidance = "Use absolute paths when invoking MCP Tools.",
                 DirectedResponders = [new(AgentModeResponderServiceMoniker, new(CopilotDescriptors.CurrentResponderVersion))]
@@ -62,7 +62,7 @@ namespace NuGetVSExtension
                     result.Error,
                     Resources.Error_PackageSourceMappingToolNotAvailable,
                     Resources.Title_PackageSourceMappingWithCopilot,
-                    NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(result.Error));
+                    NavigatedTelemetryEvent.CreateWithReviewPackageSourceMappingCommand(result.Error));
                 return;
             }
 
@@ -76,12 +76,12 @@ namespace NuGetVSExtension
             {
                 _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
                 TelemetryActivity.EmitTelemetryEvent(
-                    NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError.None));
+                    NavigatedTelemetryEvent.CreateWithReviewPackageSourceMappingCommand(CopilotToolSessionError.None));
             }
             catch (UnauthorizedAccessException ex)
             {
                 TelemetryActivity.EmitTelemetryEvent(
-                    NavigatedTelemetryEvent.CreateWithPackageSourceMapperCommandOnboard(CopilotToolSessionError.CopilotAccessDenied));
+                    NavigatedTelemetryEvent.CreateWithReviewPackageSourceMappingCommand(CopilotToolSessionError.CopilotAccessDenied));
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_PackageSourceMappingWithCopilot);
             }

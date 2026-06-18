@@ -101,11 +101,11 @@
         </Strings>
       </Button>
       
-      <Button guid="guidOnboardPackageSourceMappingCmdSet" id="cmdidOnboardPackageSourceMapping" priority="0x0100" type="Button">
+      <Button guid="guidReviewPackageSourceMappingCmdSet" id="cmdidReviewPackageSourceMapping" priority="0x0100" type="Button">
         <Strings>
-          <CommandName>cmdidOnboardPackageSourceMapping</CommandName>
+          <CommandName>cmdidReviewPackageSourceMapping</CommandName>
           <!--This button text is not visible to the user as the command is invoked from Unified Settings-->
-          <ButtonText>OnboardPackageSourceMapping</ButtonText>
+          <ButtonText>ReviewPackageSourceMapping</ButtonText>
         </Strings>
       </Button>
 
@@ -315,8 +315,8 @@
     <GuidSymbol name="guidClearNuGetLocalResourcesCmdSet" value="{54A0AC88-A025-4A62-8D48-6C1848E4F545}">
       <IDSymbol name="cmdidClearNuGetLocalResources" value="0x0100" />
     </GuidSymbol>
-    <GuidSymbol name="guidOnboardPackageSourceMappingCmdSet" value="{98154E19-E6A4-426D-94B8-FB54E73511BA}">
-      <IDSymbol name="cmdidOnboardPackageSourceMapping" value="0x0100" />
+    <GuidSymbol name="guidReviewPackageSourceMappingCmdSet" value="{98154E19-E6A4-426D-94B8-FB54E73511BA}">
+      <IDSymbol name="cmdidReviewPackageSourceMapping" value="0x0100" />
     </GuidSymbol>
     <GuidSymbol name="guidVenusCmdId" value="{C7547851-4E3A-4E5B-9173-FA6E9C8BD82C}" >
       <IDSymbol name="IDG_VENUS_CTX_REFERENCE" value="27" />

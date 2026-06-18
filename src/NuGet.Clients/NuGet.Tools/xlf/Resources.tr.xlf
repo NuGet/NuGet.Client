@@ -167,9 +167,9 @@
         <target state="translated">NuGet paketimdeki güvenlik açıklarını düzelt</target>
         <note />
       </trans-unit>
-      <trans-unit id="Prompt_PackageSourceMappingOnboard">
-        <source>Onboard this repository to package source mapping.</source>
-        <target state="new">Onboard this repository to package source mapping.</target>
+      <trans-unit id="Prompt_ReviewPackageSourceMapping">
+        <source>Review this repository's package source mappings.</source>
+        <target state="new">Review this repository's package source mappings.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
@@ -287,9 +287,9 @@
         <target state="new">Package Source Mapping with GitHub Copilot</target>
         <note>Do not translate "GitHub Copilot"</note>
       </trans-unit>
-      <trans-unit id="VSOptions_Button_PackageSourceMappingOnboard">
-        <source>Onboard with GitHub Copilot</source>
-        <target state="new">Onboard with GitHub Copilot</target>
+      <trans-unit id="VSOptions_Button_PackageSourceMappingReview">
+        <source>Review with GitHub Copilot</source>
+        <target state="new">Review with GitHub Copilot</target>
         <note>Do not translate "GitHub Copilot"</note>
       </trans-unit>
       <trans-unit id="clearLocalResources">

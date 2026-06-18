@@ -385,11 +385,11 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Onboard this repository to package source mapping..
+        ///   Looks up a localized string similar to Review this repository&apos;s package source mappings..
         /// </summary>
-        internal static string Prompt_PackageSourceMappingOnboard {
+        internal static string Prompt_ReviewPackageSourceMapping {
             get {
-                return ResourceManager.GetString("Prompt_PackageSourceMappingOnboard", resourceCulture);
+                return ResourceManager.GetString("Prompt_ReviewPackageSourceMapping", resourceCulture);
             }
         }
         
@@ -619,11 +619,11 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Onboard with GitHub Copilot.
+        ///   Looks up a localized string similar to Review with GitHub Copilot.
         /// </summary>
-        internal static string VSOptions_Button_PackageSourceMappingOnboard {
+        internal static string VSOptions_Button_PackageSourceMappingReview {
             get {
-                return ResourceManager.GetString("VSOptions_Button_PackageSourceMappingOnboard", resourceCulture);
+                return ResourceManager.GetString("VSOptions_Button_PackageSourceMappingReview", resourceCulture);
             }
         }
     }

@@ -8,6 +8,6 @@ namespace NuGet.VisualStudio
 {
     public interface IPackageSourceMappingService
     {
-        Task LaunchOnboardPackageSourceMappingAsync(CancellationToken cancellationToken);
+        Task LaunchReviewPackageSourceMappingAsync(CancellationToken cancellationToken);
     }
 }
