@@ -5,6 +5,9 @@
 
 using System;
 using System.Diagnostics;
+#if NET5_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -170,6 +173,10 @@ namespace NuGet.Credentials
         /// </summary>
         public int TimeoutSeconds { get; }
 
+#if NET5_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Legacy command-line credential provider infrastructure; Newtonsoft.Json deserializes the concrete PluginCredentialResponse type, which is preserved here.")]
+        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Legacy command-line credential provider infrastructure; Newtonsoft.Json deserializes the concrete PluginCredentialResponse type, which is preserved here.")]
+#endif
         private PluginCredentialResponse GetPluginResponse(PluginCredentialRequest request,
             CancellationToken cancellationToken)
         {
