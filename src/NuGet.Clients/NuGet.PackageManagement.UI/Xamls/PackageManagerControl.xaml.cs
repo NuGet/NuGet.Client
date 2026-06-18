@@ -77,6 +77,7 @@ namespace NuGet.PackageManagement.UI
         private IPackageVulnerabilityService _packageVulnerabilityService;
         private INuGetPackageFileService _nugetPackageFileService;
         private bool _isReadmeTabEnabled;
+        private PackageManagerInfoBarService _infoBarService;
 
         private SearchControl SearchControl
         {
@@ -848,6 +849,33 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = e.PackagesMissing;
+        }
+
+        /// <summary>
+        /// Initializes the InfoBar service for this PM UI instance using the hosting window frame.
+        /// Must be called on the UI thread after the window frame is created.
+        /// </summary>
+        public async Task SetWindowFrameAsync(IVsWindowFrame windowFrame)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var infoBarFactory = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
+            _infoBarService = PackageManagerInfoBarService.TryCreate(windowFrame, infoBarFactory);
+
+            if (_infoBarService != null)
+            {
+                // Hard-coded test InfoBar for validation. Remove once vulnerability scenario is wired up.
+                var testModel = new InfoBarModel(
+                    new IVsInfoBarTextSpan[]
+                    {
+                        new InfoBarTextSpan("This is a test InfoBar in the Package Manager UI. "),
+                        new InfoBarHyperlink("Fix with GitHub Copilot")
+                    },
+                    Microsoft.VisualStudio.Imaging.KnownMonikers.StatusWarning,
+                    isCloseButtonVisible: true);
+
+                _infoBarService.ShowInfoBar("test", testModel);
+            }
         }
 
         private async Task SetTitleAsync(IProjectMetadataContextInfo projectMetadata = null)
@@ -1935,6 +1963,7 @@ namespace NuGet.PackageManagement.UI
 
             if (disposing)
             {
+                _infoBarService?.Dispose();
                 _nugetPackageFileService.Dispose();
                 CleanUp();
             }
