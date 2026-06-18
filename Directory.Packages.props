@@ -109,7 +109,7 @@
     Once the packages depending on these packages are upgraded, these PackageVersions can be removed.
   -->
   <ItemGroup>
-    <PackageVersion Include="MessagePack" Version="2.5.301" />
+    <PackageVersion Include="MessagePack" Version="2.5.302" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="5.7.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
   </ItemGroup>
