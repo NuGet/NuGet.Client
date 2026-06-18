@@ -1114,8 +1114,8 @@ Aktualisieren Sie Ihr .NET SDK oder entfernen Sie RestoreUseLegacyDependencyReso
         <note>0 - package id and version, 1 - version</note>
       </trans-unit>
       <trans-unit id="RestrictedPackageIdWarning">
-        <source>The package ID '{0}' does not adhere to the restricted set of characters allowed in package IDs. Package IDs must start with a letter, digit, or underscore and contain only ASCII letters, digits, dots (.), and dashes (-) with no consecutive dots or dashes. Rename the package to use only characters from the restricted set.</source>
-        <target state="new">The package ID '{0}' does not adhere to the restricted set of characters allowed in package IDs. Package IDs must start with a letter, digit, or underscore and contain only ASCII letters, digits, dots (.), and dashes (-) with no consecutive dots or dashes. Rename the package to use only characters from the restricted set.</target>
+        <source>The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</source>
+        <target state="new">The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
