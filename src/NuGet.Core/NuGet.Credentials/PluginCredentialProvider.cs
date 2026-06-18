@@ -5,9 +5,6 @@
 
 using System;
 using System.Diagnostics;
-#if NET5_0_OR_GREATER
-using System.Diagnostics.CodeAnalysis;
-#endif
 using System.Globalization;
 using System.Linq;
 using System.Net;
