@@ -4714,5 +4714,326 @@ EndGlobal";
             var packageDirectory = Path.Combine(pathContext.UserPackagesFolder, packageId.ToLowerInvariant(), expectedVersion);
             Directory.Exists(packageDirectory).Should().BeTrue($"expected {packageId} {expectedVersion} to be in the global packages folder");
         }
+
+        // https://github.com/NuGet/Home/issues/10907
+        // ExcludeAssets="compile" on ProjectReference should prevent compile assets from flowing to the direct consumer.
+        [PlatformFact(Platform.Windows, Platform.Linux)]
+        public void DotnetRestore_ProjectReference_ExcludeAssetsCompile_PreventsCompileAssetFlow()
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            // Leaf classlib with a public type
+            var leafName = "Leaf";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, leafName, "classlib", testOutputHelper: _testOutputHelper);
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, leafName, "MyClass.cs"),
+@"namespace Leaf
+{
+    public class MyClass
+    {
+        public static int Value => 42;
+    }
+}");
+
+            // Consumer references Leaf with ExcludeAssets="compile"
+            var consumerName = "Consumer";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, consumerName, "console", testOutputHelper: _testOutputHelper);
+            var consumerDir = Path.Combine(pathContext.SolutionRoot, consumerName);
+            var consumerProj = Path.Combine(consumerDir, $"{consumerName}.csproj");
+
+            using (var stream = File.Open(consumerProj, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{leafName}\\{leafName}.csproj",
+                    framework: (string)null,
+                    new Dictionary<string, string> { { "ExcludeAssets", "compile" } },
+                    new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            File.WriteAllText(Path.Combine(consumerDir, "Program.cs"),
+@"namespace Consumer
+{
+    class Program
+    {
+        static void Main() { System.Console.WriteLine(Leaf.MyClass.Value); }
+    }
+}");
+
+            // Act & Assert: build should fail because compile assets are excluded
+            var buildResult = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, $"build {consumerProj}", testOutputHelper: _testOutputHelper);
+            buildResult.AllOutput.Should().Contain("CS0246",
+                "ExcludeAssets=\"compile\" on ProjectReference should prevent compile assets from flowing, causing a build error");
+        }
+
+        // https://github.com/NuGet/Home/issues/10907
+        // IncludeAssets="runtime" (missing compile) on ProjectReference should prevent compile assets from flowing.
+        [PlatformFact(Platform.Windows, Platform.Linux)]
+        public void DotnetRestore_ProjectReference_IncludeAssetsRuntime_PreventsCompileAssetFlow()
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            // Leaf classlib with a public type
+            var leafName = "Leaf";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, leafName, "classlib", testOutputHelper: _testOutputHelper);
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, leafName, "MyClass.cs"),
+@"namespace Leaf
+{
+    public class MyClass
+    {
+        public static int Value => 42;
+    }
+}");
+
+            // Consumer references Leaf with IncludeAssets="runtime" (no compile)
+            var consumerName = "Consumer";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, consumerName, "console", testOutputHelper: _testOutputHelper);
+            var consumerDir = Path.Combine(pathContext.SolutionRoot, consumerName);
+            var consumerProj = Path.Combine(consumerDir, $"{consumerName}.csproj");
+
+            using (var stream = File.Open(consumerProj, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{leafName}\\{leafName}.csproj",
+                    framework: (string)null,
+                    new Dictionary<string, string> { { "IncludeAssets", "runtime" } },
+                    new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            File.WriteAllText(Path.Combine(consumerDir, "Program.cs"),
+@"namespace Consumer
+{
+    class Program
+    {
+        static void Main() { System.Console.WriteLine(Leaf.MyClass.Value); }
+    }
+}");
+
+            // Act & Assert: build should fail because compile assets are not included
+            var buildResult = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, $"build {consumerProj}", testOutputHelper: _testOutputHelper);
+            buildResult.AllOutput.Should().Contain("CS0246",
+                "IncludeAssets=\"runtime\" on ProjectReference should prevent compile assets from flowing, causing a build error");
+        }
+
+        // https://github.com/NuGet/Home/issues/10907
+        // PrivateAssets="all" on ProjectReference should prevent transitive consumers from seeing the reference.
+        // Root → Middle → Leaf (PrivateAssets="all"), Root should NOT see Leaf.MyClass.
+        [PlatformFact(Platform.Windows, Platform.Linux)]
+        public void DotnetRestore_ProjectReference_PrivateAssetsAll_PreventsTransitiveCompileAssetFlow()
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            // Leaf classlib with a public type
+            var leafName = "Leaf";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, leafName, "classlib", testOutputHelper: _testOutputHelper);
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, leafName, "MyClass.cs"),
+@"namespace Leaf
+{
+    public class MyClass
+    {
+        public static int Value => 42;
+    }
+}");
+
+            // Middle classlib references Leaf with PrivateAssets="all"
+            var middleName = "Middle";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, middleName, "classlib", testOutputHelper: _testOutputHelper);
+            var middleDir = Path.Combine(pathContext.SolutionRoot, middleName);
+            var middleProj = Path.Combine(middleDir, $"{middleName}.csproj");
+
+            using (var stream = File.Open(middleProj, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{leafName}\\{leafName}.csproj",
+                    framework: (string)null,
+                    new Dictionary<string, string> { { "PrivateAssets", "all" } },
+                    new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            File.WriteAllText(Path.Combine(middleDir, "MiddleClass.cs"),
+@"namespace Middle
+{
+    public class MiddleClass
+    {
+        public static int WrappedValue => Leaf.MyClass.Value;
+    }
+}");
+
+            // Root console references Middle (no special assets), tries to use Leaf.MyClass directly
+            var rootName = "Root";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, rootName, "console", testOutputHelper: _testOutputHelper);
+            var rootDir = Path.Combine(pathContext.SolutionRoot, rootName);
+            var rootProj = Path.Combine(rootDir, $"{rootName}.csproj");
+
+            using (var stream = File.Open(rootProj, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{middleName}\\{middleName}.csproj",
+                    framework: (string)null,
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            File.WriteAllText(Path.Combine(rootDir, "Program.cs"),
+@"namespace Root
+{
+    class Program
+    {
+        static void Main() { System.Console.WriteLine(Leaf.MyClass.Value); }
+    }
+}");
+
+            // Act & Assert: Root should NOT see Leaf.MyClass because Middle has PrivateAssets="all" on Leaf
+            var buildResult = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, $"build {rootProj}", testOutputHelper: _testOutputHelper);
+            buildResult.AllOutput.Should().Contain("CS0103",
+                "PrivateAssets=\"all\" on ProjectReference should prevent transitive compile asset flow to Root");
+        }
+
+        // https://github.com/NuGet/Home/issues/10907
+        // PrivateAssets="compile" on ProjectReference should prevent transitive consumers from seeing compile assets.
+        // Root → Middle → Leaf (PrivateAssets="compile"), Root should NOT see Leaf.MyClass.
+        [PlatformFact(Platform.Windows, Platform.Linux)]
+        public void DotnetRestore_ProjectReference_PrivateAssetsCompile_PreventsTransitiveCompileAssetFlow()
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            // Leaf classlib with a public type
+            var leafName = "Leaf";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, leafName, "classlib", testOutputHelper: _testOutputHelper);
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, leafName, "MyClass.cs"),
+@"namespace Leaf
+{
+    public class MyClass
+    {
+        public static int Value => 42;
+    }
+}");
+
+            // Middle classlib references Leaf with PrivateAssets="compile"
+            var middleName = "Middle";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, middleName, "classlib", testOutputHelper: _testOutputHelper);
+            var middleDir = Path.Combine(pathContext.SolutionRoot, middleName);
+            var middleProj = Path.Combine(middleDir, $"{middleName}.csproj");
+
+            using (var stream = File.Open(middleProj, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{leafName}\\{leafName}.csproj",
+                    framework: (string)null,
+                    new Dictionary<string, string> { { "PrivateAssets", "compile" } },
+                    new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            File.WriteAllText(Path.Combine(middleDir, "MiddleClass.cs"),
+@"namespace Middle
+{
+    public class MiddleClass
+    {
+        public static int WrappedValue => Leaf.MyClass.Value;
+    }
+}");
+
+            // Root console references Middle (no special assets), tries to use Leaf.MyClass directly
+            var rootName = "Root";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, rootName, "console", testOutputHelper: _testOutputHelper);
+            var rootDir = Path.Combine(pathContext.SolutionRoot, rootName);
+            var rootProj = Path.Combine(rootDir, $"{rootName}.csproj");
+
+            using (var stream = File.Open(rootProj, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{middleName}\\{middleName}.csproj",
+                    framework: (string)null,
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            File.WriteAllText(Path.Combine(rootDir, "Program.cs"),
+@"namespace Root
+{
+    class Program
+    {
+        static void Main() { System.Console.WriteLine(Leaf.MyClass.Value); }
+    }
+}");
+
+            // Act & Assert: Root should NOT see Leaf.MyClass because Middle has PrivateAssets="compile" on Leaf
+            var buildResult = _dotnetFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, $"build {rootProj}", testOutputHelper: _testOutputHelper);
+            buildResult.AllOutput.Should().Contain("CS0103",
+                "PrivateAssets=\"compile\" on ProjectReference should prevent transitive compile asset flow to Root");
+        }
+
+        // https://github.com/NuGet/Home/issues/10907
+        // Baseline: without any asset restrictions, compile assets flow normally
+        [PlatformFact(Platform.Windows, Platform.Linux)]
+        public void DotnetRestore_ProjectReference_NoAssetRestrictions_CompileAssetsFlow()
+        {
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            // Leaf classlib with a public type
+            var leafName = "Leaf";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, leafName, "classlib", testOutputHelper: _testOutputHelper);
+            File.WriteAllText(Path.Combine(pathContext.SolutionRoot, leafName, "MyClass.cs"),
+@"namespace Leaf
+{
+    public class MyClass
+    {
+        public static int Value => 42;
+    }
+}");
+
+            // Consumer references Leaf with no asset restrictions
+            var consumerName = "Consumer";
+            _dotnetFixture.CreateDotnetNewProject(pathContext.SolutionRoot, consumerName, "console", testOutputHelper: _testOutputHelper);
+            var consumerDir = Path.Combine(pathContext.SolutionRoot, consumerName);
+            var consumerProj = Path.Combine(consumerDir, $"{consumerName}.csproj");
+
+            using (var stream = File.Open(consumerProj, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var xml = XDocument.Load(stream);
+                ProjectFileUtils.AddItem(
+                    xml,
+                    "ProjectReference",
+                    $"..\\{leafName}\\{leafName}.csproj",
+                    framework: (string)null,
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>());
+                ProjectFileUtils.WriteXmlToFile(xml, stream);
+            }
+
+            File.WriteAllText(Path.Combine(consumerDir, "Program.cs"),
+@"namespace Consumer
+{
+    class Program
+    {
+        static void Main() { System.Console.WriteLine(Leaf.MyClass.Value); }
+    }
+}");
+
+            // Act: build should succeed — compile assets flow normally
+            _dotnetFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, $"build {consumerProj}", testOutputHelper: _testOutputHelper);
+        }
     }
 }
