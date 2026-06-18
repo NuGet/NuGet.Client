@@ -37,16 +37,6 @@
         <target state="translated">cmdidClearNuGetLocalResources</target>
         <note />
       </trans-unit>
-      <trans-unit id="cmdidOnboardPackageSourceMapping|ButtonText">
-        <source>OnboardPackageSourceMapping</source>
-        <target state="new">OnboardPackageSourceMapping</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="cmdidOnboardPackageSourceMapping|CommandName">
-        <source>cmdidOnboardPackageSourceMapping</source>
-        <target state="new">cmdidOnboardPackageSourceMapping</target>
-        <note />
-      </trans-unit>
       <trans-unit id="cmdidPowerConsole|ButtonText">
         <source>Package Manager C&amp;onsole</source>
         <target state="translated">C&amp;onsola del Administrador de paquetes</target>
@@ -65,6 +55,16 @@
       <trans-unit id="cmdidRestorePackages|CommandName">
         <source>cmdRestorePackages</source>
         <target state="translated">cmdRestorePackages</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="cmdidReviewPackageSourceMapping|ButtonText">
+        <source>ReviewPackageSourceMapping</source>
+        <target state="new">ReviewPackageSourceMapping</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="cmdidReviewPackageSourceMapping|CommandName">
+        <source>cmdidReviewPackageSourceMapping</source>
+        <target state="new">cmdidReviewPackageSourceMapping</target>
         <note />
       </trans-unit>
       <trans-unit id="cmdidSourceSettings|ButtonText">

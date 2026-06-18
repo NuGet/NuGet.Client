@@ -16,12 +16,12 @@ namespace NuGet.Tools.Commands
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandID = PkgCmdIDList.cmdidOnboardPackageSourceMapping;
+        public const int CommandID = PkgCmdIDList.cmdidReviewPackageSourceMapping;
 
         /// <summary>
         /// Command menu group (command set GUID).
         /// </summary>
-        public static readonly Guid CommandSet = GuidList.guidOnboardPackageSourceMappingCmdSet;
+        public static readonly Guid CommandSet = GuidList.guidReviewPackageSourceMappingCmdSet;
 
         private readonly OleMenuCommandService _oleMenuCommandService;
         private readonly IPackageSourceMappingService _packageSourceMappingService;
@@ -44,7 +44,7 @@ namespace NuGet.Tools.Commands
         private void ExecutePackageSourceMapperCommand(object sender, EventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
-                _packageSourceMappingService.LaunchOnboardPackageSourceMappingAsync(CancellationToken.None))
+                _packageSourceMappingService.LaunchReviewPackageSourceMappingAsync(CancellationToken.None))
                 .PostOnFailure(nameof(NuGetPackage), nameof(ExecutePackageSourceMapperCommand));
         }
     }
