@@ -154,7 +154,7 @@
       </trans-unit>
       <trans-unit id="ExceptionWhenTryingToAddSource">
         <source>Exception '{0}' thrown when trying to add source '{1}'. Verify all your online package sources are available.</source>
-        <target state="needs-review-translation">'{1}' kaynağı eklenmeye çalışılırken '{0}' özel durumu oluştu. Lütfen tüm kullanılabilir çevrimiçi paket kaynaklarını doğrulayın.</target>
+        <target state="new">Exception '{0}' thrown when trying to add source '{1}'. Verify all your online package sources are available.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictMessage">
@@ -274,7 +274,7 @@
       </trans-unit>
       <trans-unit id="PackageNotFoundInPrimarySources">
         <source>Package '{0}' is not found in the following primary source(s): '{1}'. Verify all your online package sources are available (OR) package id, version are specified correctly.</source>
-        <target state="needs-review-translation">'{0}' paketi şu birincil kaynaklar içerisinde bulunamadı: '{1}'. Lütfen tüm çevrimiçi paket kaynaklarınızın kullanılabilir olduğunu (VEYA) paket kimliği ve sürümün doğru belirtildiğini doğrulayın.</target>
+        <target state="new">Package '{0}' is not found in the following primary source(s): '{1}'. Verify all your online package sources are available (OR) package id, version are specified correctly.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageNotFoundOnSource">
@@ -401,7 +401,7 @@
       </trans-unit>
       <trans-unit id="SolutionDirectoryNotAvailable">
         <source>Solution is not opened or not saved. Ensure you have an open and saved solution.</source>
-        <target state="needs-review-translation">Çözüm açılmadı veya kaydedilmedi. Lütfen açık ve kaydedilmiş bir çözümünüz olduğundan emin olun.</target>
+        <target state="new">Solution is not opened or not saved. Ensure you have an open and saved solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionManagerNotAvailableForUninstall">
@@ -444,7 +444,7 @@
       </trans-unit>
       <trans-unit id="UnableToGatherPackageFromSource">
         <source>Unable to gather package '{0}' from source '{1}'. Verify all your online package sources are available.</source>
-        <target state="needs-review-translation">'{1}' kaynağından '{0}' paketi toplanamıyor. Lütfen kullanılabilir tüm çevrimiçi paket kaynaklarını doğrulayın.</target>
+        <target state="new">Unable to gather package '{0}' from source '{1}'. Verify all your online package sources are available.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToResolveDependencyInfo">
