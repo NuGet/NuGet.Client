@@ -314,7 +314,7 @@
 3 - Log Message</note>
       </trans-unit>
       <trans-unit id="FailToLoadPackagesConfig">
-        <source>Fail to load packages.config as XML file. Check that it is valid. </source>
+        <source>Failed to load packages.config as XML file. Check that it is valid.</source>
         <target state="needs-review-translation">Soubor packages.config se nepovedlo načíst jako soubor XML. Zkontrolujte ho prosím. </target>
         <note />
       </trans-unit>
