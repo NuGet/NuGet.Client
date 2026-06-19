@@ -154,7 +154,7 @@
       </trans-unit>
       <trans-unit id="ExceptionWhenTryingToAddSource">
         <source>Exception '{0}' thrown when trying to add source '{1}'. Verify all your online package sources are available.</source>
-        <target state="needs-review-translation">Exceção '{0}' lançada ao tentar adicionar fonte '{1}'. Verifique se todas as suas fontes de pacote online estão disponíveis.</target>
+        <target state="new">Exception '{0}' thrown when trying to add source '{1}'. Verify all your online package sources are available.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileConflictMessage">
@@ -274,7 +274,7 @@
       </trans-unit>
       <trans-unit id="PackageNotFoundInPrimarySources">
         <source>Package '{0}' is not found in the following primary source(s): '{1}'. Verify all your online package sources are available (OR) package id, version are specified correctly.</source>
-        <target state="needs-review-translation">O pacote '{0}' não foi encontrado na(s) seguinte(s) fonte(s) primária(s): '{1}'. Verifique se todas as suas fontes de pacote online estão disponíveis (OU) se a ID e a versão de pacote estão especificadas corretamente.</target>
+        <target state="new">Package '{0}' is not found in the following primary source(s): '{1}'. Verify all your online package sources are available (OR) package id, version are specified correctly.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageNotFoundOnSource">
@@ -401,7 +401,7 @@
       </trans-unit>
       <trans-unit id="SolutionDirectoryNotAvailable">
         <source>Solution is not opened or not saved. Ensure you have an open and saved solution.</source>
-        <target state="needs-review-translation">A solução não está aberta ou não foi salva. Verifique se você tem uma solução aberta e salva.</target>
+        <target state="new">Solution is not opened or not saved. Ensure you have an open and saved solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionManagerNotAvailableForUninstall">
@@ -444,7 +444,7 @@
       </trans-unit>
       <trans-unit id="UnableToGatherPackageFromSource">
         <source>Unable to gather package '{0}' from source '{1}'. Verify all your online package sources are available.</source>
-        <target state="needs-review-translation">Não foi possível coletar o pacote '{0}' da fonte '{1}'. Verifique se todas as suas fontes de pacote online estão disponíveis. </target>
+        <target state="new">Unable to gather package '{0}' from source '{1}'. Verify all your online package sources are available.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToResolveDependencyInfo">
