@@ -933,12 +933,12 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueName">
         <source>The name specified has already been added to the list of available package sources. Provide a unique name.</source>
-        <target state="needs-review-translation">El nombre especificado ya se ha agregado a la lista de orígenes de paquetes disponibles. Proporcione un nombre único.</target>
+        <target state="new">The name specified has already been added to the list of available package sources. Provide a unique name.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueSource">
         <source>The source specified has already been added to the list of available package sources. Provide a unique source.</source>
-        <target state="needs-review-translation">El origen especificado ya se ha agregado a la lista de orígenes de paquetes disponibles. Proporcione un origen único.</target>
+        <target state="new">The source specified has already been added to the list of available package sources. Provide a unique source.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Canceled">
@@ -1048,7 +1048,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Text_NoReadme">
         <source>There is no README available for the selected package version. For more information visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</source>
-        <target state="needs-review-translation">No hay ningún archivo README disponible para la versión del paquete seleccionada. Para más información, visite [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
+        <target state="new">There is no README available for the selected package version. For more information visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme).</target>
         <note>{Locked="[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)"} "[aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)" this is a URL link and should not be translated</note>
       </trans-unit>
       <trans-unit id="Text_NotAvailableInSource">
@@ -1283,7 +1283,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Upgrade_RevertSteps">
         <source>Follow the instructions at {0} to return to the previous state.</source>
-        <target state="needs-review-translation">Siga las sencillas instrucciones de {0} para volver al estado anterior.</target>
+        <target state="new">Follow the instructions at {0} to return to the previous state.</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_UninstallFailed">
