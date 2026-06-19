@@ -1282,7 +1282,7 @@ Error: {1}</source>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_RevertSteps">
-        <source>Follow simple instructions from {0} to go back to previous state.</source>
+        <source>Follow the instructions at {0} to return to the previous state.</source>
         <target state="needs-review-translation">이전 상태로 돌아가려면 {0}의 간단한 지침을 따르세요.</target>
         <note />
       </trans-unit>

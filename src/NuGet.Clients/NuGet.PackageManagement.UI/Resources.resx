@@ -622,7 +622,7 @@ Error: {1}</value>
     <value>NuGet migrate failed to install packages as PackageReference. Changed files are backed up at {0}</value>
   </data>
   <data name="Upgrade_RevertSteps" xml:space="preserve">
-    <value>Follow simple instructions from {0} to go back to previous state.</value>
+    <value>Follow the instructions at {0} to return to the previous state.</value>
   </data>
   <data name="Upgrade_UninstallFailed" xml:space="preserve">
     <value>NuGet upgrade failed to uninstall packages from packages.config so rolled back to previous state.</value>

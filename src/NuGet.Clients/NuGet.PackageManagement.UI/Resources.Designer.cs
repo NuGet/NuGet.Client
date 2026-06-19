@@ -2348,7 +2348,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Follow simple instructions from {0} to go back to previous state..
+        ///   Looks up a localized string similar to Follow the instructions at {0} to return to the previous state..
         /// </summary>
         public static string Upgrade_RevertSteps {
             get {

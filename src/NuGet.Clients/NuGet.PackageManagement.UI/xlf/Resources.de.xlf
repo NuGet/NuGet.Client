@@ -1282,7 +1282,7 @@ Fehler: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Upgrade_RevertSteps">
-        <source>Follow simple instructions from {0} to go back to previous state.</source>
+        <source>Follow the instructions at {0} to return to the previous state.</source>
         <target state="needs-review-translation">Befolgen Sie die einfachen Anweisungen unter "{0}", um zum vorherigen Zustand zurückzukehren.</target>
         <note />
       </trans-unit>
