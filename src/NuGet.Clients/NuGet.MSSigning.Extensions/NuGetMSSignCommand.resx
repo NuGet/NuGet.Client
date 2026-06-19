@@ -152,7 +152,7 @@
     <value>No package was provided. For a list of accepted ways to provide a package, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="MSSignCommandNoTimestamperWarning" xml:space="preserve">
-    <value>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>No '-Timestamper' option was provided. The signed package will not be timestamped. To learn more about this option, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="MSSignCommandNoValidCertificateFileException" xml:space="preserve">
     <value>No CertificateFile provided or provided file is not a p7b file.</value>

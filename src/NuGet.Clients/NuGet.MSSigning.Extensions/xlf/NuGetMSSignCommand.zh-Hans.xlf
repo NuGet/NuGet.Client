@@ -63,7 +63,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MSSignCommandNoTimestamperWarning">
-        <source>No '-Timestamper' option was provided the signed package will not be timestamped. To learn more about this option, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
+        <source>No '-Timestamper' option was provided. The signed package will not be timestamped. To learn more about this option, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
         <target state="needs-review-translation">未提供 "-Timestamper" 选项，签名的包不会加盖时间戳。若要了解有关此选项的详细信息，请访问 https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
