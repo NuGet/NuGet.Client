@@ -184,7 +184,7 @@
       </trans-unit>
       <trans-unit id="Delete_MissingArguments">
         <source>Provide arguments for package id and package version.</source>
-        <target state="needs-review-translation">Lütfen paket kimliği ve paket sürümü için bağımsız değişkenler sağlayın.</target>
+        <target state="new">Provide arguments for package id and package version.</target>
         <note />
       </trans-unit>
       <trans-unit id="Delete_PackageIdAndVersion_Description">
@@ -271,7 +271,7 @@
       </trans-unit>
       <trans-unit id="Error_AssetsFileNotFound">
         <source>No assets file was found for `{0}`. Run restore before running this command.</source>
-        <target state="needs-review-translation">`{0}` için varlık dosyası bulunamadı. Lütfen bu komutu çalıştırmadan önce geri yüklemeyi çalıştırın.</target>
+        <target state="new">No assets file was found for `{0}`. Run restore before running this command.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotObtainSearchSource">
@@ -371,7 +371,7 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
       </trans-unit>
       <trans-unit id="Error_MultipleProjectOrSolutionFilesInDirectory">
         <source>The directory '{0}' contains multiple project or solution files. Specify which project or solution file to use.</source>
-        <target state="needs-review-translation">'{0}' dizini birden çok proje veya çözüm dosyası içeriyor. Lütfen kullanılacak proje veya çözüm dosyasını belirtin.</target>
+        <target state="new">The directory '{0}' contains multiple project or solution files. Specify which project or solution file to use.</target>
         <note>{0} - Directory</note>
       </trans-unit>
       <trans-unit id="Error_NoDgSpec">
@@ -411,7 +411,7 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
         <source>Missing or invalid path '{0}'. Provide a path to a project, solution file, file-based app, or project directory.</source>
-        <target state="needs-review-translation">'{0}' yolu eksik veya geçersiz. Lütfen projeye, çözüm dosyasına, dosya tabanlı uygulamaya veya proje dizinine giden yolu sağlayın.</target>
+        <target state="new">Missing or invalid path '{0}'. Provide a path to a project, solution file, file-based app, or project directory.</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -559,12 +559,12 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
       </trans-unit>
       <trans-unit id="ListPkg_ErrorReadingAssetsFile">
         <source>Unable to read the assets file `{0}`. Make sure the file has the correct format.</source>
-        <target state="needs-review-translation">`{0}` varlık dosyası okunamıyor. Lütfen dosyanın yazma biçimine sahip olduğundan emin olun.</target>
+        <target state="new">Unable to read the assets file `{0}`. Make sure the file has the correct format.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ErrorReadingReferenceFromProject">
         <source>Unable to read a package reference from the project `{0}`. Make sure that your project file and project.assets.json file are in sync by running restore.</source>
-        <target state="needs-review-translation">`{0}` projesindeki bir paket başvurusu okunamıyor. Geri yüklemeyi çalıştırarak proje dosyanızın ve project.assets.json dosyasının eşitlenmiş olduğundan emin olun.</target>
+        <target state="new">Unable to read a package reference from the project `{0}`. Make sure that your project file and project.assets.json file are in sync by running restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_FrameworkDescription">
@@ -793,9 +793,9 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
         <source>Both operations, --list and --clear, are not supported in the same command. Specify only one operation.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="needs-review-translation">--list ve --clear işlemleri aynı komutta desteklenmez. Lütfen yalnızca bir işlem belirtin.
-kullanım: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-reference</target>
+        <target state="new">Both operations, --list and --clear, are not supported in the same command. Specify only one operation.
+usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_NoArguments">
@@ -811,9 +811,9 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
         <source>Specify an operation i.e. --list or --clear.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="needs-review-translation">Lütfen bir işlem belirtin, örneğin: --list veya --clear.
-kullanım: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-reference</target>
+        <target state="new">Specify an operation i.e. --list or --clear.
+usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
       <trans-unit id="NoServiceEndpoint_Description">
@@ -1087,7 +1087,7 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="Push_MissingArguments">
         <source>Specify the path to the package.</source>
-        <target state="needs-review-translation">Lütfen paketin yolunu belirtin.</target>
+        <target state="new">Specify the path to the package.</target>
         <note />
       </trans-unit>
       <trans-unit id="Push_Package_ApiKey_Description">
@@ -1205,7 +1205,7 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
       </trans-unit>
       <trans-unit id="SignCommandNoTimestamperWarning">
         <source>The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, visit https://docs.microsoft.com/dotnet/core/tools</source>
-        <target state="needs-review-translation">'-timestamper' seçeneği sağlanmadı. İmzalı pakete zaman damgası uygulanmayacak. Bu seçenek hakkında daha fazla bilgi için lütfen https://docs.microsoft.com/dotnet/core/tools adresini ziyaret edin</target>
+        <target state="new">The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, visit https://docs.microsoft.com/dotnet/core/tools</target>
         <note>Please don't localize '--timestamper'</note>
       </trans-unit>
       <trans-unit id="SignCommandOutputDirectoryDescription">
@@ -1395,7 +1395,7 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
       </trans-unit>
       <trans-unit id="Unsupported_UpdatePackageWithDifferentPerTfmVersions">
         <source>The package {0} references different versions of the package for different target frameworks. This is not supported by this command. Edit the project file directly. ({1})</source>
-        <target state="needs-review-translation">{0} paketi farklı hedef çerçeveler için paketin farklı sürümlerine başvuruyor. Bu işlem, bu komut tarafından desteklenmiyor. Lütfen proje dosyasını doğrudan düzenleyin. ({1})</target>
+        <target state="new">The package {0} references different versions of the package for different target frameworks. This is not supported by this command. Edit the project file directly. ({1})</target>
         <note>0 - The package id
 1 - The project path</note>
       </trans-unit>
@@ -1494,7 +1494,7 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
         <source>The file '{0}' does not appear to be a NuGet assets file. Run restore for project '{1}' before running this command.</source>
-        <target state="needs-review-translation">'{0}' dosyası NuGet varlıkları dosyası gibi görünmüyor. Lütfen bu komutu çalıştırmadan önce '{1}' projesi için geri yüklemeyi çalıştırın.</target>
+        <target state="new">The file '{0}' does not appear to be a NuGet assets file. Run restore for project '{1}' before running this command.</target>
         <note>{0} - Assets file path, {1} - Project name</note>
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithoutProject">
