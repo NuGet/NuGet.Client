@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
         <source>Solution is not saved. Save your solution before managing NuGet packages.</source>
-        <target state="translated">No se guardó la solución. Guarde la solución antes de administrar los paquetes NuGet.</target>
+        <target state="new">Solution is not saved. Save your solution before managing NuGet packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AllowInsecureConnections_Header">
