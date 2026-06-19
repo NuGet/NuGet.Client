@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -48,8 +49,18 @@ namespace NuGet.Protocol
                 IEnumerable<NuGetVersion> allVersions;
                 try
                 {
-                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
-                    allVersions = catalogEntries.Select(p => NuGetVersion.Parse(p["version"].ToString()));
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+                    {
+                        allVersions = await GetVersionsFromItemsAsync(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+                    }
+                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+                    {
+                        allVersions = await GetVersionsFromItemsAsync(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+                    }
+                    else
+                    {
+                        allVersions = await GetVersionsFromJObjectsAsync(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -73,10 +84,26 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             // TODO: get the url and just check the headers?
-            var metadata = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                var item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
 
-            // TODO: listed check
-            return metadata != null;
+                // TODO: listed check
+                return item != null;
+            }
+            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            {
+                var item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
+
+                // TODO: listed check
+                return item != null;
+            }
+            else
+            {
+                // To make the AoT linker reliably trim the Newtonsoft.Json code in async state machines, the entire method needs to be
+                // in a separate method that is only called when the feature switch is disabled.
+                return await ExistsFromJObjectAsync(identity, sourceCacheContext, log, token);
+            }
         }
 
         public override async Task<bool> Exists(
@@ -100,9 +127,55 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var results = new List<NuGetVersion>();
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return await GetVersionsFromItemsAsync(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+            }
 
-            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, sourceCacheContext, log, token);
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            {
+                return await GetVersionsFromItemsAsync(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+            }
+
+            return await GetVersionsFromJObjectsAsync(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+        }
+
+        private async Task<List<NuGetVersion>> GetVersionsFromItemsAsync(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var items = await _regResource.GetPackageMetadataItemsAsync(packageId, VersionRange.All, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+
+            var versions = new List<NuGetVersion>();
+
+            foreach (var item in items.NoAllocEnumerate())
+            {
+                NuGetVersion version = item.CatalogEntry.Version;
+
+                if (version != null)
+                {
+                    versions.Add(version);
+                }
+            }
+
+            return versions;
+        }
+
+        private async Task<List<NuGetVersion>> GetVersionsFromJObjectsAsync(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var entries = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+
+            var versions = new List<NuGetVersion>();
 
             foreach (var catalogEntry in entries)
             {
@@ -113,12 +186,24 @@ namespace NuGet.Protocol
                 {
                     if (includePrerelease || !version.IsPrerelease)
                     {
-                        results.Add(version);
+                        versions.Add(version);
                     }
                 }
             }
 
-            return results;
+            return versions;
+        }
+
+        private async Task<bool> ExistsFromJObjectAsync(
+            PackageIdentity identity,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var metadata = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+
+            // TODO: listed check
+            return metadata != null;
         }
     }
 }

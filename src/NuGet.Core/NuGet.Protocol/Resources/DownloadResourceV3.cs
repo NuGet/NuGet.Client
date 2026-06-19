@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
+using NuGet.Shared;
 
 namespace NuGet.Protocol
 {
@@ -95,18 +96,44 @@ namespace NuGet.Protocol
             {
                 using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    // Read the url from the registration information
-                    var blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
-
-                    if (blob != null
-                        && blob["packageContent"] != null)
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
                     {
-                        downloadUri = new Uri(blob["packageContent"].ToString());
+                        downloadUri = await GetDownloadUrlFromItemAsync(identity, sourceCacheContext, log, token);
+                    }
+                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+                    {
+                        downloadUri = await GetDownloadUrlFromItemAsync(identity, sourceCacheContext, log, token);
+                    }
+                    else
+                    {
+                        downloadUri = await GetDownloadUrlFromJObjectAsync(identity, sourceCacheContext, log, token);
                     }
                 }
             }
 
             return downloadUri;
+        }
+
+        private async Task<Uri> GetDownloadUrlFromItemAsync(PackageIdentity identity, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
+        {
+            // Read the url from the registration information
+            var leaf = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
+
+            return leaf?.PackageContent;
+        }
+
+        private async Task<Uri> GetDownloadUrlFromJObjectAsync(PackageIdentity identity, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
+        {
+            // Read the url from the registration information
+            var blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+
+            if (blob != null
+                && blob["packageContent"] != null)
+            {
+                return new Uri(blob["packageContent"].ToString());
+            }
+
+            return null;
         }
 
         public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
