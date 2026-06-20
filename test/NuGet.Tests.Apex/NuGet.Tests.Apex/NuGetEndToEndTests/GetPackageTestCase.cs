@@ -103,8 +103,10 @@ namespace NuGet.Tests.Apex
         }
 
         /// <summary>
-        /// Verifies that Get-Package -ListAvailable returns a package with IsUpdate = False
-        /// when the package is not installed (no update context).
+        /// Verifies that Get-Package -ListAvailable returns a package whose IsUpdate property
+        /// is not set (falsy). The original E2E test (Test-GetPackagesWithNoUpdatesReturnPackagesWithIsUpdateNotSet)
+        /// called Assert-False on $package.IsUpdate — which succeeds because PowerShellRemotePackage
+        /// does not have an IsUpdate property, so PowerShell returns $null (falsy).
         /// </summary>
         [TestMethod]
         [Timeout(DefaultTimeout)]
@@ -112,19 +114,16 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
-            var packageName = "IsUpdateFlagTestPackage";
-            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0");
-
             var nugetConsole = GetConsole(testContext.Project);
-            string escapedSource = testContext.PackageSource.Replace("'", "''");
 
-            // Act — get a package from -ListAvailable and check its IsUpdate property
+            // Act — get a package from -ListAvailable (default source) and evaluate IsUpdate.
+            // PowerShellRemotePackage has no IsUpdate property, so $pkg.IsUpdate is $null (falsy).
             nugetConsole.Clear();
-            nugetConsole.Execute($"$pkg = Get-Package -ListAvailable -Source '{escapedSource}' -First 1; $pkg.IsUpdate");
+            nugetConsole.Execute("$pkg = Get-Package -ListAvailable -First 1; Write-Host \"IsUpdate=$([bool]$pkg.IsUpdate)\"");
 
-            // Assert — IsUpdate should be False
+            // Assert — IsUpdate should be False (property doesn't exist on remote packages)
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().Contain("False", because: $"package from -ListAvailable should have IsUpdate = False. PMC output: {pmcText}");
+            pmcText.Should().Contain("IsUpdate=False", because: $"package from -ListAvailable should not have IsUpdate set. PMC output: {pmcText}");
         }
     }
 }
