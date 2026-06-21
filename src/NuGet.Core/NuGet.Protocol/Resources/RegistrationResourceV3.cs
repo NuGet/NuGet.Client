@@ -191,11 +191,11 @@ namespace NuGet.Protocol
         {
             var results = new List<RegistrationLeafItem>();
 
-            var registrationUri = GetUri(packageId);
+            Uri registrationUri = GetUri(packageId);
 
-            var ranges = await RegistrationUtility.LoadRangesAsItemsAsync(_client, registrationUri, packageId, range, cacheContext, log, token);
+            IReadOnlyList<RegistrationPage> ranges = await RegistrationUtility.LoadRangesAsItemsAsync(_client, registrationUri, packageId, range, cacheContext, log, token);
 
-            foreach (var page in ranges)
+            foreach (RegistrationPage page in ranges.NoAllocEnumerate())
             {
                 if (page == null)
                 {
@@ -204,9 +204,9 @@ namespace NuGet.Protocol
 
                 foreach (RegistrationLeafItem leaf in page.Items)
                 {
-                    var catalogEntry = leaf.CatalogEntry;
-                    var version = catalogEntry.Version;
-                    var listed = catalogEntry.IsListed;
+                    PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry;
+                    NuGetVersion version = catalogEntry.Version;
+                    bool listed = catalogEntry.IsListed;
 
                     if (range.Satisfies(version)
                         && (includePrerelease || !version.IsPrerelease)

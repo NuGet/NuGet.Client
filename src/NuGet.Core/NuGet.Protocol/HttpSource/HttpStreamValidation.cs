@@ -19,6 +19,11 @@ namespace NuGet.Protocol
     {
         public static void ValidateJObject(string uri, Stream stream)
         {
+            ValidateJObject(uri, stream, environmentVariableReader: null);
+        }
+
+        internal static void ValidateJObject(string uri, Stream stream, Common.IEnvironmentVariableReader? environmentVariableReader)
+        {
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
@@ -35,7 +40,7 @@ namespace NuGet.Protocol
                 return;
             }
 
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
             {
                 ValidateJsonObjectWithStj(uri, stream);
                 return;

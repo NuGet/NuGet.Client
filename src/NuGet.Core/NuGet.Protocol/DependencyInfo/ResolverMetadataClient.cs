@@ -32,14 +32,15 @@ namespace NuGet.Protocol
             VersionRange range,
             SourceCacheContext cacheContext,
             ILogger log,
-            CancellationToken token)
+            CancellationToken token,
+            IEnvironmentVariableReader? env)
         {
             if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
             {
                 return await GetDependenciesFromItemsAsync(httpClient, registrationUri, packageId, range, cacheContext, log, token);
             }
 
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(env))
             {
                 return await GetDependenciesFromItemsAsync(httpClient, registrationUri, packageId, range, cacheContext, log, token);
             }
@@ -98,10 +99,13 @@ namespace NuGet.Protocol
         {
             var results = new HashSet<RemoteSourceDependencyInfo>();
 
-            var pages = await RegistrationUtility.LoadRangesAsItemsAsync(httpClient, registrationUri, packageId, range, cacheContext, log, token);
+            IReadOnlyList<RegistrationPage?> pages = await RegistrationUtility.LoadRangesAsItemsAsync(httpClient, registrationUri, packageId, range, cacheContext, log, token);
 
-            foreach (var page in pages)
+            // NoAllocEnumerate can't be used on nullable types, so avoid allocating an enumerator by using a for loop.
+            for (int i = 0; i < pages.Count; i++)
             {
+                RegistrationPage? page = pages[i];
+
                 if (page == null)
                 {
                     throw new InvalidDataException(registrationUri.AbsoluteUri);
@@ -109,8 +113,8 @@ namespace NuGet.Protocol
 
                 foreach (RegistrationLeafItem leaf in page.Items!)
                 {
-                    var catalogEntry = leaf.CatalogEntry!;
-                    var version = catalogEntry.Version;
+                    PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry!;
+                    NuGetVersion version = catalogEntry.Version;
 
                     if (range.Satisfies(version))
                     {
@@ -128,14 +132,14 @@ namespace NuGet.Protocol
         /// <returns>Returns the RemoteSourceDependencyInfo object corresponding to this package version</returns>
         private static RemoteSourceDependencyInfo ProcessPackageVersion(RegistrationLeafItem leaf, NuGetVersion version)
         {
-            var catalogEntry = leaf.CatalogEntry!;
+            PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry!;
 
-            var listed = catalogEntry.IsListed;
-            var id = catalogEntry.PackageId!;
+            bool listed = catalogEntry.IsListed;
+            string id = catalogEntry.PackageId!;
 
             var identity = new PackageIdentity(id, version);
 
-            var contentUri = leaf.PackageContent!.OriginalString;
+            string contentUri = leaf.PackageContent!.OriginalString;
 
             return new RemoteSourceDependencyInfo(identity, listed, catalogEntry.DependencySets, contentUri);
         }
@@ -205,11 +209,12 @@ namespace NuGet.Protocol
             SourceCacheContext cacheContext,
             NuGetFramework projectTargetFramework,
             ILogger log,
-            CancellationToken token)
+            CancellationToken token,
+            IEnvironmentVariableReader? env)
         {
             var frameworkComparer = NuGetFrameworkFullComparer.Instance;
             var frameworkReducer = new FrameworkReducer();
-            var dependencies = await GetDependencies(httpClient, registrationUri, packageId, range, cacheContext, log, token);
+            IEnumerable<RemoteSourceDependencyInfo> dependencies = await GetDependencies(httpClient, registrationUri, packageId, range, cacheContext, log, token, env);
 
             if (!dependencies.Any())
             {

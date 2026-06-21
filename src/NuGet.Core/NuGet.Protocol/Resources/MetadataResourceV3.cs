@@ -9,8 +9,10 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Shared;
 using NuGet.Versioning;
 
@@ -22,11 +24,18 @@ namespace NuGet.Protocol
     public class MetadataResourceV3 : MetadataResource
     {
         private RegistrationResourceV3 _regResource;
+        private readonly Common.IEnvironmentVariableReader _environmentVariableReader;
 
         public MetadataResourceV3(RegistrationResourceV3 regResource)
+            : this(regResource, environmentVariableReader: null)
+        {
+        }
+
+        internal MetadataResourceV3(RegistrationResourceV3 regResource, Common.IEnvironmentVariableReader environmentVariableReader)
             : base()
         {
             _regResource = regResource ?? throw new ArgumentNullException(nameof(regResource));
+            _environmentVariableReader = environmentVariableReader;
         }
 
         /// <summary>
@@ -53,7 +62,7 @@ namespace NuGet.Protocol
                     {
                         allVersions = await GetVersionsFromItemsAsync(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
                     }
-                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
                     {
                         allVersions = await GetVersionsFromItemsAsync(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
                     }
@@ -86,14 +95,14 @@ namespace NuGet.Protocol
             // TODO: get the url and just check the headers?
             if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
             {
-                var item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
+                RegistrationLeafItem item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
 
                 // TODO: listed check
                 return item != null;
             }
-            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
-                var item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
+                RegistrationLeafItem item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
 
                 // TODO: listed check
                 return item != null;
@@ -132,7 +141,7 @@ namespace NuGet.Protocol
                 return await GetVersionsFromItemsAsync(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
             }
 
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
                 return await GetVersionsFromItemsAsync(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
             }
@@ -148,11 +157,11 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var items = await _regResource.GetPackageMetadataItemsAsync(packageId, VersionRange.All, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+            IReadOnlyList<RegistrationLeafItem> items = await _regResource.GetPackageMetadataItemsAsync(packageId, VersionRange.All, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
 
             var versions = new List<NuGetVersion>();
 
-            foreach (var item in items.NoAllocEnumerate())
+            foreach (RegistrationLeafItem item in items.NoAllocEnumerate())
             {
                 NuGetVersion version = item.CatalogEntry.Version;
 
@@ -173,7 +182,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var entries = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+            IEnumerable<JObject> entries = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
 
             var versions = new List<NuGetVersion>();
 
@@ -200,7 +209,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var metadata = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+            JObject metadata = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
 
             // TODO: listed check
             return metadata != null;

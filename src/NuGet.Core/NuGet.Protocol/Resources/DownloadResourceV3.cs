@@ -7,10 +7,12 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
+using NuGet.Protocol.Model;
 using NuGet.Shared;
 
 namespace NuGet.Protocol
@@ -24,11 +26,17 @@ namespace NuGet.Protocol
         private readonly RegistrationResourceV3 _regResource;
         private readonly HttpSource _client;
         private readonly string _packageBaseAddressUrl;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// Download packages using the download url found in the registration resource.
         /// </summary>
         public DownloadResourceV3(string source, HttpSource client, RegistrationResourceV3 regResource)
+            : this(source, client, regResource, environmentVariableReader: null)
+        {
+        }
+
+        internal DownloadResourceV3(string source, HttpSource client, RegistrationResourceV3 regResource, IEnvironmentVariableReader environmentVariableReader)
             : this(client)
         {
             if (regResource == null)
@@ -38,6 +46,7 @@ namespace NuGet.Protocol
 
             _source = source;
             _regResource = regResource;
+            _environmentVariableReader = environmentVariableReader;
         }
 
         /// <summary>
@@ -100,7 +109,7 @@ namespace NuGet.Protocol
                     {
                         downloadUri = await GetDownloadUrlFromItemAsync(identity, sourceCacheContext, log, token);
                     }
-                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
                     {
                         downloadUri = await GetDownloadUrlFromItemAsync(identity, sourceCacheContext, log, token);
                     }
@@ -117,7 +126,7 @@ namespace NuGet.Protocol
         private async Task<Uri> GetDownloadUrlFromItemAsync(PackageIdentity identity, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
         {
             // Read the url from the registration information
-            var leaf = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
+            RegistrationLeafItem leaf = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
 
             return leaf?.PackageContent;
         }
@@ -125,7 +134,7 @@ namespace NuGet.Protocol
         private async Task<Uri> GetDownloadUrlFromJObjectAsync(PackageIdentity identity, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
         {
             // Read the url from the registration information
-            var blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+            JObject blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
 
             if (blob != null
                 && blob["packageContent"] != null)

@@ -122,11 +122,11 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            var packageIdLowerCase = packageId.ToLowerInvariant();
+            string packageIdLowerCase = packageId.ToLowerInvariant();
 
-            var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, 0);
+            HttpSourceCacheContext httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, 0);
 
-            var index = await httpSource.GetAsync(
+            RegistrationIndex? index = await httpSource.GetAsync(
                 new HttpSourceCachedRequest(
                     registrationUri.OriginalString,
                     $"list_{packageIdLowerCase}_index",
@@ -148,14 +148,14 @@ namespace NuGet.Protocol
 
             foreach (RegistrationPage page in index.Items)
             {
-                var lower = NuGetVersion.Parse(page.Lower);
-                var upper = NuGetVersion.Parse(page.Upper);
+                NuGetVersion lower = NuGetVersion.Parse(page.Lower);
+                NuGetVersion upper = NuGetVersion.Parse(page.Upper);
 
                 if (range.DoesRangeSatisfy(lower, upper))
                 {
                     if (page.Items == null)
                     {
-                        var rangeUri = page.Url;
+                        string rangeUri = page.Url;
 
                         rangeTasks.Add(httpSource.GetAsync(
                             new HttpSourceCachedRequest(

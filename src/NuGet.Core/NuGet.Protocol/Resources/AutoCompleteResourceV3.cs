@@ -163,7 +163,7 @@ namespace NuGet.Protocol
                 return await VersionStartsWithFromItemsAsync(packageId, versionPrefix, includePrerelease, sourceCacheContext, logger, token);
             }
 
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
                 return await VersionStartsWithFromItemsAsync(packageId, versionPrefix, includePrerelease, sourceCacheContext, logger, token);
             }
@@ -180,10 +180,10 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var versions = new List<NuGetVersion>();
-            var items = await _regResource.GetPackageMetadataItemsAsync(packageId, VersionRange.All, includePrerelease, includeUnlisted: false, sourceCacheContext, logger, token);
-            foreach (var item in items)
+            IReadOnlyList<RegistrationLeafItem> items = await _regResource.GetPackageMetadataItemsAsync(packageId, VersionRange.All, includePrerelease, includeUnlisted: false, sourceCacheContext, logger, token);
+            foreach (RegistrationLeafItem item in items.NoAllocEnumerate())
             {
-                var version = item.CatalogEntry.Version;
+                NuGetVersion version = item.CatalogEntry.Version;
                 if (version != null
                     && version.ToString().StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase))
                 {
@@ -202,8 +202,8 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var versions = new List<NuGetVersion>();
-            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, logger, token);
-            foreach (var package in packages)
+            IEnumerable<JObject> packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, logger, token);
+            foreach (JObject package in packages.NoAllocEnumerate())
             {
                 var version = (string)package["version"];
                 if (version.StartsWith(versionPrefix, StringComparison.OrdinalIgnoreCase))
