@@ -197,13 +197,18 @@ namespace NuGet.Protocol
 
             foreach (RegistrationPage page in ranges.NoAllocEnumerate())
             {
-                if (page == null)
+                if (page is null || page.Items is null)
                 {
                     throw new InvalidDataException(registrationUri.AbsoluteUri);
                 }
 
                 foreach (RegistrationLeafItem leaf in page.Items)
                 {
+                    if (leaf is null || leaf.CatalogEntry is null)
+                    {
+                        throw new InvalidDataException(registrationUri.AbsoluteUri);
+                    }
+
                     PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry;
                     NuGetVersion version = catalogEntry.Version;
                     bool listed = catalogEntry.IsListed;
