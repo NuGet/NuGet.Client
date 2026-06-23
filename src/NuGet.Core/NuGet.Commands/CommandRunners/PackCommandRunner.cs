@@ -117,15 +117,14 @@ namespace NuGet.Commands
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             // Warn if the package ID doesn't adhere to the restricted character set (NU5052)
-            if (!symbolsPackage && _packArgs.UsingMicrosoftNETSdk && !PackageIdValidator.IsValidPackageId(builder.Id, useRestrictedCharacterSet: true))
+            if (!symbolsPackage && _packArgs.UsingMicrosoftNETSdk &&
+                SdkAnalysisLevelMinimums.IsEnabled(_packArgs.SdkAnalysisLevel, _packArgs.UsingMicrosoftNETSdk, SdkAnalysisLevelMinimums.V11_0_100) && 
+                !PackageIdValidator.IsValidPackageId(builder.Id, useRestrictedCharacterSet: true))
             {
-                if (SdkAnalysisLevelMinimums.IsEnabled(_packArgs.SdkAnalysisLevel, _packArgs.UsingMicrosoftNETSdk, SdkAnalysisLevelMinimums.V11_0_100))
-                {
-                    _packArgs.Logger.Log(
-                        PackagingLogMessage.CreateWarning(
-                            string.Format(CultureInfo.CurrentCulture, Strings.RestrictedPackageIdWarning, builder.Id),
-                            NuGetLogCode.NU5052));
-                }
+                _packArgs.Logger.Log(
+                    PackagingLogMessage.CreateWarning(
+                        string.Format(CultureInfo.CurrentCulture, Strings.RestrictedPackageIdWarning, builder.Id),
+                        NuGetLogCode.NU5052));
             }
 
             // Track if the package file was already present on disk
