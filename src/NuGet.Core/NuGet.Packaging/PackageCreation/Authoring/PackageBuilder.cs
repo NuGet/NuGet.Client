@@ -377,8 +377,11 @@ namespace NuGet.Packaging
                 {
                     foreach (var file in Files.OrderBy(f => f, new NormalizedPathComparer()))
                     {
-                        var data = ReadAllBytes(file.GetStream());
-                        hashFunc.Update(data, 0, data.Length);
+                        using (var stream = file.GetStream())
+                        {
+                            var data = ReadAllBytes(stream);
+                            hashFunc.Update(data, 0, data.Length);
+                        }
                     }
                     return EncodeHexString(hashFunc.GetHashBytes())!.Substring(0, 32);
                 }
