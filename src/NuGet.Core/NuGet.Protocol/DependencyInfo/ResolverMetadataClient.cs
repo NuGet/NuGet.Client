@@ -111,14 +111,24 @@ namespace NuGet.Protocol
                     throw new InvalidDataException(registrationUri.AbsoluteUri);
                 }
 
-                foreach (RegistrationLeafItem leaf in page.Items!)
+                if (page.Items is null)
                 {
-                    PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry!;
+                    throw new InvalidDataException(registrationUri.AbsoluteUri);
+                }
+
+                foreach (RegistrationLeafItem leaf in page.Items)
+                {
+                    if (leaf is null || leaf.CatalogEntry is null)
+                    {
+                        throw new InvalidDataException(registrationUri.AbsoluteUri);
+                    }
+
+                    PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry;
                     NuGetVersion version = catalogEntry.Version;
 
                     if (range.Satisfies(version))
                     {
-                        results.Add(ProcessPackageVersion(leaf, version));
+                        results.Add(ProcessPackageVersion(leaf, version, registrationUri));
                     }
                 }
             }
@@ -130,7 +140,7 @@ namespace NuGet.Protocol
         /// Process an individual package version entry from a strongly typed registration leaf.
         /// </summary>
         /// <returns>Returns the RemoteSourceDependencyInfo object corresponding to this package version</returns>
-        private static RemoteSourceDependencyInfo ProcessPackageVersion(RegistrationLeafItem leaf, NuGetVersion version)
+        private static RemoteSourceDependencyInfo ProcessPackageVersion(RegistrationLeafItem leaf, NuGetVersion version, Uri registrationUri)
         {
             PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry!;
 
@@ -139,7 +149,12 @@ namespace NuGet.Protocol
 
             var identity = new PackageIdentity(id, version);
 
-            string contentUri = leaf.PackageContent!.OriginalString;
+            if (leaf.PackageContent is null)
+            {
+                throw new InvalidDataException(registrationUri.AbsoluteUri);
+            }
+
+            string contentUri = leaf.PackageContent.OriginalString;
 
             return new RemoteSourceDependencyInfo(identity, listed, catalogEntry.DependencySets, contentUri);
         }
