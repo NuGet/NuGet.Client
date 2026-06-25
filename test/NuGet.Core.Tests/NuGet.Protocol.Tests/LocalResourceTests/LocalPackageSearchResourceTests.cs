@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Tests.Plugins.Helpers;
 using NuGet.Test.Utility;
@@ -755,60 +756,26 @@ namespace NuGet.Protocol.Tests
                 var testLogger = new TestLogger();
 
                 // Package that explicitly declares the Dependency package type.
-                var dependencyNuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>dependencyPackage</id>
-                            <version>1.0.0</version>
-                            <description>package description</description>
-                            <packageTypes>
-                                <packageType name=""Dependency"" />
-                            </packageTypes>
-                        </metadata>
-                        </package>");
-
                 var dependencyPackage = new SimpleTestPackageContext()
                 {
                     Id = "dependencyPackage",
                     Version = "1.0.0",
-                    Nuspec = dependencyNuspec
+                    PackageTypes = { PackageType.Dependency }
                 };
 
                 // Package that does not declare any package type (implicitly Dependency).
-                var implicitNuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>implicitPackage</id>
-                            <version>1.0.0</version>
-                            <description>package description</description>
-                        </metadata>
-                        </package>");
-
                 var implicitPackage = new SimpleTestPackageContext()
                 {
                     Id = "implicitPackage",
-                    Version = "1.0.0",
-                    Nuspec = implicitNuspec
+                    Version = "1.0.0"
                 };
 
                 // Package with a different package type that should be filtered out.
-                var toolNuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>toolPackage</id>
-                            <version>1.0.0</version>
-                            <description>package description</description>
-                            <packageTypes>
-                                <packageType name=""DotnetTool"" />
-                            </packageTypes>
-                        </metadata>
-                        </package>");
-
                 var toolPackage = new SimpleTestPackageContext()
                 {
                     Id = "toolPackage",
                     Version = "1.0.0",
-                    Nuspec = toolNuspec
+                    PackageTypes = { PackageType.DotnetTool }
                 };
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(root, dependencyPackage, implicitPackage, toolPackage);
