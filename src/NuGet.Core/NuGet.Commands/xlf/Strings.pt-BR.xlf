@@ -1113,6 +1113,11 @@ Atualize o SDK do .NET ou remova RestoreUseLegacyDependencyResolver para usar es
         <target state="translated">Podando o pacote '{0}' como dependência de '{1}'. A versão máxima que pode ser removida é '{2}'</target>
         <note>0 - package id and version, 1 - version</note>
       </trans-unit>
+      <trans-unit id="RestrictedPackageIdWarning">
+        <source>The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</source>
+        <target state="new">The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
         <source>Certificate file '{0}' not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
         <target state="translated">O arquivo de certificado '{0}' não foi encontrado. Para obter uma lista das maneiras aceitas de fornecimento de certificado, visite https://docs.nuget.org/docs/reference/command-line-reference</target>
