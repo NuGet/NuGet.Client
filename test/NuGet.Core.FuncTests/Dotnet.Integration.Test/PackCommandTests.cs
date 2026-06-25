@@ -86,8 +86,9 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        // Other platforms may not have the same file locking behavior as Windows, so this test is only run on Windows.
         [PlatformFact(Platform.Windows)]
-        public void Pack_Deterministic_DoesNotLeakSourceFileHandle()
+        public void Pack_DoesNotLeakSourceFileHandle()
         {
             // Arrange
             using (var testDirectory = _dotnetFixture.CreateTestDirectory())
