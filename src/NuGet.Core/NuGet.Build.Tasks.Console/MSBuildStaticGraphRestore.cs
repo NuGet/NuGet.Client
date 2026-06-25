@@ -797,7 +797,8 @@ namespace NuGet.Build.Tasks.Console
                     PackagesToPrune = prunedReferences,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath)),
                     TargetAlias = targetAlias,
-                    Warn = warn
+                    Warn = warn,
+                    RestoreEnableAnalyzerAssets = msBuildProjectInstance.IsPropertyTrue("RestoreEnableAnalyzerAssets")
                 };
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);

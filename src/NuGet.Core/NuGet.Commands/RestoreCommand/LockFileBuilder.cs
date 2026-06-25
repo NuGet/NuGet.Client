@@ -157,7 +157,6 @@ namespace NuGet.Commands
 
             var restoreMetadata = project.RestoreMetadata;
             var rootProjectStyle = restoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
-            bool restoreEnableAnalyzerAssets = restoreMetadata?.RestoreEnableAnalyzerAssets == true;
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
@@ -185,6 +184,9 @@ namespace NuGet.Commands
 
                 // Check if warnings should be displayed for the current framework.
                 var tfi = project.GetTargetFramework(targetGraph.Framework);
+
+                // Analyzer assets are honored per target framework (gated to .NET 11+ via the opt-in value).
+                bool restoreEnableAnalyzerAssets = tfi.RestoreEnableAnalyzerAssets;
 
                 bool warnForImportsOnGraph = tfi.Warn
                     && (target.TargetFramework is FallbackFramework

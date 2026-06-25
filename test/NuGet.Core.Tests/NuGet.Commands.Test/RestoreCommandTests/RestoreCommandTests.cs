@@ -4769,12 +4769,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                     {
                         FrameworkName = NuGetFramework.Parse("netstandard2.0"),
                         Dependencies = dependencies,
+                        RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets,
                     },
                 ])
                 .Build()
                 .WithTestRestoreMetadata();
-
-            packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets;
 
             return packageSpec;
         }

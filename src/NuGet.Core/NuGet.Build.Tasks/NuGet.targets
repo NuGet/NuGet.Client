@@ -882,7 +882,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
         <RestoreAdditionalProjectFallbackFolders>$(RestoreAdditionalProjectFallbackFolders)</RestoreAdditionalProjectFallbackFolders>
         <RestoreAdditionalProjectFallbackFoldersExcludes>$(RestoreAdditionalProjectFallbackFoldersExcludes)</RestoreAdditionalProjectFallbackFoldersExcludes>
-        <RestoreEnableAnalyzerAssets>$(RestoreEnableAnalyzerAssets)</RestoreEnableAnalyzerAssets>
       </_RestoreSettingsPerFramework>
     </ItemGroup>
   </Target>
@@ -905,18 +904,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson'">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
-
-    <ItemGroup Condition="'$(TargetFrameworks)' != ''">
-      <_RestoreSettingsWithAnalyzerAssets
-        Include="@(_RestoreSettingsPerFramework)"
-        Condition="'%(_RestoreSettingsPerFramework.RestoreEnableAnalyzerAssets)' == 'true'" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <_RestoreEffectiveEnableAnalyzerAssets>$(RestoreEnableAnalyzerAssets)</_RestoreEffectiveEnableAnalyzerAssets>
-      <_RestoreEffectiveEnableAnalyzerAssets Condition="'$(TargetFrameworks)' != ''">false</_RestoreEffectiveEnableAnalyzerAssets>
-      <_RestoreEffectiveEnableAnalyzerAssets Condition="'$(TargetFrameworks)' != '' AND '@(_RestoreSettingsWithAnalyzerAssets)' != ''">true</_RestoreEffectiveEnableAnalyzerAssets>
-    </PropertyGroup>
 
     <!--
       Determine project name for the assets file.
@@ -993,7 +980,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NETCoreSdkVersion>$(NETCoreSdkVersion)</NETCoreSdkVersion>
         <RestoreUseLegacyDependencyResolver>$(RestoreUseLegacyDependencyResolver)</RestoreUseLegacyDependencyResolver>
         <RestoreDoNotWriteDependencyGraphSpec>$(RestoreDoNotWriteDependencyGraphSpec)</RestoreDoNotWriteDependencyGraphSpec>
-        <RestoreEnableAnalyzerAssets>$(_RestoreEffectiveEnableAnalyzerAssets)</RestoreEnableAnalyzerAssets>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -1217,6 +1203,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <WindowsTargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
         <RestoreEnablePackagePruning>$(RestoreEnablePackagePruning)</RestoreEnablePackagePruning>
         <RestorePackagePruningDefault>$(RestorePackagePruningDefault)</RestorePackagePruningDefault>
+        <RestoreEnableAnalyzerAssets>$(RestoreEnableAnalyzerAssets)</RestoreEnableAnalyzerAssets>
         <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
       </_RestoreGraphEntry>
     </ItemGroup>

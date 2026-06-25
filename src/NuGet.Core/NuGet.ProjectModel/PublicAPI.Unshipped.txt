@@ -2,5 +2,5 @@
 ~static readonly NuGet.ProjectModel.LockFileItem.CompilerApiVersionProperty -> string
 NuGet.ProjectModel.LockFileTargetLibrary.AnalyzerAssets.get -> System.Collections.Generic.IList<NuGet.ProjectModel.LockFileItem!>!
 NuGet.ProjectModel.LockFileTargetLibrary.AnalyzerAssets.set -> void
-NuGet.ProjectModel.ProjectRestoreMetadata.RestoreEnableAnalyzerAssets.get -> bool
-NuGet.ProjectModel.ProjectRestoreMetadata.RestoreEnableAnalyzerAssets.set -> void
+NuGet.ProjectModel.TargetFrameworkInformation.RestoreEnableAnalyzerAssets.get -> bool
+NuGet.ProjectModel.TargetFrameworkInformation.RestoreEnableAnalyzerAssets.init -> void

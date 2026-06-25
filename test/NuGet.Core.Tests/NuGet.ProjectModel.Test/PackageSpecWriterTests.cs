@@ -230,54 +230,57 @@ namespace NuGet.ProjectModel.Test
         public void Write_ReadWrite_RestoreEnableAnalyzerAssets_True()
         {
             // Arrange
-            var json = @"{
-                            ""restore"": {
-    ""projectUniqueName"": ""projectUniqueName"",
-    ""projectName"": ""projectName"",
-    ""projectPath"": ""projectPath"",
-    ""packagesPath"": ""packagesPath"",
-    ""outputPath"": ""outputPath"",
-    ""projectStyle"": ""PackageReference"",
-    ""restoreEnableAnalyzerAssets"": true,
-    ""frameworks"": {
-      ""net45"": {
-        ""framework"": ""net45"",
-        ""projectReferences"": {}
-      }
-    }
-  }
-}";
-            // Act & Assert
-            VerifyJsonPackageSpecRoundTrip(json);
+            var spec = new PackageSpec(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net45"),
+                    RestoreEnableAnalyzerAssets = true
+                }
+            })
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "projectUniqueName",
+                    ProjectName = "projectName",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
+
+            // Act
+            var json = GetJsonString(spec);
+            var roundTripped = JsonPackageSpecReader.GetPackageSpec(json, "projectName", "project.csproj");
+
+            // Assert
+            json.Should().Contain("restoreEnableAnalyzerAssets");
+            roundTripped.TargetFrameworks[0].RestoreEnableAnalyzerAssets.Should().BeTrue();
         }
 
         [Fact]
         public void Write_ReadWrite_RestoreEnableAnalyzerAssets_DefaultFalse_NotWritten()
         {
             // Arrange
-            var json = @"{
-                            ""restore"": {
-    ""projectUniqueName"": ""projectUniqueName"",
-    ""projectName"": ""projectName"",
-    ""projectPath"": ""projectPath"",
-    ""packagesPath"": ""packagesPath"",
-    ""outputPath"": ""outputPath"",
-    ""projectStyle"": ""PackageReference"",
-    ""frameworks"": {
-      ""net45"": {
-        ""framework"": ""net45"",
-        ""projectReferences"": {}
-      }
-    }
-  }
-}";
+            var spec = new PackageSpec(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net45")
+                }
+            })
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "projectUniqueName",
+                    ProjectName = "projectName",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
+
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.csproj");
+            var output = GetJsonString(spec);
 
             // Assert
-            spec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
-
-            var output = GetJsonString(spec);
+            spec.TargetFrameworks[0].RestoreEnableAnalyzerAssets.Should().BeFalse();
             output.Should().NotContain("restoreEnableAnalyzerAssets");
         }
 

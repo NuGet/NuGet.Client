@@ -416,7 +416,7 @@ namespace NuGet.Commands
             }
 
             telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
-            telemetry.TelemetryEvent[AnalyzerAssetsEnabled] = _request.Project.RestoreMetadata?.RestoreEnableAnalyzerAssets ?? false;
+            telemetry.TelemetryEvent[AnalyzerAssetsEnabled] = _request.Project.TargetFrameworks.Any(e => e.RestoreEnableAnalyzerAssets);
 
             PopulatePruningEnabledTelemetry(_request.Project, telemetry.TelemetryEvent);
         }

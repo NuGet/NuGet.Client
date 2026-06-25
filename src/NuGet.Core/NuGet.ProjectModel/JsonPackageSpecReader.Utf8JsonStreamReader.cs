@@ -778,7 +778,6 @@ namespace NuGet.ProjectModel
             NuGetVersion sdkAnalysisLevel = null;
             bool useLegacyDependencyResolver = false;
             bool restoreDoNotWriteDependencyGraphSpec = false;
-            bool restoreEnableAnalyzerAssets = false;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -1041,10 +1040,6 @@ namespace NuGet.ProjectModel
                     {
                         restoreDoNotWriteDependencyGraphSpec = jsonReader.ReadNextTokenAsBoolOrThrowAnException(RestoreDoNotWriteDependencyGraphSpecPropertyName, Strings.Invalid_AttributeValue);
                     }
-                    else if (jsonReader.ValueTextEquals(RestoreEnableAnalyzerAssetsPropertyName))
-                    {
-                        restoreEnableAnalyzerAssets = jsonReader.ReadNextTokenAsBoolOrThrowAnException(RestoreEnableAnalyzerAssetsPropertyName, Strings.Invalid_AttributeValue);
-                    }
                     else
                     {
                         jsonReader.Skip();
@@ -1074,7 +1069,6 @@ namespace NuGet.ProjectModel
             msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
             msbuildMetadata.UseLegacyDependencyResolver = useLegacyDependencyResolver;
             msbuildMetadata.RestoreDoNotWriteDependencyGraphSpec = restoreDoNotWriteDependencyGraphSpec;
-            msbuildMetadata.RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets;
 
             if (configFilePaths != null)
             {
@@ -1429,6 +1423,7 @@ namespace NuGet.ProjectModel
             string runtimeIdentifierGraphPath = null;
             string targetAlias = string.Empty;
             bool warn = false;
+            bool restoreEnableAnalyzerAssets = false;
             Dictionary<string, PrunePackageReference> packagesToPrune = null;
 
             NuGetFramework secondaryFramework = default;
@@ -1513,6 +1508,10 @@ namespace NuGet.ProjectModel
                     {
                         warn = jsonReader.ReadNextTokenAsBoolOrFalse();
                     }
+                    else if (jsonReader.ValueTextEquals(RestoreEnableAnalyzerAssetsPropertyName))
+                    {
+                        restoreEnableAnalyzerAssets = jsonReader.ReadNextTokenAsBoolOrFalse();
+                    }
                     else if (jsonReader.ValueTextEquals(PackagesToPrunePropertyName))
                     {
                         packagesToPrune ??= new Dictionary<string, PrunePackageReference>(StringComparer.OrdinalIgnoreCase);
@@ -1539,7 +1538,8 @@ namespace NuGet.ProjectModel
                 RuntimeIdentifierGraphPath = runtimeIdentifierGraphPath,
                 PackagesToPrune = packagesToPrune,
                 TargetAlias = targetAlias,
-                Warn = warn
+                Warn = warn,
+                RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets
             };
 
             if (frameworkName == null) // V3 writers don't set the framework property, so use the key instead.

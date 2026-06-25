@@ -328,7 +328,6 @@ namespace NuGet.Commands
                 result.RestoreMetadata.SdkAnalysisLevel = GetSdkAnalysisLevel(specItem.GetProperty("SdkAnalysisLevel"));
                 result.RestoreMetadata.UseLegacyDependencyResolver = IsPropertyTrue(specItem, "RestoreUseLegacyDependencyResolver");
                 result.RestoreMetadata.RestoreDoNotWriteDependencyGraphSpec = IsPropertyTrue(specItem, "RestoreDoNotWriteDependencyGraphSpec");
-                result.RestoreMetadata.RestoreEnableAnalyzerAssets = IsPropertyTrue(specItem, "RestoreEnableAnalyzerAssets");
                 result.RestoreSettings.SdkVersion = GetSdkAnalysisLevel(specItem.GetProperty("NETCoreSdkVersion"));
             }
 
@@ -573,7 +572,8 @@ namespace NuGet.Commands
                     Imports = imports,
                     RuntimeIdentifierGraphPath = runtimeIdentifierGraphPath,
                     TargetAlias = targetAlias,
-                    Warn = warn
+                    Warn = warn,
+                    RestoreEnableAnalyzerAssets = IsPropertyTrue(item, "RestoreEnableAnalyzerAssets")
                 };
 
                 yield return targetFrameworkInfo;

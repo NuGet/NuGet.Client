@@ -63,7 +63,7 @@ public class PackageSpecFactoryTests
     }
 
     [Fact]
-    public void GetPackageSpec_WithAnalyzerAssetRestoreMetadata_PopulatesRestoreMetadata()
+    public void GetPackageSpec_WithAnalyzerAssetsEnabled_PopulatesTargetFramework()
     {
         // Arrange
         var factory = new TestPackageSpecFactory(outerBuild =>
@@ -77,11 +77,11 @@ public class PackageSpecFactoryTests
         var packageSpec = factory.Build();
 
         // Assert
-        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
+        packageSpec.TargetFrameworks.Single().RestoreEnableAnalyzerAssets.Should().BeTrue();
     }
 
     [Fact]
-    public void GetPackageSpec_WithAnalyzerAssetsEnabledInInnerBuild_PopulatesRestoreMetadata()
+    public void GetPackageSpec_WithAnalyzerAssetsEnabledInInnerBuild_PopulatesThatTargetFrameworkOnly()
     {
         // Arrange
         var factory = new TestPackageSpecFactory(outerBuild =>
@@ -105,11 +105,12 @@ public class PackageSpecFactoryTests
         var packageSpec = factory.Build();
 
         // Assert
-        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
+        packageSpec.TargetFrameworks.Single(f => f.FrameworkName.GetShortFolderName() == "net8.0").RestoreEnableAnalyzerAssets.Should().BeFalse();
+        packageSpec.TargetFrameworks.Single(f => f.FrameworkName.GetShortFolderName() == "net9.0").RestoreEnableAnalyzerAssets.Should().BeTrue();
     }
 
     [Fact]
-    public void GetPackageSpec_WithAnalyzerAssetsEnabledInOuterBuildButDisabledInAllInnerBuilds_DoesNotPopulateRestoreMetadata()
+    public void GetPackageSpec_WithAnalyzerAssetsDisabledInAllInnerBuilds_DoesNotPopulateAnyTargetFramework()
     {
         // Arrange
         var factory = new TestPackageSpecFactory(outerBuild =>
@@ -133,7 +134,7 @@ public class PackageSpecFactoryTests
         var packageSpec = factory.Build();
 
         // Assert
-        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
+        packageSpec.TargetFrameworks.Should().OnlyContain(f => !f.RestoreEnableAnalyzerAssets);
     }
 
     [Fact]

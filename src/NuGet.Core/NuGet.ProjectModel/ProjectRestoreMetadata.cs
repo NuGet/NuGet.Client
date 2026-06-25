@@ -155,11 +155,6 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool RestoreDoNotWriteDependencyGraphSpec { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether analyzer assets should be restored.
-        /// </summary>
-        public bool RestoreEnableAnalyzerAssets { get; set; }
-
         public override int GetHashCode()
         {
             StringComparer osStringComparer = PathUtility.GetStringComparerBasedOnOS();
@@ -194,7 +189,6 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(SdkAnalysisLevel);
             hashCode.AddObject(UseLegacyDependencyResolver);
             hashCode.AddObject(RestoreDoNotWriteDependencyGraphSpec);
-            hashCode.AddObject(RestoreEnableAnalyzerAssets);
 
             return hashCode.CombinedHash;
         }
@@ -244,8 +238,7 @@ namespace NuGet.ProjectModel
                    UsingMicrosoftNETSdk == other.UsingMicrosoftNETSdk &&
                     EqualityUtility.EqualsWithNullCheck(SdkAnalysisLevel, other.SdkAnalysisLevel) &&
                     UseLegacyDependencyResolver == other.UseLegacyDependencyResolver &&
-                    RestoreDoNotWriteDependencyGraphSpec == other.RestoreDoNotWriteDependencyGraphSpec &&
-                    RestoreEnableAnalyzerAssets == other.RestoreEnableAnalyzerAssets;
+                    RestoreDoNotWriteDependencyGraphSpec == other.RestoreDoNotWriteDependencyGraphSpec;
         }
 
         private HashSet<string> GetSources(IList<PackageSource> sources)
@@ -300,7 +293,6 @@ namespace NuGet.ProjectModel
             clone.UsingMicrosoftNETSdk = UsingMicrosoftNETSdk;
             clone.UseLegacyDependencyResolver = UseLegacyDependencyResolver;
             clone.RestoreDoNotWriteDependencyGraphSpec = RestoreDoNotWriteDependencyGraphSpec;
-            clone.RestoreEnableAnalyzerAssets = RestoreEnableAnalyzerAssets;
         }
     }
 }

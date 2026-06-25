@@ -190,7 +190,6 @@ namespace NuGet.Commands.Restore.Utility
             restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(outerBuild.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.UseLegacyDependencyResolver = outerBuild.IsPropertyTrue("RestoreUseLegacyDependencyResolver");
             restoreMetadata.RestoreDoNotWriteDependencyGraphSpec = outerBuild.IsPropertyTrue("RestoreDoNotWriteDependencyGraphSpec");
-            restoreMetadata.RestoreEnableAnalyzerAssets = GetRestoreEnableAnalyzerAssets(project);
 
             return (restoreMetadata, targetFrameworkInfos);
 
@@ -268,7 +267,8 @@ namespace NuGet.Commands.Restore.Utility
                     PackagesToPrune = prunedReferences,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath)),
                     TargetAlias = targetAlias,
-                    Warn = warn
+                    Warn = warn,
+                    RestoreEnableAnalyzerAssets = msBuildProjectInstance.IsPropertyTrue("RestoreEnableAnalyzerAssets")
                 };
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
@@ -287,27 +287,6 @@ namespace NuGet.Commands.Restore.Utility
                 }
             }
             return false;
-        }
-
-        private static bool GetRestoreEnableAnalyzerAssets(IProject project)
-        {
-            bool isMultiTargeting = project.TargetFrameworks.Count > 1
-                || !string.IsNullOrWhiteSpace(project.OuterBuild.GetProperty("TargetFrameworks"));
-
-            if (isMultiTargeting)
-            {
-                foreach (var item in project.TargetFrameworks.NoAllocEnumerate())
-                {
-                    if (item.Value.IsPropertyTrue("RestoreEnableAnalyzerAssets"))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            return project.OuterBuild.IsPropertyTrue("RestoreEnableAnalyzerAssets");
         }
 
         private static RestoreAuditProperties? GetRestoreAuditProperties(IProject project)

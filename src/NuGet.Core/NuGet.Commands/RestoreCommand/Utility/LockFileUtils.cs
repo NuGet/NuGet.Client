@@ -251,7 +251,7 @@ namespace NuGet.Commands
             // Analyzers
             if (restoreEnableAnalyzerAssets)
             {
-                lockFileLib.AnalyzerAssets = GetAnalyzerLockFileItems(library.Files);
+                lockFileLib.AnalyzerAssets = GetAnalyzerLockFileItems(contentItems, managedCodeConventions);
             }
 
             // Native
@@ -759,29 +759,26 @@ namespace NuGet.Commands
 
         /// <summary>
         /// Create analyzer lock file items for every analyzer assembly in the package.
-        /// Mirrors the SDK's analyzer detection: any '.dll' under 'analyzers/' at any depth,
-        /// excluding satellite '.resources.dll' assemblies. Each item carries 'codeLanguage' and
-        /// (when present in the path) 'compilerApiVersion' metadata, mirroring how content files carry
-        /// 'codeLanguage', so the SDK can select the applicable analyzers from the metadata.
+        /// Detection uses the shared <see cref="ManagedCodeConventions"/> analyzer pattern (any '.dll' under
+        /// 'analyzers/' at any depth, excluding satellite '.resources.dll' assemblies). Each item carries
+        /// 'codeLanguage' and (when present in the path) 'compilerApiVersion' metadata, mirroring how content
+        /// files carry 'codeLanguage', so the SDK can select the applicable analyzers from the metadata.
         /// </summary>
-        private static IList<LockFileItem> GetAnalyzerLockFileItems(IList<string> files)
+        private static IList<LockFileItem> GetAnalyzerLockFileItems(ContentItemCollection contentItems, ManagedCodeConventions managedCodeConventions)
         {
             var lockFileItems = new List<LockFileItem>();
-            foreach (var file in files)
+            foreach (ContentItem item in contentItems.FindItems(managedCodeConventions.Patterns.AnalyzerAssemblies))
             {
-                if (IsAnalyzerAssetPath(file))
+                var lockFileItem = new LockFileItem(item.Path);
+                (var codeLanguage, var compilerApiVersion) = GetAnalyzerAssetMetadata(item.Path);
+
+                lockFileItem.Properties[LockFileContentFile.CodeLanguageProperty] = codeLanguage;
+                if (compilerApiVersion != null)
                 {
-                    var lockFileItem = new LockFileItem(file);
-                    (var codeLanguage, var compilerApiVersion) = GetAnalyzerAssetMetadata(file);
-
-                    lockFileItem.Properties[LockFileContentFile.CodeLanguageProperty] = codeLanguage;
-                    if (compilerApiVersion != null)
-                    {
-                        lockFileItem.Properties[LockFileItem.CompilerApiVersionProperty] = compilerApiVersion;
-                    }
-
-                    lockFileItems.Add(lockFileItem);
+                    lockFileItem.Properties[LockFileItem.CompilerApiVersionProperty] = compilerApiVersion;
                 }
+
+                lockFileItems.Add(lockFileItem);
             }
 
             lockFileItems.Sort(static (x, y) => string.CompareOrdinal(x.Path, y.Path));
@@ -789,17 +786,12 @@ namespace NuGet.Commands
             return lockFileItems;
         }
 
-        private static bool IsAnalyzerAssetPath(string path)
-        {
-            return path.StartsWith("analyzers/", StringComparison.Ordinal)
-                && path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                && !path.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase);
-        }
-
         /// <summary>
-        /// Derives the analyzer selection metadata from the asset path.
-        /// The path layout is analyzers/{framework}/{compiler?}/{architecture?}/{language?}/.../{assembly}.dll,
-        /// where the language ('cs', 'vb', 'fs') and compiler version ('roslynX.Y') segments are optional.
+        /// Derives the analyzer selection metadata by scanning the directory segments of the asset path.
+        /// The 'codeLanguage' ('cs', 'vb', 'fs') and 'compilerApiVersion' ('roslynX.Y') segments are optional
+        /// and may appear at any depth and in either order — for example 'analyzers/dotnet/cs/A.dll' or
+        /// 'analyzers/dotnet/roslyn4.7/cs/A.dll' (the most common real-world layout, where the language follows
+        /// the compiler version). Each segment is inspected rather than assuming a fixed folder layout.
         /// </summary>
         /// <returns>
         /// The code language ('cs', 'vb', 'fs', or 'any' when the path has no language segment) and the
@@ -818,6 +810,7 @@ namespace NuGet.Commands
                 int segmentLength = separator - segmentStart;
                 ReadOnlySpan<char> segment = path.AsSpan(segmentStart, segmentLength);
 
+                // The 'cs'/'vb'/'fs' literals are interned, so comparing against them does not allocate.
                 if (segment.Equals("cs".AsSpan(), StringComparison.OrdinalIgnoreCase))
                 {
                     codeLanguage = "cs";
@@ -832,13 +825,29 @@ namespace NuGet.Commands
                 }
                 else if (compilerApiVersion == null && IsCompilerApiVersionSegment(segment))
                 {
-                    compilerApiVersion = path.Substring(segmentStart, segmentLength).ToLowerInvariant();
+                    // The stored string is the single necessary allocation; compiler version segments are
+                    // conventionally already lowercase, so avoid a second allocation from ToLowerInvariant.
+                    string segmentValue = path.Substring(segmentStart, segmentLength);
+                    compilerApiVersion = IsLowerInvariant(segment) ? segmentValue : segmentValue.ToLowerInvariant();
                 }
 
                 segmentStart = separator + 1;
             }
 
             return (codeLanguage, compilerApiVersion);
+        }
+
+        private static bool IsLowerInvariant(ReadOnlySpan<char> segment)
+        {
+            foreach (char c in segment)
+            {
+                if (char.IsUpper(c))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool IsCompilerApiVersionSegment(ReadOnlySpan<char> segment)

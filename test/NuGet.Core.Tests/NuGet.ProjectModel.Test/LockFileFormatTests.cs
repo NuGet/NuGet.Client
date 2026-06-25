@@ -462,7 +462,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void LockFileFormat_WithRestoreEnableAnalyzerAssets_WritesPackageSpecRestoreMetadata()
+        public void LockFileFormat_WithRestoreEnableAnalyzerAssets_WritesPackageSpecFramework()
         {
             // Arrange
             var lockFileContent = @"{
@@ -472,12 +472,12 @@ namespace NuGet.ProjectModel.Test
   ""projectFileDependencyGroups"": {},
   ""project"": {
     ""restore"": {
-      ""projectUniqueName"": ""projectUniqueName"",
-      ""restoreEnableAnalyzerAssets"": true
+      ""projectUniqueName"": ""projectUniqueName""
     },
     ""frameworks"": {
       ""dotnet"": {
-        ""framework"": ""dotnet""
+        ""framework"": ""dotnet"",
+        ""restoreEnableAnalyzerAssets"": true
         }
     }
   }
@@ -490,15 +490,15 @@ namespace NuGet.ProjectModel.Test
                 {
                     new TargetFrameworkInformation
                     {
-                        FrameworkName = FrameworkConstants.CommonFrameworks.DotNet
+                        FrameworkName = FrameworkConstants.CommonFrameworks.DotNet,
+                        RestoreEnableAnalyzerAssets = true
                     }
                 })
                 {
                     RestoreMetadata = new ProjectRestoreMetadata
                     {
                         ProjectUniqueName = "projectUniqueName",
-                        UsingMicrosoftNETSdk = true,
-                        RestoreEnableAnalyzerAssets = true
+                        UsingMicrosoftNETSdk = true
                     }
                 }
             };

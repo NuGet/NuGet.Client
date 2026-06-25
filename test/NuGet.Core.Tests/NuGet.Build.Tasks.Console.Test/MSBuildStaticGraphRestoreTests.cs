@@ -1098,6 +1098,42 @@ namespace NuGet.Build.Tasks.Console.Test
         }
 
         [Fact]
+        public void GetTargetFrameworkInfos_WithRestoreEnableAnalyzerAssets_SetsValuePerFramework()
+        {
+            // Arrange
+            var innerNodes = new Dictionary<string, IMSBuildProject>
+            {
+                ["net8.0"] = new MockMSBuildProject("Project",
+                    new Dictionary<string, string>
+                    {
+                        { "TargetFramework", "net8.0" },
+                        { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                        { "TargetFrameworkVersion", "v8.0" },
+                        { "TargetFrameworkMoniker", ".NETCoreApp,Version=v8.0" },
+                        { "RestoreEnableAnalyzerAssets", "false" },
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>()),
+                ["net9.0"] = new MockMSBuildProject("Project",
+                    new Dictionary<string, string>
+                    {
+                        { "TargetFramework", "net9.0" },
+                        { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                        { "TargetFrameworkVersion", "v9.0" },
+                        { "TargetFrameworkMoniker", ".NETCoreApp,Version=v9.0" },
+                        { "RestoreEnableAnalyzerAssets", "true" },
+                    },
+                    new Dictionary<string, IList<IMSBuildItem>>()),
+            };
+
+            // Act
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: false, isPruningEnabledGlobally: false);
+
+            // Assert
+            targetFrameworkInfos.Single(e => e.TargetAlias == "net8.0").RestoreEnableAnalyzerAssets.Should().BeFalse();
+            targetFrameworkInfos.Single(e => e.TargetAlias == "net9.0").RestoreEnableAnalyzerAssets.Should().BeTrue();
+        }
+
+        [Fact]
         public void GetTargetFrameworkInfos_WithPrunePackageReferences()
         {
             // Arrange

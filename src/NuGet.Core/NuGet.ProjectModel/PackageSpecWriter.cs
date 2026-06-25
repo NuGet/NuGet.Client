@@ -172,7 +172,6 @@ namespace NuGet.ProjectModel
             SetValueIfFalse(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
             SetValueIfTrue(writer, "restoreUseLegacyDependencyResolver", msbuildMetadata.UseLegacyDependencyResolver);
             SetValueIfTrue(writer, "restoreDoNotWriteDependencyGraphSpec", msbuildMetadata.RestoreDoNotWriteDependencyGraphSpec);
-            SetValueIfTrue(writer, "restoreEnableAnalyzerAssets", msbuildMetadata.RestoreEnableAnalyzerAssets);
         }
 
 
@@ -540,6 +539,7 @@ namespace NuGet.ProjectModel
                     SetValueIfNotNull(writer, "secondaryFramework",
                         (DeconstructFallbackFrameworks(framework.FrameworkName) as DualCompatibilityFramework)?.SecondaryFramework.GetShortFolderName());
                     SetValueIfTrue(writer, "warn", framework.Warn);
+                    SetValueIfTrue(writer, "restoreEnableAnalyzerAssets", framework.RestoreEnableAnalyzerAssets);
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
                     SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);

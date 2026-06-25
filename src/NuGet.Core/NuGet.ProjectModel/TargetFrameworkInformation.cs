@@ -63,6 +63,12 @@ namespace NuGet.ProjectModel
         public bool Warn { get; init; }
 
         /// <summary>
+        /// Whether analyzer assets should be tracked in the assets file for this target framework.
+        /// Reflects the framework-specific, gated value of <c>RestoreEnableAnalyzerAssets</c>.
+        /// </summary>
+        public bool RestoreEnableAnalyzerAssets { get; init; }
+
+        /// <summary>
         /// List of dependencies that are not part of the graph resolution.
         /// </summary>
         public ImmutableArray<DownloadDependency> DownloadDependencies
@@ -138,6 +144,7 @@ namespace NuGet.ProjectModel
             Imports = cloneFrom.Imports;
             AssetTargetFallback = cloneFrom.AssetTargetFallback;
             Warn = cloneFrom.Warn;
+            RestoreEnableAnalyzerAssets = cloneFrom.RestoreEnableAnalyzerAssets;
             DownloadDependencies = cloneFrom.DownloadDependencies;
             CentralPackageVersions = cloneFrom.CentralPackageVersions;
             FrameworkReferences = cloneFrom.FrameworkReferences;
@@ -159,6 +166,7 @@ namespace NuGet.ProjectModel
             hashCode.AddUnorderedSequence(Dependencies);
             hashCode.AddSequence((IReadOnlyList<NuGetFramework>)Imports);
             hashCode.AddObject(Warn);
+            hashCode.AddObject(RestoreEnableAnalyzerAssets);
             hashCode.AddUnorderedSequence(DownloadDependencies);
             hashCode.AddUnorderedSequence(FrameworkReferences);
             if (RuntimeIdentifierGraphPath != null)
@@ -192,6 +200,7 @@ namespace NuGet.ProjectModel
                    EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    Warn == other.Warn &&
+                   RestoreEnableAnalyzerAssets == other.RestoreEnableAnalyzerAssets &&
                    AssetTargetFallback == other.AssetTargetFallback &&
                    EqualityUtility.OrderedEquals(DownloadDependencies, other.DownloadDependencies, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.OrderedEquals(FrameworkReferences, other.FrameworkReferences, e => e.Name, ComparisonUtility.FrameworkReferenceNameComparer) &&
