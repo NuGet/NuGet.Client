@@ -38,7 +38,8 @@ namespace NuGet.Protocol.Plugins
         /// Disposes the current shared <see cref="Instance" /> - terminating any running plugin processes and their
         /// idle/keep-alive timers - and resets it so the next access lazily creates a fresh instance. Registered
         /// under <see cref="NuGet.Common.NuGetProcessState.ResetKey.EndRestore" /> and invoked by restore at the end of a
-        /// restore. No-op when no instance has been created.
+        /// restore. No-op when no instance has been created. The fresh instance is installed before the previous one
+        /// is disposed, so a process reused across builds always observes a clean <see cref="Instance" />.
         /// </summary>
         private static void ResetSharedInstance()
         {

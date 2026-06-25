@@ -51,8 +51,10 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Executes every reset action registered for <paramref name="key" />. Best-effort and isolated: a
-        /// failure in one action does not prevent the others from running.
+        /// Executes every reset action registered for <paramref name="key" />. Reset actions are expected not to
+        /// throw; an action that can fail (for example one that tears down an external resource) is responsible for
+        /// guarding itself, so that the contract here stays honest and a genuine bug in a reset surfaces rather than
+        /// being silently swallowed.
         /// </summary>
         public static void Reset(ResetKey key)
         {
@@ -63,16 +65,7 @@ namespace NuGet.Common
 
             foreach (Action action in actions)
             {
-                try
-                {
-                    action();
-                }
-#pragma warning disable CA1031 // Do not catch general exception types - resets are best-effort and isolated.
-                catch (Exception ex)
-#pragma warning restore CA1031
-                {
-                    System.Diagnostics.Debug.WriteLine($"NuGetProcessState reset action for '{key}' failed: {ex}");
-                }
+                action();
             }
         }
     }
