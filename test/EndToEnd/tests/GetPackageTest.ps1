@@ -1,4 +1,4 @@
-
+# TOOD NK - Is this a legit thing?
 function Test-GetPackageRetunsMoreThanServerPagingLimit {
     # Act
     $packages = Get-Package -ListAvailable
@@ -7,7 +7,7 @@ function Test-GetPackageRetunsMoreThanServerPagingLimit {
     Assert-True $packages.Count -gt 100 "Get-Package cmdlet returns less than (or equal to) than server side paging limit"
 }
 
-
+#TODO NK - This should be probably be done too. We should probably ensure the exact output since we now control the exact test.
 function Test-GetPackageCollapsesPackageVersionsForListAvailable {
     param()
 
@@ -21,6 +21,7 @@ function Test-GetPackageCollapsesPackageVersionsForListAvailable {
     Assert-Null $packagesWithMoreThanOne
 }
 
+# TODO - When migrating this, have 2 sources and then run a command with `--source` to test.
 function Test-GetPackageAcceptsSourceName {
     # Act
     $p = @(Get-Package -Filter elmah -ListAvailable -Source $SourceNuGet )
@@ -29,6 +30,7 @@ function Test-GetPackageAcceptsSourceName {
     Assert-True (1 -le $p.Count)
 }
 
+# TODO - Same thing here.
 function Test-GetPackageWithUpdatesAcceptsSourceName {
     # Arrange
     $p = New-ConsoleApplication
@@ -42,6 +44,7 @@ function Test-GetPackageWithUpdatesAcceptsSourceName {
     Assert-AreEqual 2 $packages.Count
 }
 
+# Should be simpe to migrate too.
 function GetPackageAcceptsAllAsSourceName {
      # Act
     $p = @(Get-Package -Filter elmah -ListAvailable -Source 'All')
@@ -50,6 +53,7 @@ function GetPackageAcceptsAllAsSourceName {
     Assert-True (1 -le $p.Count)
 }
 
+# This can be done with local sources.
 function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPackageId
 {
     param
