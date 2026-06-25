@@ -79,7 +79,7 @@ namespace NuGet.Commands
         private static bool HasNonEmptyMonoAndroidAssets(NuGetFramework framework, IEnumerable<LockFileItem> assets)
         {
             return IsMonoAndroidFramework(framework)
-                && assets?.Any(asset => !IsEmptyFolder(asset.Path)) == true;
+                && assets.Any(asset => !IsEmptyFolder(asset.Path));
         }
 
         private static bool IsEmptyFolder(string path)
