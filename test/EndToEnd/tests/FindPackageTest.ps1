@@ -1,16 +1,4 @@
-# As of now Find-Package does not suport wildcard yet. 
-# TODO: Uncomment the test when the feature is implemented.
-function FindPackageByIdWildcard {
-    # Act
-    $packages = Find-Package *aspnet*
-    
-    # Assert
-	Assert-NotNull $packages
-    Assert-True $packages.Count -gt 0 "Find-Package cmdlet does not returns any package"
-}
-
 function Test-FindPackageByIdWithFirstAndSkip {
-    [SkipTest('https://github.com/NuGet/Home/issues/8496')]
     param()
 
     # Act 1
