@@ -933,12 +933,12 @@ Errore: {1}</target>
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueName">
         <source>The name specified has already been added to the list of available package sources. Provide a unique name.</source>
-        <target state="new">The name specified has already been added to the list of available package sources. Provide a unique name.</target>
+        <target state="translated">Il nome specificato è già stato aggiunto all'elenco delle origini pacchetto disponibili. Specificare un nome univoco.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueSource">
         <source>The source specified has already been added to the list of available package sources. Provide a unique source.</source>
-        <target state="new">The source specified has already been added to the list of available package sources. Provide a unique source.</target>
+        <target state="translated">L'origine specificata è già stata aggiunta all'elenco delle origini pacchetto disponibili. Specificare un'origine univoca.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Canceled">
