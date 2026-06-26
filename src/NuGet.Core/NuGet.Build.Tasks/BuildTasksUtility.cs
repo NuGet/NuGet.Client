@@ -755,12 +755,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         /// <param name="value">The user supplied value indicating what files to embed in the binary log.</param>
         /// <returns>An integer representing what to embed in the binary log.</returns>
-        public static int GetFilesToEmbedInBinlogValue(string value)
-        {
-            return GetFilesToEmbedInBinlogValue(value, EnvironmentVariableWrapper.Instance);
-        }
-
-        internal static int GetFilesToEmbedInBinlogValue(string value, IEnvironmentVariableReader environmentVariableReader)
+        public static int GetFilesToEmbedInBinlogValue(string value, IEnvironmentVariableReader environmentVariableReader)
         {
             if (!string.Equals(environmentVariableReader.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {

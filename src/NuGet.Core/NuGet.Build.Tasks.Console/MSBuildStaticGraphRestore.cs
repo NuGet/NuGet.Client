@@ -105,7 +105,7 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            (DependencyGraphSpec dependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, _environment);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -192,7 +192,7 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            (DependencyGraphSpec dependencyGraphSpec, _) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, _) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, _environment);
 
             try
             {
@@ -1444,7 +1444,7 @@ namespace NuGet.Build.Tasks.Console
             // Determines what the user wants embedded in the binary log where 0 or false disables embedding anything, 2 embeds everything, and 1 or true embeds just the assets file, g.props, and g.targets.
             options.TryGetValue(nameof(RestoreTaskEx.EmbedFilesInBinlog), out string embedFilesInBinlog);
 
-            int embedInBinlogSelection = BuildTasksUtility.GetFilesToEmbedInBinlogValue(embedFilesInBinlog);
+            int embedInBinlogSelection = BuildTasksUtility.GetFilesToEmbedInBinlogValue(embedFilesInBinlog, _environment);
 
             if (embedInBinlogSelection == 0)
             {

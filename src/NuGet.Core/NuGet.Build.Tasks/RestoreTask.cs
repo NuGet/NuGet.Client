@@ -267,7 +267,7 @@ namespace NuGet.Build.Tasks
         private ITaskItem[] GetFilesToEmbedInBinlog(DependencyGraphSpec dependencyGraphSpec)
         {
             // Determines what the user wants embedded in the binary log where 0 or false disables embedding anything, 2 embeds everything, and 1 or true embeds just the assets file, g.props, and g.targets.
-            int embedInBinlogSelection = BuildTasksUtility.GetFilesToEmbedInBinlogValue(EmbedFilesInBinlog);
+            int embedInBinlogSelection = BuildTasksUtility.GetFilesToEmbedInBinlogValue(EmbedFilesInBinlog, _environmentVariableReader);
 
             if (embedInBinlogSelection == 0)
             {
