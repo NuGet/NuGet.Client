@@ -168,7 +168,7 @@ namespace NuGet.ProjectModel
                 jsonWriter.Formatting = Formatting.Indented;
 
                 var json = WriteLockFile(lockFile);
-                json.WriteTo(jsonWriter);
+                json.WriteTo(jsonWriter, Array.Empty<JsonConverter>());
             }
         }
 

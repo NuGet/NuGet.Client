@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Plugins
         {
             if (value is string s)
             {
-                JObject.Parse(s).WriteTo(writer);
+                JObject.Parse(s).WriteTo(writer, Array.Empty<JsonConverter>());
             }
             else
             {
