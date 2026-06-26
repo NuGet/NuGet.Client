@@ -129,8 +129,18 @@ namespace NuGet.Common
             basePath = NormalizeBasePath(basePath, ref searchPath);
             normalizedBasePath = GetPathToEnumerateFrom(basePath, searchPath);
 
+            string fullSearchPath = Path.Combine(basePath, searchPath);
+
+            // A search path with no wildcards refers to a single file. Probe it directly instead of
+            // enumerating the whole directory, which is the dominant cost and can fail intermittently
+            // on some virtual file systems (e.g. VirtioFS). Fall back to enumeration when not found.
+            if (!searchDirectory && !IsWildcardSearch(searchPath) && File.Exists(fullSearchPath))
+            {
+                return [new SearchPathResult(fullSearchPath, isFile: true)];
+            }
+
             // Append the basePath to searchPattern and get the search regex. We need to do this because the search regex is matched from line start.
-            Regex searchRegex = WildcardToRegex(Path.Combine(basePath, searchPath));
+            Regex searchRegex = WildcardToRegex(fullSearchPath);
 
             // This is a hack to prevent enumerating over the entire directory tree if the only wildcard characters are the ones in the file name. 
             // If the path portion of the search path does not contain any wildcard characters only iterate over the TopDirectory.
