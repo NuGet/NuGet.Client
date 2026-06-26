@@ -4253,6 +4253,96 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
+        public async Task Restore_WithHttpAuditSourceAndAllowInsecureConnectionsFalse_ThrowsError()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            string httpAuditSourceUrl = "http://unit.test/vulnerabilities/index.json";
+            pathContext.Settings.AddAuditSource("http-audit", httpAuditSourceUrl, allowInsecureConnectionsValue: "False");
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeFalse(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpAuditSourceUrl));
+        }
+
+        [Fact]
+        public async Task Restore_WithHttpAuditSourceSdkAnalysisLevelLowerThan90100_Warns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var mockServer = new FileSystemBackedV3MockServer(Directory.CreateDirectory(Path.Combine(pathContext.WorkingDirectory, "audit-feed")).FullName, sourceReportsVulnerabilities: true);
+            // Add an unrelated vulnerability so the audit source returns a vulnerability database.
+            mockServer.Vulnerabilities.Add(
+                "not.a.referenced.package",
+                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)>
+                {
+                    (new Uri("https://contoso.com/advisories/12345"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 2.0.0)"))
+                });
+            pathContext.Settings.AddAuditSource("http-audit", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "False");
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("7.8.100");
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            mockServer.Start();
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            mockServer.Stop();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().Contain(m => m.Code == NuGetLogCode.NU1803 && m.Level == LogLevel.Warning && m.Message.Contains(mockServer.ServiceIndexUri));
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1302);
+        }
+
+        [Fact]
+        public async Task Restore_WithHttpAuditSourceAndAllowInsecureConnectionsTrue_Succeeds()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var mockServer = new FileSystemBackedV3MockServer(Directory.CreateDirectory(Path.Combine(pathContext.WorkingDirectory, "audit-feed")).FullName, sourceReportsVulnerabilities: true);
+            // Add an unrelated vulnerability so the audit source returns a vulnerability database (avoids NU1905).
+            mockServer.Vulnerabilities.Add(
+                "not.a.referenced.package",
+                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)>
+                {
+                    (new Uri("https://contoso.com/advisories/12345"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 2.0.0)"))
+                });
+            pathContext.Settings.AddAuditSource("http-audit", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "True");
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            mockServer.Start();
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            mockServer.Stop();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1302 || m.Code == NuGetLogCode.NU1803);
+        }
+
+        [Fact]
         public async Task Restore_WithPackageWithoutAsset_Succeeds()
         {
             // Arrange

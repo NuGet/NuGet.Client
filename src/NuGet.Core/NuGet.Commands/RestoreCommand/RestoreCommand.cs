@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -522,41 +523,55 @@ namespace NuGet.Commands
             {
                 foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
                 {
-                    var source = remoteProvider.Source;
-                    if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
+                    error |= CheckDisallowedInsecureHttpSource(remoteProvider.Source);
+                }
+            }
+
+            if (_request.DependencyProviders.VulnerabilityInfoProviders != null)
+            {
+                foreach (var vulnerabilityInfoProvider in _request.DependencyProviders.VulnerabilityInfoProviders)
+                {
+                    if (vulnerabilityInfoProvider.IsAuditSource)
                     {
-                        var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(
-                            _request.Project.RestoreMetadata.SdkAnalysisLevel,
-                            _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
-                            SdkAnalysisLevelMinimums.V9_0_100);
-
-                        if (isErrorEnabled)
-                        {
-                            _logger.Log(
-                                RestoreLogMessage.CreateError(
-                                    NuGetLogCode.NU1302,
-                                    string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
-
-                            error = true;
-                        }
-                        else
-                        {
-                            var message = RestoreLogMessage.CreateWarning(
-                                    NuGetLogCode.NU1803,
-                                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
-                            _logger.Log(message);
-
-                            // If the project treats this warning as an error, we should not continue
-                            if (message.Level == LogLevel.Error)
-                            {
-                                error = true;
-                            }
-                        }
+                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource);
                     }
                 }
             }
 
             return !error;
+        }
+
+        private bool CheckDisallowedInsecureHttpSource(PackageSource source)
+        {
+            if (!source.IsHttp || source.IsHttps || source.AllowInsecureConnections)
+            {
+                return false;
+            }
+
+            var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(
+                _request.Project.RestoreMetadata.SdkAnalysisLevel,
+                _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                SdkAnalysisLevelMinimums.V9_0_100);
+
+            if (isErrorEnabled)
+            {
+                _logger.Log(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1302,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+
+                return true;
+            }
+            else
+            {
+                var message = RestoreLogMessage.CreateWarning(
+                        NuGetLogCode.NU1803,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
+                _logger.Log(message);
+
+                // If the project treats this warning as an error, we should not continue
+                return message.Level == LogLevel.Error;
+            }
         }
 
         private record struct EvaluateLockFileResult(bool Success, bool IsLockFileValid, bool RegenerateLockFile, string PackagesLockFilePath, PackagesLockFile PackagesLockFile);
