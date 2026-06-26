@@ -240,7 +240,7 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[NoOpResult] = false; // Getting here means we did not no-op.
 
                 bool success = !_request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
-                success &= BeforeGraphResolutionValidations(httpSourcesCount);
+                success &= BeforeGraphResolutionValidations(httpSourcesCount, auditEnabled);
 
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 PackagesLockFile packagesLockFile = null;
@@ -360,13 +360,13 @@ namespace NuGet.Commands
             }
         }
 
-        private bool BeforeGraphResolutionValidations(int httpSourcesCount)
+        private bool BeforeGraphResolutionValidations(int httpSourcesCount, bool auditEnabled)
         {
             var success = true;
 
             success &= EnsureNotDeprecatedProjectJsonProjectType();
             success &= AreCentralVersionRequirementsSatisfied(_request, httpSourcesCount);
-            success &= EvaluateHttpSourceUsage();
+            success &= EvaluateHttpSourceUsage(auditEnabled);
             success &= HasValidPlatformVersions();
             success &= PackageReferencesHaveVersions();
             success &= EnsureNoAliasesWithDisallowedCharacters();
@@ -515,7 +515,7 @@ namespace NuGet.Commands
             return (null, noOpCacheFileEvaluation, cacheFile);
         }
 
-        private bool EvaluateHttpSourceUsage()
+        private bool EvaluateHttpSourceUsage(bool auditEnabled)
         {
             bool error = false;
 
@@ -523,17 +523,18 @@ namespace NuGet.Commands
             {
                 foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
                 {
-                    error |= CheckDisallowedInsecureHttpSource(remoteProvider.Source);
+                    error |= CheckDisallowedInsecureHttpSource(remoteProvider.Source, SdkAnalysisLevelMinimums.V9_0_100);
                 }
             }
 
-            if (_request.DependencyProviders.VulnerabilityInfoProviders != null)
+            // Audit sources are only contacted when auditing is enabled, so only warn/error about insecure audit sources in that case.
+            if (auditEnabled && _request.DependencyProviders.VulnerabilityInfoProviders != null)
             {
                 foreach (var vulnerabilityInfoProvider in _request.DependencyProviders.VulnerabilityInfoProviders)
                 {
                     if (vulnerabilityInfoProvider.IsAuditSource)
                     {
-                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource);
+                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource, SdkAnalysisLevelMinimums.V10_0_400);
                     }
                 }
             }
@@ -541,7 +542,7 @@ namespace NuGet.Commands
             return !error;
         }
 
-        private bool CheckDisallowedInsecureHttpSource(PackageSource source)
+        private bool CheckDisallowedInsecureHttpSource(PackageSource source, NuGetVersion errorMinSdkAnalysisLevel)
         {
             if (!source.IsHttp || source.IsHttps || source.AllowInsecureConnections)
             {
@@ -551,7 +552,7 @@ namespace NuGet.Commands
             var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(
                 _request.Project.RestoreMetadata.SdkAnalysisLevel,
                 _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
-                SdkAnalysisLevelMinimums.V9_0_100);
+                errorMinSdkAnalysisLevel);
 
             if (isErrorEnabled)
             {

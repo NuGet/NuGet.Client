@@ -4263,6 +4263,7 @@ namespace NuGet.Commands.FuncTest
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
             var command = new RestoreCommand(request);
 
@@ -4275,7 +4276,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task Restore_WithHttpAuditSourceSdkAnalysisLevelLowerThan90100_Warns()
+        public async Task Restore_WithHttpAuditSourceSdkAnalysisLevelLowerThan100400_Warns()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -4292,7 +4293,10 @@ namespace NuGet.Commands.FuncTest
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
-            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("7.8.100");
+            project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
+            // Audit sources are gated at 10.0.400. A level below that (but at or above the 9.0.100 package-source gate) warns rather than errors.
+            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("10.0.100");
+            project1Spec.RestoreMetadata.UsingMicrosoftNETSdk = true;
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
             var command = new RestoreCommand(request);
 
@@ -4307,6 +4311,29 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.LogMessages.Should().Contain(m => m.Code == NuGetLogCode.NU1803 && m.Level == LogLevel.Warning && m.Message.Contains(mockServer.ServiceIndexUri));
             result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1302);
+        }
+
+        [Fact]
+        public async Task Restore_WithHttpAuditSourceAndAuditDisabled_NoHttpDiagnostics()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            string httpAuditSourceUrl = "http://unit.test/vulnerabilities/index.json";
+            pathContext.Settings.AddAuditSource("http-audit", httpAuditSourceUrl, allowInsecureConnectionsValue: "False");
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.FalseString };
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1302 || m.Code == NuGetLogCode.NU1803);
         }
 
         [Fact]
@@ -4327,6 +4354,7 @@ namespace NuGet.Commands.FuncTest
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
             var command = new RestoreCommand(request);
 
