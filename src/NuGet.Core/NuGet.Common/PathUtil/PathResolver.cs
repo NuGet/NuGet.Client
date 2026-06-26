@@ -136,7 +136,7 @@ namespace NuGet.Common
             // on some virtual file systems (e.g. VirtioFS). Fall back to enumeration when not found.
             if (!searchDirectory && !IsWildcardSearch(searchPath) && File.Exists(fullSearchPath))
             {
-                return [new SearchPathResult(fullSearchPath, isFile: true)];
+                return [new SearchPathResult(fullSearchPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar), isFile: true)];
             }
 
             // Append the basePath to searchPattern and get the search regex. We need to do this because the search regex is matched from line start.
