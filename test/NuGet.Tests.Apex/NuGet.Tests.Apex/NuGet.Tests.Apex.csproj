@@ -11,7 +11,7 @@
     <None Remove="NuGetPackageSigningTests\RepositoryCountersignedPackageTestCase.cs" />
     <None Remove="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
     <None Remove="Utility\SigningUtility.cs" />
-      <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
 </ItemGroup>
 
   <ItemGroup>

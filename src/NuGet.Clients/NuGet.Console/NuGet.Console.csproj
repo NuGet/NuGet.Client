@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
-      <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
 </ItemGroup>
 
   <ItemGroup>

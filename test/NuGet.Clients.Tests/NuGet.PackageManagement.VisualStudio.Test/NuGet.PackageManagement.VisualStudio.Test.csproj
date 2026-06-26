@@ -8,7 +8,7 @@
   <ItemGroup>
     <Reference Include="PresentationFramework" />
     <Reference Include="System.Runtime.Caching" />
-      <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
 </ItemGroup>
 
   <ItemGroup>
