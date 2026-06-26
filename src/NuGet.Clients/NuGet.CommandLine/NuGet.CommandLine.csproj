@@ -33,8 +33,7 @@
       <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb">
         <PackagePath>tools/</PackagePath>
       </TfmSpecificPackageFile>
-      <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-</ItemGroup>
+    </ItemGroup>
   </Target>
 
   <ItemGroup Label="NuGet Shared">
