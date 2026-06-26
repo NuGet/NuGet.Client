@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <SkipShared>true</SkipShared>
@@ -12,7 +12,8 @@
   <ItemGroup>
     <Compile Include="$(SharedDirectory)\IsExternalInit.cs" />
     <Compile Include="$(SharedDirectory)\RequiredModifierAttributes.cs" />
-  </ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+</ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />

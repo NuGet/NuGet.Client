@@ -21,7 +21,8 @@
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
     <ProjectReference Include="..\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj" />

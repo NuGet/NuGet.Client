@@ -8,7 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj" />
     <ProjectReference Include="..\..\TestUtilities\VisualStudio.Test.Utility\VisualStudio.Test.Utility.csproj" />
-  </ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />

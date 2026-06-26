@@ -8,7 +8,8 @@
   <ItemGroup>
     <Reference Include="PresentationFramework" />
     <Reference Include="System.Runtime.Caching" />
-  </ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+</ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\EntityFrameworkSearch.json" />

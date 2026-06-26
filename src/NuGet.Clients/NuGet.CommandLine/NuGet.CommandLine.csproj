@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="ilmerge.props" />
 
   <PropertyGroup>
@@ -33,7 +33,8 @@
       <TfmSpecificPackageFile Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb">
         <PackagePath>tools/</PackagePath>
       </TfmSpecificPackageFile>
-    </ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" VersionOverride="13.0.3" NoWarn="NU1605" />
+</ItemGroup>
   </Target>
 
   <ItemGroup Label="NuGet Shared">
