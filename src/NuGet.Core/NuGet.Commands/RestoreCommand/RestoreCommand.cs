@@ -527,14 +527,15 @@ namespace NuGet.Commands
                 }
             }
 
-            // Audit sources are only contacted when auditing is enabled, so only warn/error about insecure audit sources in that case.
+            // Audit sources are only contacted when auditing is enabled, so only error about insecure audit sources in that case.
+            // Unlike package sources, audit sources error when the SDK analysis level is high enough and are silent otherwise (no warning).
             if (auditEnabled && _request.DependencyProviders.VulnerabilityInfoProviders != null)
             {
                 foreach (var vulnerabilityInfoProvider in _request.DependencyProviders.VulnerabilityInfoProviders)
                 {
                     if (vulnerabilityInfoProvider.IsAuditSource)
                     {
-                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource, SdkAnalysisLevelMinimums.V10_0_400);
+                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource, SdkAnalysisLevelMinimums.V10_0_400, warnWhenNotError: false);
                     }
                 }
             }
@@ -542,7 +543,7 @@ namespace NuGet.Commands
             return !error;
         }
 
-        private bool CheckDisallowedInsecureHttpSource(PackageSource source, NuGetVersion errorMinSdkAnalysisLevel)
+        private bool CheckDisallowedInsecureHttpSource(PackageSource source, NuGetVersion errorMinSdkAnalysisLevel, bool warnWhenNotError = true)
         {
             if (!source.IsHttp || source.IsHttps || source.AllowInsecureConnections)
             {
@@ -563,7 +564,7 @@ namespace NuGet.Commands
 
                 return true;
             }
-            else
+            else if (warnWhenNotError)
             {
                 var message = RestoreLogMessage.CreateWarning(
                         NuGetLogCode.NU1803,
@@ -573,6 +574,8 @@ namespace NuGet.Commands
                 // If the project treats this warning as an error, we should not continue
                 return message.Level == LogLevel.Error;
             }
+
+            return false;
         }
 
         private record struct EvaluateLockFileResult(bool Success, bool IsLockFileValid, bool RegenerateLockFile, string PackagesLockFilePath, PackagesLockFile PackagesLockFile);

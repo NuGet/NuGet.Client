@@ -4276,7 +4276,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task Restore_WithHttpAuditSourceSdkAnalysisLevelLowerThan100400_Warns()
+        public async Task Restore_WithHttpAuditSourceSdkAnalysisLevelLowerThan100400_NoHttpDiagnostics()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -4294,7 +4294,7 @@ namespace NuGet.Commands.FuncTest
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
             project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
-            // Audit sources are gated at 10.0.400. A level below that (but at or above the 9.0.100 package-source gate) warns rather than errors.
+            // Audit sources error at SDK analysis level 10.0.400 or higher and are silent (no warning) below that.
             project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("10.0.100");
             project1Spec.RestoreMetadata.UsingMicrosoftNETSdk = true;
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
@@ -4309,8 +4309,33 @@ namespace NuGet.Commands.FuncTest
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().Contain(m => m.Code == NuGetLogCode.NU1803 && m.Level == LogLevel.Warning && m.Message.Contains(mockServer.ServiceIndexUri));
-            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1302);
+            result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1302 || m.Code == NuGetLogCode.NU1803);
+        }
+
+        [Fact]
+        public async Task Restore_WithHttpAuditSourceSdkAnalysisLevel100400_ThrowsError()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            string httpAuditSourceUrl = "http://unit.test/vulnerabilities/index.json";
+            pathContext.Settings.AddAuditSource("http-audit", httpAuditSourceUrl, allowInsecureConnectionsValue: "False");
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
+            // Audit sources error at SDK analysis level 10.0.400 or higher.
+            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("10.0.400");
+            project1Spec.RestoreMetadata.UsingMicrosoftNETSdk = true;
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeFalse(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpAuditSourceUrl));
         }
 
         [Fact]
