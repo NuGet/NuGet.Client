@@ -33,7 +33,9 @@ namespace NuGet.Protocol.Plugins
         {
             if (value is string s)
             {
+#pragma warning disable IL2026, IL3050 // WriteTo without converters is safe. See https://github.com/JamesNK/Newtonsoft.Json/blob/13.0.4/Src/Newtonsoft.Json/Linq/JToken.cs
                 JObject.Parse(s).WriteTo(writer, Array.Empty<JsonConverter>());
+#pragma warning restore IL2026, IL3050
             }
             else
             {
