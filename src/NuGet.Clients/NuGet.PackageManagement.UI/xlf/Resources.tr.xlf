@@ -933,12 +933,12 @@ Hata: {1}</target>
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueName">
         <source>The name specified has already been added to the list of available package sources. Provide a unique name.</source>
-        <target state="new">The name specified has already been added to the list of available package sources. Provide a unique name.</target>
+        <target state="translated">Belirtilen ad zaten kullanılabilir paket kaynakları listesine eklendi. Benzersiz bir ad sağlayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowWarning_UniqueSource">
         <source>The source specified has already been added to the list of available package sources. Provide a unique source.</source>
-        <target state="new">The source specified has already been added to the list of available package sources. Provide a unique source.</target>
+        <target state="translated">Belirtilen kaynak zaten kullanılabilir paket kaynakları listesine eklendi. Benzersiz bir kaynak sağlayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Canceled">
