@@ -17,8 +17,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-</ItemGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" />

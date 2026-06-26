@@ -13,8 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-</ItemGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />

@@ -23,8 +23,7 @@
 
   <ItemGroup>
     <Reference Include="System.ComponentModel.Composition" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-</ItemGroup>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
     <PackageReference Include="Microsoft.VisualStudio.TemplateWizardInterface" />

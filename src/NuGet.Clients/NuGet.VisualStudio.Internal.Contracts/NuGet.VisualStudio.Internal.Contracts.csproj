@@ -11,8 +11,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <!-- Microsoft.VisualStudio.Sdk has a dependency on a vulnerable version of MessagePack. Once it no longer has a transitive dependency on a vulnerable version, this can be removed -->
     <PackageReference Include="MessagePack" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-</ItemGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />

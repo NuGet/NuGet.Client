@@ -9,8 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-</ItemGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />

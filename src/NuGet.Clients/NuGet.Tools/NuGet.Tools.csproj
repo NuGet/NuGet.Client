@@ -20,8 +20,7 @@
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj" />
     <!-- NuGet.VisualStudio.Interop is referenced only to enable generation of .pkgdef entries via ProvideCodeBaseAttribute. -->
     <ProjectReference Include="..\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-</ItemGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
