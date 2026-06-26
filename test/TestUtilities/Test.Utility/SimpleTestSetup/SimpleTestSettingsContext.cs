@@ -261,13 +261,6 @@ namespace NuGet.Test.Utility
             Save();
         }
 
-        public void AddAuditSource(string sourceName, string sourceUri)
-        {
-            var section = GetOrAddSection(XML, "auditSources");
-            AddEntry(section, sourceName, sourceUri);
-            Save();
-        }
-
         public void AddAuditSource(string sourceName, string sourceUri, string allowInsecureConnectionsValue)
         {
             var section = GetOrAddSection(XML, "auditSources");
