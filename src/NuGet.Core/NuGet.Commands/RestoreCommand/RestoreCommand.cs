@@ -156,6 +156,11 @@ namespace NuGet.Commands
         // Analyzer assets names
         private const string AnalyzerAssetsEnabled = "AnalyzerAssets.Enabled";
         private const string AnalyzerAssetsCount = "AnalyzerAssets.Count";
+        private const string AnalyzerAssetsExcludedCount = "AnalyzerAssets.Excluded.Count";
+        private const string AnalyzerAssetsPackagesWithAnalyzersCount = "AnalyzerAssets.PackagesWithAnalyzers.Count";
+        private const string AnalyzerAssetsPackagesWithExcludedAnalyzersCount = "AnalyzerAssets.PackagesWithExcludedAnalyzers.Count";
+        private const string AnalyzerAssetsExcludedByPrivateAssetsCount = "AnalyzerAssets.ExcludedByPrivateAssets.Count";
+        private const string AnalyzerAssetsExcludedByExcludeAssetsCount = "AnalyzerAssets.ExcludedByExcludeAssets.Count";
 
         internal readonly bool _enableNewDependencyResolver;
         private readonly bool _isLockFileEnabled;
@@ -361,7 +366,7 @@ namespace NuGet.Commands
 
                 telemetry.TelemetryEvent[UpdatedAssetsFile] = restoreResult._isAssetsFileDirty.Value;
                 telemetry.TelemetryEvent[UpdatedMSBuildFiles] = restoreResult._dirtyMSBuildFiles.Value.Count > 0;
-                telemetry.TelemetryEvent[AnalyzerAssetsCount] = CountAnalyzerAssets(assetsFile);
+                PopulateAnalyzerAssetsTelemetry(telemetry.TelemetryEvent, assetsFile, graphs, _request.Project);
 
                 return restoreResult;
             }
@@ -463,34 +468,132 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Counts the analyzer assets written to the assets file, excluding '_._' placeholders that
-        /// represent analyzers excluded from the project. Reflects the depth of analyzer-assets adoption.
+        /// Reports analyzer-asset usage so the impact of enabling <c>RestoreEnableAnalyzerAssets</c> by
+        /// default can be measured ahead of the rollout. The counts are derived from the resolved dependency
+        /// graphs and the package file lists, so they are reported on every restore regardless of whether the
+        /// feature is currently enabled. This lets us see, before flipping the default, how many packages and
+        /// analyzer assemblies would stop being applied because <c>PrivateAssets</c>/<c>ExcludeAssets</c> would
+        /// finally be honored.
         /// </summary>
-        private static int CountAnalyzerAssets(LockFile assetsFile)
+        /// <remarks>
+        /// Analyzers are not runtime-identifier specific, so only the target-framework graphs (those with a
+        /// null runtime identifier) are inspected to avoid counting the same package once per RID. This runs on
+        /// the full-restore path only (after the no-op short-circuit), where the dependency graphs are available.
+        /// </remarks>
+        private void PopulateAnalyzerAssetsTelemetry(TelemetryEvent telemetryEvent, LockFile assetsFile, List<RestoreTargetGraph> graphs, PackageSpec project)
         {
-            int count = 0;
-
-            foreach (LockFileTarget target in assetsFile.Targets)
+            // Count the analyzer assemblies each package contributes, from the always-present libraries section.
+            var analyzerAssemblyCountByPackage = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (LockFileLibrary library in assetsFile.Libraries)
             {
-                foreach (LockFileTargetLibrary library in target.Libraries)
+                int analyzerAssemblyCount = 0;
+                foreach (string file in library.Files)
                 {
-                    IList<LockFileItem> analyzerAssets = library.AnalyzerAssets;
-                    if (analyzerAssets == null)
+                    if (IsAnalyzerAssemblyPath(file))
+                    {
+                        analyzerAssemblyCount++;
+                    }
+                }
+
+                if (analyzerAssemblyCount > 0)
+                {
+                    analyzerAssemblyCountByPackage[GetAnalyzerPackageKey(library.Name, library.Version)] = analyzerAssemblyCount;
+                }
+            }
+
+            int appliedAnalyzerAssemblies = 0;
+            int excludedAnalyzerAssemblies = 0;
+            int packagesWithAnalyzers = 0;
+            int packagesWithExcludedAnalyzers = 0;
+            int excludedByPrivateAssets = 0;
+            int excludedByExcludeAssets = 0;
+
+            foreach (RestoreTargetGraph graph in graphs)
+            {
+                // Analyzers are not runtime specific; only inspect the target framework graphs.
+                if (graph.RuntimeIdentifier != null)
+                {
+                    continue;
+                }
+
+                Dictionary<string, LibraryIncludeFlags> flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, graph);
+                TargetFrameworkInformation targetFrameworkInformation = project.GetTargetFramework(graph.Framework);
+
+                foreach (GraphItem<RemoteResolveResult> graphItem in graph.Flattened)
+                {
+                    LibraryIdentity library = graphItem.Key;
+                    if (library.Type != LibraryType.Package)
                     {
                         continue;
                     }
 
-                    foreach (LockFileItem asset in analyzerAssets)
+                    if (!analyzerAssemblyCountByPackage.TryGetValue(GetAnalyzerPackageKey(library.Name, library.Version), out int analyzerAssemblyCount))
                     {
-                        if (!asset.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, StringComparison.Ordinal))
-                        {
-                            count++;
-                        }
+                        continue;
+                    }
+
+                    packagesWithAnalyzers++;
+
+                    if (!flattenedFlags.TryGetValue(library.Name, out LibraryIncludeFlags includeFlags))
+                    {
+                        includeFlags = ~LibraryIncludeFlags.ContentFiles;
+                    }
+
+                    if ((includeFlags & LibraryIncludeFlags.Analyzers) != LibraryIncludeFlags.None)
+                    {
+                        appliedAnalyzerAssemblies += analyzerAssemblyCount;
+                        continue;
+                    }
+
+                    // The package contributes analyzers, but they would be filtered out for this project.
+                    excludedAnalyzerAssemblies += analyzerAssemblyCount;
+                    packagesWithExcludedAnalyzers++;
+
+                    // Attribute the exclusion: a direct reference whose own IncludeAssets/ExcludeAssets drops
+                    // analyzers is counted separately from analyzers suppressed transitively via PrivateAssets
+                    // (the default for analyzers), since the transitive case is the surprising one for customers.
+                    LibraryDependency directDependency = targetFrameworkInformation?.Dependencies.FirstOrDefault(
+                        dependency => dependency.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+
+                    bool excludedByOwnAssetsFilter = directDependency != null
+                        && (directDependency.IncludeType & LibraryIncludeFlags.Analyzers) == LibraryIncludeFlags.None;
+
+                    if (excludedByOwnAssetsFilter)
+                    {
+                        excludedByExcludeAssets++;
+                    }
+                    else
+                    {
+                        excludedByPrivateAssets++;
                     }
                 }
             }
 
-            return count;
+            telemetryEvent[AnalyzerAssetsCount] = appliedAnalyzerAssemblies;
+            telemetryEvent[AnalyzerAssetsExcludedCount] = excludedAnalyzerAssemblies;
+            telemetryEvent[AnalyzerAssetsPackagesWithAnalyzersCount] = packagesWithAnalyzers;
+            telemetryEvent[AnalyzerAssetsPackagesWithExcludedAnalyzersCount] = packagesWithExcludedAnalyzers;
+            telemetryEvent[AnalyzerAssetsExcludedByPrivateAssetsCount] = excludedByPrivateAssets;
+            telemetryEvent[AnalyzerAssetsExcludedByExcludeAssetsCount] = excludedByExcludeAssets;
+        }
+
+        private static string GetAnalyzerPackageKey(string id, NuGetVersion version)
+        {
+            return id + "/" + version?.ToNormalizedString();
+        }
+
+        /// <summary>
+        /// Determines whether a package file path is an analyzer assembly. This intentionally mirrors the
+        /// detection used by ManagedCodeConventions.ManagedCodePatterns.AnalyzerAssemblies (any '.dll' under
+        /// 'analyzers/' at any depth, excluding satellite '.resources.dll' assemblies), but as a cheap string
+        /// check so analyzer packages can be counted from the package file list for telemetry even when analyzer
+        /// assets are not selected (the feature is off), without allocating a content-item collection per package.
+        /// </summary>
+        private static bool IsAnalyzerAssemblyPath(string path)
+        {
+            return path.StartsWith("analyzers/", StringComparison.Ordinal)
+                && path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                && !path.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<(RestoreResult, bool, CacheFile)> EvaluateNoOpAsync(TelemetryActivity telemetry, CacheFile cacheFile, Stopwatch restoreTime)

@@ -142,6 +142,171 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 projectInformationEvent["AnalyzerAssets.Enabled"].Should().Be(true);
                 // The analyzer package ships five analyzer assemblies; satellite and non-analyzer files are excluded.
                 projectInformationEvent["AnalyzerAssets.Count"].Should().Be(5);
+                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(0);
+                projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(0);
+                projectInformationEvent["AnalyzerAssets.ExcludedByPrivateAssets.Count"].Should().Be(0);
+                projectInformationEvent["AnalyzerAssets.ExcludedByExcludeAssets.Count"].Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithAnalyzerAssetsDisabled_StillEmitsAnalyzerAssetsTelemetryAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var package = CreateAnalyzerPackageContext("AnalyzerPackage");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package);
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "AnalyzerProject");
+                Directory.CreateDirectory(projectDirectory);
+
+                var packageSpec = CreateAnalyzerPackageSpec(
+                    projectDirectory,
+                    package.Id,
+                    restoreEnableAnalyzerAssets: false);
+
+                var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+
+                // Set up telemetry capture *after* package creation, which also emits telemetry.
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+                var telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+                telemetryService
+                    .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+                TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
+
+                var restoreCommand = new RestoreCommand(request);
+
+                // Act
+                var result = await restoreCommand.ExecuteAsync();
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+
+                var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+                // The feature is off, but the blast-radius counts are still reported so the impact of enabling
+                // it by default can be measured. Nothing is filtered here, so all five analyzers are "applied".
+                projectInformationEvent["AnalyzerAssets.Enabled"].Should().Be(false);
+                projectInformationEvent["AnalyzerAssets.Count"].Should().Be(5);
+                projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(0);
+                projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithExcludeAssetsAnalyzers_EmitsExcludedByExcludeAssetsTelemetryAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var package = CreateAnalyzerPackageContext("AnalyzerPackage");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package);
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "AnalyzerProject");
+                Directory.CreateDirectory(projectDirectory);
+
+                var packageSpec = CreateAnalyzerPackageSpec(
+                    projectDirectory,
+                    package.Id,
+                    restoreEnableAnalyzerAssets: true,
+                    includeType: LibraryIncludeFlags.All & ~LibraryIncludeFlags.Analyzers);
+
+                var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+                var telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+                telemetryService
+                    .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+                TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
+
+                var restoreCommand = new RestoreCommand(request);
+
+                // Act
+                var result = await restoreCommand.ExecuteAsync();
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+
+                var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+                // ExcludeAssets="analyzers" on the project's own reference filters all five analyzers.
+                projectInformationEvent["AnalyzerAssets.Count"].Should().Be(0);
+                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(5);
+                projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.ExcludedByExcludeAssets.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.ExcludedByPrivateAssets.Count"].Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithPrivateAssetsAnalyzersOnTransitiveProjectReference_EmitsExcludedByPrivateAssetsTelemetryAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var package = CreateAnalyzerPackageContext("AnalyzerPackage");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package);
+
+                var libraryDirectory = Path.Combine(pathContext.SolutionRoot, "Library");
+                Directory.CreateDirectory(libraryDirectory);
+
+                var appDirectory = Path.Combine(pathContext.SolutionRoot, "App");
+                Directory.CreateDirectory(appDirectory);
+
+                var librarySpec = CreateAnalyzerPackageSpec(
+                    libraryDirectory,
+                    package.Id,
+                    restoreEnableAnalyzerAssets: true,
+                    suppressParent: LibraryIncludeFlags.Analyzers,
+                    projectName: "Library");
+
+                var appSpec = CreateAnalyzerProjectSpec(
+                        "App",
+                        appDirectory,
+                        ImmutableArray<LibraryDependency>.Empty,
+                        restoreEnableAnalyzerAssets: true)
+                    .WithTestProjectReference(librarySpec);
+
+                var libraryLogger = new TestLogger();
+                var libraryRequest = ProjectTestHelpers.CreateRestoreRequest(pathContext, libraryLogger, librarySpec);
+                var libraryRestoreCommand = new RestoreCommand(libraryRequest);
+
+                // Restore the library first; only the app restore telemetry is captured below.
+                var libraryResult = await libraryRestoreCommand.ExecuteAsync();
+                libraryResult.Success.Should().BeTrue(because: libraryLogger.ShowMessages());
+
+                var telemetryEvents = new ConcurrentQueue<TelemetryEvent>();
+                var telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Loose);
+                telemetryService
+                    .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                    .Callback<TelemetryEvent>(x => telemetryEvents.Enqueue(x));
+                TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
+
+                var appLogger = new TestLogger();
+                var appRequest = ProjectTestHelpers.CreateRestoreRequest(pathContext, appLogger, appSpec, librarySpec);
+                var appRestoreCommand = new RestoreCommand(appRequest);
+
+                // Act
+                var appResult = await appRestoreCommand.ExecuteAsync();
+
+                // Assert
+                appResult.Success.Should().BeTrue(because: appLogger.ShowMessages());
+
+                var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
+                // The analyzers flow transitively through the Library project reference, where PrivateAssets="analyzers"
+                // (the default) suppresses them for the consuming App.
+                projectInformationEvent["AnalyzerAssets.Count"].Should().Be(0);
+                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(5);
+                projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.ExcludedByPrivateAssets.Count"].Should().Be(1);
+                projectInformationEvent["AnalyzerAssets.ExcludedByExcludeAssets.Count"].Should().Be(0);
             }
         }
 
@@ -3951,6 +4116,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Audit.Enabled"] = value => value.Should().Be("enabled"),
                 ["AnalyzerAssets.Enabled"] = value => value.Should().BeOfType<bool>(),
                 ["AnalyzerAssets.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.Excluded.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.PackagesWithAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.ExcludedByPrivateAssets.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.ExcludedByExcludeAssets.Count"] = value => value.Should().BeOfType<int>(),
                 ["Audit.Level"] = value => value.Should().Be(0),
                 ["Audit.Mode"] = value => value.Should().Be("Unknown"),
                 ["Audit.SuppressedAdvisories.Defined.Count"] = value => value.Should().Be(1),
@@ -4337,6 +4507,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["PackagesWithFloatingVersionCount"] = value => value.Should().Be(0),
                 ["AnalyzerAssets.Enabled"] = value => value.Should().BeOfType<bool>(),
                 ["AnalyzerAssets.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.Excluded.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.PackagesWithAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.ExcludedByPrivateAssets.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.ExcludedByExcludeAssets.Count"] = value => value.Should().BeOfType<int>(),
                 ["NewPackagesInstalledCount"] = value => value.Should().Be(1),
                 ["AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters"] = value => value.Should().Be(false),
                 ["EvaluateLockFileDuration"] = value => value.Should().NotBeNull(),
