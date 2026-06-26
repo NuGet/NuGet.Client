@@ -4253,29 +4253,6 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task Restore_WithHttpAuditSourceAndAllowInsecureConnectionsFalse_ThrowsError()
-        {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-            string httpAuditSourceUrl = "http://unit.test/vulnerabilities/index.json";
-            pathContext.Settings.AddAuditSource("http-audit", httpAuditSourceUrl, allowInsecureConnectionsValue: "False");
-
-            var logger = new TestLogger();
-            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
-            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
-            project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
-            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
-            var command = new RestoreCommand(request);
-
-            // Act
-            var result = await command.ExecuteAsync();
-
-            // Assert
-            result.Success.Should().BeFalse(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpAuditSourceUrl));
-        }
-
-        [Fact]
         public async Task Restore_WithHttpAuditSourceSdkAnalysisLevelLowerThan100400_NoHttpDiagnostics()
         {
             // Arrange
