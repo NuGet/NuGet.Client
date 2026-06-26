@@ -81,10 +81,12 @@ namespace NuGet.Protocol
                 JObject searchJson = null;
                 try
                 {
+#pragma warning disable CS0618 // This [Obsolete] type still returns a Newtonsoft JObject in its public API, so it cannot move off GetJObjectAsync without a breaking change.
                     searchJson = await _client.GetJObjectAsync(
                         new HttpSourceRequest(queryUrl.Uri, log),
                         log,
                         cancellationToken);
+#pragma warning restore CS0618
                 }
                 catch (OperationCanceledException)
                 {

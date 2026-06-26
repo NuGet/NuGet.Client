@@ -100,10 +100,12 @@ namespace NuGet.Protocol
             var queryUri = BuildQueryUri(packageIdPrefix, includePrerelease);
             Common.ILogger logger = log ?? Common.NullLogger.Instance;
 
+#pragma warning disable CS0618 // Legacy Newtonsoft.Json code path; the System.Text.Json equivalent is IdStartsWithStjAsync.
             var results = await _client.GetJObjectAsync(
                 new HttpSourceRequest(queryUri, logger),
                 logger,
                 token);
+#pragma warning restore CS0618
             token.ThrowIfCancellationRequested();
             if (results == null)
             {

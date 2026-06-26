@@ -19,6 +19,9 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
+using NuGet.Protocol.Model;
+using NuGet.Protocol.Utility;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
@@ -922,27 +925,53 @@ namespace NuGet.Protocol.Core.Types
 
             try
             {
-                var result = await _httpSource.GetJObjectAsync(
-                    new HttpSourceRequest(
-                        () =>
-                        {
-                            var request = HttpRequestMessageFactory.Create(
-                                HttpMethod.Post,
-                                serviceEndpointUrl,
-                                new HttpRequestMessageConfiguration(
-                                    logger: logger,
-                                    promptOn403: false));
-                            request.Headers.Add(ApiKeyHeader, apiKey);
-                            return request;
-                        })
+                var apiKeyRequest = new HttpSourceRequest(
+                    () =>
                     {
-                        RequestTimeout = requestTimeout,
-                        MaxTries = 1
-                    },
-                   logger,
-                   token);
+                        var request = HttpRequestMessageFactory.Create(
+                            HttpMethod.Post,
+                            serviceEndpointUrl,
+                            new HttpRequestMessageConfiguration(
+                                logger: logger,
+                                promptOn403: false));
+                        request.Headers.Add(ApiKeyHeader, apiKey);
+                        return request;
+                    })
+                {
+                    RequestTimeout = requestTimeout,
+                    MaxTries = 1
+                };
 
-                return result.Value<string>("Key") ?? InvalidApiKey;
+                if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                    || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+                {
+                    TempApiKey result = await _httpSource.ProcessStreamAsync(
+                        apiKeyRequest,
+                        async stream =>
+                        {
+                            if (stream == null)
+                            {
+                                return null;
+                            }
+
+                            return await System.Text.Json.JsonSerializer.DeserializeAsync(stream, JsonContext.Default.TempApiKey, token);
+                        },
+                        logger,
+                        token);
+
+                    return result?.Key ?? InvalidApiKey;
+                }
+                else
+                {
+#pragma warning disable CS0618 // Legacy Newtonsoft.Json code path is unreachable when the System.Text.Json feature switch is enabled.
+                    var result = await _httpSource.GetJObjectAsync(
+                        apiKeyRequest,
+                        logger,
+                        token);
+#pragma warning restore CS0618
+
+                    return result.Value<string>("Key") ?? InvalidApiKey;
+                }
             }
             catch (HttpRequestException ex)
             {

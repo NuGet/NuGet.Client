@@ -306,6 +306,7 @@ namespace NuGet.Protocol
             }
         }
 
+        [Obsolete("Newtonsoft.Json-based JObject deserialization is not trim/AOT compatible. Use ProcessStreamAsync with System.Text.Json source-generated deserialization (see JsonContext) instead.")]
         public async Task<JObject?> GetJObjectAsync(HttpSourceRequest request, ILogger log, CancellationToken token)
         {
             return await ProcessStreamAsync(

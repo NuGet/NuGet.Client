@@ -68,10 +68,12 @@ namespace NuGet.Protocol.Tests
                 });
 
                 // Act
+#pragma warning disable CS0618 // Test intentionally exercises the obsolete GetJObjectAsync API.
                 await tc.HttpSource.GetJObjectAsync(
                     new HttpSourceRequest(tc.Url, tc.Logger),
                     tc.Logger,
                     token: CancellationToken.None);
+#pragma warning restore CS0618
 
                 // Assert
                 tc.Throttle.Verify(x => x.WaitAsync(), Times.Once);
@@ -243,6 +245,7 @@ namespace NuGet.Protocol.Tests
                 var logger = new TestLogger();
 
                 // Act & Assert
+#pragma warning disable CS0618 // Test intentionally exercises the obsolete GetJObjectAsync API.
                 var actual = await Assert.ThrowsAsync<IOException>(() =>
                     server.ExecuteAsync(uri => httpSource.GetJObjectAsync(
                         new HttpSourceRequest(uri, logger)
@@ -251,6 +254,7 @@ namespace NuGet.Protocol.Tests
                         },
                         logger,
                         CancellationToken.None)));
+#pragma warning restore CS0618
                 Assert.IsType<TimeoutException>(actual.InnerException);
                 Assert.EndsWith(
                     $"timed out because no data was received for {expectedMilliseconds}ms.",
