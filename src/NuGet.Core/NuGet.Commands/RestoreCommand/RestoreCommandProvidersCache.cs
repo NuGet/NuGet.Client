@@ -31,6 +31,7 @@ namespace NuGet.Commands
 
         private readonly LocalPackageFileCache _fileCache = new LocalPackageFileCache();
 
+        [Obsolete("This method is unused in production and will be removed in a future release.")]
         public RestoreCommandProviders GetOrCreate(
             string globalPackagesPath,
             IReadOnlyList<string> fallbackPackagesPaths,
@@ -49,6 +50,7 @@ namespace NuGet.Commands
                 EnvironmentVariableWrapper.Instance);
         }
 
+        [Obsolete("This method is unused in production and will be removed in a future version")]
         public RestoreCommandProviders GetOrCreate(
             string globalPackagesPath,
             IReadOnlyList<string> fallbackPackagesPaths,

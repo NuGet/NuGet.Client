@@ -70,6 +70,12 @@ namespace NuGet.Commands
 
         public IRestoreProgressReporter ProgressReporter { get; set; }
 
+        /// <summary>
+        /// The environment variable reader to use for environment variable lookups during restore.
+        /// Defaults to <see cref="EnvironmentVariableWrapper.Instance"/>.
+        /// </summary>
+        public IEnvironmentVariableReader EnvironmentVariableReader { get; init; } = EnvironmentVariableWrapper.Instance;
+
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
             = new ConcurrentDictionary<string, ISettings>(StringComparer.Ordinal);

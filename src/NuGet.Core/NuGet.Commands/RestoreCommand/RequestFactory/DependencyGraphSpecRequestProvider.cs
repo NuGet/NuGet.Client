@@ -110,7 +110,8 @@ namespace NuGet.Commands
                         externalClosure,
                         restoreContext,
                         projectDependencyGraphSpec,
-                        settingsLoadingContext);
+                        settingsLoadingContext,
+                        restoreContext.EnvironmentVariableReader);
 
                     if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                     {
@@ -162,7 +163,8 @@ namespace NuGet.Commands
             HashSet<ExternalProjectReference> projectReferenceClosure,
             RestoreArgs restoreArgs,
             DependencyGraphSpec projectDgSpec,
-            SettingsLoadingContext settingsLoadingContext)
+            SettingsLoadingContext settingsLoadingContext,
+            IEnvironmentVariableReader environmentVariableReader)
         {
             var projectPackageSpec = projectDgSpec.GetProjectSpec(projectNameToRestore);
             //fallback paths, global packages path and sources need to all be passed in the dg spec
@@ -183,7 +185,7 @@ namespace NuGet.Commands
                 restoreArgs.CacheContext,
                 restoreArgs.Log,
                 updateLastAccess,
-                EnvironmentVariableWrapper.Instance);
+                environmentVariableReader);
 
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
@@ -207,6 +209,7 @@ namespace NuGet.Commands
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 AdditionalMessages = projectAdditionalMessages,
                 UpdatePackageLastAccessTime = updateLastAccess,
+                EnvironmentVariableReader = environmentVariableReader,
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

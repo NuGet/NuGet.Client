@@ -216,6 +216,7 @@ namespace NuGet.Build.Tasks
                 cleanupAssetsForUnsupportedProjects: false,
                 additionalMessages: additionalMessages,
                 log: log,
+                environmentVariableReader: _environmentVariableReader,
                 cancellationToken: _cts.Token);
 
             int upToDate = 0;

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -38,7 +39,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                     package);
 
                 // Act
-                var results = await RestoreRunnerEx.RunWithoutCommit(library, Settings.LoadDefaultSettings(pathContext.SolutionRoot), logger);
+                var results = await RestoreRunnerEx.RunWithoutCommit(library, Settings.LoadDefaultSettings(pathContext.SolutionRoot), logger, EnvironmentVariableWrapper.Instance);
 
                 // Assert
                 results.Count.Should().Be(1);

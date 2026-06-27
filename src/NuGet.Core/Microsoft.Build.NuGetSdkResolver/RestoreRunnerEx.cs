@@ -37,8 +37,9 @@ namespace NuGet.Commands
         /// <param name="libraryIdentity">The <see cref="LibraryIdentity"/> of the package.</param>
         /// <param name="settings">The NuGet settings to use.</param>
         /// <param name="logger">An <see cref="ILogger"/> to use for logging.</param>
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader"/> to use when reading environment variables.</param>
         /// <returns></returns>
-        public static Task<IReadOnlyList<RestoreResultPair>> RunWithoutCommit(LibraryIdentity libraryIdentity, ISettings settings, ILogger logger)
+        public static Task<IReadOnlyList<RestoreResultPair>> RunWithoutCommit(LibraryIdentity libraryIdentity, ISettings settings, ILogger logger, IEnvironmentVariableReader environmentVariableReader)
         {
             using (var sourceCacheContext = new SourceCacheContext
             {
@@ -114,6 +115,7 @@ namespace NuGet.Commands
                     CachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false)),
 #pragma warning restore CS0618 // Type or member is obsolete
                     Log = logger,
+                    EnvironmentVariableReader = environmentVariableReader,
                 };
 
                 // Create requests from the arguments

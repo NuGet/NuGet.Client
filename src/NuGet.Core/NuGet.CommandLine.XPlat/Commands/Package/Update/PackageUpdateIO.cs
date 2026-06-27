@@ -156,7 +156,8 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             CacheContext = _sourceCacheContext,
             Log = restoreLogger,
             MachineWideSettings = new XPlatMachineWideSetting(),
-            PreLoadedRequestProviders = providers
+            PreLoadedRequestProviders = providers,
+            EnvironmentVariableReader = _environmentVariableReader
             // Sources : No need to pass it, because SourceRepositories contains the already built SourceRepository objects
         };
 

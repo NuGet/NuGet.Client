@@ -129,6 +129,7 @@ namespace NuGet.Build.Tasks
             bool cleanupAssetsForUnsupportedProjects,
             IReadOnlyList<IAssetsLogMessage> additionalMessages,
             Common.ILogger log,
+            IEnvironmentVariableReader environmentVariableReader,
             CancellationToken cancellationToken)
         {
             if (dependencyGraphSpec == null)
@@ -223,7 +224,8 @@ namespace NuGet.Build.Tasks
                             AllowNoOp = !force,
                             HideWarningsAndErrors = hideWarningsAndErrors,
                             RestoreForceEvaluate = forceEvaluate,
-                            AdditionalMessages = additionalMessages
+                            AdditionalMessages = additionalMessages,
+                            EnvironmentVariableReader = environmentVariableReader,
                         };
 
                         if (restoreContext.DisableParallel)
@@ -754,6 +756,7 @@ namespace NuGet.Build.Tasks
         /// Any other value embeds project.assets.json, g.props, and g.targets
         /// </summary>
         /// <param name="value">The user supplied value indicating what files to embed in the binary log.</param>
+        /// <param name="environmentVariableReader">The reader for environment variables. Passed down for test reliability.</param>
         /// <returns>An integer representing what to embed in the binary log.</returns>
         public static int GetFilesToEmbedInBinlogValue(string value, IEnvironmentVariableReader environmentVariableReader)
         {

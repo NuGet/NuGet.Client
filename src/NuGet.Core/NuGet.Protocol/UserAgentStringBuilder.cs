@@ -61,10 +61,12 @@ namespace NuGet.Protocol.Core.Types
         public string Build()
         {
             var clientInfo = _clientName;
+#pragma warning disable CS0618 // Type or member is obsolete
             if (NuGetTestMode.Enabled)
             {
                 clientInfo = NuGetTestMode.NuGetTestClientName;
             }
+#pragma warning restore CS0618 // Type or member is obsolete
             else if (string.IsNullOrEmpty(clientInfo))
             {
                 clientInfo = DefaultNuGetClientName;

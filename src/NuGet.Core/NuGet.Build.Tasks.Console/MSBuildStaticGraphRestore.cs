@@ -164,6 +164,7 @@ namespace NuGet.Build.Tasks.Console
                     cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
                     additionalMessages: additionalMessages,
                     log: MSBuildLogger,
+                    environmentVariableReader: _environment,
                 cancellationToken: CancellationToken.None);
                 bool result = restoreSummaries.All(rs => rs.Success);
 

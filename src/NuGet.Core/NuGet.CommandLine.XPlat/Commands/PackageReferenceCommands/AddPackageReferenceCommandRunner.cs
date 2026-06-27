@@ -426,7 +426,8 @@ namespace NuGet.CommandLine.XPlat
                     Log = packageReferenceArgs.Logger,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
-                    PreLoadedRequestProviders = providers
+                    PreLoadedRequestProviders = providers,
+                    EnvironmentVariableReader = EnvironmentVariableWrapper.Instance
                     // Sources : No need to pass it, because SourceRepositories contains the already built SourceRepository objects
                 };
 

@@ -3,10 +3,12 @@
 
 #nullable disable
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -62,6 +64,42 @@ namespace NuGet.Commands.Test
 
                     var requests = await provider.CreateRequests(dgSpec, context);
                     Assert.Equal(1, requests.Count);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RequestFactory_PropagatesEnvironmentVariableReaderFromRestoreArgsToRequest()
+        {
+            // Arrange
+            var cache = new RestoreCommandProvidersCache();
+            var provider = new DependencyGraphFileRequestProvider(cache);
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var dgSpec = Path.Combine(workingDir, "project.dg");
+
+                Directory.CreateDirectory(Path.GetDirectoryName(dgSpec));
+
+                File.WriteAllText(dgSpec, DGSpec);
+
+                var environmentVariableReader = new TestEnvironmentVariableReader(new Dictionary<string, string>());
+
+                var context = new RestoreArgs
+                {
+                    EnvironmentVariableReader = environmentVariableReader
+                };
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    context.CacheContext = cacheContext;
+                    context.Log = new TestLogger();
+
+                    // Act
+                    var requests = await provider.CreateRequests(dgSpec, context);
+
+                    // Assert
+                    Assert.Equal(1, requests.Count);
+                    Assert.Same(environmentVariableReader, requests[0].Request.EnvironmentVariableReader);
                 }
             }
         }

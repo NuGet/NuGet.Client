@@ -94,7 +94,8 @@ namespace NuGet.PackageManagement
                         isRestoreOriginalAction,
                         restoreForceEvaluate: false,
                         additionalMessages,
-                        progressReporter: progressReporter);
+                        progressReporter: progressReporter,
+                        environmentVariableReader: EnvironmentVariableWrapper.Instance);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
@@ -148,7 +149,8 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null);
+                    progressReporter: null,
+                    environmentVariableReader: EnvironmentVariableWrapper.Instance);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -202,7 +204,8 @@ namespace NuGet.PackageManagement
                     isRestoreOriginalAction: false,
                     restoreForceEvaluate: true,
                     additionalMessasges: null,
-                    progressReporter: null);
+                    progressReporter: null,
+                    environmentVariableReader: EnvironmentVariableWrapper.Instance);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -324,7 +327,8 @@ namespace NuGet.PackageManagement
             bool isRestoreOriginalAction,
             bool restoreForceEvaluate,
             IReadOnlyList<IAssetsLogMessage> additionalMessasges,
-            IRestoreProgressReporter progressReporter)
+            IRestoreProgressReporter progressReporter,
+            IEnvironmentVariableReader environmentVariableReader)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
@@ -348,6 +352,7 @@ namespace NuGet.PackageManagement
                 RestoreForceEvaluate = restoreForceEvaluate,
                 AdditionalMessages = additionalMessasges,
                 ProgressReporter = progressReporter,
+                EnvironmentVariableReader = environmentVariableReader,
             };
 
             return restoreContext;

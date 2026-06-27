@@ -40,6 +40,8 @@ namespace Microsoft.Build.NuGetSdkResolver
 
         private readonly IGlobalJsonReader _globalJsonReader;
 
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
+
         /// <summary>
         /// Initializes a new instance of the NuGetSdkResolver class.
         /// </summary>
@@ -56,6 +58,8 @@ namespace Microsoft.Build.NuGetSdkResolver
         internal NuGetSdkResolver(IGlobalJsonReader globalJsonReader, IEnvironmentVariableReader environmentVariableReader)
         {
             _globalJsonReader = globalJsonReader;
+
+            _environmentVariableReader = environmentVariableReader;
 
             _disableNuGetSdkResolver = environmentVariableReader.GetEnvironmentVariable("MSBUILDDISABLENUGETSDKRESOLVER") == "1";
         }
@@ -103,7 +107,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 NuGet.Common.Migrations.MigrationRunner.Run();
 
-                return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory);
+                return NuGetAbstraction.GetSdkResult(sdkReference, parsedSdkVersion, resolverContext, factory, _environmentVariableReader);
             }
             finally
             {
@@ -151,7 +155,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// </summary>
         private static class NuGetAbstraction
         {
-            public static SdkResult GetSdkResult(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory)
+            public static SdkResult GetSdkResult(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory, IEnvironmentVariableReader environmentVariableReader)
             {
                 var logger = new NuGetSdkLogger(context.Logger);
 
@@ -208,7 +212,8 @@ namespace Microsoft.Build.NuGetSdkResolver
                             var restoreTask = Task.Run(() => RestoreRunnerEx.RunWithoutCommit(
                                 libraryIdentity,
                                 settings,
-                                logger));
+                                logger,
+                                environmentVariableReader));
 
                             var results = restoreTask.Result;
 

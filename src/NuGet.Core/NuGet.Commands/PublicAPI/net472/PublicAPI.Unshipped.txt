@@ -1,1 +1,3 @@
 #nullable enable
+~NuGet.Commands.RestoreArgs.EnvironmentVariableReader.get -> NuGet.Common.IEnvironmentVariableReader
+~NuGet.Commands.RestoreArgs.EnvironmentVariableReader.init -> void
