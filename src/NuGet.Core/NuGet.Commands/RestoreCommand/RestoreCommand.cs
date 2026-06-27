@@ -567,11 +567,11 @@ namespace NuGet.Commands
             else if (warnWhenNotError)
             {
                 var message = RestoreLogMessage.CreateWarning(
-                        NuGetLogCode.NU1803,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
+                    NuGetLogCode.NU1803,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
                 _logger.Log(message);
 
-                // If the project treats this warning as an error, we should not continue
+                // If the project treats this warning as an error, we should not restore
                 return message.Level == LogLevel.Error;
             }
 
