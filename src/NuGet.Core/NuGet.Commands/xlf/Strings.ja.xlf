@@ -1115,7 +1115,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="RestrictedPackageIdWarning">
         <source>The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</source>
-        <target state="new">The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</target>
+        <target state="translated">パッケージ ID '{0}' が無効です。パッケージ ID は英字、数字、またはアンダースコアで始まり、ASCII 文字、数字、ドット (.)、ダッシュ (-)、およびアンダースコア (_) のみを含めることができます。連続するドットやダッシュは使用できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">

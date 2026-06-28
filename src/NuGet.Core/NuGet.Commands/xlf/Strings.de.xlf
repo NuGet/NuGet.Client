@@ -1115,7 +1115,7 @@ Aktualisieren Sie Ihr .NET SDK oder entfernen Sie RestoreUseLegacyDependencyReso
       </trans-unit>
       <trans-unit id="RestrictedPackageIdWarning">
         <source>The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</source>
-        <target state="new">The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</target>
+        <target state="translated">Die Paket-ID „{0}“ ist ungültig. Paket-IDs müssen mit einem Buchstaben, einer Ziffer oder einem Unterstrich beginnen und dürfen nur ASCII-Buchstaben, Ziffern, Punkte (.), Bindestriche (–) und Unterstriche (_) ohne aufeinander folgende Punkte oder Bindestriche enthalten.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
