@@ -31,15 +31,11 @@ namespace NuGet.Build.Tasks.Pack
                     PackArgs packArgs = new PackArgs() { Version = packageVersion };
                     PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(source.NuspecProperties));
                     // If the logic depends only on checking for a non-null value, it may incorrectly  detect cases where the parsing logic changes the version based on a key other than the "version" key.
+                    // Currently, supported only version property in NuspecProperties.
                     if (packArgs.Properties.ContainsKey("version"))
                     {
                         packageVersion = packArgs.Version;
                         hasVersionInNuspecProperties = true;
-                    }
-                    if (packArgs.Properties.TryGetValue("id", out var idTemp))
-                    {
-                        packageId = idTemp;
-                        hasIdInNuspecProperties = true;
                     }
                 }
 
