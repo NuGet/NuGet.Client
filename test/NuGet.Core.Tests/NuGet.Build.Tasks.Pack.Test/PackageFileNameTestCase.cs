@@ -21,6 +21,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         private string _scenario = string.Empty;
         private string[] _outputNupkgNames = System.Array.Empty<string>();
         private string _idProjProp = string.Empty;
+        private string _idNuspecProperties = string.Empty;
         private string _idNuspecMeta = string.Empty;
         private string _versionProjProp = string.Empty;
         private string _versionNuspecProperties = string.Empty;
@@ -52,6 +53,10 @@ namespace NuGet.Build.Tasks.Pack.Test
                         new() { Scenario = "WithNuspec_UsesMetadataFourPartPrereleaseVersion", OutputNupkgNames = ["nusp.5.0.0.2-preview.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "       ", VersionNuspecMeta = "5.0.0.2-preview" },
                         new() { Scenario = "WithNuspec_UsesNuspecPropertiesPrereleaseVersion", OutputNupkgNames = ["nusp.6.0.0-beta.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "6-beta ", VersionNuspecMeta = "5.0.0.3-preview" },
                         new() { Scenario = "WithNuspec_StripsVersionWhenConfigured", OutputNupkgNames = ["nusp.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", VersionNuspecProperties = "       ", VersionNuspecMeta = "4.0.0.0", OutputFileNamesWithoutVersion = true },
+
+                        // Pinned regression case: PackTask treats NuspecProperties=id=... as $id$ substitution only;
+                        // a literal <id> in the nuspec wins. GetPackOutputItemsTask must agree with that.
+                        new() { Scenario = "WithNuspec_IdInNuspecPropertiesDoesNotOverrideLiteralId", OutputNupkgNames = ["nusp.4.0.0.nupkg"], IdProjProp = "proj", VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecMeta = "nusp", IdNuspecProperties = "shouldBeIgnored", VersionNuspecProperties = "       ", VersionNuspecMeta = "4.0.0.0" },
 
                         // has symbol
                         new() { Scenario = "NoNuspec_SnupkgUsesNormalizedVersion", OutputNupkgNames = ["proj.2.1.0.snupkg"], IdProjProp = "proj", VersionProjProp = "2.1.0.0", UseNuspecFile = false, IncludeSymbols = true, SymbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg },
@@ -93,6 +98,12 @@ namespace NuGet.Build.Tasks.Pack.Test
         {
             get => _idNuspecMeta;
             init => _idNuspecMeta = value;
+        }
+
+        public string IdNuspecProperties
+        {
+            get => _idNuspecProperties;
+            init => _idNuspecProperties = value;
         }
 
         public string VersionProjProp
@@ -149,6 +160,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             info.AddValue(nameof(OutputNupkgNames), OutputNupkgNames);
             info.AddValue(nameof(IdProjProp), IdProjProp);
             info.AddValue(nameof(IdNuspecMeta), IdNuspecMeta);
+            info.AddValue(nameof(IdNuspecProperties), IdNuspecProperties);
             info.AddValue(nameof(VersionProjProp), VersionProjProp);
             info.AddValue(nameof(VersionNuspecProperties), VersionNuspecProperties);
             info.AddValue(nameof(VersionNuspecMeta), VersionNuspecMeta);
@@ -163,6 +175,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             _outputNupkgNames = (string[])info.GetValue(nameof(OutputNupkgNames), typeof(string[]));
             _idProjProp = (string)info.GetValue(nameof(IdProjProp), typeof(string));
             _idNuspecMeta = (string)info.GetValue(nameof(IdNuspecMeta), typeof(string));
+            _idNuspecProperties = (string)info.GetValue(nameof(IdNuspecProperties), typeof(string));
             _versionProjProp = (string)info.GetValue(nameof(VersionProjProp), typeof(string));
             _versionNuspecProperties = (string)info.GetValue(nameof(VersionNuspecProperties), typeof(string));
             _versionNuspecMeta = (string)info.GetValue(nameof(VersionNuspecMeta), typeof(string));

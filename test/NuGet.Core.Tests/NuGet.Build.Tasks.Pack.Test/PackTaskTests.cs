@@ -519,7 +519,16 @@ namespace NuGet.Build.Tasks.Pack.Test
                 filePathsSource.NuspecOutputPath = outputDir;//Required
 
                 filePathsSource.NuspecFile = (testCase.UseNuspecFile ? Path.Combine(testDirectory, PackageFileNameTestsCommon.FILENAME_NUSPEC_FILE) : null);
-                filePathsSource.NuspecProperties = (!string.IsNullOrWhiteSpace(testCase.VersionNuspecProperties) ? (new string[] { "version=" + testCase.VersionNuspecProperties }) : null);
+                var nuspecProps = new List<string>();
+                if (!string.IsNullOrWhiteSpace(testCase.VersionNuspecProperties))
+                {
+                    nuspecProps.Add("version=" + testCase.VersionNuspecProperties);
+                }
+                if (!string.IsNullOrWhiteSpace(testCase.IdNuspecProperties))
+                {
+                    nuspecProps.Add("id=" + testCase.IdNuspecProperties);
+                }
+                filePathsSource.NuspecProperties = nuspecProps.Count > 0 ? nuspecProps.ToArray() : null;
                 filePathsSource.IncludeSymbols = testCase.IncludeSymbols;
                 filePathsSource.SymbolPackageFormat = PackageFileNameTestsCommon.GetSymbolPackageFormatText(testCase.SymbolPackageFormat);
                 filePathsSource.OutputFileNamesWithoutVersion = testCase.OutputFileNamesWithoutVersion;

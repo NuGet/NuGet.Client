@@ -31,9 +31,19 @@ namespace NuGet.Build.Tasks.Pack.Test
             outputItemTask.IncludeSymbols = testCase.IncludeSymbols;
             outputItemTask.SymbolPackageFormat = PackageFileNameTestsCommon.GetSymbolPackageFormatText(testCase.SymbolPackageFormat);
             outputItemTask.OutputFileNamesWithoutVersion = testCase.OutputFileNamesWithoutVersion;
+
+            var nuspecProps = new List<string>();
             if (!string.IsNullOrWhiteSpace(testCase.VersionNuspecProperties))
             {
-                outputItemTask.NuspecProperties = new string[] { $"version={testCase.VersionNuspecProperties}" };
+                nuspecProps.Add($"version={testCase.VersionNuspecProperties}");
+            }
+            if (!string.IsNullOrWhiteSpace(testCase.IdNuspecProperties))
+            {
+                nuspecProps.Add($"id={testCase.IdNuspecProperties}");
+            }
+            if (nuspecProps.Count > 0)
+            {
+                outputItemTask.NuspecProperties = nuspecProps.ToArray();
             }
 
             using (var testDirectory = TestDirectory.Create())
