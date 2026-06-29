@@ -32,7 +32,7 @@ namespace NuGet.Common
 
         static ConcurrencyUtilities()
         {
-            NuGetProcessState.RegisterResetAction(NuGetProcessState.ResetKey.StartRestore, ResetEnvironmentCaches);
+            StaticState.StartMSBuildRestoreTasks += ResetEnvironmentCaches;
         }
 
         /// <summary>

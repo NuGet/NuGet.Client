@@ -1,9 +1,8 @@
 #nullable enable
 NuGet.Common.NuGetLogCode.NU1512 = 1512 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU5502 = 5502 -> NuGet.Common.NuGetLogCode
-NuGet.Common.NuGetProcessState
-NuGet.Common.NuGetProcessState.ResetKey
-NuGet.Common.NuGetProcessState.ResetKey.EndRestore = 1 -> NuGet.Common.NuGetProcessState.ResetKey
-NuGet.Common.NuGetProcessState.ResetKey.StartRestore = 0 -> NuGet.Common.NuGetProcessState.ResetKey
-static NuGet.Common.NuGetProcessState.RegisterResetAction(NuGet.Common.NuGetProcessState.ResetKey key, System.Action! resetAction) -> void
-static NuGet.Common.NuGetProcessState.Reset(NuGet.Common.NuGetProcessState.ResetKey key) -> void
+NuGet.Common.StaticState
+static NuGet.Common.StaticState.EndMSBuildRestoreTasks -> System.Action?
+static NuGet.Common.StaticState.RaiseEndMSBuildRestoreTasks() -> void
+static NuGet.Common.StaticState.RaiseStartMSBuildRestoreTasks() -> void
+static NuGet.Common.StaticState.StartMSBuildRestoreTasks -> System.Action?

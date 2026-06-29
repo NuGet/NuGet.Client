@@ -32,7 +32,7 @@ namespace NuGet.Common
 
         static NuGetEnvironment()
         {
-            NuGetProcessState.RegisterResetAction(NuGetProcessState.ResetKey.StartRestore, ResetEnvironmentCaches);
+            StaticState.StartMSBuildRestoreTasks += ResetEnvironmentCaches;
         }
 
         /// <summary>

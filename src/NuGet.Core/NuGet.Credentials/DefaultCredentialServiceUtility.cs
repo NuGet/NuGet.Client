@@ -20,7 +20,7 @@ namespace NuGet.Credentials
     {
         static DefaultCredentialServiceUtility()
         {
-            NuGetProcessState.RegisterResetAction(NuGetProcessState.ResetKey.StartRestore, ResetCredentialService);
+            StaticState.StartMSBuildRestoreTasks += ResetCredentialService;
         }
 
         /// <summary>

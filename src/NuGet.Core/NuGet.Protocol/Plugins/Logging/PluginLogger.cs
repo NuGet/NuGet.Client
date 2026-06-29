@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Plugins
             // Plugin logging is configured from NUGET_PLUGIN_ENABLE_LOG / NUGET_PLUGIN_LOG_DIRECTORY_PATH, which are
             // read once when an instance is created. In a process reused across builds, re-read them at the start of
             // each restore so a toggled environment variable takes effect.
-            NuGet.Common.NuGetProcessState.RegisterResetAction(NuGet.Common.NuGetProcessState.ResetKey.StartRestore, ResetDefaultInstance);
+            NuGet.Common.StaticState.StartMSBuildRestoreTasks += ResetDefaultInstance;
         }
 
         internal static PluginLogger DefaultInstance => s_defaultInstanceBackingField;

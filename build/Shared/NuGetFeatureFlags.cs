@@ -14,7 +14,7 @@ namespace NuGet.Shared
 
         static NuGetFeatureFlags()
         {
-            NuGetProcessState.RegisterResetAction(NuGetProcessState.ResetKey.StartRestore, ResetCache);
+            StaticState.StartMSBuildRestoreTasks += ResetCache;
         }
 
         private static Lazy<bool> _isSystemTextJsonDeserializationEnabledByEnvironment =
