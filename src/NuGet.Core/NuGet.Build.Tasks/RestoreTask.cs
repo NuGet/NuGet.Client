@@ -148,6 +148,7 @@ namespace NuGet.Build.Tasks
             // Re-read environment-variable-derived caches at the start of restore so a process reused across builds
             // (e.g. MSBuild Server) observes the current environment instead of the values cached on the first build.
             // RestoreTask runs once per restore on the entry node, so this is a direct call with no guard needed.
+            // Once RestoreTask runs in the same process as the auxiliary NuGet Tasks it should be moved earlier.
             NuGet.Common.StaticState.RaiseStartMSBuildRestoreTasks();
 
             try
