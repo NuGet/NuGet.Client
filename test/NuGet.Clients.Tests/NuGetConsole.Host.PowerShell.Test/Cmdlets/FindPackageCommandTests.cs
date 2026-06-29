@@ -233,6 +233,121 @@ namespace NuGetConsole.Host.PowerShell.Test
             package.Version.ToString().Should().Be("1.0.0-beta");
         }
 
+        /// <summary>
+        /// Verifies that Find-Package -First caps the number of returned packages.
+        /// </summary>
+        [Fact]
+        public async Task FindPackage_WithFirst_LimitsNumberOfResultsAsync()
+        {
+            // Arrange — six distinct package ids share a common keyword
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("FirstKeywordPackage1", "1.0.0"),
+                new SimpleTestPackageContext("FirstKeywordPackage2", "1.0.0"),
+                new SimpleTestPackageContext("FirstKeywordPackage3", "1.0.0"),
+                new SimpleTestPackageContext("FirstKeywordPackage4", "1.0.0"),
+                new SimpleTestPackageContext("FirstKeywordPackage5", "1.0.0"),
+                new SimpleTestPackageContext("FirstKeywordPackage6", "1.0.0"));
+
+            SetupSourceRepositoryProvider(pathContext.PackageSource);
+
+            using var fixture = new CmdletRunspaceFixture(activeSource: pathContext.PackageSource);
+
+            // Act — Find-Package FirstKeywordPackage -First 5
+            var results = fixture.Invoke(
+                "Find-Package",
+                new Dictionary<string, object>
+                {
+                    { "Id", "FirstKeywordPackage" },
+                    { "Source", pathContext.PackageSource },
+                    { "First", 5 },
+                });
+
+            // Assert — -First caps the number of returned packages
+            results.Should().HaveCount(5);
+        }
+
+        /// <summary>
+        /// Verifies that Find-Package -Skip past the available results returns nothing.
+        /// </summary>
+        [Fact]
+        public async Task FindPackage_WithSkipBeyondResultCount_ReturnsEmptyAsync()
+        {
+            // Arrange — a single matching package
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("SkipKeywordPackage", "1.0.0"));
+
+            SetupSourceRepositoryProvider(pathContext.PackageSource);
+
+            using var fixture = new CmdletRunspaceFixture(activeSource: pathContext.PackageSource);
+
+            // Act 1 — without -Skip, the single package is returned
+            var withoutSkip = fixture.Invoke(
+                "Find-Package",
+                new Dictionary<string, object>
+                {
+                    { "Id", "SkipKeywordPackage" },
+                    { "Source", pathContext.PackageSource },
+                });
+
+            // Act 2 — skipping past the only result returns nothing
+            var withSkip = fixture.Invoke(
+                "Find-Package",
+                new Dictionary<string, object>
+                {
+                    { "Id", "SkipKeywordPackage" },
+                    { "Source", pathContext.PackageSource },
+                    { "Skip", 1 },
+                });
+
+            // Assert
+            withoutSkip.Should().ContainSingle();
+            withSkip.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// Verifies that Find-Package -First combined with -Skip returns a full page of results
+        /// after skipping into a larger result set.
+        /// </summary>
+        [Fact]
+        public async Task FindPackage_WithFirstAndSkip_ReturnsLimitedResultsAsync()
+        {
+            // Arrange — six matching packages; skip into the set and take a full page
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("PageKeywordPackage1", "1.0.0"),
+                new SimpleTestPackageContext("PageKeywordPackage2", "1.0.0"),
+                new SimpleTestPackageContext("PageKeywordPackage3", "1.0.0"),
+                new SimpleTestPackageContext("PageKeywordPackage4", "1.0.0"),
+                new SimpleTestPackageContext("PageKeywordPackage5", "1.0.0"),
+                new SimpleTestPackageContext("PageKeywordPackage6", "1.0.0"));
+
+            SetupSourceRepositoryProvider(pathContext.PackageSource);
+
+            using var fixture = new CmdletRunspaceFixture(activeSource: pathContext.PackageSource);
+
+            // Act — Find-Package PageKeywordPackage -First 3 -Skip 2
+            var results = fixture.Invoke(
+                "Find-Package",
+                new Dictionary<string, object>
+                {
+                    { "Id", "PageKeywordPackage" },
+                    { "Source", pathContext.PackageSource },
+                    { "First", 3 },
+                    { "Skip", 2 },
+                });
+
+            // Assert — a full page of -First results even after skipping into the set
+            results.Should().HaveCount(3);
+        }
+
         private void SetupSourceRepositoryProvider(string localSourcePath)
         {
             var localSource = new PackageSource(localSourcePath);
