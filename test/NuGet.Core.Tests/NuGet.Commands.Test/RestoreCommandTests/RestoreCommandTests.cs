@@ -103,6 +103,60 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
+        public async Task RestoreCommand_WithAnalyzerAssetsEnabledOnOneFramework_HonorsAnalyzersForAllFrameworksAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var package = CreateAnalyzerPackageContext("AnalyzerPackage");
+                await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package);
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "AnalyzerProject");
+                Directory.CreateDirectory(projectDirectory);
+
+                // Multi-targeted project where only the net9.0 framework opts in. Analyzer assets are a
+                // project-wide opt-in, so the net8.0 framework honors analyzers too even though it did not opt in.
+                var net80 = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net8.0"),
+                    Dependencies = [CreateAnalyzerPackageDependency(package.Id, LibraryIncludeFlags.All, suppressParent: null)],
+                    RestoreEnableAnalyzerAssets = false,
+                };
+                var net90 = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net9.0"),
+                    Dependencies = [CreateAnalyzerPackageDependency(package.Id, LibraryIncludeFlags.All, suppressParent: null)],
+                    RestoreEnableAnalyzerAssets = true,
+                };
+
+                var packageSpec = PackageReferenceSpecBuilder.Create("AnalyzerProject", projectDirectory)
+                    .WithTargetFrameworks([net80, net90])
+                    .Build()
+                    .WithTestRestoreMetadata();
+
+                var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+                var restoreCommand = new RestoreCommand(request);
+
+                // Act
+                var result = await restoreCommand.ExecuteAsync();
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var net80Library = result.LockFile.GetTarget(NuGetFramework.Parse("net8.0"), runtimeIdentifier: null)
+                    .Libraries.Single(library => library.Name == package.Id);
+                var net90Library = result.LockFile.GetTarget(NuGetFramework.Parse("net9.0"), runtimeIdentifier: null)
+                    .Libraries.Single(library => library.Name == package.Id);
+
+                AssertAnalyzerAssetsSelected(net80Library);
+                AssertAnalyzerAssetsSelected(net90Library);
+            }
+        }
+
+        [Fact]
         public async Task RestoreCommand_WithAnalyzerAssetsEnabled_EmitsAnalyzerAssetsTelemetryAsync()
         {
             // Arrange

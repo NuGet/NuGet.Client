@@ -158,6 +158,20 @@ namespace NuGet.Commands
             var restoreMetadata = project.RestoreMetadata;
             var rootProjectStyle = restoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
+            // Analyzer assets are a project-wide opt-in: when any target framework opts in, analyzer assets are
+            // honored for every target framework (mirrors how package pruning is enabled project-wide once any
+            // framework qualifies, see PackageSpecFactory.GetPackagePruningDefault). The per-framework value is
+            // already gated to .NET 11+ in NuGet.targets, so it is only ever true for a qualifying framework.
+            bool restoreEnableAnalyzerAssets = false;
+            foreach (TargetFrameworkInformation framework in project.TargetFrameworks.NoAllocEnumerate())
+            {
+                if (framework.RestoreEnableAnalyzerAssets)
+                {
+                    restoreEnableAnalyzerAssets = true;
+                    break;
+                }
+            }
+
             // Add the targets
             foreach (var targetGraph in targetGraphs
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
@@ -184,9 +198,6 @@ namespace NuGet.Commands
 
                 // Check if warnings should be displayed for the current framework.
                 var tfi = project.GetNearestTargetFramework(targetGraph.Framework, targetGraph.TargetAlias);
-
-                // Analyzer assets are honored per target framework (gated to .NET 11+ via the opt-in value).
-                bool restoreEnableAnalyzerAssets = tfi.RestoreEnableAnalyzerAssets;
 
                 bool warnForImportsOnGraph = tfi.Warn
                     && (target.TargetFramework is FallbackFramework
