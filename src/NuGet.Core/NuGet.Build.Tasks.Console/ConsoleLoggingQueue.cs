@@ -2,19 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #nullable disable
 
-#if IS_DESKTOP
-extern alias MicrosoftBuildUtilitiesv4;
-#endif
-
 using System;
 using System.Collections;
 using Microsoft.Build.Framework;
-#if IS_CORECLR
 using Microsoft.Build.Utilities;
-#endif
-#if IS_DESKTOP
-using TaskLoggingHelper = MicrosoftBuildUtilitiesv4::Microsoft.Build.Utilities.TaskLoggingHelper;
-#endif
 
 namespace NuGet.Build.Tasks.Console
 {

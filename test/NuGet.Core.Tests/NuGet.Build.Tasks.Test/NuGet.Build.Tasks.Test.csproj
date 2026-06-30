@@ -22,10 +22,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
-    <Reference Include="Microsoft.Build.Utilities.v4.0" Aliases="MicrosoftBuildUtilitiesv4" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Update="TestStrings.Designer.cs">
       <DesignTime>True</DesignTime>
