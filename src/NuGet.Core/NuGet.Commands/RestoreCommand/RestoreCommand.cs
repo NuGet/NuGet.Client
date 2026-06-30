@@ -512,7 +512,7 @@ namespace NuGet.Commands
                 }
 
                 Dictionary<string, LibraryIncludeFlags> flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, graph);
-                TargetFrameworkInformation targetFrameworkInformation = project.GetTargetFramework(graph.Framework);
+                TargetFrameworkInformation targetFrameworkInformation = project.GetNearestTargetFramework(graph.Framework, graph.TargetAlias);
 
                 foreach (GraphItem<RemoteResolveResult> graphItem in graph.Flattened)
                 {

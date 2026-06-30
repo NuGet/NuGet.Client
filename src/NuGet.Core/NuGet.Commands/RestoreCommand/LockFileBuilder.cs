@@ -183,7 +183,7 @@ namespace NuGet.Commands
                 var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, targetGraph);
 
                 // Check if warnings should be displayed for the current framework.
-                var tfi = project.GetTargetFramework(targetGraph.Framework);
+                var tfi = project.GetNearestTargetFramework(targetGraph.Framework, targetGraph.TargetAlias);
 
                 // Analyzer assets are honored per target framework (gated to .NET 11+ via the opt-in value).
                 bool restoreEnableAnalyzerAssets = tfi.RestoreEnableAnalyzerAssets;
