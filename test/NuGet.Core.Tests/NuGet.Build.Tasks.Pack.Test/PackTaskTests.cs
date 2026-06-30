@@ -540,8 +540,25 @@ namespace NuGet.Build.Tasks.Pack.Test
                 var matchCountInFileSystem = PackageFileNameTestsCommon.GetNameMatchFilePathCount(outputNupkgName, nupkgGeneratedFiles);
                 Assert.True(matchCountInFileSystem == 1, $"{outputNupkgName} is not found in filesystem. [{string.Join(" , ", nupkgGeneratedFiles.Select(Path.GetFileName))}]");
             }
-            // The input here is packTask, but this simulates what GetPackOutputItemsTask would do.
-            ITaskItem[] outputPaths = GetPackOutputItemsLogic.GetOutputFilePaths(packTask);
+
+            // It is very important that the input here is exactly the same as what PackTask is configured with.
+            var getPackageOutputTask = new GetPackOutputItemsTask()
+            {
+                PackageId = packTask.PackageId,
+                PackageVersion = packTask.PackageVersion,
+                PackageOutputPath = packTask.PackageOutputPath,
+                NuspecOutputPath = packTask.NuspecOutputPath,
+                NuspecFile = packTask.NuspecFile,
+                NuspecProperties = packTask.NuspecProperties,
+                IncludeSource = packTask.IncludeSource,
+                IncludeSymbols = packTask.IncludeSymbols,
+                SymbolPackageFormat = packTask.SymbolPackageFormat,
+                OutputFileNamesWithoutVersion = packTask.OutputFileNamesWithoutVersion,
+            };
+
+            getPackageOutputTask.Execute();
+
+            ITaskItem[] outputPaths = getPackageOutputTask.OutputPackItems;
             foreach (var outputPath in outputPaths)
             {
                 if (outputPath.GetMetadata("Extension") == ".nuspec" && testCase.UseNuspecFile)
