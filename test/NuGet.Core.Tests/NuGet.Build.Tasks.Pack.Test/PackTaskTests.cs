@@ -450,119 +450,105 @@ namespace NuGet.Build.Tasks.Pack.Test
         // This unit test verifies that GetPackOutputItemsTask outputs the expected file name.
         [Theory]
         [MemberData(nameof(PackageFileNameTestCases))]
-        public void PackTask_Execute_CheckPackageFileName(PackageFileNameTestCase testCase)
+        public void PackTask_EnsureFileNames(PackageFileNameTestCase testCase)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using var testDirectory = TestDirectory.Create();
+            string outputDir = Path.Combine(testDirectory, "output");
+            Directory.CreateDirectory(outputDir);
+
+            string objDir = Path.Combine(testDirectory, "obj");
+            Directory.CreateDirectory(objDir);
+
+            if (testCase.IncludeSymbols)
             {
-                string outputDir = Path.Combine(testDirectory, "output");
-                Directory.CreateDirectory(outputDir);
+                //needs .pdb file  (see PackCommandRunner.BuildSymbolsPackage)
+                string binDir = Path.Combine(testDirectory, "bin");
+                Directory.CreateDirectory(binDir);
+                File.WriteAllBytes(Path.Combine(binDir, "dummy.pdb"), new byte[0]);
+            }
 
-                string objDir = Path.Combine(testDirectory, "obj");
-                Directory.CreateDirectory(objDir);
+            // Create nuspec when the test scenario uses one.
+            PackageFileNameTestsCommon.CreateNuspecFile(testCase, testDirectory);
 
-                if (testCase.IncludeSymbols)
+            // Create project.assets.json
+            var path = string.Join(".", typeof(PackTaskLogicTests).Namespace, "compiler.resources", "json.assets.project");
+            using (var mstream = GetType().Assembly.GetManifestResourceStream(path))
+            {
+                Assert.NotNull(mstream);
+                using var reader = new StreamReader(mstream);
+                var contents = reader.ReadToEnd();
+                File.WriteAllText(Path.Combine(objDir, "project.assets.json"), contents);
+            }
+
+            // dummy BuildEngine
+            System.Text.StringBuilder logError = new System.Text.StringBuilder();
+            System.Text.StringBuilder logWarning = new System.Text.StringBuilder();
+            var mockEngine = new Mock<IBuildEngine>();
+            mockEngine.Setup(x => x.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>((e) => { logError.Append(e.Message); });
+            mockEngine.Setup(x => x.LogWarningEvent(It.IsAny<BuildWarningEventArgs>()))
+                .Callback<BuildWarningEventArgs>((e) => { logWarning.Append(e.Message); });
+
+            var nuspecProps = new List<string>();
+            if (!string.IsNullOrWhiteSpace(testCase.VersionNuspecProperties))
+            {
+                nuspecProps.Add("version=" + testCase.VersionNuspecProperties);
+            }
+            if (!string.IsNullOrWhiteSpace(testCase.IdNuspecProperties))
+            {
+                nuspecProps.Add("id=" + testCase.IdNuspecProperties);
+            }
+
+            var packTask = new PackTask()
+            {
+                PackItem = FileTaskItem.FromPath(Path.Combine(testDirectory, PackageFileNameTestsCommon.FILENAME_PROJECT_FILE)),
+                RestoreOutputPath = Path.Combine(testDirectory, "obj"),
+
+                Authors = ["Nuget Team"],
+                Description = "description",
+                BuildOutputInPackage = [],
+                ContinuePackingAfterGeneratingNuspec = true,
+                NuspecBasePath = testDirectory,
+                // Dummy for Logger (see Microsoft.Build.Utilities.TaskLoggingHelper.LogWarning)
+                BuildEngine = mockEngine.Object,
+                PackageId = testCase.IdProjProp,
+                PackageVersion = testCase.VersionProjProp,
+                PackageOutputPath = outputDir,
+                NuspecOutputPath = outputDir,
+                NuspecFile = (testCase.UseNuspecFile ? Path.Combine(testDirectory, PackageFileNameTestsCommon.FILENAME_NUSPEC_FILE) : null),
+                IncludeSymbols = testCase.IncludeSymbols,
+                SymbolPackageFormat = PackageFileNameTestsCommon.GetSymbolPackageFormatText(testCase.SymbolPackageFormat),
+                OutputFileNamesWithoutVersion = testCase.OutputFileNamesWithoutVersion,
+                NuspecProperties = nuspecProps.Count > 0 ? nuspecProps.ToArray() : null
+            };
+
+            Assert.True(packTask.Execute(), "PackTask.Execute Fail\r\n" + logError.ToString());
+
+            _testOutputHelper.WriteLine(logWarning.ToString());
+            _testOutputHelper.WriteLine(logError.ToString());
+
+            // get generated files
+            string[] outputExtensions = PackageFileNameTestsCommon.GetOutputExtensions(testCase.IncludeSymbols, testCase.SymbolPackageFormat);
+            var nupkgGeneratedFiles = outputExtensions
+                    .SelectMany(outputExtension => Directory.GetFiles(testDirectory, $"*{outputExtension}", SearchOption.AllDirectories))
+                    .Where(line => !line.StartsWith(objDir))
+                    .Distinct().ToArray();
+
+            // compare generated and testCase
+            foreach (string outputNupkgName in testCase.OutputNupkgNames)
+            {
+                var matchCountInFileSystem = PackageFileNameTestsCommon.GetNameMatchFilePathCount(outputNupkgName, nupkgGeneratedFiles);
+                Assert.True(matchCountInFileSystem == 1, $"{outputNupkgName} is not found in filesystem. [{string.Join(" , ", nupkgGeneratedFiles.Select(Path.GetFileName))}]");
+            }
+            // The input here is packTask, but this simulates what GetPackOutputItemsTask would do.
+            ITaskItem[] outputPaths = GetPackOutputItemsLogic.GetOutputFilePaths(packTask);
+            foreach (var outputPath in outputPaths)
+            {
+                if (outputPath.GetMetadata("Extension") == ".nuspec" && testCase.UseNuspecFile)
                 {
-                    //needs .pdb file  (see PackCommandRunner.BuildSymbolsPackage)
-
-                    string binDir = Path.Combine(testDirectory, "bin");
-                    Directory.CreateDirectory(binDir);
-                    File.WriteAllBytes(Path.Combine(binDir, "dummy.pdb"), new byte[0]);
+                    continue;
                 }
-
-                // Create nuspec when the test scenario uses one.
-                PackageFileNameTestsCommon.CreateNuspecFile(testCase, testDirectory);
-
-                // Create project.assets.json
-                var path = string.Join(".", typeof(PackTaskLogicTests).Namespace, "compiler.resources", "json.assets.project");
-                using (var mstream = GetType().Assembly.GetManifestResourceStream(path))
-                {
-                    Assert.NotNull(mstream);
-
-                    using (var reader = new StreamReader(mstream))
-                    {
-                        var contents = reader.ReadToEnd();
-                        File.WriteAllText(Path.Combine(objDir, "project.assets.json"), contents);
-                    }
-                }
-
-                // dummy BuildEngine
-                System.Text.StringBuilder logError = new System.Text.StringBuilder();
-                System.Text.StringBuilder logWarning = new System.Text.StringBuilder();
-                var mockEngine = new Moq.Mock<IBuildEngine>();
-                mockEngine.Setup(x => x.LogErrorEvent(Moq.It.IsAny<BuildErrorEventArgs>()))
-                    .Callback<BuildErrorEventArgs>((e) => { logError.Append(e.Message); });
-                mockEngine.Setup(x => x.LogWarningEvent(Moq.It.IsAny<BuildWarningEventArgs>()))
-                    .Callback<BuildWarningEventArgs>((e) => { logWarning.Append(e.Message); });
-
-                var packTask = new PackTask()
-                {
-                    PackItem = FileTaskItem.FromPath(Path.Combine(testDirectory, PackageFileNameTestsCommon.FILENAME_PROJECT_FILE)),
-                    RestoreOutputPath = Path.Combine(testDirectory, "obj"),
-
-                    Authors = ["Nuget Team"],
-                    Description = "description",
-                    BuildOutputInPackage = new ITaskItem[0],
-
-                    ContinuePackingAfterGeneratingNuspec = true,
-
-
-                    NuspecBasePath = testDirectory,
-
-                    // Dummy for Logger (see Microsoft.Build.Utilities.TaskLoggingHelper.LogWarning)
-                    BuildEngine = mockEngine.Object
-                };
-
-                var filePathsSource = (IOutputFilePathProvider)packTask;
-                filePathsSource.PackageId = testCase.IdProjProp; //Required
-                filePathsSource.PackageVersion = testCase.VersionProjProp;//Required
-                filePathsSource.PackageOutputPath = outputDir;//Required
-                filePathsSource.NuspecOutputPath = outputDir;//Required
-
-                filePathsSource.NuspecFile = (testCase.UseNuspecFile ? Path.Combine(testDirectory, PackageFileNameTestsCommon.FILENAME_NUSPEC_FILE) : null);
-                var nuspecProps = new List<string>();
-                if (!string.IsNullOrWhiteSpace(testCase.VersionNuspecProperties))
-                {
-                    nuspecProps.Add("version=" + testCase.VersionNuspecProperties);
-                }
-                if (!string.IsNullOrWhiteSpace(testCase.IdNuspecProperties))
-                {
-                    nuspecProps.Add("id=" + testCase.IdNuspecProperties);
-                }
-                filePathsSource.NuspecProperties = nuspecProps.Count > 0 ? nuspecProps.ToArray() : null;
-                filePathsSource.IncludeSymbols = testCase.IncludeSymbols;
-                filePathsSource.SymbolPackageFormat = PackageFileNameTestsCommon.GetSymbolPackageFormatText(testCase.SymbolPackageFormat);
-                filePathsSource.OutputFileNamesWithoutVersion = testCase.OutputFileNamesWithoutVersion;
-
-                // Execute()
-                Assert.True(packTask.Execute(), "PackTask.Execute Fail\r\n" + logError.ToString());
-
-                _testOutputHelper.WriteLine(logWarning.ToString());
-                _testOutputHelper.WriteLine(logError.ToString());
-
-                // get generated files
-                string[] outputExtensions = PackageFileNameTestsCommon.GetOutputExtensions(testCase.IncludeSymbols, testCase.SymbolPackageFormat);
-                var nupkgGeneratedFiles = outputExtensions
-                        .SelectMany(outputExtension => Directory.GetFiles(testDirectory, $"*{outputExtension}", SearchOption.AllDirectories))
-                        .Where(line => !line.StartsWith(objDir))
-                        .Distinct().ToArray();
-
-                // compare generated and testCase
-                foreach (string outputNupkgName in testCase.OutputNupkgNames)
-                {
-                    var matchCountInFileSystem = PackageFileNameTestsCommon.GetNameMatchFilePathCount(outputNupkgName, nupkgGeneratedFiles);
-                    Assert.True(matchCountInFileSystem == 1, $"{outputNupkgName} is not found in filesystem. [{string.Join(" , ", nupkgGeneratedFiles.Select(_ => Path.GetFileName(_)))}]");
-                }
-
-                // compare generated and GetPackOutputItemsTask
-                var outputPaths = GetPackOutputItemsLogic.GetOutputFilePaths(filePathsSource).OutputPackItems;
-                foreach (var outputPath in outputPaths)
-                {
-                    if (outputPath.GetMetadata("Extension") == ".nuspec" && testCase.UseNuspecFile)
-                    {
-                        continue;
-                    }
-                    Assert.True(File.Exists(outputPath.GetMetadata("FullPath")), $"{outputPath} is not found in filesystem");
-                }
+                Assert.True(File.Exists(outputPath.GetMetadata("FullPath")), $"{outputPath} is not found in filesystem");
             }
         }
 

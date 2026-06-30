@@ -1,20 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System.IO;
 using System.Linq;
+using NuGet.Commands;
 using Xunit.Abstractions;
 
 namespace NuGet.Build.Tasks.Pack.Test
 {
-    // NuGet.Build.Tasks.Pack.Test
-    /// <summary></summary>
     /// <remarks>
-    /// <see cref="NuGet.Build.Tasks.Pack.Test.GetPackOutputItemsTaskTests"/>
-    /// <see cref="Msbuild.Integration.Test.PackageFileNameTests"/>
-    /// <see cref="Dotnet.Integration.Test.PackageFileNameTests"/>
+    /// <see cref="GetPackOutputItemsTaskTests"/>
     /// </remarks>
     public class PackageFileNameTestCase : IXunitSerializable
     {
@@ -29,7 +24,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         private bool _useNuspecFile;
         private bool _outputFileNamesWithoutVersion;
         private bool _includeSymbols;
-        private NuGet.Commands.SymbolPackageFormat _symbolPackageFormat = NuGet.Commands.SymbolPackageFormat.Snupkg;
+        private SymbolPackageFormat _symbolPackageFormat = SymbolPackageFormat.Snupkg;
 
         public static System.Collections.Generic.IEnumerable<object[]> TestCases
         {
@@ -142,14 +137,18 @@ namespace NuGet.Build.Tasks.Pack.Test
             init => _includeSymbols = value;
         }
 
-        public NuGet.Commands.SymbolPackageFormat SymbolPackageFormat
+        public SymbolPackageFormat SymbolPackageFormat
         {
-            get => _symbolPackageFormat;
-            init => _symbolPackageFormat = value;
+            get => SymbolPackageFormat1;
+            init => SymbolPackageFormat1 = value;
         }
+        public SymbolPackageFormat SymbolPackageFormat1 { get => SymbolPackageFormat2; set => SymbolPackageFormat2 = value; }
+        public SymbolPackageFormat SymbolPackageFormat2 { get => _symbolPackageFormat; set => _symbolPackageFormat = value; }
 
-        #region IXunitSerializable
-
+        public override string ToString()
+        {
+            return Scenario;
+        }
         public PackageFileNameTestCase()
         {
         }
@@ -182,9 +181,8 @@ namespace NuGet.Build.Tasks.Pack.Test
             _useNuspecFile = (bool)info.GetValue(nameof(UseNuspecFile), typeof(bool));
             _outputFileNamesWithoutVersion = (bool)info.GetValue(nameof(OutputFileNamesWithoutVersion), typeof(bool));
             _includeSymbols = (bool)info.GetValue(nameof(IncludeSymbols), typeof(bool));
-            _symbolPackageFormat = (NuGet.Commands.SymbolPackageFormat)info.GetValue(nameof(SymbolPackageFormat), typeof(NuGet.Commands.SymbolPackageFormat));
+            SymbolPackageFormat1 = (NuGet.Commands.SymbolPackageFormat)info.GetValue(nameof(SymbolPackageFormat), typeof(NuGet.Commands.SymbolPackageFormat));
         }
-        #endregion
     }
 
     internal static class PackageFileNameTestsCommon

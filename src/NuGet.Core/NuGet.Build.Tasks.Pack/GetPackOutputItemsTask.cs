@@ -7,7 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace NuGet.Build.Tasks.Pack
 {
-    public class GetPackOutputItemsTask : Microsoft.Build.Utilities.Task, IOutputFilePathProvider, IOutputFilePath
+    public class GetPackOutputItemsTask : Microsoft.Build.Utilities.Task, IOutputFilePathProvider
     {
         [Required]
         public string PackageId { get; set; }
@@ -39,14 +39,9 @@ namespace NuGet.Build.Tasks.Pack
         [Output]
         public ITaskItem[] OutputPackItems { get; set; }
 
-        public string OutputNupkgFilePath { get; set; }
-        public string OutputNuspecFilePath { get; set; }
-        public string OutputNupkgSymbolsFilePath { get; set; }
-        public string OutputNuspecSymbolsFilePath { get; set; }
-
         public override bool Execute()
         {
-            GetPackOutputItemsLogic.GetOutputFilePaths(this, this);
+            OutputPackItems = GetPackOutputItemsLogic.GetOutputFilePaths(this);
             return true;
         }
     }
