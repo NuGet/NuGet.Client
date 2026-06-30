@@ -155,8 +155,7 @@ namespace NuGet.Commands
 
         // Analyzer assets names
         private const string AnalyzerAssetsEnabled = "AnalyzerAssets.Enabled";
-        private const string AnalyzerAssetsCount = "AnalyzerAssets.Count";
-        private const string AnalyzerAssetsExcludedCount = "AnalyzerAssets.Excluded.Count";
+        private const string AnalyzerAssetsExcluded = "AnalyzerAssets.Excluded";
         private const string AnalyzerAssetsPackagesWithAnalyzersCount = "AnalyzerAssets.PackagesWithAnalyzers.Count";
         private const string AnalyzerAssetsPackagesWithExcludedAnalyzersCount = "AnalyzerAssets.PackagesWithExcludedAnalyzers.Count";
         private const string AnalyzerAssetsExcludedByPrivateAssetsCount = "AnalyzerAssets.ExcludedByPrivateAssets.Count";
@@ -469,11 +468,12 @@ namespace NuGet.Commands
 
         /// <summary>
         /// Reports analyzer-asset usage so the impact of enabling <c>RestoreEnableAnalyzerAssets</c> by
-        /// default can be measured ahead of the rollout. The counts are derived from the resolved dependency
-        /// graphs and the package file lists, so they are reported on every restore regardless of whether the
-        /// feature is currently enabled. This lets us see, before flipping the default, how many packages and
-        /// analyzer assemblies would stop being applied because <c>PrivateAssets</c>/<c>ExcludeAssets</c> would
-        /// finally be honored.
+        /// default can be measured ahead of the rollout. The data is derived from the resolved dependency
+        /// graphs and the package file lists, so it is reported on every restore regardless of whether the
+        /// feature is currently enabled. This lets us see, before flipping the default, how many packages
+        /// would stop having their analyzers applied because <c>PrivateAssets</c>/<c>ExcludeAssets</c> would
+        /// finally be honored. Detection is per package (not per analyzer assembly): the rollout decision is
+        /// driven by whether a package's analyzers are affected, not by how many assemblies it ships.
         /// </summary>
         /// <remarks>
         /// Analyzers are not runtime-identifier specific, so only the target-framework graphs (those with a
@@ -482,27 +482,22 @@ namespace NuGet.Commands
         /// </remarks>
         private void PopulateAnalyzerAssetsTelemetry(TelemetryEvent telemetryEvent, LockFile assetsFile, List<RestoreTargetGraph> graphs, PackageSpec project)
         {
-            // Count the analyzer assemblies each package contributes, from the always-present libraries section.
-            var analyzerAssemblyCountByPackage = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            // Identify which packages contribute at least one analyzer assembly, from the always-present
+            // libraries section. Detection is per package (not per assembly) since the rollout decision is
+            // driven by whether a package's analyzers are affected, not by how many assemblies it ships.
+            var packagesWithAnalyzerAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (LockFileLibrary library in assetsFile.Libraries)
             {
-                int analyzerAssemblyCount = 0;
                 foreach (string file in library.Files)
                 {
                     if (IsAnalyzerAssemblyPath(file))
                     {
-                        analyzerAssemblyCount++;
+                        packagesWithAnalyzerAssemblies.Add(GetAnalyzerPackageKey(library.Name, library.Version));
+                        break;
                     }
-                }
-
-                if (analyzerAssemblyCount > 0)
-                {
-                    analyzerAssemblyCountByPackage[GetAnalyzerPackageKey(library.Name, library.Version)] = analyzerAssemblyCount;
                 }
             }
 
-            int appliedAnalyzerAssemblies = 0;
-            int excludedAnalyzerAssemblies = 0;
             int packagesWithAnalyzers = 0;
             int packagesWithExcludedAnalyzers = 0;
             int excludedByPrivateAssets = 0;
@@ -527,7 +522,7 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    if (!analyzerAssemblyCountByPackage.TryGetValue(GetAnalyzerPackageKey(library.Name, library.Version), out int analyzerAssemblyCount))
+                    if (!packagesWithAnalyzerAssemblies.Contains(GetAnalyzerPackageKey(library.Name, library.Version)))
                     {
                         continue;
                     }
@@ -541,12 +536,10 @@ namespace NuGet.Commands
 
                     if ((includeFlags & LibraryIncludeFlags.Analyzers) != LibraryIncludeFlags.None)
                     {
-                        appliedAnalyzerAssemblies += analyzerAssemblyCount;
                         continue;
                     }
 
                     // The package contributes analyzers, but they would be filtered out for this project.
-                    excludedAnalyzerAssemblies += analyzerAssemblyCount;
                     packagesWithExcludedAnalyzers++;
 
                     // Attribute the exclusion: a direct reference whose own IncludeAssets/ExcludeAssets drops
@@ -569,8 +562,7 @@ namespace NuGet.Commands
                 }
             }
 
-            telemetryEvent[AnalyzerAssetsCount] = appliedAnalyzerAssemblies;
-            telemetryEvent[AnalyzerAssetsExcludedCount] = excludedAnalyzerAssemblies;
+            telemetryEvent[AnalyzerAssetsExcluded] = packagesWithExcludedAnalyzers > 0;
             telemetryEvent[AnalyzerAssetsPackagesWithAnalyzersCount] = packagesWithAnalyzers;
             telemetryEvent[AnalyzerAssetsPackagesWithExcludedAnalyzersCount] = packagesWithExcludedAnalyzers;
             telemetryEvent[AnalyzerAssetsExcludedByPrivateAssetsCount] = excludedByPrivateAssets;

@@ -140,9 +140,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                 var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
                 projectInformationEvent["AnalyzerAssets.Enabled"].Should().Be(true);
-                // The analyzer package ships five analyzer assemblies; satellite and non-analyzer files are excluded.
-                projectInformationEvent["AnalyzerAssets.Count"].Should().Be(5);
-                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(0);
+                // The analyzer package's analyzers all apply, so nothing is excluded.
+                projectInformationEvent["AnalyzerAssets.Excluded"].Should().Be(false);
                 projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
                 projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(0);
                 projectInformationEvent["AnalyzerAssets.ExcludedByPrivateAssets.Count"].Should().Be(0);
@@ -187,12 +186,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 result.Success.Should().BeTrue(because: logger.ShowMessages());
 
                 var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
-                // The feature is off, but the blast-radius counts are still reported so the impact of enabling
-                // it by default can be measured. Nothing is filtered here, so all five analyzers are "applied".
+                // The feature is off, but the blast-radius data is still reported so the impact of enabling
+                // it by default can be measured. Nothing is filtered here.
                 projectInformationEvent["AnalyzerAssets.Enabled"].Should().Be(false);
-                projectInformationEvent["AnalyzerAssets.Count"].Should().Be(5);
                 projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
-                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(0);
+                projectInformationEvent["AnalyzerAssets.Excluded"].Should().Be(false);
                 projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(0);
             }
         }
@@ -234,9 +232,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 result.Success.Should().BeTrue(because: logger.ShowMessages());
 
                 var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
-                // ExcludeAssets="analyzers" on the project's own reference filters all five analyzers.
-                projectInformationEvent["AnalyzerAssets.Count"].Should().Be(0);
-                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(5);
+                // ExcludeAssets="analyzers" on the project's own reference filters the package's analyzers.
+                projectInformationEvent["AnalyzerAssets.Excluded"].Should().Be(true);
                 projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
                 projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(1);
                 projectInformationEvent["AnalyzerAssets.ExcludedByExcludeAssets.Count"].Should().Be(1);
@@ -301,8 +298,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
                 // The analyzers flow transitively through the Library project reference, where PrivateAssets="analyzers"
                 // (the default) suppresses them for the consuming App.
-                projectInformationEvent["AnalyzerAssets.Count"].Should().Be(0);
-                projectInformationEvent["AnalyzerAssets.Excluded.Count"].Should().Be(5);
+                projectInformationEvent["AnalyzerAssets.Excluded"].Should().Be(true);
                 projectInformationEvent["AnalyzerAssets.PackagesWithAnalyzers.Count"].Should().Be(1);
                 projectInformationEvent["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"].Should().Be(1);
                 projectInformationEvent["AnalyzerAssets.ExcludedByPrivateAssets.Count"].Should().Be(1);
@@ -4115,8 +4111,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["FallbackFoldersCount"] = value => value.Should().Be(0),
                 ["Audit.Enabled"] = value => value.Should().Be("enabled"),
                 ["AnalyzerAssets.Enabled"] = value => value.Should().BeOfType<bool>(),
-                ["AnalyzerAssets.Count"] = value => value.Should().BeOfType<int>(),
-                ["AnalyzerAssets.Excluded.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.Excluded"] = value => value.Should().BeOfType<bool>(),
                 ["AnalyzerAssets.PackagesWithAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
                 ["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
                 ["AnalyzerAssets.ExcludedByPrivateAssets.Count"] = value => value.Should().BeOfType<int>(),
@@ -4506,8 +4501,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["TotalUniquePackagesCount"] = value => value.Should().Be(2),
                 ["PackagesWithFloatingVersionCount"] = value => value.Should().Be(0),
                 ["AnalyzerAssets.Enabled"] = value => value.Should().BeOfType<bool>(),
-                ["AnalyzerAssets.Count"] = value => value.Should().BeOfType<int>(),
-                ["AnalyzerAssets.Excluded.Count"] = value => value.Should().BeOfType<int>(),
+                ["AnalyzerAssets.Excluded"] = value => value.Should().BeOfType<bool>(),
                 ["AnalyzerAssets.PackagesWithAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
                 ["AnalyzerAssets.PackagesWithExcludedAnalyzers.Count"] = value => value.Should().BeOfType<int>(),
                 ["AnalyzerAssets.ExcludedByPrivateAssets.Count"] = value => value.Should().BeOfType<int>(),
