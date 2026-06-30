@@ -486,9 +486,9 @@ namespace NuGet.Commands
             // libraries section. Detection is per package (not per assembly) since the rollout decision is
             // driven by whether a package's analyzers are affected, not by how many assemblies it ships.
             var packagesWithAnalyzerAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (LockFileLibrary library in assetsFile.Libraries)
+            foreach (LockFileLibrary library in assetsFile.Libraries.NoAllocEnumerate())
             {
-                foreach (string file in library.Files)
+                foreach (string file in library.Files.NoAllocEnumerate())
                 {
                     if (IsAnalyzerAssemblyPath(file))
                     {
@@ -503,7 +503,7 @@ namespace NuGet.Commands
             int excludedByPrivateAssets = 0;
             int excludedByExcludeAssets = 0;
 
-            foreach (RestoreTargetGraph graph in graphs)
+            foreach (RestoreTargetGraph graph in graphs.NoAllocEnumerate())
             {
                 // Analyzers are not runtime specific; only inspect the target framework graphs.
                 if (graph.RuntimeIdentifier != null)
