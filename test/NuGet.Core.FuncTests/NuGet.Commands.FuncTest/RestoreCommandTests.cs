@@ -4316,6 +4316,31 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
+        public async Task Restore_WithSameInsecureHttpUrlAsPackageAndAuditSource_ReportsOnce()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            string httpSourceUrl = "http://unit.test/v3/index.json";
+            pathContext.Settings.AddAuditSource("http-audit", httpSourceUrl, allowInsecureConnectionsValue: "False");
+
+            var logger = new TestLogger();
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
+            project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
+            // Configure the same insecure HTTP URL as both a package source and an audit source.
+            project1Spec.RestoreMetadata.Sources.Add(new PackageSource(httpSourceUrl, "http-package"));
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var command = new RestoreCommand(request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            result.Success.Should().BeFalse(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().ContainSingle(m => m.Code == NuGetLogCode.NU1302 && m.Message.Contains(httpSourceUrl));
+        }
+
+        [Fact]
         public async Task Restore_WithHttpAuditSourceAndAuditDisabled_NoHttpDiagnostics()
         {
             // Arrange

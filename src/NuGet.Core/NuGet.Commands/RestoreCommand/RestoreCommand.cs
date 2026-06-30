@@ -519,11 +519,15 @@ namespace NuGet.Commands
         {
             bool error = false;
 
+            // Track source URLs that have already been warned/errored about so the same URL,
+            // even when configured as both a package source and an audit source, is only reported once.
+            var reportedSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             if (_request.DependencyProviders.RemoteProviders != null)
             {
                 foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
                 {
-                    error |= CheckDisallowedInsecureHttpSource(remoteProvider.Source, SdkAnalysisLevelMinimums.V9_0_100);
+                    error |= CheckDisallowedInsecureHttpSource(remoteProvider.Source, SdkAnalysisLevelMinimums.V9_0_100, reportedSources);
                 }
             }
 
@@ -535,7 +539,7 @@ namespace NuGet.Commands
                 {
                     if (vulnerabilityInfoProvider.IsAuditSource)
                     {
-                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource, SdkAnalysisLevelMinimums.V10_0_400, warnWhenNotError: false);
+                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource, SdkAnalysisLevelMinimums.V10_0_400, reportedSources, warnWhenNotError: false);
                     }
                 }
             }
@@ -543,9 +547,15 @@ namespace NuGet.Commands
             return !error;
         }
 
-        private bool CheckDisallowedInsecureHttpSource(PackageSource source, NuGetVersion errorMinSdkAnalysisLevel, bool warnWhenNotError = true)
+        private bool CheckDisallowedInsecureHttpSource(PackageSource source, NuGetVersion errorMinSdkAnalysisLevel, HashSet<string> reportedSources, bool warnWhenNotError = true)
         {
             if (!source.IsHttp || source.IsHttps || source.AllowInsecureConnections)
+            {
+                return false;
+            }
+
+            // Only warn/error once per unique source URL.
+            if (!reportedSources.Add(source.Source))
             {
                 return false;
             }
