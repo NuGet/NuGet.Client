@@ -18,8 +18,18 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Get all the settings to be used for project restore.
     /// </summary>
+    [MSBuildMultiThreadableTask]
     public class GetRestoreSettingsTask : Microsoft.Build.Utilities.Task
+#if !NETFRAMEWORK
+        , IMultiThreadableTask
+#endif
     {
+
+#if !NETFRAMEWORK
+        /// <inheritdoc />
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+#endif
+
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         public GetRestoreSettingsTask()
@@ -116,6 +126,12 @@ namespace NuGet.Build.Tasks
 #endif
             var log = new MSBuildLogger(Log);
 
+            // Resolve directory inputs to absolute paths so path resolution does not depend on the process working
+            // directory when the task runs in-process during multithreaded builds. Reserved values such as
+            // MSBuildStartupDirectory and MSBuildProjectFullPath are already absolute (so this is a no-op for them);
+            // RestoreSolutionDirectory / RestoreRootConfigDirectory are user-overridable and may be relative.
+            var absoluteMSBuildStartupDirectory = MakeAbsolute(MSBuildStartupDirectory);
+
             try
             {
                 // Validate inputs
@@ -136,34 +152,35 @@ namespace NuGet.Build.Tasks
                 // Settings
                 // Find the absolute path of nuget.config, this should only be set on the command line. Setting the path in project files
                 // is something that could happen, but it is not supported.
-                var absoluteConfigFilePath = GetGlobalAbsolutePath(RestoreConfigFile);
+                var absoluteConfigFilePath = GetGlobalAbsolutePath(absoluteMSBuildStartupDirectory, RestoreConfigFile);
                 string restoreDir;
                 // To match non-msbuild behavior, we only default the restoreDir for non-PackagesConfig scenarios.
                 if (string.IsNullOrEmpty(RestoreRootConfigDirectory))
                 {
+                    // Path.GetDirectoryName of the absolute project full path is already absolute.
                     restoreDir = Path.GetDirectoryName(ProjectUniqueName);
                 }
                 else
                 {
-                    restoreDir = RestoreRootConfigDirectory;
+                    restoreDir = MakeAbsolute(RestoreRootConfigDirectory);
                 }
-                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, restoreDir, absoluteConfigFilePath, _machineWideSettings);
+                var settings = RestoreSettingsUtils.ReadSettings(MakeAbsolute(RestoreSolutionDirectory), restoreDir, absoluteConfigFilePath, _machineWideSettings);
                 OutputConfigFilePaths = settings.GetConfigFilePaths().ToArray();
 
                 // PackagesPath
                 OutputPackagesPath = RestoreSettingsUtils.GetValue(
-                    () => GetGlobalAbsolutePath(RestorePackagesPathOverride),
+                    () => GetGlobalAbsolutePath(absoluteMSBuildStartupDirectory, RestorePackagesPathOverride),
                     () => string.IsNullOrEmpty(RestorePackagesPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath),
                     () => SettingsUtility.GetGlobalPackagesFolder(settings));
 
                 OutputRepositoryPath = RestoreSettingsUtils.GetValue(
-                    () => GetGlobalAbsolutePath(RestoreRepositoryPathOverride),
+                    () => GetGlobalAbsolutePath(absoluteMSBuildStartupDirectory, RestoreRepositoryPathOverride),
                     () => string.IsNullOrEmpty(RestoreRepositoryPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestoreRepositoryPath),
                     () => SettingsUtility.GetRepositoryPath(settings));
 
                 // Sources
                 OutputSources = BuildTasksUtility.GetSources(
-                    MSBuildStartupDirectory,
+                    absoluteMSBuildStartupDirectory,
                     Path.GetDirectoryName(ProjectUniqueName),
                     RestoreSources,
                     RestoreSourcesOverride,
@@ -172,7 +189,7 @@ namespace NuGet.Build.Tasks
 
                 // Fallback folders
                 OutputFallbackFolders = BuildTasksUtility.GetFallbackFolders(
-                    MSBuildStartupDirectory,
+                    absoluteMSBuildStartupDirectory,
                     Path.GetDirectoryName(ProjectUniqueName),
                     RestoreFallbackFolders, RestoreFallbackFoldersOverride,
                     GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFolders"),
@@ -204,13 +221,43 @@ namespace NuGet.Build.Tasks
         }
 
         /// <summary>
-        /// Resolve a path against MSBuildStartupDirectory
+        /// Resolves a directory/path input to an absolute path so the task does not depend on the process working
+        /// directory in multithreaded builds. Relative paths are anchored to the project directory via
+        /// <c>TaskEnvironment</c>. Null/empty values are returned unchanged because <c>TaskEnvironment.GetAbsolutePath</c>
+        /// throws on them. On .NET Framework there is no <c>TaskEnvironment</c>, so the value is returned unchanged,
+        /// matching the pre-multithreadable behavior.
         /// </summary>
-        private string GetGlobalAbsolutePath(string path)
+        // On .NET Framework MakeAbsolute has no instance state, but it is intentionally an instance method so the call
+        // sites are identical across target frameworks; the .NET (SDK) build uses the instance TaskEnvironment.
+#if NETFRAMEWORK
+#pragma warning disable CA1822 // Mark members as static
+#endif
+        private string MakeAbsolute(string path)
+        {
+#if !NETFRAMEWORK
+            return string.IsNullOrEmpty(path) ? path : TaskEnvironment.GetAbsolutePath(path).Value;
+#else
+            return path;
+#endif
+        }
+#if NETFRAMEWORK
+#pragma warning restore CA1822
+#endif
+
+        /// <summary>
+        /// Resolves a command-line override path against the (absolute) MSBuild startup directory. A relative
+        /// <paramref name="path" /> is combined with that absolute base, so the common case does not depend on the
+        /// process working directory. Note that UriUtility does not fully absolutize every path shape: rooted or
+        /// drive-relative values (for example <c>\foo</c> or <c>C:</c>) can still be resolved by
+        /// <see cref="Path.GetFullPath(string)" /> against the current directory/drive. That is pre-existing UriUtility
+        /// behavior (identical on .NET Framework) for these unusual inputs and is out of scope for this task; non-file
+        /// values (URLs, UNC shares) are returned by UriUtility unchanged.
+        /// </summary>
+        private static string GetGlobalAbsolutePath(string absoluteMSBuildStartupDirectory, string path)
         {
             if (!string.IsNullOrEmpty(path))
             {
-                return UriUtility.GetAbsolutePath(MSBuildStartupDirectory, path);
+                return UriUtility.GetAbsolutePath(absoluteMSBuildStartupDirectory, path);
             }
 
             return path;
