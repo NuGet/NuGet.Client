@@ -115,27 +115,32 @@ namespace NuGet.Common
                 return path;
             }
 
-            // Convert file:// to a path
-            var local = GetLocalPath(path!);
+            // If the source was a file:// URI, turn it into a plain local filesystem path; otherwise leave it as-is.
+            var localPath = GetLocalPath(path!);
 
-            // Check if the result is relative, in which case combine it.
-            var relativeUri = TryCreateSourceUri(local, UriKind.Relative);
+            // Uri treats anything without a scheme as a "relative" reference. That covers every local filesystem path -
+            // not only relative ones, but also rooted paths such as C:\x, \foo and \\server\share. Remote source URLs
+            // (http://, https://, ...) do have a scheme, so they are not "relative" and fall through to be returned
+            // unchanged below. So this check really distinguishes a local path from a remote URL.
+            var relativeUriReference = TryCreateSourceUri(localPath, UriKind.Relative);
 
-            if (relativeUri != null)
+            if (relativeUriReference != null)
             {
-                // Combine with the root dir
-                return Path.GetFullPath(Path.Combine(rootDirectory, local));
+                // Local path: resolve it against the root directory.
+                return Path.GetFullPath(Path.Combine(rootDirectory, localPath));
             }
 
-            var absoluteUri = TryCreateSourceUri(local, UriKind.Absolute);
+            // No relative parse, so localPath has a URI scheme. If that scheme denotes a local file, normalize it;
+            // otherwise it is a remote URL and is returned unchanged below.
+            var absoluteUriReference = TryCreateSourceUri(localPath, UriKind.Absolute);
 
-            if (absoluteUri?.IsFile == true)
+            if (absoluteUriReference?.IsFile == true)
             {
-                return Path.GetFullPath(local);
+                return Path.GetFullPath(localPath);
             }
 
-            // Absolute path or non-http url.
-            return local;
+            // Remote source URL (e.g. http/https) or other non-file URI: return it unchanged.
+            return localPath;
         }
 
         /// <summary>
