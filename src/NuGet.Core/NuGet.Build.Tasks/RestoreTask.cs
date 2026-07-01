@@ -149,7 +149,7 @@ namespace NuGet.Build.Tasks
             // (e.g. MSBuild Server) observes the current environment instead of the values cached on the first build.
             // RestoreTask runs once per restore on the entry node, so this is a direct call with no guard needed.
             // Once RestoreTask runs in the same process as the auxiliary NuGet Tasks it should be moved earlier.
-            NuGet.Common.StaticState.RaiseStartMSBuildRestoreTasks();
+            StaticState.RaiseStartMSBuildRestoreTasks();
 
             try
             {
@@ -170,7 +170,7 @@ namespace NuGet.Build.Tasks
             {
                 // End of restore: tear down plugin processes that the per-build process exit used to reclaim, so they
                 // do not linger in a reused process. RestoreTask runs once per restore, so no guard is needed.
-                NuGet.Common.StaticState.RaiseEndMSBuildRestoreTasks();
+                StaticState.RaiseEndMSBuildRestoreTasks();
             }
         }
 

@@ -14,7 +14,7 @@ namespace NuGet.Credentials
     {
         static PreviewFeatureSettings()
         {
-            NuGet.Common.StaticState.StartMSBuildRestoreTasks += ResetCache;
+            StaticState.StartMSBuildRestoreTasks += ResetCache;
         }
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member

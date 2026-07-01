@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -14,7 +15,7 @@ namespace NuGet.Protocol.Core.Types
         {
             // cached for the life-time of the app domain
             Enabled = FromEnvironmentVariable();
-            NuGet.Common.StaticState.StartMSBuildRestoreTasks += ResetCache;
+            StaticState.StartMSBuildRestoreTasks += ResetCache;
         }
 
         public static bool Enabled { get; private set; }

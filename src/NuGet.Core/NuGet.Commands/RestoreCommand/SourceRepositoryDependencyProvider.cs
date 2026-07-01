@@ -28,7 +28,7 @@ namespace NuGet.Commands
     {
         static SourceRepositoryDependencyProvider()
         {
-            NuGet.Common.StaticState.StartMSBuildRestoreTasks += ResetCache;
+            StaticState.StartMSBuildRestoreTasks += ResetCache;
         }
 
         private readonly object _lock = new object();
