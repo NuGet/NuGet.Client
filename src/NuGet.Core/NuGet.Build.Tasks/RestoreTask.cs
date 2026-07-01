@@ -145,7 +145,6 @@ namespace NuGet.Build.Tasks
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
-
             try
             {
                 // Re-read environment-variable-derived caches at the start of restore so a process reused across builds
@@ -168,7 +167,7 @@ namespace NuGet.Build.Tasks
             }
             finally
             {
-                try 
+                try
                 {
                     // End of restore: tear down plugin processes that the per-build process exit used to reclaim, so they
                     // do not linger in a reused process.
