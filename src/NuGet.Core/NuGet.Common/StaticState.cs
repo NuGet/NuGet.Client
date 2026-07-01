@@ -16,15 +16,19 @@ namespace NuGet.Common
     public static class StaticState
     {
         /// <summary>
-        /// Raised at the start of an MSBuild-driven restore, before any restore work runs. Subscribers refresh
-        /// state that may be stale in a reused process - chiefly caches derived from environment variables, which
-        /// may have changed since a previous build.
+        /// Raised at the start of an MSBuild-driven restore, before any restore work runs. Subscribe if your type
+        /// caches process-global state, or a value derived from it (an environment variable, the current directory,
+        /// machine/user configuration) - for example a static field initialized as
+        /// <c>HomePath = NuGetEnvironment.GetFolderPath(...)</c>. Such a value is read once and would otherwise stay
+        /// frozen for the life of a reused process; the handler must recompute it from the current environment so a
+        /// later build observes the current value.
         /// </summary>
         public static event Action? StartMSBuildRestoreTasks;
 
         /// <summary>
-        /// Raised at the end of an MSBuild-driven restore. Subscribers tear down live OS resources (such as plugin
-        /// processes) that the "process dies after each build" model relied on process exit to reclaim.
+        /// Raised at the end of an MSBuild-driven restore. Subscribe if your type holds a live OS resource (a child
+        /// process, connection, timer or file handle) that the per-build "process dies after each build" model relied
+        /// on process exit to reclaim; the handler must tear it down so it does not linger in a reused process.
         /// </summary>
         public static event Action? EndMSBuildRestoreTasks;
 
