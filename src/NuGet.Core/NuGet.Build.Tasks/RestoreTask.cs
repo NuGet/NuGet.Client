@@ -145,14 +145,14 @@ namespace NuGet.Build.Tasks
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
-            // Re-read environment-variable-derived caches at the start of restore so a process reused across builds
-            // (e.g. MSBuild Server) observes the current environment instead of the values cached on the first build.
-            // RestoreTask runs once per restore on the entry node, so this is a direct call with no guard needed.
-            // Once RestoreTask runs in the same process as the auxiliary NuGet Tasks it should be moved earlier.
-            StaticState.RaiseStartMSBuildRestoreTasks();
 
             try
             {
+                // Re-read environment-variable-derived caches at the start of restore so a process reused across builds
+                // (e.g. MSBuild Server) observes the current environment instead of the values cached on the first build.
+                // RestoreTask runs once per restore on the entry node.
+                // Once RestoreTask runs in the same process as the auxiliary NuGet Tasks it should be moved earlier.
+                StaticState.RaiseStartMSBuildRestoreTasks();
                 return ExecuteAsync(log).Result;
             }
             catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is OperationCanceledException)
@@ -168,9 +168,16 @@ namespace NuGet.Build.Tasks
             }
             finally
             {
-                // End of restore: tear down plugin processes that the per-build process exit used to reclaim, so they
-                // do not linger in a reused process. RestoreTask runs once per restore, so no guard is needed.
-                StaticState.RaiseEndMSBuildRestoreTasks();
+                try 
+                {
+                    // End of restore: tear down plugin processes that the per-build process exit used to reclaim, so they
+                    // do not linger in a reused process.
+                    StaticState.RaiseEndMSBuildRestoreTasks();
+                }
+                catch (Exception e)
+                {
+                    ExceptionUtilities.LogException(e, log);
+                }
             }
         }
 
