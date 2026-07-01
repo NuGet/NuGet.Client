@@ -49,10 +49,10 @@ namespace NuGet.Build.Tasks.Pack.Test
                         new() { Scenario = "WithNuspec_IdInNuspecPropertiesDoesNotOverrideLiteralId", OutputNupkgNames = ["nusp.4.0.0.nupkg"], VersionProjProp = "2.0.0.0", UseNuspecFile = true, IdNuspecProperties = "shouldBeIgnored", VersionNuspecProperties = "       ", VersionNuspecMeta = "4.0.0.0" },
 
                         // has symbol
-                        new() { Scenario = "NoNuspec_SnupkgUsesNormalizedVersion", OutputNupkgNames = ["proj.2.1.0.snupkg"], VersionProjProp = "2.1.0.0", UseNuspecFile = false, IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
-                        new() { Scenario = "WithNuspec_SnupkgUsesNuspecPropertiesVersion", OutputNupkgNames = ["nusp.7.1.2.snupkg"], VersionProjProp = "2.0.0.0", UseNuspecFile = true, VersionNuspecProperties = "7.1.2", VersionNuspecMeta = "5.0.0.4-preview", IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
-                        new() { Scenario = "NoNuspec_SnupkgStripsVersionWhenConfigured", OutputNupkgNames = ["proj.snupkg"], VersionProjProp = "2.1.0.0", UseNuspecFile = false, OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
-                        new() { Scenario = "WithNuspec_SnupkgStripsVersionWhenConfigured", OutputNupkgNames = ["nusp.snupkg"], VersionProjProp = "2.0.0.0", UseNuspecFile = true, VersionNuspecProperties = "7.1.2", VersionNuspecMeta = "5.0.0.4-preview", OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
+                        new() { Scenario = "NoNuspec_SnupkgUsesNormalizedVersion", OutputNupkgNames = ["proj.2.1.0.nupkg", "proj.2.1.0.snupkg"], VersionProjProp = "2.1.0.0", UseNuspecFile = false, IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
+                        new() { Scenario = "WithNuspec_SnupkgUsesNuspecPropertiesVersion", OutputNupkgNames = ["nusp.7.1.2.nupkg", "nusp.7.1.2.snupkg"], VersionProjProp = "2.0.0.0", UseNuspecFile = true, VersionNuspecProperties = "7.1.2", VersionNuspecMeta = "5.0.0.4-preview", IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
+                        new() { Scenario = "NoNuspec_SnupkgStripsVersionWhenConfigured", OutputNupkgNames = ["proj.nupkg", "proj.snupkg"], VersionProjProp = "2.1.0.0", UseNuspecFile = false, OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
+                        new() { Scenario = "WithNuspec_SnupkgStripsVersionWhenConfigured", OutputNupkgNames = ["nusp.nupkg", "nusp.snupkg"], VersionProjProp = "2.0.0.0", UseNuspecFile = true, VersionNuspecProperties = "7.1.2", VersionNuspecMeta = "5.0.0.4-preview", OutputFileNamesWithoutVersion = true, IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.Snupkg },
 
                         new() { Scenario = "NoNuspec_SymbolsNupkgIncludesPrimaryAndSymbolsPackages", OutputNupkgNames = ["proj.2.2.0.nupkg", "proj.2.2.0.symbols.nupkg"], VersionProjProp = "2.2.0.0", UseNuspecFile = false, IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.SymbolsNupkg },
                         new() { Scenario = "WithNuspec_SymbolsNupkgIncludesPrimaryAndSymbolsPackages", OutputNupkgNames = ["nusp.7.2.2.nupkg", "nusp.7.2.2.symbols.nupkg"], VersionProjProp = "2.0.0.0", UseNuspecFile = true, VersionNuspecProperties = "7.2.2", VersionNuspecMeta = "5.0.0.4-preview", IncludeSymbols = true, SymbolPackageFormat = SymbolPackageFormat.SymbolsNupkg },
@@ -155,11 +155,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                 case SymbolPackageFormat.SymbolsNupkg: return "symbols.nupkg";
                 default: throw new ArgumentOutOfRangeException();
             }
-        }
-
-        public static int GetNameMatchFilePathCount(string fileName, IEnumerable<string> fullpaths)
-        {
-            return fullpaths.Count(file => string.Equals(fileName, Path.GetFileName(file), StringComparison.OrdinalIgnoreCase));
         }
     }
 }

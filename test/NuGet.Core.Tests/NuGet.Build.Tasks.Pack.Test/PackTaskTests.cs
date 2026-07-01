@@ -537,7 +537,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             // compare generated and testCase
             foreach (string outputNupkgName in testCase.OutputNupkgNames)
             {
-                var matchCountInFileSystem = PackageFileNameTestsCommon.GetNameMatchFilePathCount(outputNupkgName, nupkgGeneratedFiles);
+                var matchCountInFileSystem = nupkgGeneratedFiles.Count(file => string.Equals(outputNupkgName, Path.GetFileName(file), StringComparison.OrdinalIgnoreCase));
                 Assert.True(matchCountInFileSystem == 1, $"{outputNupkgName} is not found in filesystem. [{string.Join(" , ", nupkgGeneratedFiles.Select(Path.GetFileName))}]");
             }
 
@@ -575,7 +575,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             {
                 return symbolPackageFormat switch
                 {
-                    SymbolPackageFormat.Snupkg => [".snupkg"],
+                    SymbolPackageFormat.Snupkg => [".nupkg", ".snupkg"],
                     SymbolPackageFormat.SymbolsNupkg => [".nupkg", ".symbols.nupkg"],
                     _ => throw new ArgumentOutOfRangeException(),
                 };

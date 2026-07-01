@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -45,19 +48,23 @@ namespace NuGet.Build.Tasks.Pack.Test
             outputItemTask.NuspecOutputPath = testDirectory.Path;
             if (testCase.UseNuspecFile)
             {
-                outputItemTask.NuspecFile = System.IO.Path.Combine(testDirectory.Path, PackageFileNameTestsCommon.FILENAME_NUSPEC_FILE);
+                outputItemTask.NuspecFile = Path.Combine(testDirectory.Path, PackageFileNameTestsCommon.FILENAME_NUSPEC_FILE);
             }
 
             PackageFileNameTestsCommon.CreateNuspecFile(testCase, testDirectory);
 
             Assert.True(outputItemTask.Execute());
 
-            foreach (string outputNupkgName in testCase.OutputNupkgNames)
-            {
-                string[] itemSpecs = outputItemTask.OutputPackItems.Select(item => item.ItemSpec).ToArray();
-                var matchCount = PackageFileNameTestsCommon.GetNameMatchFilePathCount(outputNupkgName, itemSpecs);
-                Assert.True(matchCount == 1, $"{outputNupkgName} is not found in output. [{string.Join(" , ", itemSpecs.Select(_ => System.IO.Path.GetFileName(_)))}]");
-            }
+            // GetPackOutputItemsTask always emits the primary .nupkg (and its .nuspec) plus, when symbols
+            // are requested, the symbols package (and its .nuspec). Assert on the exact set of package files
+            // so the test also fails if the task emits an unexpected extra package, not only a missing one.
+            string[] actualPackageFiles = outputItemTask.OutputPackItems
+                .Select(item => Path.GetFileName(item.ItemSpec))
+                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)
+                    || name.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            actualPackageFiles.Should().BeEquivalentTo(testCase.OutputNupkgNames);
         }
     }
 }

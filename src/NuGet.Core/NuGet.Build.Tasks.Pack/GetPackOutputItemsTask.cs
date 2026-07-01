@@ -52,11 +52,12 @@ namespace NuGet.Build.Tasks.Pack
         {
             var packageId = PackageId;
             var packageVersion = PackageVersion;
+            NuGetVersion version = null;
 
+            // Extract the version from the nuspec file if it exists and is valid, otherwise use the version from the project.
             if (!string.IsNullOrWhiteSpace(NuspecFile))
             {
                 bool hasVersionInNuspecProperties = false;
-                bool hasIdInNuspecProperties = false;
                 if (NuspecProperties != null && NuspecProperties.Length > 0)
                 {
                     PackArgs packArgs = new PackArgs() { Version = packageVersion };
@@ -71,28 +72,24 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 var nuspecReader = new NuspecReader(NuspecFile);
-                if (!hasIdInNuspecProperties)
-                {
-                    packageId = nuspecReader.GetId();
-                }
+                packageId = nuspecReader.GetId();
                 if (!hasVersionInNuspecProperties)
                 {
-                    packageVersion = nuspecReader.GetVersion().ToNormalizedString();
+                    version = nuspecReader.GetVersion();
                 }
             }
 
-            if (!NuGetVersion.TryParse(packageVersion, out var versionTemp))
+            if (version == null && !NuGetVersion.TryParse(packageVersion, out version))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.InvalidPackageVersion,
                     packageVersion));
             }
-            NuGetVersion version = versionTemp!;
 
             var symbolPackageFormat = PackArgs.GetSymbolPackageFormat(MSBuildStringUtility.TrimAndGetNullForEmpty(SymbolPackageFormat));
-            var nupkgFileName = PackCommandRunner.GetOutputFileName(packageId, version!, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
-            var nuspecFileName = PackCommandRunner.GetOutputFileName(packageId, version!, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+            var nupkgFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+            var nuspecFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
 
             var outputs = new List<ITaskItem>();
             outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgFileName)));
