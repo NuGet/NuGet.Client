@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -16,7 +14,7 @@ namespace NuGet.Credentials.Test
         [Fact]
         public void ResetCredentialService_ClearsPinnedCredentialService()
         {
-            Lazy<ICredentialService> original = HttpHandlerResourceV3.CredentialService;
+            Lazy<ICredentialService>? original = HttpHandlerResourceV3.CredentialService;
             try
             {
                 HttpHandlerResourceV3.CredentialService = null;
