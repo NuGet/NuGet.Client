@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         {
             var outputItemTask = new GetPackOutputItemsTask
             {
-                PackageId = testCase.IdProjProp,
+                PackageId = PackageFileNameTestCase.IdProjProp,
                 PackageVersion = testCase.VersionProjProp,
                 IncludeSymbols = testCase.IncludeSymbols,
                 SymbolPackageFormat = PackageFileNameTestsCommon.GetSymbolPackageFormatText(testCase.SymbolPackageFormat),

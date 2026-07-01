@@ -94,11 +94,9 @@ namespace NuGet.Build.Tasks.Pack
             var nupkgFileName = PackCommandRunner.GetOutputFileName(packageId, version!, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
             var nuspecFileName = PackCommandRunner.GetOutputFileName(packageId, version!, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
 
-            var outputs = new List<ITaskItem>
-            {
-                new TaskItem(Path.Combine(PackageOutputPath, nupkgFileName)),
-                new TaskItem(Path.Combine(NuspecOutputPath, nuspecFileName))
-            };
+            var outputs = new List<ITaskItem>();
+            outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgFileName)));
+            outputs.Add(new TaskItem(Path.Combine(NuspecOutputPath, nuspecFileName)));
 
             if (IncludeSource || IncludeSymbols)
             {
@@ -108,7 +106,7 @@ namespace NuGet.Build.Tasks.Pack
                 outputs.Add(new TaskItem(Path.Combine(NuspecOutputPath, nuspecSymbolsFileName)));
             }
 
-            OutputPackItems = [.. outputs];
+            OutputPackItems = outputs.ToArray();
             return true;
         }
     }

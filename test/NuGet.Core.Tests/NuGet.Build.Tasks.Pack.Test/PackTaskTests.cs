@@ -511,7 +511,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 NuspecBasePath = testDirectory,
                 // Dummy for Logger (see Microsoft.Build.Utilities.TaskLoggingHelper.LogWarning)
                 BuildEngine = mockEngine.Object,
-                PackageId = testCase.IdProjProp,
+                PackageId = PackageFileNameTestCase.IdProjProp,
                 PackageVersion = testCase.VersionProjProp,
                 PackageOutputPath = outputDir,
                 NuspecOutputPath = outputDir,
