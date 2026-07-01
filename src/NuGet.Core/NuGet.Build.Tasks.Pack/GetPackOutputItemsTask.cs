@@ -11,6 +11,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks.Pack
@@ -69,7 +70,7 @@ namespace NuGet.Build.Tasks.Pack
                     }
                 }
 
-                var nuspecReader = new NuGet.Packaging.NuspecReader(NuspecFile);
+                var nuspecReader = new NuspecReader(NuspecFile);
                 if (!hasIdInNuspecProperties)
                 {
                     packageId = nuspecReader.GetId();

@@ -528,7 +528,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             _testOutputHelper.WriteLine(logError.ToString());
 
             // get generated files
-            string[] outputExtensions = PackageFileNameTestsCommon.GetOutputExtensions(testCase.IncludeSymbols, testCase.SymbolPackageFormat);
+            string[] outputExtensions = GetOutputExtensions(testCase.IncludeSymbols, testCase.SymbolPackageFormat);
             var nupkgGeneratedFiles = outputExtensions
                     .SelectMany(outputExtension => Directory.GetFiles(testDirectory, $"*{outputExtension}", SearchOption.AllDirectories))
                     .Where(line => !line.StartsWith(objDir))
@@ -566,6 +566,23 @@ namespace NuGet.Build.Tasks.Pack.Test
                     continue;
                 }
                 Assert.True(File.Exists(outputPath.GetMetadata("FullPath")), $"{outputPath} is not found in filesystem");
+            }
+        }
+
+        static string[] GetOutputExtensions(bool includeSymbols, SymbolPackageFormat symbolPackageFormat)
+        {
+            if (includeSymbols)
+            {
+                return symbolPackageFormat switch
+                {
+                    SymbolPackageFormat.Snupkg => [".snupkg"],
+                    SymbolPackageFormat.SymbolsNupkg => [".nupkg", ".symbols.nupkg"],
+                    _ => throw new ArgumentOutOfRangeException(),
+                };
+            }
+            else
+            {
+                return [".nupkg"];
             }
         }
 
