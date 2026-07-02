@@ -4257,15 +4257,8 @@ namespace NuGet.Commands.FuncTest
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            using var mockServer = new FileSystemBackedV3MockServer(Directory.CreateDirectory(Path.Combine(pathContext.WorkingDirectory, "audit-feed")).FullName, sourceReportsVulnerabilities: true);
-            // Add an unrelated vulnerability so the audit source returns a vulnerability database.
-            mockServer.Vulnerabilities.Add(
-                "not.a.referenced.package",
-                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)>
-                {
-                    (new Uri("https://contoso.com/advisories/12345"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 2.0.0)"))
-                });
-            pathContext.Settings.AddAuditSource("http-audit", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "False");
+            string httpAuditSourceUrl = "http://source.test/v3/index.json";
+            SourceRepository auditSource = CreateStaticHttpAuditSource(httpAuditSourceUrl, allowInsecureConnections: false);
 
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
@@ -4274,15 +4267,11 @@ namespace NuGet.Commands.FuncTest
             // Audit sources error at SDK analysis level 10.0.400 or higher and are silent (no warning) below that.
             project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("10.0.100");
             project1Spec.RestoreMetadata.UsingMicrosoftNETSdk = true;
-            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, new[] { auditSource }, project1Spec);
             var command = new RestoreCommand(request);
-
-            mockServer.Start();
 
             // Act
             var result = await command.ExecuteAsync();
-
-            mockServer.Stop();
 
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
@@ -4294,7 +4283,7 @@ namespace NuGet.Commands.FuncTest
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            string httpAuditSourceUrl = "http://unit.test/vulnerabilities/index.json";
+            string httpAuditSourceUrl = "http://source.test/v3/index.json";
             pathContext.Settings.AddAuditSource("http-audit", httpAuditSourceUrl, allowInsecureConnectionsValue: "False");
 
             var logger = new TestLogger();
@@ -4320,7 +4309,7 @@ namespace NuGet.Commands.FuncTest
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            string httpSourceUrl = "http://unit.test/v3/index.json";
+            string httpSourceUrl = "http://source.test/v3/index.json";
             pathContext.Settings.AddSource("http-package", httpSourceUrl, allowInsecureConnectionsValue: "False");
             pathContext.Settings.AddAuditSource("http-audit", httpSourceUrl, allowInsecureConnectionsValue: "False");
 
@@ -4344,7 +4333,7 @@ namespace NuGet.Commands.FuncTest
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            string httpAuditSourceUrl = "http://unit.test/vulnerabilities/index.json";
+            string httpAuditSourceUrl = "http://source.test/v3/index.json";
             pathContext.Settings.AddAuditSource("http-audit", httpAuditSourceUrl, allowInsecureConnectionsValue: "False");
 
             var logger = new TestLogger();
@@ -4367,33 +4356,62 @@ namespace NuGet.Commands.FuncTest
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            using var mockServer = new FileSystemBackedV3MockServer(Directory.CreateDirectory(Path.Combine(pathContext.WorkingDirectory, "audit-feed")).FullName, sourceReportsVulnerabilities: true);
-            // Add an unrelated vulnerability so the audit source returns a vulnerability database (avoids NU1905).
-            mockServer.Vulnerabilities.Add(
-                "not.a.referenced.package",
-                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)>
-                {
-                    (new Uri("https://contoso.com/advisories/12345"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 2.0.0)"))
-                });
-            pathContext.Settings.AddAuditSource("http-audit", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "True");
+            string httpAuditSourceUrl = "http://source.test/v3/index.json";
+            SourceRepository auditSource = CreateStaticHttpAuditSource(httpAuditSourceUrl, allowInsecureConnections: true);
 
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
             project1Spec.RestoreMetadata.RestoreAuditProperties = new RestoreAuditProperties() { EnableAudit = bool.TrueString };
-            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, new[] { auditSource }, project1Spec);
             var command = new RestoreCommand(request);
-
-            mockServer.Start();
 
             // Act
             var result = await command.ExecuteAsync();
 
-            mockServer.Stop();
-
             // Assert
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.LogMessages.Should().NotContain(m => m.Code == NuGetLogCode.NU1302 || m.Code == NuGetLogCode.NU1803);
+        }
+
+        /// <summary>
+        /// Creates an audit <see cref="SourceRepository"/> whose HTTP requests are served from static, in-memory
+        /// responses (via <see cref="StaticHttpSource"/>) instead of a real <see cref="System.Net.HttpListener"/>.
+        /// The source advertises a VulnerabilityInfo resource and returns a vulnerability database containing an
+        /// unrelated package, which avoids NU1905 while never making a real network connection.
+        /// </summary>
+        private static SourceRepository CreateStaticHttpAuditSource(string serviceIndexUrl, bool allowInsecureConnections)
+        {
+            // serviceIndexUrl is expected to end with "index.json"; the base URL is used to build the vulnerability resource URLs.
+            string baseUrl = serviceIndexUrl.Substring(0, serviceIndexUrl.Length - "index.json".Length);
+            string vulnerabilityIndexUrl = baseUrl + "vulnerability/index.json";
+            string vulnerabilityDataUrl = baseUrl + "vulnerability/vulnerability.json";
+
+            JObject serviceIndex = FeedUtilities.CreateIndexJson();
+            FeedUtilities.AddVulnerabilitiesResource(serviceIndex, baseUrl);
+
+            JArray vulnerabilityIndex = FeedUtilities.CreateVulnerabilitiesJson(vulnerabilityDataUrl);
+
+            JObject vulnerabilityData = FeedUtilities.CreateVulnerabilityForPackages(
+                new Dictionary<string, List<(Uri, PackageVulnerabilitySeverity, VersionRange)>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["not.a.referenced.package"] = new()
+                    {
+                        (new Uri("https://contoso.test/advisories/12345"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 2.0.0)"))
+                    }
+                });
+
+            var responses = new Dictionary<string, string>()
+            {
+                [serviceIndexUrl] = serviceIndex.ToString(),
+                [vulnerabilityIndexUrl] = vulnerabilityIndex.ToString(),
+                [vulnerabilityDataUrl] = vulnerabilityData.ToString(),
+            };
+
+            var packageSource = new PackageSource(serviceIndexUrl, "http-audit") { AllowInsecureConnections = allowInsecureConnections };
+            var providers = Repository.Provider.GetCoreV3().ToList();
+            providers.Add(new Lazy<INuGetResourceProvider>(() => StaticHttpSource.CreateHttpSource(responses)));
+            return new SourceRepository(packageSource, providers);
         }
 
         [Fact]
