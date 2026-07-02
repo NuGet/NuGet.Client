@@ -80,11 +80,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                     AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                     AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">all</NuGetAuditMode>
     <NuGetAuditMode Condition=" '$(NuGetAuditMode)' == '' ">direct</NuGetAuditMode>
-    <!-- Analyzer assets restore is only available for projects targeting .NET 11 or greater. Force the opt-in off for older frameworks. -->
-    <RestoreEnableAnalyzerAssets Condition="'$(RestoreEnableAnalyzerAssets)' == 'true'
-                    AND !('$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-                    AND '$(TargetFrameworkVersion)' != ''
-                    AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0')))">false</RestoreEnableAnalyzerAssets>
+    <!-- Analyzer assets restore defaults to off. An explicit RestoreEnableAnalyzerAssets opt-in (or opt-out) is
+         honored on any target framework, so users can opt into the new behavior before it is enabled by default. -->
     <RestoreEnableAnalyzerAssets Condition="'$(RestoreEnableAnalyzerAssets)' == '' AND '$(TargetFrameworks)' == ''">false</RestoreEnableAnalyzerAssets>
   </PropertyGroup>
 
