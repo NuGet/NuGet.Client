@@ -14,7 +14,9 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Convert .metaproj paths to project paths.
     /// </summary>
+#if !NETFRAMEWORK
     [MSBuildMultiThreadableTask]
+#endif
     public class GetRestoreSolutionProjectsTask : Microsoft.Build.Utilities.Task
 #if !NETFRAMEWORK
         , IMultiThreadableTask
