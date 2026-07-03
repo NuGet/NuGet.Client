@@ -104,6 +104,11 @@ namespace NuGet.Common
         /// For http sources and UNC shares this will return
         /// the same path.
         /// </summary>
+        /// <remarks>
+        /// When <paramref name="rootDirectory" /> is fully qualified the resolution does not depend on the process
+        /// current working directory (or current drive), so it is safe to call concurrently from multiple threads.
+        /// This matters for MSBuild tasks that run in-process during multithreaded builds.
+        /// </remarks>
         /// <param name="rootDirectory">Directory to make the source relative to.</param>
         /// <param name="path">Source path.</param>
         /// <returns>The absolute source path or the original source. Noops for non-file paths.</returns>
@@ -115,32 +120,36 @@ namespace NuGet.Common
                 return path;
             }
 
-            // If the source was a file:// URI, turn it into a plain local filesystem path; otherwise leave it as-is.
-            var localPath = GetLocalPath(path!);
+            // Convert file:// to a path
+            var local = GetLocalPath(path!);
 
-            // Uri treats anything without a scheme as a "relative" reference. That covers every local filesystem path -
-            // not only relative ones, but also rooted paths such as C:\x, \foo and \\server\share. Remote source URLs
-            // (http://, https://, ...) do have a scheme, so they are not "relative" and fall through to be returned
-            // unchanged below. So this check really distinguishes a local path from a remote URL.
-            var relativeUriReference = TryCreateSourceUri(localPath, UriKind.Relative);
+            // Check if the result is relative, in which case combine it.
+            var relativeUri = TryCreateSourceUri(local, UriKind.Relative);
 
-            if (relativeUriReference != null)
+            if (relativeUri != null)
             {
-                // Local path: resolve it against the root directory.
-                return Path.GetFullPath(Path.Combine(rootDirectory, localPath));
+                // Combine with the root dir
+#if !NETFRAMEWORK
+                // The base-relative overload anchors rooted shapes such as "\foo" or "C:" to rootDirectory's drive
+                // instead of the process current drive, which Path.Combine + Path.GetFullPath would leak. It requires a
+                // fully qualified base, so fall back to the historical behavior when the root is not fully qualified.
+                return Path.IsPathFullyQualified(rootDirectory)
+                    ? Path.GetFullPath(local, rootDirectory)
+                    : Path.GetFullPath(Path.Combine(rootDirectory, local));
+#else
+                return Path.GetFullPath(Path.Combine(rootDirectory, local));
+#endif
             }
 
-            // No relative parse, so localPath has a URI scheme. If that scheme denotes a local file, normalize it;
-            // otherwise it is a remote URL and is returned unchanged below.
-            var absoluteUriReference = TryCreateSourceUri(localPath, UriKind.Absolute);
+            var absoluteUri = TryCreateSourceUri(local, UriKind.Absolute);
 
-            if (absoluteUriReference?.IsFile == true)
+            if (absoluteUri?.IsFile == true)
             {
-                return Path.GetFullPath(localPath);
+                return Path.GetFullPath(local);
             }
 
-            // Remote source URL (e.g. http/https) or other non-file URI: return it unchanged.
-            return localPath;
+            // Absolute path or non-http url.
+            return local;
         }
 
         /// <summary>

@@ -219,7 +219,6 @@ namespace NuGet.Build.Tasks
             return items.SelectMany(e => MSBuildStringUtility.Split(BuildTasksUtility.GetPropertyIfExists(e, key)));
         }
 
-
 #if NETFRAMEWORK
 #pragma warning disable CA1822 
 #endif
@@ -236,13 +235,7 @@ namespace NuGet.Build.Tasks
 #endif
 
         /// <summary>
-        /// Resolves a command-line override path against the (absolute) MSBuild startup directory. A relative
-        /// <paramref name="path" /> is combined with that absolute base, so the common case does not depend on the
-        /// process working directory. Note that UriUtility does not fully absolutize every path shape: rooted or
-        /// drive-relative values (for example <c>\foo</c> or <c>C:</c>) can still be resolved by
-        /// <see cref="Path.GetFullPath(string)" /> against the current directory/drive. That is pre-existing UriUtility
-        /// behavior (identical on .NET Framework) for these unusual inputs and is out of scope for this task; non-file
-        /// values (URLs, UNC shares) are returned by UriUtility unchanged.
+        /// Resolve a path against MSBuildStartupDirectory
         /// </summary>
         private static string GetGlobalAbsolutePath(string absoluteMSBuildStartupDirectory, string path)
         {
