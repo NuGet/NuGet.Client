@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
@@ -104,6 +105,80 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Equal(expected, actual);
+        }
+    }
+
+    /// <summary>
+    /// Collection for tests that mutate the process-wide current directory. Disabling parallelization stops them from
+    /// racing other tests that read <see cref="Directory.GetCurrentDirectory" /> while it is temporarily changed.
+    /// </summary>
+    [CollectionDefinition(nameof(UriUtilityCurrentDirectoryCollection), DisableParallelization = true)]
+    public class UriUtilityCurrentDirectoryCollection
+    {
+    }
+
+    [Collection(nameof(UriUtilityCurrentDirectoryCollection))]
+    public class UriUtilityCurrentDirectoryTests
+    {
+        // With a fully qualified root, resolution must never depend on the process working directory. Running the
+        // same call from two different current directories must produce the same result.
+        [Theory]
+        [InlineData("sub/child")]
+        [InlineData("nested/../child")]
+        [InlineData("./relative")]
+        [InlineData("https://api.nuget.org/v3/index.json")]
+        public void UriUtility_GetAbsolutePath_WithAbsoluteRoot_IsIndependentOfCurrentDirectory(string source)
+        {
+            using (var root = TestDirectory.Create())
+            using (var currentDirectoryA = TestDirectory.Create())
+            using (var currentDirectoryB = TestDirectory.Create())
+            {
+                var resultFromA = RunWithCurrentDirectory(currentDirectoryA, () => UriUtility.GetAbsolutePath(root, source));
+                var resultFromB = RunWithCurrentDirectory(currentDirectoryB, () => UriUtility.GetAbsolutePath(root, source));
+
+                Assert.Equal(resultFromA, resultFromB);
+            }
+        }
+
+#if !NETFRAMEWORK
+        // A bare drive specifier such as "C:" is drive-relative on Windows. Path.Combine drops the fully qualified
+        // root and Path.GetFullPath("C:") historically resolved it against the current directory of that drive, which
+        // leaked the process working directory. The multithread-safe resolution only ships in the .NET build.
+        [PlatformFact(Platform.Windows)]
+        public void UriUtility_GetAbsolutePath_WithDriveRelativePath_IsIndependentOfCurrentDirectory()
+        {
+            using (var root = TestDirectory.Create())
+            using (var currentDirectoryA = TestDirectory.Create())
+            using (var currentDirectoryB = TestDirectory.Create())
+            {
+                // Use the drive the temp folders live on so moving the current directory below actually changes what
+                // a bare drive specifier would otherwise resolve to.
+                string? pathRoot = Path.GetPathRoot(currentDirectoryA.Path);
+                Assert.False(string.IsNullOrEmpty(pathRoot));
+                string driveRelativePath = pathRoot!.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                var resultFromA = RunWithCurrentDirectory(currentDirectoryA, () => UriUtility.GetAbsolutePath(root, driveRelativePath));
+                var resultFromB = RunWithCurrentDirectory(currentDirectoryB, () => UriUtility.GetAbsolutePath(root, driveRelativePath));
+
+                Assert.Equal(resultFromA, resultFromB);
+                Assert.Equal(Path.GetFullPath(root.Path), resultFromA);
+            }
+        }
+#endif
+
+        private static string? RunWithCurrentDirectory(string currentDirectory, Func<string?> action)
+        {
+            string originalCurrentDirectory = Directory.GetCurrentDirectory();
+
+            try
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                return action();
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalCurrentDirectory);
+            }
         }
     }
 }

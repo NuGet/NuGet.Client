@@ -712,6 +712,41 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
+#if !NETFRAMEWORK
+        [Fact]
+        public void GetRestoreSettingsTask_ResolvesRelativeSourcesAgainstTaskEnvironmentProjectDirectory_PerInstance()
+        {
+            // Two instances with identical relative inputs but different TaskEnvironment project directories must
+            // resolve their outputs against their own project directory, proving resolution is per-instance (MT-safe)
+            // rather than tied to the shared process current directory.
+            using (var startupDirectory = TestDirectory.Create())
+            using (var projectDirectoryA = TestDirectory.Create())
+            using (var projectDirectoryB = TestDirectory.Create())
+            {
+                const string relativeSource = "packages";
+
+                GetRestoreSettingsTask CreateTask(string projectDirectory) => new GetRestoreSettingsTask()
+                {
+                    BuildEngine = new TestBuildEngine(),
+                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDirectory),
+                    MSBuildStartupDirectory = startupDirectory,
+                    ProjectUniqueName = "a.csproj",
+                    RestoreSources = new[] { relativeSource },
+                };
+
+                var taskA = CreateTask(projectDirectoryA);
+                var taskB = CreateTask(projectDirectoryB);
+
+                taskA.Execute().Should().BeTrue();
+                taskB.Execute().Should().BeTrue();
+
+                taskA.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(taskA.TaskEnvironment.ProjectDirectory.Value, relativeSource) });
+                taskB.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(taskB.TaskEnvironment.ProjectDirectory.Value, relativeSource) });
+                taskA.OutputSources.Should().NotBeEquivalentTo(taskB.OutputSources);
+            }
+        }
+#endif
+
         private static readonly string MachineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                 </configuration>";
