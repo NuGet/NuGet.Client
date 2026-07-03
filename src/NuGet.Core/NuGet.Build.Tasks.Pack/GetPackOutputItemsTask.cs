@@ -50,7 +50,31 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
-            var packageId = PackageId;
+            (string packageId, NuGetVersion version) = GetPackageIdAndVersion();
+
+            var symbolPackageFormat = PackArgs.GetSymbolPackageFormat(MSBuildStringUtility.TrimAndGetNullForEmpty(SymbolPackageFormat));
+            var nupkgFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+            var nuspecFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+
+            var outputs = new List<ITaskItem>();
+            outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgFileName)));
+            outputs.Add(new TaskItem(Path.Combine(NuspecOutputPath, nuspecFileName)));
+
+            if (IncludeSource || IncludeSymbols)
+            {
+                var nupkgSymbolsFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: true, symbols: true, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+                var nuspecSymbolsFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: false, symbols: true, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
+                outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgSymbolsFileName)));
+                outputs.Add(new TaskItem(Path.Combine(NuspecOutputPath, nuspecSymbolsFileName)));
+            }
+
+            OutputPackItems = outputs.ToArray();
+            return true;
+        }
+
+        private (string packageId, NuGetVersion version) GetPackageIdAndVersion()
+        {
+            string packageId = PackageId;
             var packageVersion = PackageVersion;
             NuGetVersion version = null;
 
@@ -87,24 +111,7 @@ namespace NuGet.Build.Tasks.Pack
                     packageVersion));
             }
 
-            var symbolPackageFormat = PackArgs.GetSymbolPackageFormat(MSBuildStringUtility.TrimAndGetNullForEmpty(SymbolPackageFormat));
-            var nupkgFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: true, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
-            var nuspecFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: false, symbols: false, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
-
-            var outputs = new List<ITaskItem>();
-            outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgFileName)));
-            outputs.Add(new TaskItem(Path.Combine(NuspecOutputPath, nuspecFileName)));
-
-            if (IncludeSource || IncludeSymbols)
-            {
-                var nupkgSymbolsFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: true, symbols: true, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
-                var nuspecSymbolsFileName = PackCommandRunner.GetOutputFileName(packageId, version, isNupkg: false, symbols: true, symbolPackageFormat: symbolPackageFormat, excludeVersion: OutputFileNamesWithoutVersion);
-                outputs.Add(new TaskItem(Path.Combine(PackageOutputPath, nupkgSymbolsFileName)));
-                outputs.Add(new TaskItem(Path.Combine(NuspecOutputPath, nuspecSymbolsFileName)));
-            }
-
-            OutputPackItems = outputs.ToArray();
-            return true;
+            return (packageId, version);
         }
     }
 }

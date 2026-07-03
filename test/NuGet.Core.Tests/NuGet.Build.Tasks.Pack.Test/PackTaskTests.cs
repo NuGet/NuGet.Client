@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.Build.Framework;
 using Moq;
 using Newtonsoft.Json;
@@ -533,6 +534,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                     .SelectMany(outputExtension => Directory.GetFiles(testDirectory, $"*{outputExtension}", SearchOption.AllDirectories))
                     .Where(line => !line.StartsWith(objDir))
                     .Distinct().ToArray();
+
+            nupkgGeneratedFiles.Length.Should().Be(testCase.OutputNupkgNames.Length, because: "Output nupkg names must match the number of generated files.");
 
             // compare generated and testCase
             foreach (string outputNupkgName in testCase.OutputNupkgNames)
