@@ -6,7 +6,6 @@ using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
 {
-    [Obsolete("This class is obsolete and will be removed in a future version.")]
     public static class NuGetTestMode
     {
         private const string _testModeEnvironmentVariableName = "NuGetTestModeEnabled";
@@ -29,13 +28,13 @@ namespace NuGet.Protocol.Core.Types
 #pragma warning disable RS0030 // Do not use banned APIs
             var testMode = Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
 #pragma warning restore RS0030 // Do not use banned APIs
-            if (string.IsNullOrEmpty(testMode))
+            if (String.IsNullOrEmpty(testMode))
             {
                 return false;
             }
 
             bool isEnabled;
-            return bool.TryParse(testMode, out isEnabled) && isEnabled;
+            return Boolean.TryParse(testMode, out isEnabled) && isEnabled;
         }
 
 
