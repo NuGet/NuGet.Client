@@ -362,6 +362,17 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_ProjectsWithTFM Condition="'$(TargetFrameworks)' != ''" Include="$(MSBuildProjectFullPath)" AdditionalProperties="TargetFramework=%(_TargetFrameworks.Identity)" />
         <!-- Single-targeting: reuse the current (already-built) instance. Adding a TargetFramework global property here would fork a redundant evaluation. -->
         <_ProjectsWithTFM Condition="'$(TargetFrameworks)' == ''" Include="$(MSBuildProjectFullPath)" />
+
+        <!-- _GetFrameworkAssemblyReferences depends on ResolveReferences, which participates in the project-to-project
+             reference protocol. During a normal pack the referenced projects have already been built, so ResolveReferences
+             reuses their existing evaluation/build results (no redundant evaluations). During a no-build pack (NoBuild=true)
+             the references were not built, so BuildProjectReferences=false is required to prevent ResolveReferences from
+             invoking the Build target on them (which would fail with NETSDK1085). -->
+        <_ProjectsWithTFMNoBuild Condition="'$(NoBuild)' == 'true' and '$(TargetFrameworks)' != ''" Include="$(MSBuildProjectFullPath)" AdditionalProperties="TargetFramework=%(_TargetFrameworks.Identity);BuildProjectReferences=false" />
+        <_ProjectsWithTFMNoBuild Condition="'$(NoBuild)' == 'true' and '$(TargetFrameworks)' == ''" Include="$(MSBuildProjectFullPath)" AdditionalProperties="BuildProjectReferences=false" />
+
+        <_FrameworkAssemblyReferenceProjects Include="@(_ProjectsWithTFMNoBuild)" Condition="'$(NoBuild)' == 'true'" />
+        <_FrameworkAssemblyReferenceProjects Include="@(_ProjectsWithTFM)" Condition="'$(NoBuild)' != 'true'" />
     </ItemGroup>
     <MSBuild
       Condition="'$(IncludeBuildOutput)' == 'true'"
@@ -408,7 +419,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </MSBuild>
 
     <MSBuild
-      Projects="@(_ProjectsWithTFM)"
+      Projects="@(_FrameworkAssemblyReferenceProjects)"
       Targets="_GetFrameworkAssemblyReferences"
       BuildInParallel="$(BuildInParallel)">
 
