@@ -977,6 +977,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NETCoreSdkVersion>$(NETCoreSdkVersion)</NETCoreSdkVersion>
         <RestoreUseLegacyDependencyResolver>$(RestoreUseLegacyDependencyResolver)</RestoreUseLegacyDependencyResolver>
         <RestoreDoNotWriteDependencyGraphSpec>$(RestoreDoNotWriteDependencyGraphSpec)</RestoreDoNotWriteDependencyGraphSpec>
+        <RestoreEnableAnalyzerAssets>$(RestoreEnableAnalyzerAssets)</RestoreEnableAnalyzerAssets>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -1200,7 +1201,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <WindowsTargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
         <RestoreEnablePackagePruning>$(RestoreEnablePackagePruning)</RestoreEnablePackagePruning>
         <RestorePackagePruningDefault>$(RestorePackagePruningDefault)</RestorePackagePruningDefault>
-        <RestoreEnableAnalyzerAssets>$(RestoreEnableAnalyzerAssets)</RestoreEnableAnalyzerAssets>
         <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
       </_RestoreGraphEntry>
     </ItemGroup>

@@ -103,7 +103,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task RestoreCommand_WithAnalyzerAssetsEnabledOnOneFramework_HonorsAnalyzersForAllFrameworksAsync()
+        public async Task RestoreCommand_WithAnalyzerAssetsEnabled_HonorsAnalyzersForAllFrameworksAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -115,25 +115,24 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var projectDirectory = Path.Combine(pathContext.SolutionRoot, "AnalyzerProject");
                 Directory.CreateDirectory(projectDirectory);
 
-                // Multi-targeted project where only the net9.0 framework opts in. Analyzer assets are a
-                // project-wide opt-in, so the net8.0 framework honors analyzers too even though it did not opt in.
+                // Analyzer assets are a project-wide opt-in. In a multi-targeted project, when the project
+                // opts in, analyzers are honored for every target framework.
                 var net80 = new TargetFrameworkInformation
                 {
                     FrameworkName = NuGetFramework.Parse("net8.0"),
                     Dependencies = [CreateAnalyzerPackageDependency(package.Id, LibraryIncludeFlags.All, suppressParent: null)],
-                    RestoreEnableAnalyzerAssets = false,
                 };
                 var net90 = new TargetFrameworkInformation
                 {
                     FrameworkName = NuGetFramework.Parse("net9.0"),
                     Dependencies = [CreateAnalyzerPackageDependency(package.Id, LibraryIncludeFlags.All, suppressParent: null)],
-                    RestoreEnableAnalyzerAssets = true,
                 };
 
                 var packageSpec = PackageReferenceSpecBuilder.Create("AnalyzerProject", projectDirectory)
                     .WithTargetFrameworks([net80, net90])
                     .Build()
                     .WithTestRestoreMetadata();
+                packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets = true;
 
                 var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
                 var restoreCommand = new RestoreCommand(request);
@@ -4992,11 +4991,12 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                     {
                         FrameworkName = NuGetFramework.Parse("netstandard2.0"),
                         Dependencies = dependencies,
-                        RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets,
                     },
                 ])
                 .Build()
                 .WithTestRestoreMetadata();
+
+            packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets = restoreEnableAnalyzerAssets;
 
             return packageSpec;
         }

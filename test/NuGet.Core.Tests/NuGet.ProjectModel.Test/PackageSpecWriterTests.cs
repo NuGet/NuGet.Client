@@ -234,8 +234,7 @@ namespace NuGet.ProjectModel.Test
             {
                 new TargetFrameworkInformation
                 {
-                    FrameworkName = NuGetFramework.Parse("net45"),
-                    RestoreEnableAnalyzerAssets = true
+                    FrameworkName = NuGetFramework.Parse("net45")
                 }
             })
             {
@@ -243,7 +242,8 @@ namespace NuGet.ProjectModel.Test
                 {
                     ProjectUniqueName = "projectUniqueName",
                     ProjectName = "projectName",
-                    ProjectStyle = ProjectStyle.PackageReference
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    RestoreEnableAnalyzerAssets = true
                 }
             };
 
@@ -253,7 +253,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             json.Should().Contain("restoreEnableAnalyzerAssets");
-            roundTripped.TargetFrameworks[0].RestoreEnableAnalyzerAssets.Should().BeTrue();
+            roundTripped.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
         }
 
         [Fact]
@@ -280,7 +280,7 @@ namespace NuGet.ProjectModel.Test
             var output = GetJsonString(spec);
 
             // Assert
-            spec.TargetFrameworks[0].RestoreEnableAnalyzerAssets.Should().BeFalse();
+            spec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
             output.Should().NotContain("restoreEnableAnalyzerAssets");
         }
 

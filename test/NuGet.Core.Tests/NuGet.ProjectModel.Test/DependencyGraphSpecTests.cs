@@ -616,7 +616,8 @@ namespace NuGet.ProjectModel.Test
             DependencyGraphSpec first = CreateDependencyGraphSpec();
             DependencyGraphSpec second = CreateDependencyGraphSpec();
             first.GetProjectSpec("a").TargetFrameworks.Add(new TargetFrameworkInformation { FrameworkName = NuGetFramework.Parse("net5.0") });
-            second.GetProjectSpec("a").TargetFrameworks.Add(new TargetFrameworkInformation { FrameworkName = NuGetFramework.Parse("net5.0"), RestoreEnableAnalyzerAssets = true });
+            second.GetProjectSpec("a").TargetFrameworks.Add(new TargetFrameworkInformation { FrameworkName = NuGetFramework.Parse("net5.0") });
+            second.GetProjectSpec("a").RestoreMetadata.RestoreEnableAnalyzerAssets = true;
 
             // Act
             string firstHash = GetHash(first, useLegacyHashFunction);

@@ -63,7 +63,7 @@ public class PackageSpecFactoryTests
     }
 
     [Fact]
-    public void GetPackageSpec_WithAnalyzerAssetsEnabled_PopulatesTargetFramework()
+    public void GetPackageSpec_WithAnalyzerAssetsEnabled_PopulatesRestoreMetadata()
     {
         // Arrange
         var factory = new TestPackageSpecFactory(outerBuild =>
@@ -77,11 +77,11 @@ public class PackageSpecFactoryTests
         var packageSpec = factory.Build();
 
         // Assert
-        packageSpec.TargetFrameworks.Single().RestoreEnableAnalyzerAssets.Should().BeTrue();
+        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
     }
 
     [Fact]
-    public void GetPackageSpec_WithAnalyzerAssetsEnabledInInnerBuild_PopulatesThatTargetFrameworkOnly()
+    public void GetPackageSpec_WithAnalyzerAssetsEnabledInInnerBuildOnly_IsNotEnabled()
     {
         // Arrange
         var factory = new TestPackageSpecFactory(outerBuild =>
@@ -105,12 +105,11 @@ public class PackageSpecFactoryTests
         var packageSpec = factory.Build();
 
         // Assert
-        packageSpec.TargetFrameworks.Single(f => f.FrameworkName.GetShortFolderName() == "net8.0").RestoreEnableAnalyzerAssets.Should().BeFalse();
-        packageSpec.TargetFrameworks.Single(f => f.FrameworkName.GetShortFolderName() == "net9.0").RestoreEnableAnalyzerAssets.Should().BeTrue();
+        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
     }
 
     [Fact]
-    public void GetPackageSpec_WithAnalyzerAssetsDisabledInAllInnerBuilds_DoesNotPopulateAnyTargetFramework()
+    public void GetPackageSpec_WithAnalyzerAssetsEnabledInOuterBuild_IsEnabledRegardlessOfInnerBuilds()
     {
         // Arrange
         var factory = new TestPackageSpecFactory(outerBuild =>
@@ -134,7 +133,7 @@ public class PackageSpecFactoryTests
         var packageSpec = factory.Build();
 
         // Assert
-        packageSpec.TargetFrameworks.Should().OnlyContain(f => !f.RestoreEnableAnalyzerAssets);
+        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
     }
 
     [Fact]

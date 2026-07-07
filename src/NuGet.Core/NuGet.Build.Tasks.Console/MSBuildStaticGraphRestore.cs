@@ -797,8 +797,7 @@ namespace NuGet.Build.Tasks.Console
                     PackagesToPrune = prunedReferences,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath)),
                     TargetAlias = targetAlias,
-                    Warn = warn,
-                    RestoreEnableAnalyzerAssets = msBuildProjectInstance.IsPropertyTrue("RestoreEnableAnalyzerAssets")
+                    Warn = warn
                 };
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
@@ -1190,6 +1189,7 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.UseLegacyDependencyResolver = project.IsPropertyTrue("RestoreUseLegacyDependencyResolver");
             restoreMetadata.RestoreDoNotWriteDependencyGraphSpec = project.IsPropertyTrue("RestoreDoNotWriteDependencyGraphSpec");
+            restoreMetadata.RestoreEnableAnalyzerAssets = project.IsPropertyTrue("RestoreEnableAnalyzerAssets");
 
             return (restoreMetadata, targetFrameworkInfos);
 

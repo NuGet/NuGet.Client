@@ -4969,7 +4969,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void GetPackageSpec_WithAnalyzerAssetMetadata_PopulatesTargetFramework()
+        public void GetPackageSpec_WithAnalyzerAssetMetadata_PopulatesRestoreMetadata()
         {
             using (var workingDir = TestDirectory.Create())
             {
@@ -4979,15 +4979,15 @@ namespace NuGet.Commands.Test
 
                 var items = new List<IDictionary<string, string>>
                 {
-                    CreateAnalyzerProjectSpecItem(projectPath, targetFrameworks: "net8.0"),
-                    CreateAnalyzerTargetFrameworkInformationItem("net8.0", "8.0", restoreEnableAnalyzerAssets: true),
+                    CreateAnalyzerProjectSpecItem(projectPath, targetFrameworks: "net8.0", restoreEnableAnalyzerAssets: true),
+                    CreateAnalyzerTargetFrameworkInformationItem("net8.0", "8.0"),
                 };
 
                 // Act
                 var projectSpec = GetSingleProjectSpec(items);
 
                 // Assert
-                projectSpec.TargetFrameworks.Single().RestoreEnableAnalyzerAssets.Should().BeTrue();
+                projectSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
             }
         }
 
@@ -5005,16 +5005,17 @@ namespace NuGet.Commands.Test
                     CreateAnalyzerProjectSpecItem(
                         projectPath,
                         targetFrameworks: "net8.0;net9.0",
-                        crossTargeting: true),
-                    CreateAnalyzerTargetFrameworkInformationItem("net8.0", "8.0", restoreEnableAnalyzerAssets: true),
-                    CreateAnalyzerTargetFrameworkInformationItem("net9.0", "9.0", restoreEnableAnalyzerAssets: true),
+                        crossTargeting: true,
+                        restoreEnableAnalyzerAssets: true),
+                    CreateAnalyzerTargetFrameworkInformationItem("net8.0", "8.0"),
+                    CreateAnalyzerTargetFrameworkInformationItem("net9.0", "9.0"),
                 };
 
                 // Act
                 var projectSpec = GetSingleProjectSpec(items);
 
                 // Assert
-                projectSpec.TargetFrameworks.Should().OnlyContain(f => f.RestoreEnableAnalyzerAssets);
+                projectSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
             }
         }
 
@@ -5032,16 +5033,17 @@ namespace NuGet.Commands.Test
                     CreateAnalyzerProjectSpecItem(
                         projectPath,
                         targetFrameworks: "net8.0;net9.0",
-                        crossTargeting: true),
-                    CreateAnalyzerTargetFrameworkInformationItem("net8.0", "8.0", restoreEnableAnalyzerAssets: false),
-                    CreateAnalyzerTargetFrameworkInformationItem("net9.0", "9.0", restoreEnableAnalyzerAssets: false),
+                        crossTargeting: true,
+                        restoreEnableAnalyzerAssets: false),
+                    CreateAnalyzerTargetFrameworkInformationItem("net8.0", "8.0"),
+                    CreateAnalyzerTargetFrameworkInformationItem("net9.0", "9.0"),
                 };
 
                 // Act
                 var projectSpec = GetSingleProjectSpec(items);
 
                 // Assert
-                projectSpec.TargetFrameworks.Should().OnlyContain(f => !f.RestoreEnableAnalyzerAssets);
+                projectSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
             }
         }
 
@@ -5056,7 +5058,8 @@ namespace NuGet.Commands.Test
         private static Dictionary<string, string> CreateAnalyzerProjectSpecItem(
             string projectPath,
             string targetFrameworks = "net46",
-            bool crossTargeting = false)
+            bool crossTargeting = false,
+            bool restoreEnableAnalyzerAssets = false)
         {
             var item = new Dictionary<string, string>()
             {
@@ -5067,6 +5070,7 @@ namespace NuGet.Commands.Test
                 { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                 { "ProjectPath", projectPath },
                 { "TargetFrameworks", targetFrameworks },
+                { "RestoreEnableAnalyzerAssets", restoreEnableAnalyzerAssets ? "true" : "false" },
             };
 
             if (crossTargeting)
@@ -5079,8 +5083,7 @@ namespace NuGet.Commands.Test
 
         private static Dictionary<string, string> CreateAnalyzerTargetFrameworkInformationItem(
             string targetFramework,
-            string targetFrameworkVersion,
-            bool restoreEnableAnalyzerAssets = false)
+            string targetFrameworkVersion)
         {
             return new Dictionary<string, string>()
             {
@@ -5090,7 +5093,6 @@ namespace NuGet.Commands.Test
                 { "TargetFrameworkIdentifier", ".NETCoreApp" },
                 { "TargetFrameworkVersion", $"v{targetFrameworkVersion}" },
                 { "TargetFrameworkMoniker", $".NETCoreApp,Version=v{targetFrameworkVersion}" },
-                { "RestoreEnableAnalyzerAssets", restoreEnableAnalyzerAssets ? "true" : "false" },
             };
         }
 

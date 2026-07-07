@@ -158,19 +158,9 @@ namespace NuGet.Commands
             var restoreMetadata = project.RestoreMetadata;
             var rootProjectStyle = restoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
-            // Analyzer assets are a project-wide opt-in: when any target framework opts in, analyzer assets are
-            // honored for every target framework (mirrors how package pruning is enabled project-wide once any
-            // framework qualifies, see PackageSpecFactory.GetPackagePruningDefault). The per-framework value is
-            // already gated to .NET 11+ in NuGet.targets, so it is only ever true for a qualifying framework.
-            bool restoreEnableAnalyzerAssets = false;
-            foreach (TargetFrameworkInformation framework in project.TargetFrameworks.NoAllocEnumerate())
-            {
-                if (framework.RestoreEnableAnalyzerAssets)
-                {
-                    restoreEnableAnalyzerAssets = true;
-                    break;
-                }
-            }
+            // Analyzer assets are a project-wide opt-in (the RestoreEnableAnalyzerAssets MSBuild property).
+            // When enabled, analyzer assets are honored for every target framework.
+            bool restoreEnableAnalyzerAssets = restoreMetadata?.RestoreEnableAnalyzerAssets ?? false;
 
             // Add the targets
             foreach (var targetGraph in targetGraphs

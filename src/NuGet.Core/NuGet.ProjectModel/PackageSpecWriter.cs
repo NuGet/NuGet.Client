@@ -170,6 +170,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "centralPackageVersionOverrideDisabled", msbuildMetadata.CentralPackageVersionOverrideDisabled);
             SetValueIfTrue(writer, "CentralPackageTransitivePinningEnabled", msbuildMetadata.CentralPackageTransitivePinningEnabled);
             SetValueIfFalse(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
+            SetValueIfTrue(writer, "restoreEnableAnalyzerAssets", msbuildMetadata.RestoreEnableAnalyzerAssets);
             SetValueIfTrue(writer, "restoreUseLegacyDependencyResolver", msbuildMetadata.UseLegacyDependencyResolver);
             SetValueIfTrue(writer, "restoreDoNotWriteDependencyGraphSpec", msbuildMetadata.RestoreDoNotWriteDependencyGraphSpec);
         }
@@ -539,7 +540,6 @@ namespace NuGet.ProjectModel
                     SetValueIfNotNull(writer, "secondaryFramework",
                         (DeconstructFallbackFrameworks(framework.FrameworkName) as DualCompatibilityFramework)?.SecondaryFramework.GetShortFolderName());
                     SetValueIfTrue(writer, "warn", framework.Warn);
-                    SetValueIfTrue(writer, "restoreEnableAnalyzerAssets", framework.RestoreEnableAnalyzerAssets);
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
                     SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);

@@ -2992,26 +2992,26 @@ namespace NuGet.ProjectModel.Test
             bool restoreEnableAnalyzerAssets)
         {
             // Arrange
-            var json = $"{{\"frameworks\":{{\"net5.0\":{{\"restoreEnableAnalyzerAssets\":{restoreEnableAnalyzerAssets.ToString().ToLowerInvariant()}}}}}}}";
+            var json = $"{{\"restore\":{{\"restoreEnableAnalyzerAssets\":{restoreEnableAnalyzerAssets.ToString().ToLowerInvariant()}}}}}";
 
             // Act
             PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
-            packageSpec.TargetFrameworks.Single().RestoreEnableAnalyzerAssets.Should().Be(restoreEnableAnalyzerAssets);
+            packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().Be(restoreEnableAnalyzerAssets);
         }
 
         [Fact]
         public void GetPackageSpec_WithNoRestoreEnableAnalyzerAssetsValuePassed_DefaultsFalse()
         {
             // Arrange
-            var json = "{\"frameworks\":{\"net5.0\":{}}}";
+            var json = "{\"restore\":{}}";
 
             // Act
             PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
-            packageSpec.TargetFrameworks.Single().RestoreEnableAnalyzerAssets.Should().BeFalse();
+            packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
         }
 
         [Fact]
