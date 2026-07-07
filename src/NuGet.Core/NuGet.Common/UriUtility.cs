@@ -128,20 +128,12 @@ namespace NuGet.Common
 
             if (relativeUri != null)
             {
-                // Multithreaded (in-process) task execution only runs on .NET, so only that build needs the
-                // working-directory-independent resolution below. .NET Framework keeps the historical behavior
-                // (and lacks the two-argument Path.GetFullPath overload anyway).
+                // Combine with the root dir.
 #if !NETFRAMEWORK
-                // Resolve "local" against rootDirectory. The two-argument Path.GetFullPath(path, basePath) always uses
-                // rootDirectory as the base, so the result never depends on the process working directory.
-                //
-                // The old form, Path.Combine(rootDirectory, local), is unsafe when "local" is rooted but not fully
-                // qualified - for example "C:" (drive-relative) or "\foo" (relative to the current drive). Path.Combine
-                // discards rootDirectory and returns "local" unchanged, and the single-argument Path.GetFullPath then
-                // completes it using the process' current directory/drive - the working-directory leak we are avoiding.
-                //
-                // The two-argument overload requires a fully qualified base. If rootDirectory is not fully qualified we
-                // keep the old behavior, because there is no working-directory-independent answer in that case anyway.
+                // Anchor resolution to rootDirectory rather than the process working directory, which multithreaded
+                // in-process task execution (.NET-only) requires. The two-argument overload needs a fully qualified
+                // base; Path.Combine would leak the current directory/drive for rooted-but-relative paths like "C:" or
+                // "\foo". Fall back to the historical behavior when rootDirectory is not fully qualified.
                 return Path.IsPathFullyQualified(rootDirectory)
                     ? Path.GetFullPath(local, rootDirectory)
                     : Path.GetFullPath(Path.Combine(rootDirectory, local));
