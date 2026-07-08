@@ -128,7 +128,12 @@ namespace NuGetVSExtension
                 }
             }
 
-            ErrorHandler.ThrowOnFailure(hr);
+            if (ErrorHandler.Failed(hr))
+            {
+                // VS did not take ownership of the pane on failure, so dispose the object we created.
+                windowPane.Dispose();
+                ErrorHandler.ThrowOnFailure(hr);
+            }
 
             windowFrame?.Show();
         }

@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.UI.Test
     public class ExceptionWindowPaneTests
     {
         [Fact]
-        public void FormatException_IncludesTypeAndMessage()
+        public void FormatException_SimpleException_IncludesTypeAndMessage()
         {
             var exception = new InvalidOperationException("something went wrong");
 
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public void FormatException_IncludesStackTrace()
+        public void FormatException_ThrownException_IncludesStackTrace()
         {
             Exception caught = ThrowAndCatch(() => throw new InvalidOperationException("boom"));
 
@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public void FormatException_IncludesInnerException()
+        public void FormatException_WithInnerException_IncludesInnerException()
         {
             var inner = new ArgumentNullException("param", "inner message");
             var outer = new InvalidOperationException("outer message", inner);

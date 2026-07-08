@@ -8,7 +8,6 @@ using System.Text;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
@@ -51,7 +50,6 @@ namespace NuGet.PackageManagement.UI
                 IsReadOnlyCaretVisible = true,
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.NoWrap,
-                FontFamily = new FontFamily("Consolas"),
                 Margin = new Thickness(12),
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
@@ -59,6 +57,8 @@ namespace NuGet.PackageManagement.UI
             };
             _content.SetResourceReference(Control.BackgroundProperty, VsBrushes.WindowKey);
             _content.SetResourceReference(Control.ForegroundProperty, VsBrushes.WindowTextKey);
+            _content.SetResourceReference(Control.FontFamilyProperty, VsFonts.EnvironmentFontFamilyKey);
+            _content.SetResourceReference(Control.FontSizeProperty, VsFonts.EnvironmentFontSizeKey);
 
             AutomationProperties.SetName(_content, Resx.Text_ErrorOccurred);
         }
