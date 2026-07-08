@@ -104,11 +104,6 @@ namespace NuGet.Common
         /// For http sources and UNC shares this will return
         /// the same path.
         /// </summary>
-        /// <remarks>
-        /// When <paramref name="rootDirectory" /> is fully qualified the resolution does not depend on the process
-        /// current working directory (or current drive), so it is safe to call concurrently from multiple threads.
-        /// This matters for MSBuild tasks that run in-process during multithreaded builds.
-        /// </remarks>
         /// <param name="rootDirectory">Directory to make the source relative to.</param>
         /// <param name="path">Source path.</param>
         /// <returns>The absolute source path or the original source. Noops for non-file paths.</returns>
@@ -128,12 +123,9 @@ namespace NuGet.Common
 
             if (relativeUri != null)
             {
-                // Combine with the root dir.
+                // .NET has multithreaded MSBuild where the process CWD is shared, so resolution must not depend on it.
 #if !NETFRAMEWORK
-                // Anchor resolution to rootDirectory rather than the process working directory, which multithreaded
-                // in-process task execution (.NET-only) requires. The two-argument overload needs a fully qualified
-                // base; Path.Combine would leak the current directory/drive for rooted-but-relative paths like "C:" or
-                // "\foo". Fall back to the historical behavior when rootDirectory is not fully qualified.
+                // Anchor to rootDirectory; Path.Combine would leak the CWD/drive for rooted-but-relative "local" like "C:" or "\foo".
                 return Path.IsPathFullyQualified(rootDirectory)
                     ? Path.GetFullPath(local, rootDirectory)
                     : Path.GetFullPath(Path.Combine(rootDirectory, local));
