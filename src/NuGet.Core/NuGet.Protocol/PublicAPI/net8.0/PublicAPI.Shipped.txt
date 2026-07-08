@@ -1,6 +1,4 @@
 #nullable enable
-*REMOVED*NuGet.Protocol.Core.Types.SearchFilter.PackageTypes.get -> System.Collections.Generic.IEnumerable<string!>!
-*REMOVED*NuGet.Protocol.Core.Types.SearchFilter.PackageTypes.set -> void
 NuGet.Protocol.AlternatePackageMetadata
 NuGet.Protocol.AlternatePackageMetadata.AlternatePackageMetadata() -> void
 NuGet.Protocol.AlternatePackageMetadata.PackageId.get -> string?
@@ -273,8 +271,6 @@ NuGet.Protocol.Core.Types.SearchFilter.OrderBy.get -> NuGet.Protocol.Core.Types.
 NuGet.Protocol.Core.Types.SearchFilter.OrderBy.set -> void
 NuGet.Protocol.Core.Types.SearchFilter.PackageType.get -> string?
 NuGet.Protocol.Core.Types.SearchFilter.PackageType.set -> void
-NuGet.Protocol.Core.Types.SearchFilter.PackageTypes.get -> System.Collections.Generic.IEnumerable<string!>!
-NuGet.Protocol.Core.Types.SearchFilter.PackageTypes.set -> void
 NuGet.Protocol.Core.Types.SearchFilter.SearchFilter(bool includePrerelease) -> void
 NuGet.Protocol.Core.Types.SearchFilter.SearchFilter(bool includePrerelease, NuGet.Protocol.Core.Types.SearchFilterType? filter) -> void
 NuGet.Protocol.Core.Types.SearchFilter.SupportedFrameworks.get -> System.Collections.Generic.IEnumerable<string!>!
