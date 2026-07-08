@@ -179,26 +179,6 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Dotnet.Integration.Test on Windows (SDK Next)
-    dependsOn: []
-    jobs:
-    - template: pr.job.yml
-      parameters:
-        displayName: Dotnet.Integration.Test on Windows (SDK Next)
-        osName: Windows
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
-        ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
-        testType: Functional
-        testTargetFramework: sdkNext
-        testProjectName: Dotnet.Integration.Test
-        useDotNetBuild: true
-        timeoutInMinutes: 60
-
-- ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
-  - stage:
     displayName: NuGet.Packaging.FuncTest on Windows (.NET 10.0)
     dependsOn: []
     jobs:
