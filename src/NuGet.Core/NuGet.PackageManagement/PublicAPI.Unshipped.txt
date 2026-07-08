@@ -1,10 +1,2 @@
 #nullable enable
-*REMOVED*NuGet.PackageManagement.IProductUpdateService
-*REMOVED*NuGet.PackageManagement.IProductUpdateService.CheckForAvailableUpdateAsync() -> void
-*REMOVED*NuGet.PackageManagement.IProductUpdateService.DeclineUpdate(bool doNotRemindAgain) -> void
-*REMOVED*NuGet.PackageManagement.IProductUpdateService.Update() -> void
-*REMOVED*NuGet.PackageManagement.IProductUpdateService.UpdateAvailable -> System.EventHandler<NuGet.PackageManagement.ProductUpdateAvailableEventArgs>
-*REMOVED*NuGet.PackageManagement.ProductUpdateAvailableEventArgs
-*REMOVED*NuGet.PackageManagement.ProductUpdateAvailableEventArgs.CurrentVersion.get -> System.Version
-*REMOVED*NuGet.PackageManagement.ProductUpdateAvailableEventArgs.NewVersion.get -> System.Version
-*REMOVED*NuGet.PackageManagement.ProductUpdateAvailableEventArgs.ProductUpdateAvailableEventArgs(System.Version currentVersion, System.Version newVersion) -> void
+
