@@ -23,12 +23,13 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
+                var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token)
+                    ?? throw new InvalidOperationException($"The source '{source.PackageSource.Source}' does not provide {nameof(RegistrationResourceV3)}.");
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token)
                     ?? throw new InvalidOperationException($"The source '{source.PackageSource.Source}' does not provide {nameof(HttpSourceResource)}.");
 
                 // construct a new resource
-                curResource = new AutoCompleteResourceV3(httpSourceResource.HttpSource, serviceIndex, regResource!);
+                curResource = new AutoCompleteResourceV3(httpSourceResource.HttpSource, serviceIndex, regResource);
             }
 
             return new Tuple<bool, INuGetResource?>(curResource != null, curResource);
