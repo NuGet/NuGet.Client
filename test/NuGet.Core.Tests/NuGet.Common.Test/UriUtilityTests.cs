@@ -109,8 +109,7 @@ namespace NuGet.Common.Test
     }
 
     /// <summary>
-    /// Collection for tests that mutate the process-wide current directory. Disabling parallelization stops them from
-    /// racing other tests that read <see cref="Directory.GetCurrentDirectory" /> while it is temporarily changed.
+    /// Collection for tests that mutate the process-wide current directory.
     /// </summary>
     [CollectionDefinition(nameof(UriUtilityCurrentDirectoryCollection), DisableParallelization = true)]
     public class UriUtilityCurrentDirectoryCollection
@@ -143,7 +142,7 @@ namespace NuGet.Common.Test
 #if !NETFRAMEWORK
         // A bare drive specifier such as "C:" is drive-relative on Windows. Path.Combine drops the fully qualified
         // root and Path.GetFullPath("C:") historically resolved it against the current directory of that drive, which
-        // leaked the process working directory. The multithread-safe resolution only ships in the .NET build.
+        // leaked the process working directory.
         [PlatformFact(Platform.Windows)]
         public void UriUtility_GetAbsolutePath_WithDriveRelativePath_IsIndependentOfCurrentDirectory()
         {
@@ -151,8 +150,6 @@ namespace NuGet.Common.Test
             using (var currentDirectoryA = TestDirectory.Create())
             using (var currentDirectoryB = TestDirectory.Create())
             {
-                // Use the drive the temp folders live on so moving the current directory below actually changes what
-                // a bare drive specifier would otherwise resolve to.
                 string? pathRoot = Path.GetPathRoot(currentDirectoryA.Path);
                 Assert.False(string.IsNullOrEmpty(pathRoot));
                 string driveRelativePath = pathRoot!.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);

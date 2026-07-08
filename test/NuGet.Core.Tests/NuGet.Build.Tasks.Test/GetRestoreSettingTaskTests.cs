@@ -740,8 +740,8 @@ namespace NuGet.Build.Tasks.Test
                 taskA.Execute().Should().BeTrue();
                 taskB.Execute().Should().BeTrue();
 
-                taskA.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(taskA.TaskEnvironment.ProjectDirectory.Value, relativeSource) });
-                taskB.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(taskB.TaskEnvironment.ProjectDirectory.Value, relativeSource) });
+                taskA.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(projectDirectoryA, relativeSource) });
+                taskB.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(projectDirectoryB, relativeSource) });
                 taskA.OutputSources.Should().NotBeEquivalentTo(taskB.OutputSources);
             }
         }
