@@ -117,11 +117,6 @@
         <target state="translated">In questa soluzione mancano alcuni pacchetti NuGet. Fare clic per ripristinarli dalle origini dei pacchetti online.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AskForUpdateMessage">
-        <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">È disponibile una nuova versione di Gestione pacchetti NuGet.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
         <target state="translated">Un SDK vi fa riferimento in modo implicito. Per aggiornare il pacchetto, aggiornare l'SDK a cui appartiene.</target>
@@ -455,11 +450,6 @@
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
         <target state="translated">Segnala uso improprio</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IgnoreUpgrade">
-        <source>Ignore for now</source>
-        <target state="translated">Ignora per il momento</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageCaption_HelpIcon">
@@ -875,11 +865,6 @@
       <trans-unit id="RestoreButtonLabel">
         <source>_Restore</source>
         <target state="translated">_Ripristina</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ShowDetails">
-        <source>Show Details</source>
-        <target state="translated">Mostra dettagli</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">

@@ -117,11 +117,6 @@
         <target state="translated">이 솔루션에서 일부 NuGet 패키지가 누락되었습니다. 온라인 패키지 소스에서 복원하려면 클릭하십시오.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AskForUpdateMessage">
-        <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">새 버전의 NuGet 패키지 관리자를 사용할 수 있습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
         <target state="translated">SDK에서 암시적으로 참조됩니다. 패키지를 업데이트하려면 패키지가 속한 SDK를 업데이트하세요.</target>
@@ -455,11 +450,6 @@
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
         <target state="translated">신고하기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IgnoreUpgrade">
-        <source>Ignore for now</source>
-        <target state="translated">지금은 무시</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageCaption_HelpIcon">
@@ -875,11 +865,6 @@
       <trans-unit id="RestoreButtonLabel">
         <source>_Restore</source>
         <target state="translated">복원(_R)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ShowDetails">
-        <source>Show Details</source>
-        <target state="translated">세부 정보 표시</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">

@@ -117,11 +117,6 @@
         <target state="translated">V tomhle řešení chybí některé balíčky NuGet. Kliknutím je obnovíte z online zdrojů balíčků.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AskForUpdateMessage">
-        <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">Je dostupná nová verze správce balíčků NuGet.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
         <target state="translated">Implicitně odkazováno ze sady SDK. Pokud chcete balíček aktualizovat, aktualizujte sadu SDK, do které patří.</target>
@@ -455,11 +450,6 @@
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
         <target state="translated">Ohlásit nevhodné chování:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IgnoreUpgrade">
-        <source>Ignore for now</source>
-        <target state="translated">Prozatím ignorovat</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageCaption_HelpIcon">
@@ -875,11 +865,6 @@
       <trans-unit id="RestoreButtonLabel">
         <source>_Restore</source>
         <target state="translated">_Obnovit</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ShowDetails">
-        <source>Show Details</source>
-        <target state="translated">Zobrazit podrobnosti</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">

@@ -117,11 +117,6 @@
         <target state="translated">此解决方案中缺少某些 NuGet 程序包。单击可从联机程序包源中还原。</target>
         <note />
       </trans-unit>
-      <trans-unit id="AskForUpdateMessage">
-        <source>A new version of NuGet Package Manager is available.</source>
-        <target state="translated">新版本的 NuGet 包管理器可用。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AutoReferenced">
         <source>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</source>
         <target state="translated">已被 SDK 隐式引用。若要更新该包，请更新其所属的 SDK。</target>
@@ -455,11 +450,6 @@
       <trans-unit id="Hyperlink_ReportAbuse">
         <source>Report Abuse</source>
         <target state="translated">举报不良信息</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IgnoreUpgrade">
-        <source>Ignore for now</source>
-        <target state="translated">暂时忽略</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageCaption_HelpIcon">
@@ -875,11 +865,6 @@
       <trans-unit id="RestoreButtonLabel">
         <source>_Restore</source>
         <target state="translated">还原(_R)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ShowDetails">
-        <source>Show Details</source>
-        <target state="translated">显示详细信息</target>
         <note />
       </trans-unit>
       <trans-unit id="ShowMessage_LocalsCommandFailure">
