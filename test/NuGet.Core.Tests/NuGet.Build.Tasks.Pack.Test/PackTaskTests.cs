@@ -559,7 +559,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 OutputFileNamesWithoutVersion = packTask.OutputFileNamesWithoutVersion,
             };
 
-            getPackageOutputTask.Execute();
+            Assert.True(getPackageOutputTask.Execute(), "GetPackOutputItemsTask.Execute Fail\r\n" + logError.ToString());
 
             ITaskItem[] outputPaths = getPackageOutputTask.OutputPackItems;
             foreach (var outputPath in outputPaths)
