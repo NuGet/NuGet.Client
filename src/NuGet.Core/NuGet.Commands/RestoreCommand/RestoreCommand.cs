@@ -105,6 +105,7 @@ namespace NuGet.Commands
         private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
         private const string UseLegacyDependencyResolver = nameof(UseLegacyDependencyResolver);
         private const string UsedLegacyDependencyResolver = nameof(UsedLegacyDependencyResolver);
+        private const string PackagesWithFloatingVersionCount = nameof(PackagesWithFloatingVersionCount);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
@@ -254,6 +255,8 @@ namespace NuGet.Commands
                 success &= successfulResult;
 
                 AnalyzePruningResults(_request.Project, telemetry.TelemetryEvent, _logger);
+
+                telemetry.TelemetryEvent[PackagesWithFloatingVersionCount] = CountPackagesWithFloatingVersion(_request.Project);
 
                 // if success == false, it generates an empty restore graph suitable to create an assets file with errors.
                 // Since the graph is empty, any code that analyzes the graph (like audit) will have nothing to do.
@@ -961,6 +964,26 @@ namespace NuGet.Commands
             }
 
             return true;
+        }
+
+        internal static int CountPackagesWithFloatingVersion(PackageSpec project)
+        {
+            HashSet<string> packagesWithFloatingVersion = null;
+
+            foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+            {
+                foreach (LibraryDependency dependency in framework.Dependencies)
+                {
+                    if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && dependency.LibraryRange.VersionRange?.IsFloating == true)
+                    {
+                        packagesWithFloatingVersion ??= new(StringComparer.OrdinalIgnoreCase);
+                        packagesWithFloatingVersion.Add(dependency.Name);
+                    }
+                }
+            }
+
+            return packagesWithFloatingVersion?.Count ?? 0;
         }
 
         internal static void AnalyzePruningResults(PackageSpec project, TelemetryEvent telemetryEvent, ILogger logger)

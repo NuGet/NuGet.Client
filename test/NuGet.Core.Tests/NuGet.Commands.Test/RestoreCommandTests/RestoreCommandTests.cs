@@ -3057,6 +3057,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Audit.Level"] = value => value.Should().Be(0),
                 ["Audit.Mode"] = value => value.Should().Be("Unknown"),
                 ["Audit.SuppressedAdvisories.Defined.Count"] = value => value.Should().Be(1),
+                ["PackagesWithFloatingVersionCount"] = value => value.Should().Be(0),
                 ["Audit.SuppressedAdvisories.TotalWarningsSuppressed.Count"] = value => value.Should().Be(0),
                 ["Audit.SuppressedAdvisories.DistinctAdvisoriesSuppressed.Count"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Count"] = value => value.Should().Be(0),
@@ -3118,6 +3119,54 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 object value = projectInformationEvent[kvp.Key];
                 kvp.Value(value);
             }
+        }
+
+        [Theory]
+        [InlineData("1.0.0", 0)]
+        [InlineData("[1.0.0]", 0)]
+        [InlineData("*", 1)]
+        [InlineData("1.*", 1)]
+        [InlineData("1.0.*", 1)]
+        [InlineData("1.0.0-*", 1)]
+        public void CountPackagesWithFloatingVersion_WithSingleDependency_ReturnsExpectedCount(string version, int expectedCount)
+        {
+            // Arrange
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec("TestProject", @"C:\", "net8.0", "packageA", version);
+
+            // Act
+            int actualCount = RestoreCommand.CountPackagesWithFloatingVersion(packageSpec);
+
+            // Assert
+            actualCount.Should().Be(expectedCount);
+        }
+
+        [Fact]
+        public void CountPackagesWithFloatingVersion_WithSamePackageFloatingInMultipleFrameworks_CountsPackageOnce()
+        {
+            // Arrange
+            const string spec = @"
+                {
+                    ""frameworks"": {
+                        ""net8.0"": {
+                            ""dependencies"": {
+                                ""packageA"" : ""1.0.*"",
+                                ""packageB"" : ""2.0.0""
+                            }
+                        },
+                        ""net9.0"": {
+                            ""dependencies"": {
+                                ""packageA"" : ""1.0.*""
+                            }
+                        }
+                    }
+                }";
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("TestProject", @"C:\", spec);
+
+            // Act
+            int actualCount = RestoreCommand.CountPackagesWithFloatingVersion(packageSpec);
+
+            // Assert
+            actualCount.Should().Be(1);
         }
 
         [Fact]
@@ -3386,6 +3435,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["LockFileEvaluationResult"] = value => value.Should().Be(true),
                 ["NoOpDuration"] = value => value.Should().NotBeNull(),
                 ["TotalUniquePackagesCount"] = value => value.Should().Be(2),
+                ["PackagesWithFloatingVersionCount"] = value => value.Should().Be(0),
                 ["NewPackagesInstalledCount"] = value => value.Should().Be(1),
                 ["AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters"] = value => value.Should().Be(false),
                 ["EvaluateLockFileDuration"] = value => value.Should().NotBeNull(),
