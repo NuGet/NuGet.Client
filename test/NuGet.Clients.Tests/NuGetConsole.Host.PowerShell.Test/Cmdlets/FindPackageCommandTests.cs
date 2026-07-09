@@ -89,12 +89,10 @@ namespace NuGetConsole.Host.PowerShell.Test
                     { "Source", pathContext.PackageSource },
                 });
 
-            // Assert — at least the two matching packages are returned
-            results.Should().HaveCountGreaterThanOrEqualTo(2, because: "two packages whose ID contains 'FindById' exist in the source");
+            // Assert — exactly the two matching packages are returned, ordered ascending by id
+            // (the local source enumerates package id folders in ascending order).
             var ids = results.Select(r => ((PowerShellPackage)r.BaseObject).Id).ToList();
-            ids.Should().Contain("FindByIdPackageA");
-            ids.Should().Contain("FindByIdPackageB");
-            ids.Should().NotContain("OtherPackage");
+            ids.Should().Equal("FindByIdPackageA", "FindByIdPackageB");
         }
 
         /// <summary>
@@ -159,13 +157,13 @@ namespace NuGetConsole.Host.PowerShell.Test
                     { "Source", pathContext.PackageSource },
                 });
 
-            // Assert
+            // Assert — all three versions are returned, ordered descending by version
+            // (LocalPackageSearchResource orders versions with OrderByDescending).
             results.Should().ContainSingle();
             var package = (PowerShellPackage)results[0].BaseObject;
             package.Id.Should().Be("AllVersionsPackage");
             var versions = package.Versions.Select(v => v.ToNormalizedString()).ToList();
-            versions.Should().HaveCountGreaterThanOrEqualTo(3, because: "three versions were published");
-            versions.Should().Contain("1.0.0").And.Contain("2.0.0").And.Contain("3.0.0");
+            versions.Should().Equal("3.0.0", "2.0.0", "1.0.0");
         }
 
         /// <summary>
@@ -265,8 +263,14 @@ namespace NuGetConsole.Host.PowerShell.Test
                     { "First", 5 },
                 });
 
-            // Assert — -First caps the number of returned packages
-            results.Should().HaveCount(5);
+            // Assert — -First caps the count to the first 5 ids in ascending order
+            var ids = results.Select(r => ((PowerShellPackage)r.BaseObject).Id).ToList();
+            ids.Should().Equal(
+                "FirstKeywordPackage1",
+                "FirstKeywordPackage2",
+                "FirstKeywordPackage3",
+                "FirstKeywordPackage4",
+                "FirstKeywordPackage5");
         }
 
         /// <summary>
@@ -344,8 +348,12 @@ namespace NuGetConsole.Host.PowerShell.Test
                     { "Skip", 2 },
                 });
 
-            // Assert — a full page of -First results even after skipping into the set
-            results.Should().HaveCount(3);
+            // Assert — skipping 2 into the ascending set and taking 3 returns packages 3, 4, 5
+            var ids = results.Select(r => ((PowerShellPackage)r.BaseObject).Id).ToList();
+            ids.Should().Equal(
+                "PageKeywordPackage3",
+                "PageKeywordPackage4",
+                "PageKeywordPackage5");
         }
 
         private void SetupSourceRepositoryProvider(string localSourcePath)
