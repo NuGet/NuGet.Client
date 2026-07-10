@@ -10,6 +10,11 @@ namespace NuGet.VisualStudio
 {
     public interface IFixVulnerabilitiesService
     {
-        Task LaunchFixVulnerabilitiesAsync(CancellationToken cancellationToken);
+        /// <summary>
+        /// Launches the "Fix Vulnerabilities with GitHub Copilot" flow.
+        /// </summary>
+        /// <param name="source">The surface the flow was launched from.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        Task LaunchFixVulnerabilitiesAsync(FixVulnerabilitiesSource source, CancellationToken cancellationToken);
     }
 }
