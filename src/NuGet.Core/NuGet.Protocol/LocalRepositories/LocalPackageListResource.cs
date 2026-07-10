@@ -105,10 +105,10 @@ namespace NuGet.Protocol
             {
                 get
                 {
-                        // Non-null guaranteed by IEnumerableAsync contract: callers only read Current after MoveNextAsync() returns true.
-                        return _currentEnumerator?.Current!;
-                    }
+                    // Non-null guaranteed by IEnumerableAsync contract: callers only read Current after MoveNextAsync() returns true.
+                    return _currentEnumerator?.Current!;
                 }
+            }
 
             public async Task<bool> MoveNextAsync()
             {
