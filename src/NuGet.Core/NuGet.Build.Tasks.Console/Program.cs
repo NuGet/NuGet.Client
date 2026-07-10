@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -40,7 +41,11 @@ namespace NuGet.Build.Tasks.Console
         /// <returns><c>0</c> if the application ran successfully with no errors, otherwise <c>1</c>.</returns>
         public static async Task<int> Main(string[] args)
         {
+            // Suppress IL2026: Main is the application entry point and cannot carry [RequiresUnreferencedCode].
+            // This exe intentionally runs MSBuild in-process; the annotation chain terminates here.
+#pragma warning disable IL2026
             return await MainInternal(args, EnvironmentVariableWrapper.Instance);
+#pragma warning restore IL2026
         }
 
         /// <summary>
@@ -49,6 +54,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="args">The command-line arguments.</param>
         /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> to use when reading environment variables.</param>
         /// <returns><c>0</c> if the application ran successfully with no errors, otherwise <c>1</c>.</returns>
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
         internal static async Task<int> MainInternal(string[] args, IEnvironmentVariableReader environmentVariableReader)
         {
             try
