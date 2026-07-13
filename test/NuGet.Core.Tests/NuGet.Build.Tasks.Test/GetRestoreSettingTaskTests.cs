@@ -159,6 +159,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreSources = new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") },
                     RestoreSettingsPerFramework = settingsPerFramework.ToArray()
@@ -191,6 +192,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreFallbackFolders = new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") },
                     RestoreSettingsPerFramework = settingsPerFramework.ToArray()
@@ -228,6 +230,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreFallbackFolders = new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") },
                     RestoreSettingsPerFramework = settingsPerFramework.ToArray()
@@ -281,6 +284,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreSources = new[] { Path.Combine(testDir, "base") },
                     RestoreFallbackFolders = new[] { Path.Combine(testDir, "base") },
@@ -309,6 +313,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreSources = new[] { Path.Combine(testDir, "base") },
                     RestoreFallbackFolders = new[] { Path.Combine(testDir, "base") },
@@ -337,6 +342,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreSources = new[] { Path.Combine(testDir, "base") },
                     RestoreFallbackFolders = new[] { Path.Combine(testDir, "base") },
@@ -375,6 +381,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreFallbackFolders = new[] { Path.Combine(testDir, "base") },
                     RestoreSettingsPerFramework = new ITaskItem[0]
@@ -534,6 +541,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
                     RestoreSettingsPerFramework = settingsPerFramework.ToArray()
                 };
@@ -575,6 +583,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(projectDir, "a.csproj"),
                     RestoreSolutionDirectory = testDir,
                     RestoreSettingsPerFramework = settingsPerFramework.ToArray()
@@ -620,6 +629,7 @@ namespace NuGet.Build.Tasks.Test
                 var task = new GetRestoreSettingsTask()
                 {
                     BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = testDir,
                     ProjectUniqueName = Path.Combine(projectDir, "a.csproj"),
                     RestoreRootConfigDirectory = testDir,
                     RestoreSettingsPerFramework = settingsPerFramework.ToArray()
@@ -712,13 +722,9 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
-#if !NETFRAMEWORK
         [Fact]
-        public void GetRestoreSettingsTask_ResolvesRelativeSourcesAgainstTaskEnvironmentProjectDirectory_PerInstance()
+        public void GetRestoreSettingsTask_ResolvesRelativeSourcesAgainstProjectDirectory_PerInstance()
         {
-            // Two instances with identical relative inputs but different TaskEnvironment project directories must
-            // resolve their outputs against their own project directory, proving resolution is per-instance (MT-safe)
-            // rather than tied to the shared process current directory.
             using (var startupDirectory = TestDirectory.Create())
             using (var projectDirectoryA = TestDirectory.Create())
             using (var projectDirectoryB = TestDirectory.Create())
@@ -728,9 +734,8 @@ namespace NuGet.Build.Tasks.Test
                 GetRestoreSettingsTask CreateTask(string projectDirectory) => new GetRestoreSettingsTask()
                 {
                     BuildEngine = new TestBuildEngine(),
-                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDirectory),
                     MSBuildStartupDirectory = startupDirectory,
-                    ProjectUniqueName = "a.csproj",
+                    ProjectUniqueName = Path.Combine(projectDirectory, "a.csproj"),
                     RestoreSources = new[] { relativeSource },
                 };
 
@@ -745,7 +750,6 @@ namespace NuGet.Build.Tasks.Test
                 taskA.OutputSources.Should().NotBeEquivalentTo(taskB.OutputSources);
             }
         }
-#endif
 
         private static readonly string MachineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>

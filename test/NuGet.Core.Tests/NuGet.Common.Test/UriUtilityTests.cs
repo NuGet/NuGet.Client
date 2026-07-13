@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
@@ -106,76 +105,46 @@ namespace NuGet.Common.Test
             // Assert
             Assert.Equal(expected, actual);
         }
-    }
 
-    /// <summary>
-    /// Collection for tests that mutate the process-wide current directory.
-    /// </summary>
-    [CollectionDefinition(nameof(UriUtilityCurrentDirectoryCollection), DisableParallelization = true)]
-    public class UriUtilityCurrentDirectoryCollection
-    {
-    }
-
-    [Collection(nameof(UriUtilityCurrentDirectoryCollection))]
-    public class UriUtilityCurrentDirectoryTests
-    {
-        // With a fully qualified root, resolution must never depend on the process working directory. Running the
-        // same call from two different current directories must produce the same result.
-        [Theory]
-        [InlineData("sub/child")]
-        [InlineData("nested/../child")]
-        [InlineData("./relative")]
-        [InlineData("https://api.nuget.org/v3/index.json")]
-        public void UriUtility_GetAbsolutePath_WithAbsoluteRoot_IsIndependentOfCurrentDirectory(string source)
+        // A relative source is resolved against the fully qualified root, producing a deterministic absolute path that
+        // does not depend on the process current directory. Windows-only for the backslash-normalized expected values.
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("sub/child", @"C:\root\sub\child")]
+        [InlineData("nested/../child", @"C:\root\child")]
+        [InlineData("./relative", @"C:\root\relative")]
+        public void UriUtility_GetAbsolutePath_WithFullyQualifiedRoot_ResolvesRelativeSourceToExpectedPath(string source, string expected)
         {
-            using (var root = TestDirectory.Create())
-            using (var currentDirectoryA = TestDirectory.Create())
-            using (var currentDirectoryB = TestDirectory.Create())
-            {
-                var resultFromA = RunWithCurrentDirectory(currentDirectoryA, () => UriUtility.GetAbsolutePath(root, source));
-                var resultFromB = RunWithCurrentDirectory(currentDirectoryB, () => UriUtility.GetAbsolutePath(root, source));
-
-                Assert.Equal(resultFromA, resultFromB);
-            }
+            Assert.Equal(expected, UriUtility.GetAbsolutePath(@"C:\root", source));
         }
 
 #if !NETFRAMEWORK
-        // A bare drive specifier such as "C:" is drive-relative on Windows. Path.Combine drops the fully qualified
-        // root and Path.GetFullPath("C:") historically resolved it against the current directory of that drive, which
-        // leaked the process working directory.
-        [PlatformFact(Platform.Windows)]
-        public void UriUtility_GetAbsolutePath_WithDriveRelativePath_IsIndependentOfCurrentDirectory()
+        // Drive-relative ("C:") and root-relative ("\foo") sources are rooted but not fully qualified: historically they
+        // resolved against the process current directory/drive. On .NET they must anchor to the fully qualified root.
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("C:", @"C:\root")]
+        [InlineData(@"\foo", @"C:\foo")]
+        public void UriUtility_GetAbsolutePath_WithFullyQualifiedRoot_AnchorsRootedRelativeSourceToRoot(string source, string expected)
         {
-            using (var root = TestDirectory.Create())
-            using (var currentDirectoryA = TestDirectory.Create())
-            using (var currentDirectoryB = TestDirectory.Create())
-            {
-                string? pathRoot = Path.GetPathRoot(currentDirectoryA.Path);
-                Assert.False(string.IsNullOrEmpty(pathRoot));
-                string driveRelativePath = pathRoot!.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-
-                var resultFromA = RunWithCurrentDirectory(currentDirectoryA, () => UriUtility.GetAbsolutePath(root, driveRelativePath));
-                var resultFromB = RunWithCurrentDirectory(currentDirectoryB, () => UriUtility.GetAbsolutePath(root, driveRelativePath));
-
-                Assert.Equal(resultFromA, resultFromB);
-                Assert.Equal(Path.GetFullPath(root.Path), resultFromA);
-            }
+            Assert.Equal(expected, UriUtility.GetAbsolutePath(@"C:\root", source));
         }
 #endif
 
-        private static string? RunWithCurrentDirectory(string currentDirectory, Func<string?> action)
+        // An already-absolute source path is returned canonicalized; the root is ignored.
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(@"C:\absolute\source", @"C:\absolute\source")]
+        [InlineData(@"C:\absolute\..\source", @"C:\source")]
+        public void UriUtility_GetAbsolutePath_WithAbsoluteSource_ReturnsCanonicalSourceIgnoringRoot(string source, string expected)
         {
-            string originalCurrentDirectory = Directory.GetCurrentDirectory();
+            Assert.Equal(expected, UriUtility.GetAbsolutePath(@"C:\other\root", source));
+        }
 
-            try
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                return action();
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(originalCurrentDirectory);
-            }
+        // Non-file sources (http/ftp) are returned unchanged regardless of the root.
+        [Theory]
+        [InlineData("https://api.nuget.org/v3/index.json")]
+        [InlineData("ftp://example.org/path")]
+        public void UriUtility_GetAbsolutePath_WithNonFileSource_ReturnsSourceUnchanged(string source)
+        {
+            Assert.Equal(source, UriUtility.GetAbsolutePath(@"C:\root", source));
         }
     }
 }
