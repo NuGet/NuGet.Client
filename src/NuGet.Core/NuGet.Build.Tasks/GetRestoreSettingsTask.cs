@@ -143,17 +143,16 @@ namespace NuGet.Build.Tasks
                 Debug.Assert(string.IsNullOrEmpty(RestoreRootConfigDirectory) || Path.IsPathFullyQualified(RestoreRootConfigDirectory));
                 Debug.Assert(string.IsNullOrEmpty(RestoreSolutionDirectory) || Path.IsPathFullyQualified(RestoreSolutionDirectory));
 #endif
-                var projectDirectory = Path.GetDirectoryName(ProjectUniqueName);
 
                 // Settings
                 // Find the absolute path of nuget.config, this should only be set on the command line. Setting the path in project files
                 // is something that could happen, but it is not supported.
-                var absoluteConfigFilePath = GetGlobalAbsolutePath(MSBuildStartupDirectory, RestoreConfigFile);
+                var absoluteConfigFilePath = GetGlobalAbsolutePath(RestoreConfigFile);
                 string restoreDir;
                 // To match non-msbuild behavior, we only default the restoreDir for non-PackagesConfig scenarios.
                 if (string.IsNullOrEmpty(RestoreRootConfigDirectory))
                 {
-                    restoreDir = projectDirectory;
+                    restoreDir = Path.GetDirectoryName(ProjectUniqueName);
                 }
                 else
                 {
@@ -164,19 +163,19 @@ namespace NuGet.Build.Tasks
 
                 // PackagesPath
                 OutputPackagesPath = RestoreSettingsUtils.GetValue(
-                    () => GetGlobalAbsolutePath(MSBuildStartupDirectory, RestorePackagesPathOverride),
+                    () => GetGlobalAbsolutePath(RestorePackagesPathOverride),
                     () => string.IsNullOrEmpty(RestorePackagesPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath),
                     () => SettingsUtility.GetGlobalPackagesFolder(settings));
 
                 OutputRepositoryPath = RestoreSettingsUtils.GetValue(
-                    () => GetGlobalAbsolutePath(MSBuildStartupDirectory, RestoreRepositoryPathOverride),
+                    () => GetGlobalAbsolutePath(RestoreRepositoryPathOverride),
                     () => string.IsNullOrEmpty(RestoreRepositoryPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestoreRepositoryPath),
                     () => SettingsUtility.GetRepositoryPath(settings));
 
                 // Sources
                 OutputSources = BuildTasksUtility.GetSources(
                     MSBuildStartupDirectory,
-                    projectDirectory,
+                    Path.GetDirectoryName(ProjectUniqueName),
                     RestoreSources,
                     RestoreSourcesOverride,
                     GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectSources"),
@@ -185,7 +184,7 @@ namespace NuGet.Build.Tasks
                 // Fallback folders
                 OutputFallbackFolders = BuildTasksUtility.GetFallbackFolders(
                     MSBuildStartupDirectory,
-                    projectDirectory,
+                    Path.GetDirectoryName(ProjectUniqueName),
                     RestoreFallbackFolders, RestoreFallbackFoldersOverride,
                     GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFolders"),
                     GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFoldersExcludes"),
@@ -218,11 +217,11 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Resolve a path against MSBuildStartupDirectory
         /// </summary>
-        private static string GetGlobalAbsolutePath(string msBuildStartupDirectory, string path)
+        private string GetGlobalAbsolutePath(string path)
         {
             if (!string.IsNullOrEmpty(path))
             {
-                return UriUtility.GetAbsolutePath(msBuildStartupDirectory, path);
+                return UriUtility.GetAbsolutePath(MSBuildStartupDirectory, path);
             }
 
             return path;

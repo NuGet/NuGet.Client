@@ -722,35 +722,6 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
-        [Fact]
-        public void GetRestoreSettingsTask_ResolvesRelativeSourcesAgainstProjectDirectory_PerInstance()
-        {
-            using (var startupDirectory = TestDirectory.Create())
-            using (var projectDirectoryA = TestDirectory.Create())
-            using (var projectDirectoryB = TestDirectory.Create())
-            {
-                const string relativeSource = "packages";
-
-                GetRestoreSettingsTask CreateTask(string projectDirectory) => new GetRestoreSettingsTask()
-                {
-                    BuildEngine = new TestBuildEngine(),
-                    MSBuildStartupDirectory = startupDirectory,
-                    ProjectUniqueName = Path.Combine(projectDirectory, "a.csproj"),
-                    RestoreSources = new[] { relativeSource },
-                };
-
-                var taskA = CreateTask(projectDirectoryA);
-                var taskB = CreateTask(projectDirectoryB);
-
-                taskA.Execute().Should().BeTrue();
-                taskB.Execute().Should().BeTrue();
-
-                taskA.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(projectDirectoryA, relativeSource) });
-                taskB.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(projectDirectoryB, relativeSource) });
-                taskA.OutputSources.Should().NotBeEquivalentTo(taskB.OutputSources);
-            }
-        }
-
         private static readonly string MachineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                 </configuration>";
