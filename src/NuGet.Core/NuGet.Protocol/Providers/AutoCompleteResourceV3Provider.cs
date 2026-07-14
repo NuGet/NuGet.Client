@@ -29,7 +29,7 @@ namespace NuGet.Protocol
                     ?? throw new InvalidOperationException($"The source '{source.PackageSource.Source}' does not provide {nameof(HttpSourceResource)}.");
 
                 // construct a new resource
-                curResource = new AutoCompleteResourceV3(httpSourceResource.HttpSource, serviceIndex, regResource!);
+                curResource = new AutoCompleteResourceV3(httpSourceResource.HttpSource, serviceIndex, regResource);
             }
 
             return new Tuple<bool, INuGetResource?>(curResource != null, curResource);
