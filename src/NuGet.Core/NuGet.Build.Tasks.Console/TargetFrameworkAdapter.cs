@@ -29,7 +29,7 @@ namespace NuGet.Build.Tasks.Console
             return list;
         }
 
-        public string? GetProperty(string propertyName)
+        public string GetProperty(string propertyName)
         {
             var value = _projectInstance.GetPropertyValue(propertyName).Trim();
             if (string.IsNullOrEmpty(value))
