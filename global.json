@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "10.0.300",
+    "dotnet": "11.0.100-preview.5.26302.115",
     "pinned": true
   },
   "msbuild-sdks": {
