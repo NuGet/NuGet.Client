@@ -242,7 +242,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Two projects are equal if they share the same FullNames.
         /// </summary>
-        public bool Equals(ProjectNames other)
+        public bool Equals(ProjectNames? other)
         {
             if (ReferenceEquals(null, other))
             {
