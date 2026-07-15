@@ -46,12 +46,12 @@
       </trans-unit>
       <trans-unit id="CertUtilityCertificateCrlUrl">
         <source>CRL URL: {0}</source>
-        <target state="translated">URL-АДРЕС CRL: {0}</target>
+        <target state="new">CRL URL: {0}</target>
         <note>0 - CRL distribution point URL</note>
       </trans-unit>
       <trans-unit id="CertUtilityCertificateOcspUrl">
         <source>OCSP URL: {0}</source>
-        <target state="translated">URL-АДРЕС OCSP: {0}</target>
+        <target state="new">OCSP URL: {0}</target>
         <note>0 - OCSP responder URL</note>
       </trans-unit>
       <trans-unit id="CertUtilityMultipleCertificatesFooter">
@@ -175,7 +175,7 @@
       </trans-unit>
       <trans-unit id="ErrorInvalidTimestamp">
         <source>Invalid timestamp: '{0}'</source>
-        <target state="translated">Недопустимая метка времени: "{0}"</target>
+        <target state="new">Invalid timestamp: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorManifestFileNotFound">
@@ -981,7 +981,7 @@
 {3}</source>
         <target state="translated">Следующий корневой сертификат X.509 не является доверенным, так как он отсутствует в наборе сертификатов в {0}.  Дополнительные сведения см. в документации по NU3042.
     Тема: {1}
-    Отпечаток пальца (SHA-256): {2}
+    Отпечаток (SHA-256): {2}
     Сертификат (PEM):
 {3}</target>
         <note>0 is a file path, 1 is a certificate subject, 2 is a certificate fingerprint, and 3 is a PEM-encoded certificate.</note>
