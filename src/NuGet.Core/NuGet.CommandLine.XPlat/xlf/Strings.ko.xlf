@@ -1489,7 +1489,7 @@ The search is a case-insensitive string comparison using the supplied value, whi
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
         <source>Internal error: Assets file is inconsistent</source>
-        <target state="translated">내부 오류: 자산 파일이 일치하지 않습니다.</target>
+        <target state="new">Internal error: Assets file is inconsistent</target>
         <note />
       </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
