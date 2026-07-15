@@ -933,7 +933,7 @@ Error: {1}</target>
       </trans-unit>
       <trans-unit id="Status_NoMoreItems">
         <source>End of package list loaded</source>
-        <target state="translated">Fin de la carga de la lista de paquetes</target>
+        <target state="translated">Final de la lista de paquetes cargada</target>
         <note />
       </trans-unit>
       <trans-unit id="Status_Ready">

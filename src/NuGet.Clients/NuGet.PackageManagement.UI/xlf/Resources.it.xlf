@@ -374,7 +374,7 @@
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file.</source>
-        <target state="translated">NuGet richiede origini HTTPS. Per usare un'origine HTTP, devi impostare in modo esplicito "allowInsecureConnections" su "Vero" nel file NuGet.Config.</target>
+        <target state="translated">NuGet richiede origini HTTPS. Per usare un'origine HTTP, è necessario impostare in modo esplicito "allowInsecureConnections" su "true" nel file NuGet.Config.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_MetadataNotFound">
