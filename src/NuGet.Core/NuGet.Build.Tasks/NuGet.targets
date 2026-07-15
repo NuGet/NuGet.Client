@@ -553,11 +553,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     ============================================================
     _RefreshNuGetStaticState
-    Refreshes NuGet's environment-derived static caches once, before any other restore task runs. Wired as the
-    first dependency of _GenerateRestoreGraph so it precedes the Get* collection tasks and RestoreTask /
-    WriteRestoreGraphTask on the entry node, letting a process reused across builds (MSBuild Server, multithreaded
-    MSBuild) observe the current environment instead of caches frozen at the first build. Must not declare
-    Inputs/Outputs: it has to run on every restore, never be skipped by MSBuild's incremental (up-to-date) check.
+    Refreshes NuGet's environment-derived static caches before any other restore task runs. Relevant in
+    multithreaded MSBuild. It must run on every restore and never be skipped, so it declares no Inputs/Outputs.
     ============================================================
   -->
   <Target Name="_RefreshNuGetStaticState">
