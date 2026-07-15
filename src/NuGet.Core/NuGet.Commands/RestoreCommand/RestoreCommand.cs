@@ -209,6 +209,7 @@ namespace NuGet.Commands
                     _request.Project.FilePath,
                     _logger);
                 InitializeTelemetry(telemetry, httpSourcesCount, auditEnabled);
+                telemetry.TelemetryEvent[PackagesWithFloatingVersionCount] = CountPackagesWithFloatingVersion(_request.Project);
 
                 var restoreTime = Stopwatch.StartNew();
 
@@ -255,8 +256,6 @@ namespace NuGet.Commands
                 success &= successfulResult;
 
                 AnalyzePruningResults(_request.Project, telemetry.TelemetryEvent, _logger);
-
-                telemetry.TelemetryEvent[PackagesWithFloatingVersionCount] = CountPackagesWithFloatingVersion(_request.Project);
 
                 // if success == false, it generates an empty restore graph suitable to create an assets file with errors.
                 // Since the graph is empty, any code that analyzes the graph (like audit) will have nothing to do.
@@ -968,6 +967,22 @@ namespace NuGet.Commands
 
         internal static int CountPackagesWithFloatingVersion(PackageSpec project)
         {
+            // With a single target framework there can be no duplicate package names, so avoid the HashSet allocation.
+            if (project.TargetFrameworks.Count == 1)
+            {
+                int count = 0;
+                foreach (LibraryDependency dependency in project.TargetFrameworks[0].Dependencies)
+                {
+                    if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && dependency.LibraryRange.VersionRange?.IsFloating == true)
+                    {
+                        count++;
+                    }
+                }
+
+                return count;
+            }
+
             HashSet<string> packagesWithFloatingVersion = null;
 
             foreach (TargetFrameworkInformation framework in project.TargetFrameworks)

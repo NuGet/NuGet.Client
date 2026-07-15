@@ -3311,6 +3311,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             {
                 ["RestoreSuccess"] = value => value.Should().Be(true),
                 ["NoOpResult"] = value => value.Should().Be(true),
+                ["PackagesWithFloatingVersionCount"] = value => value.Should().Be(0),
                 ["IsCentralVersionManagementEnabled"] = value => value.Should().Be(false),
                 ["NoOpCacheFileEvaluationResult"] = value => value.Should().Be(true),
                 ["NoOpRestoreOutputEvaluationResult"] = value => value.Should().Be(true),
