@@ -41,12 +41,12 @@ namespace NuGet.Build.Tasks
             catch (Exception e)
             {
                 // Refreshing the environment-derived caches is not expected to throw. If it does it is an unexpected
-                // scenario, so surface it as a message (not an error or warning) and continue: a failed refresh must
-                // not fail the user's build. The restore proceeds with the existing cached state.
-                Log.LogMessageFromResources(MessageImportance.High, nameof(Strings.RefreshNuGetStaticState_UnexpectedError), e.Message);
+                // scenario, so log it as an error with its stack trace to make the failure diagnosable and fail the
+                // task via !Log.HasLoggedErrors.
+                Log.LogErrorFromException(e, showStackTrace: true);
             }
 
-            return true;
+            return !Log.HasLoggedErrors;
         }
     }
 }

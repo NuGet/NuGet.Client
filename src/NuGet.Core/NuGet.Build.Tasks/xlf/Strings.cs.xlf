@@ -147,11 +147,6 @@
         <target state="translated">Za {1:D2} ms se vyhodnotil následující počet projektů: {0} (počet sestavení: {2}, počet chyb: {3})</target>
         <note />
       </trans-unit>
-      <trans-unit id="RefreshNuGetStaticState_UnexpectedError">
-        <source>An unexpected error occurred while refreshing NuGet's cached restore state at the start of the build; restore will continue using the existing state. Error: {0}</source>
-        <target state="new">An unexpected error occurred while refreshing NuGet's cached restore state at the start of the build; restore will continue using the existing state. Error: {0}</target>
-        <note>0 - The exception message</note>
-      </trans-unit>
       <trans-unit id="RestoreCanceled">
         <source>Restore canceled!</source>
         <target state="translated">Obnovení se zrušilo!</target>

@@ -147,11 +147,6 @@
         <target state="translated">{0} proje {1:D2} ms'de değerlendirdi ({2} yapı, {3} hata).</target>
         <note />
       </trans-unit>
-      <trans-unit id="RefreshNuGetStaticState_UnexpectedError">
-        <source>An unexpected error occurred while refreshing NuGet's cached restore state at the start of the build; restore will continue using the existing state. Error: {0}</source>
-        <target state="new">An unexpected error occurred while refreshing NuGet's cached restore state at the start of the build; restore will continue using the existing state. Error: {0}</target>
-        <note>0 - The exception message</note>
-      </trans-unit>
       <trans-unit id="RestoreCanceled">
         <source>Restore canceled!</source>
         <target state="translated">Geri yükleme iptal edildi!</target>
