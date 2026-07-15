@@ -79,7 +79,7 @@ namespace NuGet.Build.Tasks.Pack
             NuGetVersion version = null;
 
             // Extract the version from the nuspec file if it exists and is valid, otherwise use the version from the project.
-            if (!string.IsNullOrWhiteSpace(NuspecFile))
+            if (!string.IsNullOrWhiteSpace(NuspecFile) && File.Exists(NuspecFile))
             {
                 bool hasVersionInNuspecProperties = false;
                 if (NuspecProperties != null && NuspecProperties.Length > 0)
