@@ -66,5 +66,31 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             actualPackageFiles.Should().BeEquivalentTo(testCase.OutputNupkgNames);
         }
+
+        [Fact]
+        public void GetPackOutputItemsTaskTests_Execute_NuspecFileDoesNotExist_FallsBackToProjectProperties()
+        {
+            using var testDirectory = TestDirectory.Create();
+
+            var outputItemTask = new GetPackOutputItemsTask
+            {
+                PackageId = "MyPackage",
+                PackageVersion = "1.2.3",
+                PackageOutputPath = testDirectory.Path,
+                NuspecOutputPath = testDirectory.Path,
+                SymbolPackageFormat = "snupkg",
+                // Point at a nuspec path that does not exist on disk (mirrors the source-build scenario).
+                NuspecFile = Path.Combine(testDirectory.Path, "does-not-exist.nuspec")
+            };
+
+            Assert.True(outputItemTask.Execute());
+
+            string[] actualPackageFiles = outputItemTask.OutputPackItems
+                .Select(item => Path.GetFileName(item.ItemSpec))
+                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            actualPackageFiles.Should().BeEquivalentTo(new[] { "MyPackage.1.2.3.nupkg" });
+        }
     }
 }
