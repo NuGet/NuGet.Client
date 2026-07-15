@@ -46,12 +46,12 @@
       </trans-unit>
       <trans-unit id="CertUtilityCertificateCrlUrl">
         <source>CRL URL: {0}</source>
-        <target state="translated">CRL URL: {0}</target>
+        <target state="new">CRL URL: {0}</target>
         <note>0 - CRL distribution point URL</note>
       </trans-unit>
       <trans-unit id="CertUtilityCertificateOcspUrl">
         <source>OCSP URL: {0}</source>
-        <target state="translated">OCSP URL: {0}</target>
+        <target state="new">OCSP URL: {0}</target>
         <note>0 - OCSP responder URL</note>
       </trans-unit>
       <trans-unit id="CertUtilityMultipleCertificatesFooter">
@@ -176,7 +176,7 @@
       </trans-unit>
       <trans-unit id="ErrorInvalidTimestamp">
         <source>Invalid timestamp: '{0}'</source>
-        <target state="translated">無効なタイムスタンプ: '{0}'</target>
+        <target state="new">Invalid timestamp: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorManifestFileNotFound">
