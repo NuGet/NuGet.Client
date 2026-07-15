@@ -215,7 +215,7 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildIsNetCoreMsBuild">
         <source>The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</source>
-        <target state="translated">Каталог MSBuild "{0}" является установкой MSBuild из .NET SDK (dotnet). NuGet.exe требует версию MSBuild для .NET Framework, которая входит в состав Visual Studio. Используйте команду "dotnet restore" или укажите путь к установке MSBuild из Visual Studio.</target>
+        <target state="new">The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</target>
         <note>{0} is the MSBuild directory path. Do not localize 'NuGet.exe', 'MSBuild', '.NET SDK', '.NET Framework', 'dotnet restore', 'Visual Studio'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildTimedOut">
@@ -579,7 +579,7 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       </trans-unit>
       <trans-unit id="NupkgPath_InvalidNupkg">
         <source>'{0}' is not a valid nupkg file.</source>
-        <target state="translated">"{0}" не является допустимым NUPKG-файлом.</target>
+        <target state="translated">"{0}" не является допустимым файлом NUPKG.</target>
         <note />
       </trans-unit>
       <trans-unit id="NupkgPath_NotFound">
@@ -604,7 +604,7 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       </trans-unit>
       <trans-unit id="OutputNuGetVersion">
         <source>{0} Version: {1}</source>
-        <target state="translated">{0}, версия: {1}</target>
+        <target state="translated">{0}, версия {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandAddedFile">

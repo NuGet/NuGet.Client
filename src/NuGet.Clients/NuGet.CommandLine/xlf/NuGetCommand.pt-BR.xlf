@@ -598,12 +598,12 @@ nuget pack foo.nuspec -Version 2.1.0</target>
       </trans-unit>
       <trans-unit id="PackageCommandDeterministic">
         <source>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package when used with -DeterministicTimestamp.</source>
-        <target state="translated">Especifique se o comando deve criar um pacote determinístico. Várias invocações do comando pack criarão exatamente o mesmo pacote quando usado com -DeterministicTimestamp.</target>
+        <target state="new">Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package when used with -DeterministicTimestamp.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandDeterministicTimestamp">
         <source>Specify the timestamp this command should use when creating a deterministic package. Multiple invocations of the pack command will create the exact same package.</source>
-        <target state="translated">Especifique o carimbo de data/hora que esse comando deve usar ao criar um pacote determinístico. Várias invocações do comando pack criarão exatamente o mesmo pacote.</target>
+        <target state="new">Specify the timestamp this command should use when creating a deterministic package. Multiple invocations of the pack command will create the exact same package.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandExcludeDescription">
@@ -1064,7 +1064,7 @@ nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\
       </trans-unit>
       <trans-unit id="SourcesCommandAllowInsecureConnectionsDescription">
         <source>Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Permite conexões HTTP para adicionar ou atualizar pacotes. Observação: esse método não é seguro. Para opções seguras, consulte https://aka.ms/nuget-https-everywhere para obter mais informações.</target>
+        <target state="translated">Permite conexões HTTP para adicionar ou atualizar pacotes. Observação: esse método não é seguro. Para opções seguras, confira https://aka.ms/nuget-https-everywhere para obter mais informações.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandDescription">
@@ -1109,7 +1109,7 @@ nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\
       </trans-unit>
       <trans-unit id="SourcesCommandUsageSummary">
         <source>&lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source]</source>
-        <target state="translated">&lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [nome] -Source [origem]</target>
+        <target state="translated">&lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source]</target>
         <note>Only localize "[name]" and "[source]"</note>
       </trans-unit>
       <trans-unit id="SourcesCommandUserNameDescription">

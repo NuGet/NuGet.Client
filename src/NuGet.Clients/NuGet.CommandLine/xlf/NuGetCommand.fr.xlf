@@ -92,21 +92,21 @@ nuget client-certs Remove -PackageSource certificateName
 nuget client-certs
 
 nuget client-certs List</source>
-        <target state="translated">nuget client-certs Ajouter -PackageSource Foo -Path .\MyCertificate.pfx
+        <target state="translated">nuget client-certs Add -PackageSource Foo -Path .\MyCertificate.pfx
 
-nuget client-certs Ajouter -PackageSource Contoso -Path c:\MyCertificate.pfx -Password 42
+nuget client-certs Add -PackageSource Contoso -Path c:\MyCertificate.pfx -Password 42
 
-nuget client-certs Ajouter -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+nuget client-certs Add -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
 
-nuget client-certs Ajouter -PackageSource Contoso -StoreLocation LocalMachine -StoreName My -FindBy Thumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+nuget client-certs Add -PackageSource Contoso -StoreLocation LocalMachine -StoreName My -FindBy Thumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
 
-nuget client-certs Mise à jour -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+nuget client-certs Update -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
 
-nuget client-certs Supprimer -PackageSource certificateName
+nuget client-certs Remove -PackageSource certificateName
 
 nuget client-certs
 
-liste nuget client-certs</target>
+nuget client-certs List</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientCertificatesCommandUsageSummary">
@@ -598,12 +598,12 @@ nuget pack foo.nuspec -Version 2.1.0</target>
       </trans-unit>
       <trans-unit id="PackageCommandDeterministic">
         <source>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package when used with -DeterministicTimestamp.</source>
-        <target state="translated">Spécifiez si la commande doit créer un package déterministe. Plusieurs appels de la commande pack créeront exactement le même package lorsqu’elle est utilisée avec -DeterministicTimestamp.</target>
+        <target state="new">Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package when used with -DeterministicTimestamp.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandDeterministicTimestamp">
         <source>Specify the timestamp this command should use when creating a deterministic package. Multiple invocations of the pack command will create the exact same package.</source>
-        <target state="translated">Spécifiez l’horodateur que cette commande doit utiliser lors de la création d’un package déterministe. Plusieurs appels de la commande pack créent exactement le même package.</target>
+        <target state="new">Specify the timestamp this command should use when creating a deterministic package. Multiple invocations of the pack command will create the exact same package.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandExcludeDescription">
@@ -1064,7 +1064,7 @@ nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\
       </trans-unit>
       <trans-unit id="SourcesCommandAllowInsecureConnectionsDescription">
         <source>Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Autorise les connexions HTTP pour l’ajout ou la mise à jour de packages. Remarque : cette méthode n’est pas sécurisée. Si vous souhaitez découvrir des options sécurisées, consultez https://aka.ms/nuget-https-everywhere pour obtenir plus d’informations.</target>
+        <target state="translated">Autorise les connexions HTTP pour ajouter ou mettre à jour des packages. Remarque : cette méthode n’est pas sécurisée. Si vous souhaitez découvrir les options sécurisées, consultez https://aka.ms/nuget-https-everywhere pour obtenir plus d'informations.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandDescription">

@@ -175,12 +175,12 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">正在通过 “HTTP” 源 {1} 运行“{0}”操作。NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中将 'allowInsecureConnections' 显式设置为 true。有关详细信息，请参阅 https://aka.ms/nuget-https-everywhere。</target>
+        <target state="translated">正在通过 “HTTP” 源 {1} 运行“{0}”操作。NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中将“allowInsecureConnections”显式设置为 true。有关详细信息，请参阅 https://aka.ms/nuget-https-everywhere。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">正在通过 “HTTP” 源 {1} 运行“{0}”操作。NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中将 'allowInsecureConnections' 显式设置为 true。有关详细信息，请参阅 https://aka.ms/nuget-https-everywhere。</target>
+        <target state="translated">正在通过“HTTP”源 {1} 运行“{0}”操作。NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中将“allowInsecureConnections”显式设置为 true。有关详细信息，请参阅 https://aka.ms/nuget-https-everywhere。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidCharactersInPathSegment">
@@ -215,7 +215,7 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildIsNetCoreMsBuild">
         <source>The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</source>
-        <target state="translated">MSBuild 目录“{0}”似乎是 .NET SDK (dotnet) MSBuild 安装。NuGet.exe 需要 MSBuild 的 .NET Framework 版本，它是随 Visual Studio 一起提供的。请改用 'dotnet restore'，或提供 Visual Studio MSBuild 安装的路径。</target>
+        <target state="new">The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</target>
         <note>{0} is the MSBuild directory path. Do not localize 'NuGet.exe', 'MSBuild', '.NET SDK', '.NET Framework', 'dotnet restore', 'Visual Studio'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildTimedOut">
@@ -757,7 +757,7 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
         <source>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the NuGet Package Manager node and uncheck '{0}'.</source>
         <target state="translated">正在还原 NuGet 包...
-若要防止 NuGet 在生成期间下载包，请打开“Visual Studio 选项”对话框，单击 NuGet 程序包管理器节点，然后取消选中“{0}”。</target>
+要防止 NuGet 在生成期间下载包，请打开“Visual Studio 选项”对话框，单击 NuGet 程序包管理器节点，然后取消选中 ‘{0}’。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreCommandProjectNotFound">

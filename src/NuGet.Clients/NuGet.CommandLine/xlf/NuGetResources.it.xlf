@@ -104,7 +104,7 @@
       </trans-unit>
       <trans-unit id="DefaultSymbolServer">
         <source>the symbol server</source>
-        <target state="translated">il server dei simboli</target>
+        <target state="translated">server dei simboli</target>
         <note />
       </trans-unit>
       <trans-unit id="Error">
@@ -175,12 +175,12 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Si sta eseguendo l'operazione "{0}" con un'origine "HTTP": {1}. NuGet richiede origini HTTPS. Per usare un'origine HTTP, è necessario impostare in modo esplicito "allowInsecureConnections" su "true" nel file NuGet.Config. Per ulteriori informazioni, vedere https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Si sta eseguendo l'operazione '{0}' con un'origine 'HTTP': {1}. NuGet richiede origini HTTPS. Per usare un'origine HTTP, è necessario impostare in modo esplicito 'allowInsecureConnections' su true nel file NuGet.Config. Vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Si sta eseguendo l'operazione "{0}" con origini "HTTP": {1}. NuGet richiede origini HTTPS. Per usare le origini HTTP, è necessario impostare in modo esplicito "allowInsecureConnections" su "true" nel file NuGet.Config. Per ulteriori informazioni, vedere https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Si sta eseguendo l'operazione '{0}' con origini 'HTTP': {1}. NuGet richiede origini HTTPS. Per usare origini HTTP, è necessario impostare in modo esplicito 'allowInsecureConnections' su true nel file NuGet.Config. Vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidCharactersInPathSegment">
@@ -215,7 +215,7 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildIsNetCoreMsBuild">
         <source>The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</source>
-        <target state="translated">La directory MSBuild '{0}' sembra essere un'installazione .NET SDK (dotnet) di MSBuild. NuGet.exe richiede la versione .NET Framework di MSBuild, inclusa in Visual Studio. Usare quindi 'dotnet restore' oppure specificare il percorso di un'installazione Visual Studio di MSBuild.</target>
+        <target state="new">The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</target>
         <note>{0} is the MSBuild directory path. Do not localize 'NuGet.exe', 'MSBuild', '.NET SDK', '.NET Framework', 'dotnet restore', 'Visual Studio'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildTimedOut">
@@ -474,7 +474,7 @@ You can set the '{1}' environment variable to 'true' to temporarily reenable thi
       </trans-unit>
       <trans-unit id="LiveFeed">
         <source>the NuGet gallery</source>
-        <target state="translated">la raccolta NuGet</target>
+        <target state="translated">raccolta NuGet</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_ClearFailed">

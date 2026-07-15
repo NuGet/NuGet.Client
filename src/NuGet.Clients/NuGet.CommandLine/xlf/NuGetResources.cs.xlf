@@ -175,12 +175,12 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Máte spuštěnu operaci {0} se zdrojem HTTP: {1}. NuGet vyžaduje zdroje HTTPS. Pokud chcete použít zdroj HTTP, musíte v souboru NuGet.Config explicitně nastavit možnost allowInsecureConnections na true. Další informace najdete na https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Máte spuštěnu operaci {0} se zdrojem HTTP: {1}. NuGet vyžaduje zdroje HTTPS. Pokud chcete použít zdroj HTTP, musíte v souboru NuGet.Config explicitně nastavit parametr allowInsecureConnections na true. Další informace najdete na https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Máte spuštěnu operaci {0} se zdroji HTTP: {1}. NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v souboru NuGet.Config explicitně nastavit možnost allowInsecureConnections na true. Další informace najdete na https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Máte spuštěnu operaci {0} se zdroji HTTP: {1}. NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v souboru NuGet.Config explicitně nastavit parametr allowInsecureConnections na true. Další informace najdete na https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_InvalidCharactersInPathSegment">
@@ -215,7 +215,7 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildIsNetCoreMsBuild">
         <source>The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</source>
-        <target state="translated">Zdá se, že adresář MSBuild {0} je instalace nástroje MSBuild sady .NET SDK (dotnet). NuGet.exe vyžaduje verzi MSBuild .NET Framework, která je součástí Visual Studia. Místo toho použijte dotnet restore nebo zadejte cestu k instalaci MSBuild ve Visual Studiu.</target>
+        <target state="new">The MSBuild directory '{0}' appears to be a .NET SDK (dotnet) MSBuild installation. NuGet.exe requires the .NET Framework version of MSBuild, which is included with Visual Studio. Use 'dotnet restore' instead, or provide the path to a Visual Studio MSBuild installation.</target>
         <note>{0} is the MSBuild directory path. Do not localize 'NuGet.exe', 'MSBuild', '.NET SDK', '.NET Framework', 'dotnet restore', 'Visual Studio'.</note>
       </trans-unit>
       <trans-unit id="Error_MsBuildTimedOut">

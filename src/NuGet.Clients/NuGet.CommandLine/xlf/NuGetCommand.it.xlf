@@ -598,12 +598,12 @@ nuget pack foo.nuspec -Version 2.1.0</target>
       </trans-unit>
       <trans-unit id="PackageCommandDeterministic">
         <source>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package when used with -DeterministicTimestamp.</source>
-        <target state="translated">Specificare se il comando deve creare un pacchetto deterministico. Più chiamate del comando pack creeranno esattamente lo stesso pacchetto se usato con -DeterministicTimestamp.</target>
+        <target state="new">Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package when used with -DeterministicTimestamp.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandDeterministicTimestamp">
         <source>Specify the timestamp this command should use when creating a deterministic package. Multiple invocations of the pack command will create the exact same package.</source>
-        <target state="translated">Specificare il timestamp che questo comando deve usare durante la creazione di un pacchetto deterministico. Le chiamate multiple del comando pack creeranno lo stesso pacchetto.</target>
+        <target state="new">Specify the timestamp this command should use when creating a deterministic package. Multiple invocations of the pack command will create the exact same package.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageCommandExcludeDescription">
@@ -1064,7 +1064,7 @@ nuget sign .\..\MyPackage.nupkg -Timestamper https://foo.bar -OutputDirectory .\
       </trans-unit>
       <trans-unit id="SourcesCommandAllowInsecureConnectionsDescription">
         <source>Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Consente le connessioni HTTP per aggiungere o aggiornare i pacchetti. Nota: questo metodo non è sicuro. Per ulteriori informazioni sulle opzioni di sicurezza, vedere https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Consente connessioni HTTP per l'aggiunta o l'aggiornamento di pacchetti. Nota: questo metodo non è sicuro. Per le opzioni di sicurezza, vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandDescription">
