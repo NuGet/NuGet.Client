@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using Microsoft.Internal.VisualStudio.Shell;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
@@ -10,7 +8,7 @@ using Microsoft.VisualStudio.Shell.TableControl;
 
 namespace NuGet.SolutionRestoreManager.ErrorListFixers
 {
-#pragma warning disable CS0618 // IErrorListEntryFixer is currently marked obsolete by VS
+#pragma warning disable CS0618 // Obsolete in VS because it "may change without warning". It remains the only Error List fixer extensibility point today.
     /// <summary>
     /// Base class for NuGet Error List entry fixers that surface the sparkle action.
     /// Provides the shared icon, entry-code matching, and fix dispatch, leaving

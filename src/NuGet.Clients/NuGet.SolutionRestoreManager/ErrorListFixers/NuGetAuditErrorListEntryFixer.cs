@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -17,7 +15,7 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.SolutionRestoreManager.ErrorListFixers
 {
-#pragma warning disable CS0618 // IErrorListEntryFixer is currently marked obsolete by VS
+#pragma warning disable CS0618 // Obsolete in VS because it "may change without warning". It remains the only Error List fixer extensibility point today.
     [Export(typeof(IErrorListEntryFixer))]
 #pragma warning restore CS0618
     [DataSource(StandardTableDataSources.ErrorTableDataSource)]

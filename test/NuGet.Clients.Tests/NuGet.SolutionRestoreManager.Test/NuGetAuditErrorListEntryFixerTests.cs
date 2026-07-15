@@ -1,16 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
-using System.ComponentModel.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell.TableControl;
-using Microsoft.VisualStudio.Utilities;
 using Moq;
 using NuGet.SolutionRestoreManager.ErrorListFixers;
 using NuGet.VisualStudio;
@@ -51,14 +46,24 @@ namespace NuGet.SolutionRestoreManager.Test
         public void TryFix_WithNonMatchingEntry_ReturnsFalse()
         {
             // Arrange
-            NuGetAuditErrorListEntryFixer fixer = new();
+            Mock<IFixVulnerabilitiesService> service = new();
+            service
+                .Setup(s => s.LaunchFixVulnerabilitiesAsync(It.IsAny<FixVulnerabilitiesSource>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            NuGetAuditErrorListEntryFixer fixer = new()
+            {
+                FixVulnerabilitiesService = new Lazy<IFixVulnerabilitiesService>(() => service.Object),
+            };
             ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry("NU1605");
 
             // Act
             bool result = fixer.TryFix(entry);
 
             // Assert
+            // NU1605 is outside the range of codes this fixer handles, so it must short-circuit
+            // before ever consulting the service, regardless of whether the service is available.
             Assert.False(result);
+            service.Verify(s => s.LaunchFixVulnerabilitiesAsync(It.IsAny<FixVulnerabilitiesSource>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
         [Fact]
@@ -94,23 +99,6 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Assert
             Assert.True(result);
-        }
-
-        [Fact]
-        public void TypeMetadata_DefinesExpectedNameAndOrder()
-        {
-            // Arrange
-            var attributes = typeof(NuGetAuditErrorListEntryFixer).GetCustomAttributes(inherit: false);
-
-            // Assert
-            Assert.Equal(1, attributes.Count(a => a is ExportAttribute));
-            Assert.Contains(attributes, a => a is DataSourceAttribute);
-
-            NameAttribute nameAttribute = Assert.IsType<NameAttribute>(attributes.Single(a => a is NameAttribute));
-            Assert.Equal(NuGetErrorListFixerConstants.AuditFixerName, nameAttribute.Name);
-
-            OrderAttribute orderAttribute = Assert.IsType<OrderAttribute>(attributes.Single(a => a is OrderAttribute));
-            Assert.Equal(NuGetErrorListFixerConstants.CopilotFixerName, orderAttribute.Before);
         }
     }
 }

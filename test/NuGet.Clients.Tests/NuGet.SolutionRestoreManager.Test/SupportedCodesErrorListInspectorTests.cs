@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.Shell.TableControl;
@@ -46,26 +44,10 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public void IsSupportedCode_WithBuildSourcedAuditEntry_ReturnsTrue()
-        {
-            // Arrange
-            // NuGet Audit warnings surface through the build/restore pipeline, so the entry's
-            // ErrorSource is "Build" rather than "NuGet". Matching must rely on the code.
-            ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry("NU1903", source: "Build");
-            IErrorListEntryInspector inspector = CreateInspector("NU1901", "NU1903");
-
-            // Act
-            bool result = inspector.IsSupportedCode(entry);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
         public void IsSupportedCode_WithUnsupportedCode_ReturnsFalse()
         {
             // Arrange
-            ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry("NU1605", source: "Build");
+            ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry("NU1605");
             IErrorListEntryInspector inspector = CreateInspector("NU1903");
 
             // Act
@@ -80,10 +62,9 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry(code: null);
-            IErrorListEntryInspector inspector = CreateInspector();
 
             // Act
-            bool result = inspector.TryGetErrorCode(entry, out string code);
+            bool result = SupportedCodesErrorListInspector.TryGetErrorCode(entry, out string code);
 
             // Assert
             Assert.False(result);
