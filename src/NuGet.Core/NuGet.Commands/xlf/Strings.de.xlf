@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../Strings.resx">
     <body>
@@ -225,7 +225,7 @@
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single_Short">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Sie führen den Vorgang „{0}“ mit einer „HTTP“-Quelle aus: {1}. NuGet erfordert HTTPS-Quellen. Weitere Informationen finden Sie unter https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Sie führen den Vorgang „{0}“ mit einer „HTTP“-Quelle, „{1}“, aus. NuGet erfordert HTTPS-Quellen. Weitere Informationen finden Sie unter „https://aka.ms/nuget-https-everywhere“.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - server URI.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="Error_ReadingProjectInformation">
         <source>Unable to read project information for '{0}': {1}</source>
-        <target state="translated">Die Projektinformationen für "{0}" können nicht gelesen werden: {1}</target>
+        <target state="new">Unable to read project information for '{0}': {1}</target>
         <note>{0} - project name; {1} - error details</note>
       </trans-unit>
       <trans-unit id="Error_RepoTrustExpectedRepoSignature">
@@ -471,7 +471,7 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</source>
-        <target state="translated">PackageReference {0} wird nicht gekürzt. Dieses Paket ist automatisch verfügbar und muss nicht explizit referenziert werden. Entfernen Sie das PackageReference-Element.</target>
+        <target state="new">PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
@@ -1429,17 +1429,17 @@ Aktualisieren Sie Ihr .NET SDK oder entfernen Sie RestoreUseLegacyDependencyReso
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Critical">
         <source>critical</source>
-        <target state="translated">kritisch</target>
+        <target state="translated">Kritisch</target>
         <note>As in "This package has a critical severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_High">
         <source>high</source>
-        <target state="translated">hoch</target>
+        <target state="translated">Hoch</target>
         <note>As in "This package has a high severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Low">
         <source>low</source>
-        <target state="translated">niedrig</target>
+        <target state="translated">Niedrig</target>
         <note>As in "This package has a low severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Moderate">
@@ -1485,7 +1485,7 @@ Aktualisieren Sie Ihr .NET SDK oder entfernen Sie RestoreUseLegacyDependencyReso
       <trans-unit id="Warning_List_HttpSource">
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Die folgende Quelle ist „Nicht-HTTPS“: {0}
+        <target state="translated">Im Folgenden finden Sie eine „Nicht-HTTPS“-Quelle: {0}
 NuGet erfordert HTTPS-Quellen. Weitere Informationen finden Sie unter https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
@@ -1508,7 +1508,7 @@ NuGet erfordert HTTPS-Quellen. Weitere Informationen finden Sie unter https://ak
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="translated">Das Paket „{0}“ {1} verwendet das veraltete MonoAndroid-Framework statt „net6.0-android“ oder höher. Erwägen Sie ein Upgrade auf eine neuere Version dieses Pakets oder wenden Sie sich an den Paketautor.</target>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
@@ -1532,7 +1532,7 @@ NuGet erfordert HTTPS-Quellen. Weitere Informationen finden Sie unter https://ak
       </trans-unit>
       <trans-unit id="Warning_RestoreLockedModeAndForceEvaluate">
         <source>RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</source>
-        <target state="translated">RestoreForceEvaluate überschreibt RestoreLockedMode. Die Paketsperrdatei wird erneut ausgewertet und neu generiert, und der gesperrte Modus wird ignoriert.</target>
+        <target state="new">RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</target>
         <note>Do not localize RestoreLockedMode and RestoreForceEvaluate</note>
       </trans-unit>
       <trans-unit id="Warning_VersionAboveUpperBound">

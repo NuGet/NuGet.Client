@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../Strings.resx">
     <body>
@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="Error_ReadingProjectInformation">
         <source>Unable to read project information for '{0}': {1}</source>
-        <target state="translated">Невозможно прочитать сведения о проекте для "{0}": {1}</target>
+        <target state="new">Unable to read project information for '{0}': {1}</target>
         <note>{0} - project name; {1} - error details</note>
       </trans-unit>
       <trans-unit id="Error_RepoTrustExpectedRepoSignature">
@@ -471,7 +471,7 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</source>
-        <target state="translated">PackageReference {0} не будет урезано. Этот пакет доступен автоматически, и на него не нужно явно ссылаться. Удалите элемент PackageReference.</target>
+        <target state="new">PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
@@ -691,8 +691,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       <trans-unit id="Log_AliasingSupportedInNewDependencyResolver">
         <source>The project {0} is attempting to restore duplicate frameworks, which are supported only in the default dependency resolver when the .NET SDK is version {1} or newer.
 Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this feature.</source>
-        <target state="translated">Проект {0} пытается восстановить дублирующиеся платформы, которые поддерживаются только в стандартном сопоставителе зависимостей при версии пакета SDK для .NET {1} или более поздней.
-Обновите пакет SDK для .NET или удалите RestoreUseLegacyDependencyResolver, чтобы использовать эту функцию.</target>
+        <target state="translated">Проект {0} пытается восстановить дублирующиеся платформы, которые поддерживаются только в стандартном сопоставителе зависимостей при версии пакета SDK для .NET не ниже {1}.
+Чтобы использовать эту функцию, установите более новую версию пакета SDK для .NET или удалите RestoreUseLegacyDependencyResolver.</target>
         <note />
       </trans-unit>
       <trans-unit id="Log_AllProjectsUpToDate">
@@ -1429,22 +1429,22 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Critical">
         <source>critical</source>
-        <target state="translated">критический уровень</target>
+        <target state="translated">критический</target>
         <note>As in "This package has a critical severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_High">
         <source>high</source>
-        <target state="translated">высокий уровень</target>
+        <target state="translated">высокий</target>
         <note>As in "This package has a high severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Low">
         <source>low</source>
-        <target state="translated">низкий уровень</target>
+        <target state="translated">низкий</target>
         <note>As in "This package has a low severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Moderate">
         <source>moderate</source>
-        <target state="translated">средний уровень</target>
+        <target state="translated">средний</target>
         <note>As in "This package has a moderate severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_unknown">
@@ -1508,7 +1508,7 @@ NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="translated">Пакет "{0}" {1} использует нерекомендуемую платформу MonoAndroid вместо "net6.0-android" или более поздней версии. Рассмотрите возможность обновления этого пакета до более новой версии или обратитесь к автору пакета.</target>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
@@ -1532,7 +1532,7 @@ NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for
       </trans-unit>
       <trans-unit id="Warning_RestoreLockedModeAndForceEvaluate">
         <source>RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</source>
-        <target state="translated">RestoreForceEvaluate переопределяет RestoreLockedMode; файл блокировки пакетов будет повторно оценен и сгенерирован заново, а режим блокировки будет игнорироваться.</target>
+        <target state="new">RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</target>
         <note>Do not localize RestoreLockedMode and RestoreForceEvaluate</note>
       </trans-unit>
       <trans-unit id="Warning_VersionAboveUpperBound">

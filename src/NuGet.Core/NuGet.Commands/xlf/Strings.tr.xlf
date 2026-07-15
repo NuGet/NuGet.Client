@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../Strings.resx">
     <body>
@@ -225,12 +225,12 @@
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single_Short">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">'{0}' işlemini bir {1} 'HTTP' kaynağıyla çalıştırıyorsunuz. NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">'{0}' işlemini bir {1} 'HTTP' kaynağı ile çalıştırıyorsunuz. NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - server URI.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">'{0}' işlemini {1} 'HTTP' kaynakları ile çalıştırıyorsunuz. NuGet için HTTPS kaynakları gereklidir. HTTP kaynakları kullanmak için 'allowInsecureConnections' değerini NuGet.Config dosyanızda açıkça true olarak ayarlamalısınız. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">'{0}' işlemini {1} 'HTTP' kaynağıyla çalıştırıyorsunuz. NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için NuGet.Config dosyanızda 'allowInsecureConnections' ayarını açıkça “true” olarak ayarlamanız gerekir. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Error_IncompatiblePackageType">
@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="Error_ReadingProjectInformation">
         <source>Unable to read project information for '{0}': {1}</source>
-        <target state="translated">'{0}' için proje bilgileri okunamıyor: {1}</target>
+        <target state="new">Unable to read project information for '{0}': {1}</target>
         <note>{0} - project name; {1} - error details</note>
       </trans-unit>
       <trans-unit id="Error_RepoTrustExpectedRepoSignature">
@@ -471,7 +471,7 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</source>
-        <target state="translated">PackageReference {0} ayıklanmayacak. Bu paket otomatik olarak kullanılabilir ve bu pakete açıkça başvurulması gerekmez. PackageReference öğesini kaldırın.</target>
+        <target state="new">PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
@@ -1486,14 +1486,14 @@ Bu özelliği kullanmak için .NET SDK'nizi yükseltin veya RestoreUseLegacyDepe
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Aşağıdaki, 'HTTPS Olmayan' bir kaynaktır: {0}
-NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
+NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya bakın: https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Aşağıdakiler, 'HTTPS Olmayan' kaynaklardır: {0}
-NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvurun: https://aka.ms/nuget-https-everywhere.</target>
+NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya bakın: https://aka.ms/nuget-https-everywhere.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">
@@ -1508,7 +1508,7 @@ NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvur
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="translated">'{0}' paketinin {1} sürümü, 'net6.0-android' veya sonraki sürümler yerine kullanım dışı MonoAndroid çerçevesini kullanıyor. Bu paketin daha yeni bir sürümüne yükseltmeyi veya paket yazarına başvurmayı düşünün.</target>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
@@ -1532,7 +1532,7 @@ NuGet için HTTPS kaynakları gereklidir. Daha fazla bilgi için şuraya başvur
       </trans-unit>
       <trans-unit id="Warning_RestoreLockedModeAndForceEvaluate">
         <source>RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</source>
-        <target state="translated">RestoreForceEvaluate, RestoreLockedMode değerini geçersiz kılıyor; paketler kilit dosyası yeniden değerlendirilecek ve yeniden oluşturulacak, kilitli mod yoksayılır.</target>
+        <target state="new">RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</target>
         <note>Do not localize RestoreLockedMode and RestoreForceEvaluate</note>
       </trans-unit>
       <trans-unit id="Warning_VersionAboveUpperBound">

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../Strings.resx">
     <body>
@@ -220,7 +220,7 @@
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single">
         <source>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Si sta eseguendo l'operazione "{0}" con un'origine "HTTP": {1}. NuGet richiede origini HTTPS. Per usare un'origine HTTP, è necessario impostare in modo esplicito "allowInsecureConnections" su "true" nel file NuGet.Config. Per ulteriori informazioni, vedere https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Si sta eseguendo l'operazione '{0}' con un'origine 'HTTP': {1}. NuGet richiede origini HTTPS. Per usare un'origine HTTP, è necessario impostare in modo esplicito 'allowInsecureConnections' su true nel file NuGet.Config. Vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - server URI.</note>
       </trans-unit>
       <trans-unit id="Error_HttpSource_Single_Short">
@@ -230,7 +230,7 @@
       </trans-unit>
       <trans-unit id="Error_HttpSources_Multiple">
         <source>You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="translated">Si sta eseguendo l'operazione "{0}" con origini "HTTP": {1}. NuGet richiede origini HTTPS. Per usare le origini HTTP, è necessario impostare in modo esplicito "allowInsecureConnections" su "true" nel file NuGet.Config. Per ulteriori informazioni, vedere https://aka.ms/nuget-https-everywhere.</target>
+        <target state="translated">Si sta eseguendo l'operazione '{0}' con origini 'HTTP': {1}. NuGet richiede origini HTTPS. Per usare origini HTTP, è necessario impostare in modo esplicito 'allowInsecureConnections' su true nel file NuGet.Config. Vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Error_IncompatiblePackageType">
@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="Error_ReadingProjectInformation">
         <source>Unable to read project information for '{0}': {1}</source>
-        <target state="translated">Non è possibile leggere le informazioni sul progetto per '{0}': {1}</target>
+        <target state="new">Unable to read project information for '{0}': {1}</target>
         <note>{0} - project name; {1} - error details</note>
       </trans-unit>
       <trans-unit id="Error_RepoTrustExpectedRepoSignature">
@@ -471,7 +471,7 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</source>
-        <target state="translated">PackageReference {0} non verrà rimosso. Questo pacchetto è disponibile automaticamente e non è necessario fare riferimento ad esso in modo esplicito. Rimuovere l'elemento PackageReference.</target>
+        <target state="new">PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
@@ -616,7 +616,7 @@
       </trans-unit>
       <trans-unit id="Invalid_AttributeValue">
         <source>The {0} value: `{1}` is invalid. Valid example: `{2}`</source>
-        <target state="translated">Il valore{0} {1} non è valido. Esempio valido: `{2}`</target>
+        <target state="translated">Il valore {0}: '{1}' non è valido. Esempio valido: '{2}'</target>
         <note>{0} - is the attribute
 {1} is the invalid value of the attribute.
 {2} a valid attriibute value example</note>
@@ -1429,7 +1429,7 @@ Per usare questa funzionalità, aggiornare .NET SDK o rimuovere RestoreUseLegacy
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_Critical">
         <source>critical</source>
-        <target state="translated">critico</target>
+        <target state="translated">critica</target>
         <note>As in "This package has a critical severity vulnerability"</note>
       </trans-unit>
       <trans-unit id="Vulnerability_Severity_High">
@@ -1486,14 +1486,14 @@ Per usare questa funzionalità, aggiornare .NET SDK o rimuovere RestoreUseLegacy
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Di seguito è riportata un'origine 'non HTTPS': {0}
-NuGet richiede origini HTTPS. Vedi https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
+NuGet richiede origini HTTPS. Vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Di seguito sono riportate origini 'non HTTPS': {0}
-NuGet richiede origini HTTPS. Vedi https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
+NuGet richiede origini HTTPS. Vedere https://aka.ms/nuget-https-everywhere per altre informazioni.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">
@@ -1508,7 +1508,7 @@ NuGet richiede origini HTTPS. Vedi https://aka.ms/nuget-https-everywhere per alt
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="translated">Il pacchetto ''{0}'' {1} usa il framework MonoAndroid deprecato invece di ''net6.0-android'' o versione successiva. Prendere in considerazione l'aggiornamento a una versione più recente di questo pacchetto o contattare l'autore del pacchetto.</target>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
@@ -1532,7 +1532,7 @@ NuGet richiede origini HTTPS. Vedi https://aka.ms/nuget-https-everywhere per alt
       </trans-unit>
       <trans-unit id="Warning_RestoreLockedModeAndForceEvaluate">
         <source>RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</source>
-        <target state="translated">RestoreForceEvaluate sostituisce RestoreLockedMode; il file di blocco dei pacchetti verrà rivalutato e rigenerato, e la modalità di blocco verrà ignorata.</target>
+        <target state="new">RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</target>
         <note>Do not localize RestoreLockedMode and RestoreForceEvaluate</note>
       </trans-unit>
       <trans-unit id="Warning_VersionAboveUpperBound">

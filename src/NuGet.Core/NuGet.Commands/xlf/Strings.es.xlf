@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../Strings.resx">
     <body>
@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="Error_ReadingProjectInformation">
         <source>Unable to read project information for '{0}': {1}</source>
-        <target state="translated">No se puede leer la información del proyecto de "{0}": {1}</target>
+        <target state="new">Unable to read project information for '{0}': {1}</target>
         <note>{0} - project name; {1} - error details</note>
       </trans-unit>
       <trans-unit id="Error_RepoTrustExpectedRepoSignature">
@@ -471,7 +471,7 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</source>
-        <target state="translated">PackageReference {0} no se eliminará. Este paquete está disponible automáticamente y no es necesario hacer referencia a él explícitamente. Quite el elemento PackageReference.</target>
+        <target state="new">PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
@@ -1486,14 +1486,14 @@ Actualice el SDK de .NET o quite RestoreUseLegacyDependencyResolver para usar es
         <source>The following is a 'Non-HTTPS' source: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">El siguiente es un origen 'no HTTPS': {0}
-NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para más información.</target>
+NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_List_HttpSources">
         <source>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
         <target state="translated">Los siguientes son orígenes 'no HTTPS': {0}
-NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para más información.</target>
+NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere para obtener más información.</target>
         <note>{0} - list of server URIs</note>
       </trans-unit>
       <trans-unit id="Warning_MinVersionDoesNotExist">
@@ -1508,7 +1508,7 @@ NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere p
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="translated">El paquete "{0}" {1} usa el marco MonoAndroid en desuso en lugar de "net6.0-android" o posterior. Considere la posibilidad de actualizar a una versión más reciente de este paquete o póngase en contacto con el autor del paquete.</target>
+        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
@@ -1532,7 +1532,7 @@ NuGet requiere orígenes HTTPS. Consulte https://aka.ms/nuget-https-everywhere p
       </trans-unit>
       <trans-unit id="Warning_RestoreLockedModeAndForceEvaluate">
         <source>RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</source>
-        <target state="translated">RestoreForceEvaluate invalida RestoreLockedMode; el archivo de bloqueo de paquetes se volverá a evaluar y regenerar, y se omitirá el modo bloqueado.</target>
+        <target state="new">RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</target>
         <note>Do not localize RestoreLockedMode and RestoreForceEvaluate</note>
       </trans-unit>
       <trans-unit id="Warning_VersionAboveUpperBound">
