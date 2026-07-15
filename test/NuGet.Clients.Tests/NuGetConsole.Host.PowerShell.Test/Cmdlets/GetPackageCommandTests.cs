@@ -684,7 +684,7 @@ namespace NuGetConsole.Host.PowerShell.Test
                 });
 
             // Assert — the cmdlet aggregates across pages and returns more than the paging limit
-            results.Count.Should().BeGreaterThan(100, because: "Get-Package -ListAvailable should aggregate results beyond the server-side paging limit");
+            results.Count.Should().Be(105, because: "Get-Package -ListAvailable should aggregate results beyond the server-side paging limit");
         }
 
         [Fact]
@@ -740,19 +740,20 @@ namespace NuGetConsole.Host.PowerShell.Test
             using var fixture = new CmdletRunspaceFixture(activeSource: pathContext.PackageSource);
 
             // Act — Get-Package -Updates -Source MyNamedSource
-            var results = fixture.Invoke(
+            List<PowerShellUpdatePackage> results = fixture.Invoke(
                 "Get-Package",
                 new Dictionary<string, object>
                 {
                     { "Updates", true },
                     { "Source", "MyNamedSource" },
-                });
+                }).Select(r => (PowerShellUpdatePackage)r.BaseObject).ToList();
 
             // Assert — both packages report an available update
             results.Should().HaveCount(2);
-            var ids = results.Select(r => ((PowerShellUpdatePackage)r.BaseObject).Id).ToList();
-            ids.Should().Contain("UpdatesNamedPackageA");
-            ids.Should().Contain("UpdatesNamedPackageB");
+            results[0].Id.Should().Be("UpdatesNamedPackageA");
+            results[0].Version.ToString().Should().Be("2.0.0");
+            results[1].Id.Should().Be("UpdatesNamedPackageB");
+            results[1].Version.ToString().Should().Be("2.0.0");
         }
 
         [Fact]
