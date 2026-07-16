@@ -457,6 +457,16 @@
         <target state="translated">Icono de ayuda</target>
         <note />
       </trans-unit>
+      <trans-unit id="InfoBar_FixVulnerabilitiesWithCopilot">
+        <source>Fix with GitHub Copilot</source>
+        <target state="new">Fix with GitHub Copilot</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
+      <trans-unit id="InfoBar_VulnerabilitiesMessage">
+        <source>Some installed packages have known vulnerabilities.</source>
+        <target state="new">Some installed packages have known vulnerabilities.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Label_Action">
         <source>Action:</source>
         <target state="translated">Acción:</target>

@@ -673,6 +673,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Some installed packages have known vulnerabilities..
+        /// </summary>
+        public static string InfoBar_VulnerabilitiesMessage {
+            get {
+                return ResourceManager.GetString("InfoBar_VulnerabilitiesMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fix with GitHub Copilot.
+        /// </summary>
+        public static string InfoBar_FixVulnerabilitiesWithCopilot {
+            get {
+                return ResourceManager.GetString("InfoBar_FixVulnerabilitiesWithCopilot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to More info.
         /// </summary>
         public static string Deprecation_MoreInfo {

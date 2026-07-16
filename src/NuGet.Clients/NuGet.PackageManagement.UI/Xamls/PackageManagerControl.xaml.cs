@@ -78,6 +78,7 @@ namespace NuGet.PackageManagement.UI
         private INuGetPackageFileService _nugetPackageFileService;
         private bool _isReadmeTabEnabled;
         private PackageManagerInfoBarService _infoBarService;
+        private PackageManagerVulnerabilitiesInfoBar _vulnerabilitiesInfoBar;
 
         private SearchControl SearchControl
         {
@@ -864,17 +865,13 @@ namespace NuGet.PackageManagement.UI
 
             if (_infoBarService != null)
             {
-                // Hard-coded test InfoBar for validation. Remove once vulnerability scenario is wired up.
-                var testModel = new InfoBarModel(
-                    new IVsInfoBarTextSpan[]
-                    {
-                        new InfoBarTextSpan("This is a test InfoBar in the Package Manager UI. "),
-                        new InfoBarHyperlink("Fix with GitHub Copilot")
-                    },
-                    Microsoft.VisualStudio.Imaging.KnownMonikers.StatusWarning,
-                    isCloseButtonVisible: true);
-
-                _infoBarService.ShowInfoBar("test", testModel);
+                var fixVulnerabilitiesService = await ServiceLocator.GetComponentModelServiceAsync<IFixVulnerabilitiesService>();
+                if (fixVulnerabilitiesService != null)
+                {
+                    _vulnerabilitiesInfoBar = new PackageManagerVulnerabilitiesInfoBar(
+                        _infoBarService,
+                        fixVulnerabilitiesService.LaunchFixVulnerabilitiesAsync);
+                }
             }
         }
 
@@ -1102,6 +1099,12 @@ namespace NuGet.PackageManagement.UI
             // Update installed tab warning icon
             (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, _packageVulnerabilityService, refreshCts.Token);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
+
+            // Show/hide the vulnerabilities InfoBar based on the installed vulnerable package count.
+            if (_vulnerabilitiesInfoBar != null)
+            {
+                await _vulnerabilitiesInfoBar.UpdateAsync(vulnerablePackages);
+            }
 
             // Update updates tab count
             Model.CachedUpdates = new PackageSearchMetadataCache
