@@ -3332,7 +3332,7 @@ EndGlobal";
         [InlineData(false, false)] // Standard task-based restore
         [InlineData(true, true)]   // Static graph with PackageSpecFactory
         [InlineData(true, false)]  // Static graph with legacy PackageSpec construction
-        public async Task DotnetRestore_MultiTargetedProjectWithAnalyzerAssetsEnabled_WritesAnalyzersForAllFrameworks(
+        public async Task DotnetRestore_MultiTargetedProjectWithAnalyzerAssetsEnabledForOneFramework_WritesAnalyzersForAllFrameworks(
             bool useStaticGraphRestore,
             bool usePackageSpecFactory)
         {
@@ -3364,7 +3364,8 @@ EndGlobal";
                 ProjectFileUtils.AddProperty(
                     xml,
                     "RestoreEnableAnalyzerAssets",
-                    bool.TrueString);
+                    bool.TrueString,
+                    " '$(TargetFramework)' == 'net11.0' ");
                 ProjectFileUtils.AddItem(
                     xml,
                     "PackageReference",
