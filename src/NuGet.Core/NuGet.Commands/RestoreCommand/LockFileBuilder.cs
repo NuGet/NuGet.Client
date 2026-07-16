@@ -187,9 +187,9 @@ namespace NuGet.Commands
                 var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, targetGraph);
 
                 // Check if warnings should be displayed for the current framework.
-                var tfi = project.GetNearestTargetFramework(targetGraph.Framework, targetGraph.TargetAlias);
+                var tfi = project.GetTargetFramework(targetGraph.TargetAlias);
 
-                bool warnForImportsOnGraph = tfi.Warn
+                bool warnForImportsOnGraph = tfi?.Warn == true
                     && (target.TargetFramework is FallbackFramework
                         || target.TargetFramework is AssetTargetFallbackFramework);
 
@@ -233,7 +233,7 @@ namespace NuGet.Commands
                         }
 
                         var package = packageInfo.Package;
-                        var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                        var libraryDependency = tfi?.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
                         (LockFileTargetLibrary targetLibrary, bool usedFallbackFramework, NuGetFramework compileAssetFramework, NuGetFramework runtimeAssetFramework) = LockFileUtils.CreateLockFileTargetLibrary(
                             libraryDependency?.Aliases,
