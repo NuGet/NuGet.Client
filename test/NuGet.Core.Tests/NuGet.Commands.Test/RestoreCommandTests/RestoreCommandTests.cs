@@ -28,6 +28,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Test;
+using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -4319,6 +4320,59 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
             Assert.Equal("NU1603", projectInformationEvent["SuppressedWarningCodes"]);
             Assert.Null(projectInformationEvent["WarningCodes"]);
+        }
+
+        [Fact]
+        public async Task LockFileBuilder_WithUnmatchedTargetAlias_DoesNotThrow()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            const string ProjectName = "TestProject";
+            const string PackageId = "a";
+            NuGetFramework framework = NuGetFramework.Parse("net45");
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(ProjectName, pathContext.SolutionRoot, framework.GetShortFolderName(), PackageId);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext(PackageId, "1.0.0"));
+
+            var logger = new TestLogger();
+            TestRestoreRequest request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+            RestoreResult restoreResult = await new RestoreCommand(request).ExecuteAsync();
+            restoreResult.Success.Should().BeTrue(because: logger.ShowMessages());
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package(PackageId, "1.0.0");
+            context.LocalLibraryProviders.Add(provider);
+
+            var walker = new RemoteDependencyWalker(context);
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, PackageId, framework);
+            RestoreTargetGraph targetGraph = RestoreTargetGraph.Create(
+                RuntimeGraph.Empty,
+                new[] { rootNode },
+                context,
+                targetAlias: "unmatched",
+                framework,
+                runtimeIdentifier: null);
+
+            var lockFileBuilder = new LockFileBuilder(
+                LockFileFormat.AliasedVersion,
+                logger,
+                new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>());
+
+            // Act
+            Action act = () => lockFileBuilder.CreateLockFile(
+                previousLockFile: null,
+                packageSpec,
+                new[] { targetGraph },
+                new[] { new NuGetv3LocalRepository(pathContext.UserPackagesFolder) },
+                context,
+                new LockFileBuilderCache());
+
+            // Assert
+            act.Should().NotThrow();
         }
 
         [Fact]
