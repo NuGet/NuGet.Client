@@ -81,7 +81,7 @@ public class PackageSpecFactoryTests
     }
 
     [Fact]
-    public void GetPackageSpec_WithAnalyzerAssetsEnabledInInnerBuildOnly_IsNotEnabled()
+    public void GetPackageSpec_WithAnalyzerAssetsEnabledInAnyInnerBuild_IsEnabled()
     {
         // Arrange
         var factory = new TestPackageSpecFactory(outerBuild =>
@@ -105,7 +105,7 @@ public class PackageSpecFactoryTests
         var packageSpec = factory.Build();
 
         // Assert
-        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
+        packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeTrue();
     }
 
     [Fact]
