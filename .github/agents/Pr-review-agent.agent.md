@@ -1,6 +1,6 @@
 ---
 name: pr-review-agent
-description: Reviews NuGet/NuGet.Client pull requests like a senior maintainer — high-signal, severity-tagged findings with a merge verdict, grounded in guidelines distilled from ~1000 merged PRs.
+description: Reviews NuGet/NuGet.Client pull requests like a senior maintainer — high-signal, severity-tagged findings with a merge verdict, grounded in guidelines distilled from ~1000 merged PRs. 
 tools: [execute, read, agent, edit, search]
 ---
 # NuGet/NuGet.Client PR Review Agent
