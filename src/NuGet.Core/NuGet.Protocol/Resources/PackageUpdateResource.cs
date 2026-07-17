@@ -369,13 +369,13 @@ namespace NuGet.Protocol.Core.Types
 
             bool wasPackagePushed = true;
 
-            if (sourceUri.IsFile)
+            if (IsFileSource())
             {
                 await PushPackageToFileSystem(sourceUri, packageToPush, skipDuplicate, log, token);
             }
             else
             {
-                wasPackagePushed = await PushPackageToServer(source, _httpSource!, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
+                wasPackagePushed = await PushPackageToServer(source, _httpSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
                     requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
             }
 
@@ -432,9 +432,6 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
-            HttpSource httpSource = _httpSource ?? throw new InvalidOperationException(
-                $"The source '{source}' does not provide an {nameof(HttpSource)}.");
-
             Uri serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             bool useTempApiKey = IsSourceNuGetSymbolServer(source);
             HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
@@ -746,7 +743,11 @@ namespace NuGet.Protocol.Core.Types
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
                     return;
                 }
+<<<<<<< HEAD
                 await DeletePackageFromServer(_source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
+=======
+                await DeletePackageFromServer(source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
+>>>>>>> 26b359b73 (Pass HttpSource into server methods to avoid null suppressions)
             }
         }
 
