@@ -73,7 +73,7 @@ namespace NuGetVSExtension
                     result.Error,
                     Resources.Error_NuGetSolverNotAvailable,
                     Resources.Title_FixVulnerabilitiesWithCopilot,
-                    NavigatedTelemetryEvent.CreateWithVulnerabilityInfoBarFixWithCopilot(result.Error));
+                    NavigatedTelemetryEvent.CreateWithFixVulnerabilitiesWithCopilot(navigationOrigin, MapSessionErrorToTelemetry(result.Error)));
                 return;
             }
 
@@ -95,6 +95,29 @@ namespace NuGetVSExtension
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_FixVulnerabilitiesWithCopilot);
             }
+        }
+
+        private static void SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType errorType, NavigationOrigin navigationOrigin)
+        {
+            TelemetryActivity.EmitTelemetryEvent(
+                NavigatedTelemetryEvent.CreateWithFixVulnerabilitiesWithCopilot(navigationOrigin, errorType));
+        }
+
+        private static FixVulnerabilitiesWithCopilotErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
+        {
+            return error switch
+            {
+                CopilotToolSessionError.None => FixVulnerabilitiesWithCopilotErrorType.None,
+                CopilotToolSessionError.CopilotNotReady => FixVulnerabilitiesWithCopilotErrorType.CopilotNotReady,
+                CopilotToolSessionError.ServiceBrokerNotAvailable => FixVulnerabilitiesWithCopilotErrorType.ServiceBrokerNotAvailable,
+                CopilotToolSessionError.CopilotServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.CopilotServiceNotAvailable,
+                CopilotToolSessionError.McpToolServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable,
+                CopilotToolSessionError.CopilotAccessDenied => FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied,
+                CopilotToolSessionError.ToolNotAvailable => FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable,
+                CopilotToolSessionError.McpServerInfoServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable,
+                CopilotToolSessionError.McpServerNotActive => FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive,
+                _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
+            };
         }
 
         private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
