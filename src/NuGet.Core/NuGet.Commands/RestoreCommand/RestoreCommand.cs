@@ -105,6 +105,7 @@ namespace NuGet.Commands
         private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
         private const string UseLegacyDependencyResolver = nameof(UseLegacyDependencyResolver);
         private const string UsedLegacyDependencyResolver = nameof(UsedLegacyDependencyResolver);
+        private const string PackagesWithFloatingVersionCount = nameof(PackagesWithFloatingVersionCount);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
@@ -208,6 +209,7 @@ namespace NuGet.Commands
                     _request.Project.FilePath,
                     _logger);
                 InitializeTelemetry(telemetry, httpSourcesCount, auditEnabled);
+                telemetry.TelemetryEvent[PackagesWithFloatingVersionCount] = CountPackagesWithFloatingVersion(_request.Project);
 
                 var restoreTime = Stopwatch.StartNew();
 
@@ -961,6 +963,42 @@ namespace NuGet.Commands
             }
 
             return true;
+        }
+
+        internal static int CountPackagesWithFloatingVersion(PackageSpec project)
+        {
+            // With a single target framework there can be no duplicate package names, so avoid the HashSet allocation.
+            if (project.TargetFrameworks.Count == 1)
+            {
+                int count = 0;
+                foreach (LibraryDependency dependency in project.TargetFrameworks[0].Dependencies)
+                {
+                    if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && dependency.LibraryRange.VersionRange?.IsFloating == true)
+                    {
+                        count++;
+                    }
+                }
+
+                return count;
+            }
+
+            HashSet<string> packagesWithFloatingVersion = null;
+
+            foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+            {
+                foreach (LibraryDependency dependency in framework.Dependencies)
+                {
+                    if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && dependency.LibraryRange.VersionRange?.IsFloating == true)
+                    {
+                        packagesWithFloatingVersion ??= new(StringComparer.OrdinalIgnoreCase);
+                        packagesWithFloatingVersion.Add(dependency.Name);
+                    }
+                }
+            }
+
+            return packagesWithFloatingVersion?.Count ?? 0;
         }
 
         internal static void AnalyzePruningResults(PackageSpec project, TelemetryEvent telemetryEvent, ILogger logger)
