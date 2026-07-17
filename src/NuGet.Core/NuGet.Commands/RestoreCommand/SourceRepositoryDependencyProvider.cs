@@ -40,6 +40,7 @@ namespace NuGet.Commands
         private bool _ignoreFailedSources;
         private bool _ignoreWarning;
         private bool _isFallbackFolderSource;
+        private bool _isGlobalPackagesFolder;
         private bool _useLegacyAssetTargetFallbackBehavior;
 
         private readonly TaskResultCache<LibraryRangeCacheKey, LibraryDependencyInfo> _dependencyInfoCache = new();
@@ -131,6 +132,7 @@ namespace NuGet.Commands
                 ignoreFailedSources,
                 ignoreWarning,
                 fileCache,
+                isGlobalPackagesFolder: false,
                 isFallbackFolderSource,
                 environmentVariableReader: EnvironmentVariableWrapper.Instance)
         {
@@ -143,6 +145,7 @@ namespace NuGet.Commands
             bool ignoreFailedSources,
             bool ignoreWarning,
             LocalPackageFileCache fileCache,
+            bool isGlobalPackagesFolder,
             bool isFallbackFolderSource,
             IEnvironmentVariableReader environmentVariableReader)
         {
@@ -153,6 +156,7 @@ namespace NuGet.Commands
             _ignoreWarning = ignoreWarning;
             _packageFileCache = fileCache;
             _isFallbackFolderSource = isFallbackFolderSource;
+            _isGlobalPackagesFolder = isGlobalPackagesFolder;
             _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
         }
 
@@ -286,6 +290,11 @@ namespace NuGet.Commands
                         Type = LibraryType.Package
                     };
                 }
+            }
+
+            if (_isGlobalPackagesFolder || _isFallbackFolderSource)
+            {
+                return null;
             }
 
             // Discover all versions from the feed
