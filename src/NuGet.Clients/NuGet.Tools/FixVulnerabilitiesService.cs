@@ -69,8 +69,6 @@ namespace NuGetVSExtension
 
             if (!result.IsSuccess)
             {
-                //TODO
-                HandleSessionError(result.Error, navigationOrigin);
                 CopilotToolInvocationService.HandleSessionError(
                     result.Error,
                     Resources.Error_NuGetSolverNotAvailable,
