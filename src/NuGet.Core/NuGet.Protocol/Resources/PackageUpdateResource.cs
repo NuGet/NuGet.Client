@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -368,13 +369,13 @@ namespace NuGet.Protocol.Core.Types
 
             bool wasPackagePushed = true;
 
-            if (sourceUri.IsFile)
+            if (IsFileSource())
             {
                 await PushPackageToFileSystem(sourceUri, packageToPush, skipDuplicate, log, token);
             }
             else
             {
-                wasPackagePushed = await PushPackageToServer(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
+                wasPackagePushed = await PushPackageToServer(source, _httpSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
                     requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
             }
 
@@ -397,6 +398,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
         // Indicates whether the specified source is a file source, such as: \\a\b, c:\temp, etc.
+        [MemberNotNullWhen(false, nameof(_httpSource))]
         private bool IsFileSource()
         {
             //we leverage the detection already done at resource provider level.
@@ -419,6 +421,7 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         /// <returns>Indicator of whether to show PushCommandPackagePushed message.</returns>
         private async Task<bool> PushPackageToServer(string source,
+            HttpSource httpSource,
             string apiKey,
             string pathToPackage,
             bool noServiceEndpoint,
@@ -429,9 +432,6 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
-            HttpSource httpSource = _httpSource ?? throw new InvalidOperationException(
-                $"The source '{source}' does not provide an {nameof(HttpSource)}.");
-
             Uri serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             bool useTempApiKey = IsSourceNuGetSymbolServer(source);
             HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
@@ -459,7 +459,7 @@ namespace NuGet.Protocol.Core.Types
                             retry++;
                             success = true;
                             // If user push to https://nuget.smbsrc.net/, use temp api key.
-                            string tmpApiKey = await GetSecureApiKey(packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
+                            string tmpApiKey = await GetSecureApiKey(httpSource, packageIdentity, apiKey, noServiceEndpoint, requestTimeout, logger, token);
 
                             await httpSource.ProcessResponseAsync(
                                 new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, tmpApiKey, logger))
@@ -733,7 +733,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             var sourceUri = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
-            if (sourceUri.IsFile)
+            if (IsFileSource())
             {
                 DeletePackageFromFileSystem(source, packageId, packageVersion);
             }
@@ -744,12 +744,13 @@ namespace NuGet.Protocol.Core.Types
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
                     return;
                 }
-                await DeletePackageFromServer(source, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
+                await DeletePackageFromServer(source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
             }
         }
 
         // Deletes a package from a Http server
         private async Task DeletePackageFromServer(string source,
+            HttpSource httpSource,
             string apiKey,
             string packageId,
             string packageVersion,
@@ -760,7 +761,7 @@ namespace NuGet.Protocol.Core.Types
             var url = string.Join("/", packageId, packageVersion);
             var serviceEndpointUrl = GetServiceEndpointUrl(source, url, noServiceEndpoint);
 
-            await _httpSource!.ProcessResponseAsync(
+            await httpSource.ProcessResponseAsync(
                 new HttpSourceRequest(
                     () =>
                     {
@@ -907,6 +908,7 @@ namespace NuGet.Protocol.Core.Types
 
         // Get a temp API key from nuget.org for pushing to https://nuget.smbsrc.net/
         private async Task<string> GetSecureApiKey(
+            HttpSource httpSource,
             PackageIdentity packageIdentity,
             string apiKey,
             bool noServiceEndpoint,
@@ -918,12 +920,13 @@ namespace NuGet.Protocol.Core.Types
             {
                 return apiKey;
             }
+
             var serviceEndpointUrl = GetServiceEndpointUrl(NuGetConstants.DefaultGalleryServerUrl,
                 string.Format(CultureInfo.InvariantCulture, TempApiKeyServiceEndpoint, packageIdentity.Id, packageIdentity.Version), noServiceEndpoint);
 
             try
             {
-                var result = await _httpSource!.GetJObjectAsync(
+                var result = await httpSource.GetJObjectAsync(
                     new HttpSourceRequest(
                         () =>
                         {
