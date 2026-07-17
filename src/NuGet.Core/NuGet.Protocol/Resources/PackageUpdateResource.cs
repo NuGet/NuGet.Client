@@ -432,6 +432,9 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
+            HttpSource httpSource = _httpSource ?? throw new InvalidOperationException(
+                $"The source '{source}' does not provide an {nameof(HttpSource)}.");
+
             Uri serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
             bool useTempApiKey = IsSourceNuGetSymbolServer(source);
             HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
