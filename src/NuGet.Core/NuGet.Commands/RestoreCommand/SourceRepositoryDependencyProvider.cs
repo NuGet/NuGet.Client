@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -294,6 +295,17 @@ namespace NuGet.Commands
 
             if (_isGlobalPackagesFolder || _isFallbackFolderSource)
             {
+                if (_isFallbackFolderSource)
+                {
+                    var sourceRoot = LocalFolderUtility.GetAndVerifyRootDirectory(Source.Source);
+                    if (!sourceRoot.Exists)
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_UnavailableSource, Source.Source);
+
+                        throw new FatalProtocolException(message);
+                    }
+                }
+
                 return null;
             }
 
