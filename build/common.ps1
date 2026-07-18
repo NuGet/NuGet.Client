@@ -299,6 +299,13 @@ Function Test-BuildEnvironment {
     }
 }
 
+Function Get-BuildNumber() {
+    $NuGetEpoch = '2010-08-29T23:58:25-07:00' # NuGet client first commit!
+    # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
+    # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
+    [uint16]((((Get-Date) - (Get-Date $NuGetEpoch)).TotalMinutes / 5) % [uint16]::MaxValue)
+}
+
 Function Install-ProcDump {
     [CmdletBinding()]
     param()

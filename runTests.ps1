@@ -74,8 +74,9 @@ Trace-Log "Test suite run #$BuildNumber started at $startTime"
 
 Test-BuildEnvironment -CI:$CI
 
-if (-not $VSToolsetInstalled) {
-    Warning-Log "The build is requested, but no toolset is available"
+$MSBuildExe = Get-MSBuildExe
+if(-not $MSBuildExe){
+    Warning-Log "The build is requested, but no MSBuild is available"
     exit 1
 }
 
