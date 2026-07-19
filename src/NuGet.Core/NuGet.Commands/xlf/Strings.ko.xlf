@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="Error_ReadingProjectInformation">
         <source>Unable to read project information for '{0}': {1}</source>
-        <target state="new">Unable to read project information for '{0}': {1}</target>
+        <target state="translated">'{0}'에 대한 프로젝트 정보를 읽을 수 없습니다. {1}</target>
         <note>{0} - project name; {1} - error details</note>
       </trans-unit>
       <trans-unit id="Error_RepoTrustExpectedRepoSignature">
@@ -471,7 +471,7 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</source>
-        <target state="new">PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</target>
+        <target state="translated">{0} PackageReferenc는 정리할 수 없습니다. 이 패키지는 자동으로 사용할 수 있으며 명시적으로 참조할 필요가 없습니다. PackageReference 항목을 제거합니다.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
@@ -1115,7 +1115,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="RestrictedPackageIdWarning">
         <source>The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</source>
-        <target state="new">The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</target>
+        <target state="translated">패키지 ID '{0}'이(가) 잘못되었습니다. 패키지 ID는 문자, 숫자 또는 밑줄로 시작해야 합니다. 또한 ASCII 문자, 숫자, 점(.), 대시(-), 밑줄(_)만 포함해야 하며, 점이나 대시가 연속해서 나오면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
@@ -1464,7 +1464,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="Warning_CentralPackageManagement_MultipleSourcesWithoutPackageSourceMapping">
         <source>There are {0} package sources defined in your configuration. When using central package management, map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</source>
-        <target state="new">There are {0} package sources defined in your configuration. When using central package management, map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</target>
+        <target state="translated">구성에 정의된 {0} 패키지 원본이 있습니다. 중앙 패키지 관리를 사용하는 경우 패키지 원본을 패키지 원본 매핑(https://aka.ms/nuget-package-source-mapping)으로 매핑하거나 단일 패키지 원본을 지정하세요. 다음 원본이 정의됩니다. {1}</target>
         <note>0 - The number of package sources, 1 - The URL of the package sources, comma separated.</note>
       </trans-unit>
       <trans-unit id="Warning_DuplicatePropertyKey">
@@ -1508,7 +1508,7 @@ NuGet에는 HTTPS 원본이 필요합니다. https://aka.ms/nuget-https-everywhe
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <target state="translated">패키지 '{0}' {1}이(가) 'net6.0-android' 이상 대신 사용 중단된 MonoAndroid 프레임워크를 사용합니다. 이 패키지의 최신 버전으로 업그레이드하거나 패키지 작성자에게 문의하는 것이 좋습니다.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
@@ -1532,7 +1532,7 @@ NuGet에는 HTTPS 원본이 필요합니다. https://aka.ms/nuget-https-everywhe
       </trans-unit>
       <trans-unit id="Warning_RestoreLockedModeAndForceEvaluate">
         <source>RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</source>
-        <target state="new">RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</target>
+        <target state="translated">RestoreForceEvaluate는 RestoreLockedMode를 재정의합니다. 패키지 잠금 파일은 다시 평가되고 다시 생성되며, 잠금 모드는 무시됩니다.</target>
         <note>Do not localize RestoreLockedMode and RestoreForceEvaluate</note>
       </trans-unit>
       <trans-unit id="Warning_VersionAboveUpperBound">

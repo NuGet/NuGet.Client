@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="Error_ReadingProjectInformation">
         <source>Unable to read project information for '{0}': {1}</source>
-        <target state="new">Unable to read project information for '{0}': {1}</target>
+        <target state="translated">Невозможно прочитать сведения о проекте для "{0}": {1}</target>
         <note>{0} - project name; {1} - error details</note>
       </trans-unit>
       <trans-unit id="Error_RepoTrustExpectedRepoSignature">
@@ -471,7 +471,7 @@
       </trans-unit>
       <trans-unit id="Error_RestorePruningDirectPackageReference">
         <source>PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</source>
-        <target state="new">PackageReference {0} will not be pruned. This package is automatically available and does not need to be referenced explicitly. Remove the PackageReference item.</target>
+        <target state="translated">PackageReference {0} не будет урезано. Этот пакет доступен автоматически, и на него не нужно явно ссылаться. Удалите элемент PackageReference.</target>
         <note>0 - package id and version</note>
       </trans-unit>
       <trans-unit id="Error_RestorePruningProjectReference">
@@ -1115,7 +1115,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="RestrictedPackageIdWarning">
         <source>The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</source>
-        <target state="new">The package ID '{0}' is invalid. Package IDs must start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_), with no consecutive dots or dashes.</target>
+        <target state="translated">Идентификатор пакета "{0}" недопустим. Идентификаторы пакетов должны начинаться с буквы, цифры или символа подчеркивания и содержать только буквы ASCII, цифры, точки (.), дефисы (-) и символы подчеркивания (_). Последовательные точки или дефисы не допускаются.</target>
         <note />
       </trans-unit>
       <trans-unit id="SignCommandCertificateFileNotFound">
@@ -1464,7 +1464,7 @@ Upgrade your .NET SDK or remove RestoreUseLegacyDependencyResolver to use this f
       </trans-unit>
       <trans-unit id="Warning_CentralPackageManagement_MultipleSourcesWithoutPackageSourceMapping">
         <source>There are {0} package sources defined in your configuration. When using central package management, map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</source>
-        <target state="new">There are {0} package sources defined in your configuration. When using central package management, map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</target>
+        <target state="translated">В вашей конфигурации определены {0}источники пакетов. При использовании централизованного управления пакетами настройте сопоставление источников пакетов (https://aka.ms/nuget-package-source-mapping) или укажите один источник пакетов. Определены следующие источники: {1}</target>
         <note>0 - The number of package sources, 1 - The URL of the package sources, comma separated.</note>
       </trans-unit>
       <trans-unit id="Warning_DuplicatePropertyKey">
@@ -1508,7 +1508,7 @@ NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for
       </trans-unit>
       <trans-unit id="Warning_MonoAndroidFrameworkDeprecated">
         <source>Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</source>
-        <target state="new">Package '{0}' {1} uses the deprecated MonoAndroid framework instead of 'net6.0-android' or later. Consider upgrading to a newer version of this package or contacting the package author.</target>
+        <target state="translated">Пакет "{0}" {1} использует нерекомендуемую платформу MonoAndroid вместо "net6.0-android" или более поздней версии. Рассмотрите возможность обновления этого пакета до более новой версии или обратитесь к автору пакета.</target>
         <note>{0} - package id
 {1} - package version</note>
       </trans-unit>
@@ -1532,7 +1532,7 @@ NuGet requires HTTPS sources. Refer to https://aka.ms/nuget-https-everywhere for
       </trans-unit>
       <trans-unit id="Warning_RestoreLockedModeAndForceEvaluate">
         <source>RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</source>
-        <target state="new">RestoreForceEvaluate overrides RestoreLockedMode; the packages lock file will be re-evaluated and regenerated, and locked mode is ignored.</target>
+        <target state="translated">RestoreForceEvaluate переопределяет RestoreLockedMode; файл блокировки пакетов будет повторно оценен и сгенерирован заново, а режим блокировки будет игнорироваться.</target>
         <note>Do not localize RestoreLockedMode and RestoreForceEvaluate</note>
       </trans-unit>
       <trans-unit id="Warning_VersionAboveUpperBound">
