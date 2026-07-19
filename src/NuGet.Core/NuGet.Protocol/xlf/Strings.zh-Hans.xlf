@@ -86,22 +86,22 @@
       </trans-unit>
       <trans-unit id="Error_RequiredJsonPropertyMissing">
         <source>Required property '{0}' not found in JSON.</source>
-        <target state="new">Required property '{0}' not found in JSON.</target>
+        <target state="translated">在 JSON 中未找到必需属性“{0}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnexpectedJsonToken">
         <source>Unexpected JSON token type '{0}'.</source>
-        <target state="new">Unexpected JSON token type '{0}'.</target>
+        <target state="translated">意外的 JSON 令牌类型“{0}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnexpectedPayloadTokenType">
         <source>Expected payload to be a JSON object but was `{0}`.</source>
-        <target state="new">Expected payload to be a JSON object but was `{0}`.</target>
+        <target state="translated">有效负载应为 JSON 对象，但为 `{0}`。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_UnsupportedPayloadType">
         <source>Unsupported payload type `{0}`.</source>
-        <target state="new">Unsupported payload type `{0}`.</target>
+        <target state="translated">不支持的有效负载类型 `{0}`。</target>
         <note />
       </trans-unit>
       <trans-unit id="Http_CredentialsForForbidden">
@@ -507,12 +507,12 @@ The "ms" should be localized to the abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="Protocol_PackageTypeFilterMultipleNotSupported">
         <source>The source supports filtering by only one package type at a time.</source>
-        <target state="new">The source supports filtering by only one package type at a time.</target>
+        <target state="translated">源仅支持一次按一种包类型进行筛选。</target>
         <note />
       </trans-unit>
       <trans-unit id="Protocol_PackageTypeFilterNotSupported">
         <source>The source does not support filtering search results by package type.</source>
-        <target state="new">The source does not support filtering search results by package type.</target>
+        <target state="translated">源不支持按包类型筛选搜索结果。</target>
         <note />
       </trans-unit>
       <trans-unit id="Protocol_Search_LocalSourceNotFound">
