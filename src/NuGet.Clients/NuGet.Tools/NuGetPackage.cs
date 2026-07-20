@@ -229,7 +229,7 @@ namespace NuGetVSExtension
             ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);
             clearNuGetLocalResourcesCommand.Initialize();
 
-            PackageSourceMapperCommand packageSourceMapperCommand = new(_mcs, PackageSourceMappingService.Value);
+            PackageSourceMapperCommand packageSourceMapperCommand = new(_mcs, PackageSourceMappingService.Value, SolutionManager);
             packageSourceMapperCommand.Initialize();
         }
 

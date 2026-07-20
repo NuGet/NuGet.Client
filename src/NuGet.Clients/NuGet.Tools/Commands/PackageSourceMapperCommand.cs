@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Design;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using NuGetVSExtension;
@@ -25,20 +26,33 @@ namespace NuGet.Tools.Commands
 
         private readonly OleMenuCommandService _oleMenuCommandService;
         private readonly IPackageSourceMappingService _packageSourceMappingService;
+        private readonly Lazy<IVsSolutionManager> _solutionManager;
 
         public PackageSourceMapperCommand(
             OleMenuCommandService oleMenuCommandService,
-            IPackageSourceMappingService packageSourceMappingService)
+            IPackageSourceMappingService packageSourceMappingService,
+            Lazy<IVsSolutionManager> solutionManager)
         {
             _oleMenuCommandService = oleMenuCommandService ?? throw new ArgumentNullException(nameof(oleMenuCommandService));
             _packageSourceMappingService = packageSourceMappingService ?? throw new ArgumentNullException(nameof(packageSourceMappingService));
+            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
         }
 
         public void Initialize()
         {
             var commandId = new CommandID(CommandSet, CommandID);
-            var command = new OleMenuCommand(ExecutePackageSourceMapperCommand, commandId);
+            var command = new OleMenuCommand(ExecutePackageSourceMapperCommand, changeHandler: null, BeforeQueryStatus, commandId);
             _oleMenuCommandService.AddCommand(command);
+        }
+
+        // The Review Package Source Mapping command drives GitHub Copilot and the NuGet MCP tool using the current
+        // solution as context, which does not work without an open solution. Hide the button when no solution is open.
+        private void BeforeQueryStatus(object sender, EventArgs e)
+        {
+            var command = (OleMenuCommand)sender;
+            bool isSolutionOpen = _solutionManager.Value.IsSolutionOpen;
+            command.Visible = isSolutionOpen;
+            command.Enabled = isSolutionOpen;
         }
 
         private void ExecutePackageSourceMapperCommand(object sender, EventArgs e)
