@@ -188,7 +188,7 @@ namespace NuGet.Protocol.Core.Types
                     packageVersion,
                     sourceDisplayName
                     ));
-                await DeletePackage(_source, apiKey, packageId, packageVersion, noServiceEndpoint, allowInsecureConnections, log, CancellationToken.None);
+                await DeletePackage(apiKey, packageId, packageVersion, noServiceEndpoint, allowInsecureConnections, log, CancellationToken.None);
                 log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.DeleteCommandDeletedPackage,
                     packageId,
@@ -723,8 +723,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
         // Deletes a package from a Http server or file system
-        private async Task DeletePackage(string source,
-            string apiKey,
+        private async Task DeletePackage(string apiKey,
             string packageId,
             string packageVersion,
             bool noServiceEndpoint,
@@ -732,10 +731,10 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
-            var sourceUri = GetServiceEndpointUrl(source, string.Empty, noServiceEndpoint);
+            var sourceUri = GetServiceEndpointUrl(_source, string.Empty, noServiceEndpoint);
             if (IsFileSource())
             {
-                DeletePackageFromFileSystem(source, packageId, packageVersion);
+                DeletePackageFromFileSystem(_source, packageId, packageVersion);
             }
             else
             {
@@ -744,7 +743,7 @@ namespace NuGet.Protocol.Core.Types
                     logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
                     return;
                 }
-                await DeletePackageFromServer(source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
+                await DeletePackageFromServer(_source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
             }
         }
 
