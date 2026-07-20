@@ -369,13 +369,13 @@ namespace NuGet.Protocol.Core.Types
 
             bool wasPackagePushed = true;
 
-            if (IsFileSource())
+            if (sourceUri.IsFile)
             {
                 await PushPackageToFileSystem(sourceUri, packageToPush, skipDuplicate, log, token);
             }
             else
             {
-                wasPackagePushed = await PushPackageToServer(source, _httpSource, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
+                wasPackagePushed = await PushPackageToServer(source, _httpSource!, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
                     requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
             }
 
