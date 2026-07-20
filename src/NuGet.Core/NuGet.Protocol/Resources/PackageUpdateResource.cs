@@ -744,10 +744,14 @@ namespace NuGet.Protocol.Core.Types
                     return;
                 }
 <<<<<<< HEAD
+<<<<<<< HEAD
                 await DeletePackageFromServer(_source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
 =======
                 await DeletePackageFromServer(source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
 >>>>>>> 26b359b73 (Pass HttpSource into server methods to avoid null suppressions)
+=======
+                await DeletePackageFromServer(_source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
+>>>>>>> 65ef0ff9d (Remove redundant source parameter from DeletePackage)
             }
         }
 
