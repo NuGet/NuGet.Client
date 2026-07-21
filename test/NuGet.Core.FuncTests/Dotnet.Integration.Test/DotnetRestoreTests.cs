@@ -4714,5 +4714,71 @@ EndGlobal";
             var packageDirectory = Path.Combine(pathContext.UserPackagesFolder, packageId.ToLowerInvariant(), expectedVersion);
             Directory.Exists(packageDirectory).Should().BeTrue($"expected {packageId} {expectedVersion} to be in the global packages folder");
         }
+
+        [Fact]
+        public async Task DotnetRestore_FloatingVersionWithForceRestore_DowngradesWhenHigherVersionIsRemovedFromSource()
+        {
+            // Arrange
+            using SimpleTestPathContext pathContext = _dotnetFixture.CreateSimpleTestPathContext();
+
+            const string packageId = "TestPackage";
+            var package100 = new SimpleTestPackageContext(packageId, "1.0.0");
+            var package200 = new SimpleTestPackageContext(packageId, "2.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                package100,
+                package200);
+
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+                "projectA",
+                pathContext.SolutionRoot,
+                NuGetFramework.Parse("net8.0"));
+
+            var packageRef = new SimpleTestPackageContext(packageId, "1.0.0");
+            packageRef.Version = "*";
+            projectA.AddPackageToAllFrameworks(packageRef);
+            projectA.Properties.Add("RestoreSources", pathContext.PackageSource);
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            solution.Projects.Add(projectA);
+            solution.Create();
+
+            string arguments = $"restore projectA{Path.DirectorySeparatorChar}projectA.csproj";
+
+            _dotnetFixture.RunDotnetExpectSuccess(
+                pathContext.SolutionRoot,
+                arguments,
+                testOutputHelper: _testOutputHelper);
+
+            AssertRestoredPackageVersion(projectA, packageId, "2.0.0");
+            string higherVersionGlobalPackageDirectory = Path.Combine(pathContext.UserPackagesFolder, packageId.ToLowerInvariant(), "2.0.0");
+            Directory.Exists(higherVersionGlobalPackageDirectory).Should().BeTrue($"expected {packageId} 2.0.0 to be in the global packages folder");
+
+            Directory.Delete(Path.Combine(pathContext.PackageSource, packageId.ToLowerInvariant(), "2.0.0"), recursive: true);
+
+            // Act
+            _dotnetFixture.RunDotnetExpectSuccess(
+                pathContext.SolutionRoot,
+                arguments + " --force",
+                testOutputHelper: _testOutputHelper);
+
+            // Assert
+            AssertRestoredPackageVersion(projectA, packageId, "1.0.0");
+            string lowerVersionGlobalPackageDirectory = Path.Combine(pathContext.UserPackagesFolder, packageId.ToLowerInvariant(), "1.0.0");
+            Directory.Exists(lowerVersionGlobalPackageDirectory).Should().BeTrue($"expected {packageId} 1.0.0 to be in the global packages folder");
+            Directory.Exists(higherVersionGlobalPackageDirectory).Should().BeTrue($"expected {packageId} 2.0.0 to remain in the global packages folder");
+        }
+
+        private static void AssertRestoredPackageVersion(SimpleTestProjectContext project, string packageId, string expectedVersion)
+        {
+            string assetsFilePath = Path.Combine(Path.GetDirectoryName(project.ProjectPath), "obj", LockFileFormat.AssetsFileName);
+            LockFile assetsFile = new LockFileFormat().Read(assetsFilePath);
+            assetsFile.Libraries.Single(e => e.Name.Equals(packageId, StringComparison.OrdinalIgnoreCase))
+                .Version
+                .Should()
+                .Be(NuGetVersion.Parse(expectedVersion));
+        }
     }
 }
