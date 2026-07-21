@@ -130,6 +130,48 @@ namespace NuGet.Core.FuncTest
         }
 
         [Fact]
+        public async Task ExecuteWithFileLockedAsync_WhenStaticStateIsResetConcurrently_DoesNotThrow()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+            using var resetCancellationTokenSource = new CancellationTokenSource();
+
+            var path = Path.Combine(testDirectory, nameof(ExecuteWithFileLockedAsync_WhenStaticStateIsResetConcurrently_DoesNotThrow));
+
+            await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                path,
+                _ => Task.FromResult(true),
+                CancellationToken.None);
+
+            Task resetTask = Task.Run(() =>
+            {
+                while (!resetCancellationTokenSource.IsCancellationRequested)
+                {
+                    StaticState.RaiseStartMSBuildRestoreTasks();
+                }
+            });
+
+            try
+            {
+                Func<int, Task<bool>> lockAsync = _ => ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                    path,
+                    token => Task.FromResult(!token.IsCancellationRequested),
+                    CancellationToken.None);
+
+                // Act
+                var results = await Task.WhenAll(Enumerable.Range(0, 200).Select(lockAsync));
+
+                // Assert
+                Assert.DoesNotContain(false, results);
+            }
+            finally
+            {
+                resetCancellationTokenSource.Cancel();
+                await resetTask;
+            }
+        }
+
+        [Fact]
         public async Task ConcurrencyUtilities_LockAllCasings()
         {
             // Arrange
