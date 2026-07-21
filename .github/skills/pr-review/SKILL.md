@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Reviews a NuGet/NuGet.Client pull request like a senior maintainer — sets up an isolated review workspace, builds and tests the affected projects, traces changes across files, and returns high-signal, severity-tagged findings with a merge verdict. Invoke explicitly with a PR number.
+description: Reviews a NuGet/NuGet.Client pull request like a senior maintainer — reviews in an isolated workspace by default, or against the reviewer's existing clone (self-review / local changes), builds and tests the affected projects, traces changes across files, and returns high-signal, severity-tagged findings with a merge verdict. Invoke explicitly with a PR number or branch.
 disable-model-invocation: true
 ---
 # NuGet/NuGet.Client PR Review
@@ -13,14 +13,24 @@ Work in four phases: **Set up, Understand and verify, Judge, and Report.**
 
 ---
 
-## Set up (isolated workspace)
+## Set up
 
-Never operate in the developer's active checkout — use an isolated cache so your `git`/`dotnet` commands never disturb their working tree.
+Pick the mode that matches whose change you're reviewing.
 
-1. **Cache path:** `%LOCALAPPDATA%\GitHubCopilot\ReviewSkill\NuGet.Client`
-2. **Clone or update:** clone if missing, else `git -C {cache} fetch origin`.
-3. **Get the PR:** `git -C {cache} fetch origin pull/{PR}/head:pr-{PR}` then `git -C {cache} checkout pr-{PR}`.
-4. **Restore when done:** `git -C {cache} checkout -`.
+### Mode A — someone else's PR (default): isolated workspace
+Use this when the change is on a branch or PR you don't have locally, so your `git`/`dotnet` commands never disturb anyone's active checkout.
+1. **Workspace path:** `%LOCALAPPDATA%\GitHubCopilot\ReviewSkill\NuGet.Client` — reused across reviews, so the clone is a one-time cost.
+2. **Clone or update:** clone if missing, else `git -C {workspace} fetch origin`.
+3. **Get the PR:** `git -C {workspace} fetch origin pull/{PR}/head:pr-{PR}` then `git -C {workspace} checkout pr-{PR}`; for a branch, `git -C {workspace} fetch origin {branch}` then check it out.
+4. **Restore when done:** `git -C {workspace} checkout -`.
+
+### Mode B — your own or a local change: review the existing clone
+Use this when the reviewer is the author, already has the branch in their NuGet.Client clone, or wants to review uncommitted local edits before committing.
+- **Skip the clone and checkout** — work in the reviewer's existing NuGet.Client clone (use the current working directory if it is one, otherwise ask for the path).
+- **Do not switch branches or touch the working tree** — review whatever is currently checked out, including uncommitted work.
+- **Pick the diff to review:** uncommitted (`git diff`), staged (`git diff --staged`), or the current branch against its base — ask which if it's ambiguous.
+
+Default to Mode A when given a PR number or a branch you don't have locally; default to Mode B when invoked with no argument, with `local`/`current`, or when the reviewer says they're reviewing their own or in-progress change.
 
 ### Build and debug — read the repo's own runbooks, don't guess
 - Build/test/debug (incl. cross-platform): read **`docs/debugging.md`**, **`docs/cross-platform-debugging.md`**, and **`CONTRIBUTING.md`**.
