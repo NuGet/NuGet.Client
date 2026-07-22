@@ -256,6 +256,34 @@ namespace NuGet.PackageManagement.UI
                 .Select(GetVersion)
                 .ToList();
 
+            // The per-version list above only reflects vulnerabilities embedded in the package source's
+            // registration metadata. Also honor the configured audit source(s) so that versions known to be
+            // vulnerable by the audit database are flagged, matching the details-pane icon/severity/CVE display
+            // and restore-time NuGetAudit. Registration and audit results are OR'd together.
+            if (_allPackageVersions != null && _allPackageVersions.Count > 0)
+            {
+                IReadOnlyCollection<NuGetVersion> versionsToEvaluate = _allPackageVersions.Select(v => v.version).ToList();
+                await searchResultPackage.UpdateVersionsVulnerabilitiesAsync(versionsToEvaluate, cancellationToken);
+
+                if (getPackageItemViewModel() != searchResultPackage)
+                {
+                    return;
+                }
+
+                IReadOnlyDictionary<NuGetVersion, int> auditVulnerableVersions = searchResultPackage.VulnerableVersions;
+                if (auditVulnerableVersions.Count > 0)
+                {
+                    for (int i = 0; i < _allPackageVersions.Count; i++)
+                    {
+                        (NuGetVersion version, bool isDeprecated, bool isVulnerable) = _allPackageVersions[i];
+                        if (!isVulnerable && auditVulnerableVersions.ContainsKey(version))
+                        {
+                            _allPackageVersions[i] = (version, isDeprecated, true);
+                        }
+                    }
+                }
+            }
+
             await CreateVersionsAsync(cancellationToken);
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnCurrentPackageChanged)
                 .PostOnFailure(nameof(DetailControlModel), nameof(OnCurrentPackageChanged));

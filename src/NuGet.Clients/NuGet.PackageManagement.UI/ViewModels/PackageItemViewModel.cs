@@ -820,6 +820,33 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(UpdatePackageMaxVulnerabilityAsync));
         }
 
+        /// <summary>
+        /// Evaluates the provided versions of this package against the audit-source vulnerability database
+        /// and records any vulnerable versions (with their max severity) in <see cref="VulnerableVersions"/>.
+        /// This is the same data source that drives the details-pane vulnerability icon, severity, and CVE links,
+        /// so the versions list stays consistent with them.
+        /// </summary>
+        public async Task UpdateVersionsVulnerabilitiesAsync(IReadOnlyCollection<NuGetVersion> versions, CancellationToken cancellationToken)
+        {
+            if (_vulnerabilityService is null || versions is null || versions.Count == 0)
+            {
+                return;
+            }
+
+            await RunOperationAsync(async (cancellationToken) =>
+            {
+                IReadOnlyDictionary<NuGetVersion, int> vulnerableVersions =
+                    await _vulnerabilityService.GetVulnerableVersionsAsync(Id, versions, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                foreach (KeyValuePair<NuGetVersion, int> vulnerableVersion in vulnerableVersions)
+                {
+                    SetVulnerabilityMaxSeverity(vulnerableVersion.Key, vulnerableVersion.Value);
+                }
+            },
+            cancellationToken);
+        }
+
         public async Task UpdatePackageStatusAsync(IEnumerable<PackageCollectionItem> installedPackages, CancellationToken cancellationToken, bool clearCache = false)
         {
             // Get the maximum version installed in any target project/solution
