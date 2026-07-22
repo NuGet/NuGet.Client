@@ -1383,8 +1383,8 @@ NuGet.Protocol.RemoteV3FindPackageByIdResource.SourceRepository.get -> NuGet.Pro
 NuGet.Protocol.RemoteV3FindPackageByIdResourceProvider
 NuGet.Protocol.RemoteV3FindPackageByIdResourceProvider.RemoteV3FindPackageByIdResourceProvider() -> void
 NuGet.Protocol.ReportAbuseResourceV3
-~NuGet.Protocol.ReportAbuseResourceV3.GetReportAbuseUrl(string id, NuGet.Versioning.NuGetVersion version) -> System.Uri
-~NuGet.Protocol.ReportAbuseResourceV3.ReportAbuseResourceV3(string uriTemplate) -> void
+NuGet.Protocol.ReportAbuseResourceV3.GetReportAbuseUrl(string! id, NuGet.Versioning.NuGetVersion! version) -> System.Uri!
+NuGet.Protocol.ReportAbuseResourceV3.ReportAbuseResourceV3(string? uriTemplate) -> void
 NuGet.Protocol.ReportAbuseResourceV3Provider
 NuGet.Protocol.ReportAbuseResourceV3Provider.ReportAbuseResourceV3Provider() -> void
 NuGet.Protocol.RepositoryCertificateInfo
@@ -1773,14 +1773,14 @@ override NuGet.Protocol.MetadataFieldConverter.WriteJson(Newtonsoft.Json.JsonWri
 ~override NuGet.Protocol.MetadataResourceV3.Exists(string packageId, bool includePrerelease, bool includeUnlisted, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
 ~override NuGet.Protocol.MetadataResourceV3.GetLatestVersions(System.Collections.Generic.IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, NuGet.Versioning.NuGetVersion>>>
 ~override NuGet.Protocol.MetadataResourceV3.GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion>>
-~override NuGet.Protocol.MetadataResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+override NuGet.Protocol.MetadataResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 override NuGet.Protocol.Model.PackageVulnerabilityInfo.Equals(object? obj) -> bool
 override NuGet.Protocol.Model.PackageVulnerabilityInfo.GetHashCode() -> int
 override NuGet.Protocol.NuGetVersionConverter.CanConvert(System.Type! objectType) -> bool
 override NuGet.Protocol.NuGetVersionConverter.ReadJson(Newtonsoft.Json.JsonReader! reader, System.Type! objectType, object? existingValue, Newtonsoft.Json.JsonSerializer! serializer) -> object?
 override NuGet.Protocol.NuGetVersionConverter.WriteJson(Newtonsoft.Json.JsonWriter! writer, object? value, Newtonsoft.Json.JsonSerializer! serializer) -> void
 override NuGet.Protocol.ODataServiceDocumentResourceV2Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
-~override NuGet.Protocol.PackageDetailsUriResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+override NuGet.Protocol.PackageDetailsUriResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 ~override NuGet.Protocol.PackageMetadataResourceV2Feed.GetMetadataAsync(NuGet.Packaging.Core.PackageIdentity package, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.IPackageSearchMetadata>
 ~override NuGet.Protocol.PackageMetadataResourceV2Feed.GetMetadataAsync(string packageId, bool includePrerelease, bool includeUnlisted, NuGet.Protocol.Core.Types.SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.IPackageSearchMetadata>>
 ~override NuGet.Protocol.PackageMetadataResourceV2FeedProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
@@ -1870,7 +1870,7 @@ override NuGet.Protocol.RemoteV3FindPackageByIdResource.GetAllVersionsAsync(stri
 override NuGet.Protocol.RemoteV3FindPackageByIdResource.GetDependencyInfoAsync(string! id, NuGet.Versioning.NuGetVersion! version, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.FindPackageByIdDependencyInfo?>!
 override NuGet.Protocol.RemoteV3FindPackageByIdResource.GetPackageDownloaderAsync(NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Packaging.IPackageDownloader?>!
 override NuGet.Protocol.RemoteV3FindPackageByIdResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! sourceRepository, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
-~override NuGet.Protocol.ReportAbuseResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+override NuGet.Protocol.ReportAbuseResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 override NuGet.Protocol.RepositorySignatureResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 override NuGet.Protocol.SafeBoolConverter.CanConvert(System.Type! objectType) -> bool
 override NuGet.Protocol.SafeBoolConverter.CanRead.get -> bool
