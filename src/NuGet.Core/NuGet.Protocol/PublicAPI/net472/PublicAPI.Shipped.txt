@@ -609,16 +609,16 @@ NuGet.Protocol.LocalMetadataResource.LocalMetadataResource(NuGet.Protocol.FindLo
 NuGet.Protocol.LocalMetadataResourceProvider
 NuGet.Protocol.LocalMetadataResourceProvider.LocalMetadataResourceProvider() -> void
 NuGet.Protocol.LocalPackageArchiveDownloader
-~NuGet.Protocol.LocalPackageArchiveDownloader.ContentReader.get -> NuGet.Packaging.IAsyncPackageContentReader
-~NuGet.Protocol.LocalPackageArchiveDownloader.CopyNupkgFileToAsync(string destinationFilePath, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
-~NuGet.Protocol.LocalPackageArchiveDownloader.CoreReader.get -> NuGet.Packaging.Core.IAsyncPackageCoreReader
+NuGet.Protocol.LocalPackageArchiveDownloader.ContentReader.get -> NuGet.Packaging.IAsyncPackageContentReader!
+NuGet.Protocol.LocalPackageArchiveDownloader.CopyNupkgFileToAsync(string! destinationFilePath, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
+NuGet.Protocol.LocalPackageArchiveDownloader.CoreReader.get -> NuGet.Packaging.Core.IAsyncPackageCoreReader!
 NuGet.Protocol.LocalPackageArchiveDownloader.Dispose() -> void
-~NuGet.Protocol.LocalPackageArchiveDownloader.GetPackageHashAsync(string hashAlgorithm, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
-~NuGet.Protocol.LocalPackageArchiveDownloader.LocalPackageArchiveDownloader(string source, string packageFilePath, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Common.ILogger logger) -> void
-~NuGet.Protocol.LocalPackageArchiveDownloader.SetExceptionHandler(System.Func<System.Exception, System.Threading.Tasks.Task<bool>> handleExceptionAsync) -> void
-~NuGet.Protocol.LocalPackageArchiveDownloader.SetThrottle(System.Threading.SemaphoreSlim throttle) -> void
-~NuGet.Protocol.LocalPackageArchiveDownloader.SignedPackageReader.get -> NuGet.Packaging.Signing.ISignedPackageReader
-~NuGet.Protocol.LocalPackageArchiveDownloader.Source.get -> string
+NuGet.Protocol.LocalPackageArchiveDownloader.GetPackageHashAsync(string! hashAlgorithm, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+NuGet.Protocol.LocalPackageArchiveDownloader.LocalPackageArchiveDownloader(string! source, string! packageFilePath, NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.Common.ILogger! logger) -> void
+NuGet.Protocol.LocalPackageArchiveDownloader.SetExceptionHandler(System.Func<System.Exception!, System.Threading.Tasks.Task<bool>!>! handleExceptionAsync) -> void
+NuGet.Protocol.LocalPackageArchiveDownloader.SetThrottle(System.Threading.SemaphoreSlim? throttle) -> void
+NuGet.Protocol.LocalPackageArchiveDownloader.SignedPackageReader.get -> NuGet.Packaging.Signing.ISignedPackageReader!
+NuGet.Protocol.LocalPackageArchiveDownloader.Source.get -> string!
 NuGet.Protocol.LocalPackageFileCache
 NuGet.Protocol.LocalPackageFileCache.LocalPackageFileCache() -> void
 NuGet.Protocol.LocalPackageFileCache.UpdateLastAccessTime(string! nupkgMetadataPath) -> void
@@ -1362,16 +1362,16 @@ NuGet.Protocol.RegistrationResourceV3Provider
 NuGet.Protocol.RegistrationResourceV3Provider.RegistrationResourceV3Provider() -> void
 NuGet.Protocol.RegistrationUtility
 NuGet.Protocol.RemotePackageArchiveDownloader
-~NuGet.Protocol.RemotePackageArchiveDownloader.ContentReader.get -> NuGet.Packaging.IAsyncPackageContentReader
-~NuGet.Protocol.RemotePackageArchiveDownloader.CopyNupkgFileToAsync(string destinationFilePath, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>
-~NuGet.Protocol.RemotePackageArchiveDownloader.CoreReader.get -> NuGet.Packaging.Core.IAsyncPackageCoreReader
+NuGet.Protocol.RemotePackageArchiveDownloader.ContentReader.get -> NuGet.Packaging.IAsyncPackageContentReader!
+NuGet.Protocol.RemotePackageArchiveDownloader.CopyNupkgFileToAsync(string! destinationFilePath, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
+NuGet.Protocol.RemotePackageArchiveDownloader.CoreReader.get -> NuGet.Packaging.Core.IAsyncPackageCoreReader!
 NuGet.Protocol.RemotePackageArchiveDownloader.Dispose() -> void
-~NuGet.Protocol.RemotePackageArchiveDownloader.GetPackageHashAsync(string hashAlgorithm, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
-~NuGet.Protocol.RemotePackageArchiveDownloader.RemotePackageArchiveDownloader(string source, NuGet.Protocol.Core.Types.FindPackageByIdResource resource, NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Common.ILogger logger) -> void
-~NuGet.Protocol.RemotePackageArchiveDownloader.SetExceptionHandler(System.Func<System.Exception, System.Threading.Tasks.Task<bool>> handleExceptionAsync) -> void
-~NuGet.Protocol.RemotePackageArchiveDownloader.SetThrottle(System.Threading.SemaphoreSlim throttle) -> void
-~NuGet.Protocol.RemotePackageArchiveDownloader.SignedPackageReader.get -> NuGet.Packaging.Signing.ISignedPackageReader
-~NuGet.Protocol.RemotePackageArchiveDownloader.Source.get -> string
+NuGet.Protocol.RemotePackageArchiveDownloader.GetPackageHashAsync(string! hashAlgorithm, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
+NuGet.Protocol.RemotePackageArchiveDownloader.RemotePackageArchiveDownloader(string! source, NuGet.Protocol.Core.Types.FindPackageByIdResource! resource, NuGet.Packaging.Core.PackageIdentity! packageIdentity, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger) -> void
+NuGet.Protocol.RemotePackageArchiveDownloader.SetExceptionHandler(System.Func<System.Exception!, System.Threading.Tasks.Task<bool>!>! handleExceptionAsync) -> void
+NuGet.Protocol.RemotePackageArchiveDownloader.SetThrottle(System.Threading.SemaphoreSlim? throttle) -> void
+NuGet.Protocol.RemotePackageArchiveDownloader.SignedPackageReader.get -> NuGet.Packaging.Signing.ISignedPackageReader!
+NuGet.Protocol.RemotePackageArchiveDownloader.Source.get -> string!
 NuGet.Protocol.RemoteV2FindPackageByIdResource
 NuGet.Protocol.RemoteV2FindPackageByIdResource.PackageSource.get -> NuGet.Configuration.PackageSource!
 NuGet.Protocol.RemoteV2FindPackageByIdResource.RemoteV2FindPackageByIdResource(NuGet.Configuration.PackageSource! packageSource, NuGet.Protocol.HttpSource! httpSource) -> void
@@ -1686,7 +1686,7 @@ override NuGet.Protocol.DownloadTimeoutStream.ReadAsync(byte[]! buffer, int offs
 override NuGet.Protocol.DownloadTimeoutStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
 override NuGet.Protocol.DownloadTimeoutStream.SetLength(long value) -> void
 override NuGet.Protocol.DownloadTimeoutStream.Write(byte[]! buffer, int offset, int count) -> void
-~override NuGet.Protocol.FeedTypeResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+override NuGet.Protocol.FeedTypeResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 override NuGet.Protocol.FindLocalPackagesResourcePackagesConfig.FindPackagesById(string! id, NuGet.Common.ILogger! logger, System.Threading.CancellationToken token) -> System.Collections.Generic.IEnumerable<NuGet.Protocol.LocalPackageInfo!>!
 override NuGet.Protocol.FindLocalPackagesResourcePackagesConfig.GetPackage(NuGet.Packaging.Core.PackageIdentity! identity, NuGet.Common.ILogger! logger, System.Threading.CancellationToken token) -> NuGet.Protocol.LocalPackageInfo?
 override NuGet.Protocol.FindLocalPackagesResourcePackagesConfig.GetPackage(System.Uri! path, NuGet.Common.ILogger! logger, System.Threading.CancellationToken token) -> NuGet.Protocol.LocalPackageInfo?
@@ -1938,11 +1938,11 @@ static NuGet.Protocol.Events.ProtocolDiagnostics.HttpEvent -> NuGet.Protocol.Eve
 static NuGet.Protocol.Events.ProtocolDiagnostics.NupkgCopiedEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticsNupkgCopiedEventHandler?
 static NuGet.Protocol.Events.ProtocolDiagnostics.ResourceEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticResourceEventHandler?
 static NuGet.Protocol.Events.ProtocolDiagnostics.ServiceIndexEntryEvent -> NuGet.Protocol.Events.ProtocolDiagnostics.ProtocolDiagnosticServiceIndexEntryEventHandler?
-~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV2(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, NuGet.Configuration.PackageSource source) -> NuGet.Protocol.Core.Types.SourceRepository
-~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.ProviderFactory factory) -> System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider>>
-~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, NuGet.Configuration.PackageSource source) -> NuGet.Protocol.Core.Types.SourceRepository
-~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, string source) -> NuGet.Protocol.Core.Types.SourceRepository
-~static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, string source, NuGet.Protocol.FeedType type) -> NuGet.Protocol.Core.Types.SourceRepository
+static NuGet.Protocol.FactoryExtensionsV3.GetCoreV2(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory! factory, NuGet.Configuration.PackageSource! source) -> NuGet.Protocol.Core.Types.SourceRepository!
+static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.ProviderFactory! factory) -> System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider!>!>!
+static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory! factory, NuGet.Configuration.PackageSource! source) -> NuGet.Protocol.Core.Types.SourceRepository!
+static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory! factory, string! source) -> NuGet.Protocol.Core.Types.SourceRepository!
+static NuGet.Protocol.FactoryExtensionsV3.GetCoreV3(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory! factory, string! source, NuGet.Protocol.FeedType type) -> NuGet.Protocol.Core.Types.SourceRepository!
 static NuGet.Protocol.FeedTypeUtility.GetFeedType(NuGet.Configuration.PackageSource! packageSource) -> NuGet.Protocol.FeedType
 static NuGet.Protocol.GetDownloadResultUtility.CleanUpDirectDownloads(NuGet.Protocol.Core.Types.PackageDownloadContext! downloadContext) -> void
 static NuGet.Protocol.GetDownloadResultUtility.GetDownloadResultAsync(NuGet.Protocol.HttpSource! client, NuGet.Packaging.Core.PackageIdentity! identity, System.Uri! uri, NuGet.Protocol.Core.Types.PackageDownloadContext! downloadContext, string! globalPackagesFolder, NuGet.Common.ILogger! logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.DownloadResourceResult!>!
@@ -2046,9 +2046,9 @@ static NuGet.Protocol.TimeoutUtility.StartWithTimeout(System.Func<System.Threadi
 static NuGet.Protocol.TimeoutUtility.StartWithTimeout<T>(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>!>! getTask, System.TimeSpan timeout, string? timeoutMessage, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
 static NuGet.Protocol.TokenStore.Instance.get -> NuGet.Protocol.TokenStore!
 static NuGet.Protocol.V2FeedUtilities.CreatePackageSearchResult(NuGet.Protocol.V2FeedPackageInfo! package, NuGet.Protocol.MetadataReferenceCache! metadataCache, NuGet.Protocol.Core.Types.SearchFilter! filter, NuGet.Protocol.V2FeedParser! feedParser, NuGet.Common.ILogger! log, System.Threading.CancellationToken cancellationToken) -> NuGet.Protocol.Core.Types.IPackageSearchMetadata!
-~static NuGet.Protocol.VisualStudio.FactoryExtensionsVS.GetVisualStudio(this NuGet.Protocol.Core.Types.Repository.ProviderFactory factory) -> System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider>>
-~static NuGet.Protocol.VisualStudio.FactoryExtensionsVS.GetVisualStudio(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, NuGet.Configuration.PackageSource source) -> NuGet.Protocol.Core.Types.SourceRepository
-~static NuGet.Protocol.VisualStudio.FactoryExtensionsVS.GetVisualStudio(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory factory, string source) -> NuGet.Protocol.Core.Types.SourceRepository
+static NuGet.Protocol.VisualStudio.FactoryExtensionsVS.GetVisualStudio(this NuGet.Protocol.Core.Types.Repository.ProviderFactory! factory) -> System.Collections.Generic.IEnumerable<System.Lazy<NuGet.Protocol.Core.Types.INuGetResourceProvider!>!>!
+static NuGet.Protocol.VisualStudio.FactoryExtensionsVS.GetVisualStudio(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory! factory, NuGet.Configuration.PackageSource! source) -> NuGet.Protocol.Core.Types.SourceRepository!
+static NuGet.Protocol.VisualStudio.FactoryExtensionsVS.GetVisualStudio(this NuGet.Protocol.Core.Types.Repository.RepositoryFactory! factory, string! source) -> NuGet.Protocol.Core.Types.SourceRepository!
 static NuGet.Repositories.NuGetv3LocalRepositoryUtility.GetPackage(System.Collections.Generic.IReadOnlyList<NuGet.Repositories.NuGetv3LocalRepository!>! repositories, string! id, NuGet.Versioning.NuGetVersion! version) -> NuGet.Repositories.LocalPackageSourceInfo?
 static readonly NuGet.Protocol.Core.Types.UserAgentStringBuilder.DefaultNuGetClientName -> string!
 static readonly NuGet.Protocol.HttpRequestMessageConfiguration.Default -> NuGet.Protocol.HttpRequestMessageConfiguration!
