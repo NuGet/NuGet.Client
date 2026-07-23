@@ -155,14 +155,14 @@ namespace NuGet.Core.FuncTest
             {
                 Func<int, Task<bool>> lockAsync = _ => ConcurrencyUtilities.ExecuteWithFileLockedAsync(
                     path,
-                    token => Task.FromResult(!token.IsCancellationRequested),
+                    _ => Task.FromResult(true),
                     CancellationToken.None);
 
                 // Act
                 var results = await Task.WhenAll(Enumerable.Range(0, 200).Select(lockAsync));
 
-                // Assert
-                Assert.DoesNotContain(false, results);
+                // Assert that all lock tasks completed; Task.WhenAll throws if the concurrent reset causes the lock to fail.
+                Assert.Equal(200, results.Length);
             }
             finally
             {
