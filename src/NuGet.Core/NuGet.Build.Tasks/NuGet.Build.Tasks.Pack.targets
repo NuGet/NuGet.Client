@@ -345,7 +345,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="@(_ProjectReferencesFromAssetsFile)"
       Targets="_GetProjectVersion"
       SkipNonexistentTargets="true"
-      SkipNonexistentProjects="true">
+      SkipNonexistentProjects="true"
+      Properties="BuildProjectReferences=false;">
       <Output
         TaskParameter="TargetOutputs"
         ItemName="_ProjectReferencesWithVersions"/>
@@ -364,21 +365,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_WalkEachTargetPerFramework">
     <ItemGroup>
-        <!-- Cross-targeting: address each inner-framework instance by its TargetFramework global property. -->
-        <_ProjectsWithTFM Condition="'$(TargetFrameworks)' != ''" Include="$(MSBuildProjectFullPath)" AdditionalProperties="TargetFramework=%(_TargetFrameworks.Identity)" />
-        <!-- Single-targeting: reuse the current (already-built) instance. Adding a TargetFramework global property here would fork a redundant evaluation. -->
-        <_ProjectsWithTFM Condition="'$(TargetFrameworks)' == ''" Include="$(MSBuildProjectFullPath)" />
+        <_ProjectsWithTFM Include="$(MSBuildProjectFullPath)" AdditionalProperties="TargetFramework=%(_TargetFrameworks.Identity)" />
+        <_ProjectsWithTFMNoBuild Include="$(MSBuildProjectFullPath)" AdditionalProperties="TargetFramework=%(_TargetFrameworks.Identity);BuildProjectReferences=false" />
 
-        <!-- _GetFrameworkAssemblyReferences depends on ResolveReferences, which participates in the project-to-project
-             reference protocol. During a normal pack the referenced projects have already been built, so ResolveReferences
-             reuses their existing evaluation/build results (no redundant evaluations). During a no-build pack (NoBuild=true)
-             the references were not built, so BuildProjectReferences=false is required to prevent ResolveReferences from
-             invoking the Build target on them (which would fail with NETSDK1085). Reuse the already-computed _ProjectsWithTFM
-             items and just append the BuildProjectReferences=false global property. -->
-        <_FrameworkAssemblyReferenceProjects Include="@(_ProjectsWithTFM)" Condition="'$(NoBuild)' != 'true'" />
-        <_FrameworkAssemblyReferenceProjects Include="@(_ProjectsWithTFM)" Condition="'$(NoBuild)' == 'true'">
-          <AdditionalProperties>%(_ProjectsWithTFM.AdditionalProperties);BuildProjectReferences=false</AdditionalProperties>
-        </_FrameworkAssemblyReferenceProjects>
     </ItemGroup>
     <MSBuild
       Condition="'$(IncludeBuildOutput)' == 'true'"
@@ -415,7 +404,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <MSBuild
       Condition="'$(IncludeSource)' == 'true'"
-      Projects="@(_ProjectsWithTFM)"
+      Projects="@(_ProjectsWithTFMNoBuild)"
       Targets="SourceFilesProjectOutputGroup"
       BuildInParallel="$(BuildInParallel)">
 
@@ -425,7 +414,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </MSBuild>
 
     <MSBuild
-      Projects="@(_FrameworkAssemblyReferenceProjects)"
+      Projects="@(_ProjectsWithTFMNoBuild)"
       Targets="_GetFrameworkAssemblyReferences"
       BuildInParallel="$(BuildInParallel)">
 
@@ -435,7 +424,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </MSBuild>
 
     <MSBuild
-      Projects="@(_ProjectsWithTFM)"
+      Projects="@(_ProjectsWithTFMNoBuild)"
       Targets="_GetFrameworksWithSuppressedDependencies"
       BuildInParallel="$(BuildInParallel)">
 

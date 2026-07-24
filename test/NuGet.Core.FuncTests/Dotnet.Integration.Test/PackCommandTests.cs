@@ -2692,8 +2692,7 @@ namespace ClassLibrary
                     var nuspecReader = nupkgReader.NuspecReader;
                     // Validate the assets.
                     var srcItems = nupkgReader.GetFiles("src").ToArray();
-
-                    // At least the user-authored source files are always included.
+                    Assert.Equal(4, srcItems.Length);
                     Assert.Contains("src/ClassLibrary1/ClassLibrary1.csproj", srcItems);
                     Assert.Contains("src/ClassLibrary1/Class1.cs", srcItems);
                     Assert.Contains("src/ClassLibrary1/Extensions/ExtensionMethods.cs", srcItems);
