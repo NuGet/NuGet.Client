@@ -62,8 +62,9 @@ Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
 
 $startTime = [DateTime]::UtcNow
-if (-not $BuildNumber) {
-    $BuildNumber = Get-BuildNumber
+$pBuildNumber =""
+if ($BuildNumber) {
+    $pBuildNumber = "/p:BuildNumber=$BuildNumber"
 }
 
 Invoke-BuildStep 'Installing .NET CLI for tests' {
@@ -90,7 +91,7 @@ Invoke-BuildStep 'Cleaning package cache' {
 
 Invoke-BuildStep 'Running /t:RestoreVS' {
 
-    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel $pBuildNumber /v:m /m:1
 
     if (-not $?)
     {
@@ -104,7 +105,7 @@ Invoke-BuildStep 'Running /t:RestoreVS' {
 
 Invoke-BuildStep 'Running /t:CoreFuncTests' {
 
-    & $MSBuildExe build\build.proj /t:CoreFuncTests /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+    & $MSBuildExe build\build.proj /t:CoreFuncTests /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel $pBuildNumber /v:m /m:1
 
     if (-not $?)
     {
