@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 NuGet.Protocol.AlternatePackageMetadata
 NuGet.Protocol.AlternatePackageMetadata.AlternatePackageMetadata() -> void
 NuGet.Protocol.AlternatePackageMetadata.PackageId.get -> string?
