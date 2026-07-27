@@ -41,7 +41,20 @@ namespace NuGet.SolutionRestoreManager
         private Lazy<ISolutionRestoreChecker> SolutionRestoreChecker { get; set; }
 
         private IComponentModel _componentModel;
-        private ISettings _settings;
+        private ISettings Settings
+        {
+            get
+            {
+                if (field is null)
+                {
+                    field = _componentModel.GetService<ISettings>();
+                    Assumes.Present(field);
+                }
+
+                return field;
+            }
+            set;
+        }
 
         /// <summary>
         /// The <see cref="IVsSolutionBuildManager3"/> object controlling the update solution events.
@@ -75,7 +88,7 @@ namespace NuGet.SolutionRestoreManager
             Assumes.Present(buildManager);
             Assumes.Present(solutionRestoreChecker);
 
-            _settings = settings;
+            Settings = settings;
             SolutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(() => restoreWorker);
             SolutionRestoreChecker = new Lazy<ISolutionRestoreChecker>(() => solutionRestoreChecker);
             _solutionBuildManager = buildManager;
@@ -156,13 +169,7 @@ namespace NuGet.SolutionRestoreManager
             // Returns true if automatic package restore on build is enabled.
             bool ShouldRestoreOnBuild()
             {
-                if (_settings is null)
-                {
-                    _settings = _componentModel.GetService<ISettings>();
-                    Assumes.Present(_settings);
-                }
-
-                var packageRestoreConsent = new PackageRestoreConsent(_settings);
+                var packageRestoreConsent = new PackageRestoreConsent(Settings);
                 return packageRestoreConsent.IsAutomatic;
             }
         }
