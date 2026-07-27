@@ -10,8 +10,8 @@ This file should be imported by eng/Versions.props
     <!-- dotnet-corefx dependencies -->
     <SystemComponentModelCompositionPackageVersion>4.5.0</SystemComponentModelCompositionPackageVersion>
     <!-- dotnet-dotnet dependencies -->
-    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.26360.107</MicrosoftDotNetArcadeSdkPackageVersion>
-    <MicrosoftDotNetXliffTasksPackageVersion>10.0.0-beta.26360.107</MicrosoftDotNetXliffTasksPackageVersion>
+    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.26374.114</MicrosoftDotNetArcadeSdkPackageVersion>
+    <MicrosoftDotNetXliffTasksPackageVersion>10.0.0-beta.26374.114</MicrosoftDotNetXliffTasksPackageVersion>
     <!-- dotnet-msbuild dependencies -->
     <MicrosoftBuildPackageVersion>17.3.1</MicrosoftBuildPackageVersion>
     <!-- dotnet-runtime dependencies -->
@@ -20,7 +20,7 @@ This file should be imported by eng/Versions.props
     <SystemFormatsAsn1PackageVersion>8.0.1</SystemFormatsAsn1PackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>6.0.4</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.6</SystemSecurityCryptographyProtectedDataPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>6.0.1</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>8.0.4</SystemSecurityCryptographyXmlPackageVersion>
     <!-- dotnet-xdt dependencies -->
     <MicrosoftWebXdtPackageVersion>3.2.0</MicrosoftWebXdtPackageVersion>
   </PropertyGroup>
