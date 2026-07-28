@@ -175,6 +175,51 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Read_WhenReadingMultilineJson_TracksTokenPosition()
+        {
+            var json = Encoding.UTF8.GetBytes("{\n  \"a\": \"value\"\n}");
+
+            using var stream = new MemoryStream(json);
+            using var reader = new Utf8JsonStreamReader(stream);
+
+            Assert.Equal(1, reader.LineNumber);
+            Assert.Equal(1, reader.ColumnNumber);
+
+            reader.Read();
+            Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
+            Assert.Equal(2, reader.LineNumber);
+            Assert.Equal(3, reader.ColumnNumber);
+
+            reader.Read();
+            Assert.Equal(JsonTokenType.String, reader.TokenType);
+            Assert.Equal(2, reader.LineNumber);
+            Assert.Equal(8, reader.ColumnNumber);
+        }
+
+        [Fact]
+        public void Read_WhenTokenIsAfterBufferBoundary_TracksTokenPosition()
+        {
+            string json = "{\n  \"padding\": \"" + new string('a', 1000) + "\",\n  \"target\": \"value\"\n}";
+
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+            using var reader = new Utf8JsonStreamReader(stream, 1024);
+
+            while (reader.Read() &&
+                !(reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals("target"u8)))
+            {
+            }
+
+            Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
+            Assert.Equal(3, reader.LineNumber);
+            Assert.Equal(3, reader.ColumnNumber);
+
+            reader.Read();
+            Assert.Equal(JsonTokenType.String, reader.TokenType);
+            Assert.Equal(3, reader.LineNumber);
+            Assert.Equal(13, reader.ColumnNumber);
+        }
+
+        [Fact]
         public void Read_WhenReadingSmallJsonPastEnd_Read()
         {
             var json = Encoding.UTF8.GetBytes(SmallJson);
