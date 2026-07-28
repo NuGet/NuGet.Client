@@ -8,11 +8,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Shared;
 using NuGet.Versioning;
+using JsonException = System.Text.Json.JsonException;
 
 namespace NuGet.ProjectModel
 {
@@ -33,6 +37,12 @@ namespace NuGet.ProjectModel
         private const string DependenciesProperty = "dependencies";
         private const string TypeProperty = "type";
         private const string FrameworkProperty = "framework";
+        private static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
+        private static readonly JsonDocumentOptions DocumentOptions = new()
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip
+        };
 
         public static PackagesLockFile Parse(string lockFileContent, string path)
         {
@@ -62,18 +72,20 @@ namespace NuGet.ProjectModel
 
         public static PackagesLockFile Read(Stream stream, ILogger log, string path)
         {
-            using (var textReader = new StreamReader(stream))
-            {
-                return Read(textReader, log, path);
-            }
-        }
-
-        public static PackagesLockFile Read(TextReader reader, ILogger log, string path)
-        {
             try
             {
-                var json = JsonUtility.LoadJson(reader);
-                var lockFile = ReadLockFile(json);
+                PackagesLockFile lockFile;
+                if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                    || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+                {
+                    lockFile = ReadLockFileWithSystemTextJson(stream);
+                }
+                else
+                {
+                    using var textReader = new StreamReader(stream);
+                    lockFile = ReadLockFile(textReader);
+                }
+
                 lockFile.Path = path;
                 return lockFile;
             }
@@ -89,6 +101,73 @@ namespace NuGet.ProjectModel
                     Version = int.MinValue,
                     Path = path
                 };
+            }
+        }
+
+        public static PackagesLockFile Read(TextReader reader, ILogger log, string path)
+        {
+            try
+            {
+                var lockFile = ReadLockFile(reader);
+                lockFile.Path = path;
+                return lockFile;
+            }
+            catch (Exception ex)
+            {
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingLockFile,
+                    path, ex.Message));
+
+                // Ran into parsing errors, mark it as unlocked and out-of-date
+                return new PackagesLockFile
+                {
+                    Version = int.MinValue,
+                    Path = path
+                };
+            }
+        }
+
+        private static PackagesLockFile ReadLockFile(TextReader reader)
+        {
+            return ReadLockFile(reader, environmentVariableReader: null);
+        }
+
+        internal static PackagesLockFile ReadLockFile(
+            TextReader reader,
+            IEnvironmentVariableReader environmentVariableReader)
+        {
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return ReadLockFileWithSystemTextJson(reader);
+            }
+
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            {
+                return ReadLockFileWithSystemTextJson(reader);
+            }
+
+            return ReadLockFile(JsonUtility.LoadJson(reader));
+        }
+
+        /// <summary>
+        /// Reader-based System.Text.Json reader overload to align with various API calling paths.
+        /// The stream-based overload is preferred to prevent buffering the entire stream in memory.
+        /// </summary>
+        internal static PackagesLockFile ReadLockFileWithSystemTextJson(TextReader reader)
+        {
+            using JsonDocument document = JsonDocument.Parse(reader.ReadToEnd(), DocumentOptions);
+            return ReadLockFile(document.RootElement);
+        }
+
+        /// <summary>
+        /// Stream-based System.Text.Json reader overload to prevent buffering the entire stream in memory.
+        /// </summary>
+        internal static PackagesLockFile ReadLockFileWithSystemTextJson(Stream stream)
+        {
+            using (stream)
+            {
+                using JsonDocument document = JsonDocument.Parse(stream, DocumentOptions);
+                return ReadLockFile(document.RootElement);
             }
         }
 
@@ -126,6 +205,105 @@ namespace NuGet.ProjectModel
             };
 
             return lockFile;
+        }
+
+        private static PackagesLockFile ReadLockFile(JsonElement cursor)
+        {
+            int version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
+            IList<PackagesLockFileTarget> targets;
+
+            if (version >= AliasedVersion)
+            {
+                // V3 format: read from root level (alias/rid keys with framework and dependencies inside)
+                targets = new List<PackagesLockFileTarget>();
+                foreach (JsonProperty property in cursor.EnumerateObject())
+                {
+                    if (property.Name != VersionProperty)
+                    {
+                        var target = ReadTargetV3(property.Name, property.Value);
+                        if (target != null)
+                        {
+                            targets.Add(target);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // V1 and V2 format: read from dependencies property
+                targets = cursor.TryGetProperty(DependenciesProperty, out JsonElement dependencies)
+                    ? ReadObject(dependencies, ReadDependencyV2)
+                    : new List<PackagesLockFileTarget>(0);
+            }
+
+            var lockFile = new PackagesLockFile()
+            {
+                Version = version,
+                Targets = targets,
+            };
+
+            return lockFile;
+        }
+
+        private static int ReadInt(JsonElement json, string propertyName, int defaultValue)
+        {
+            if (!json.TryGetProperty(propertyName, out JsonElement value))
+            {
+                return defaultValue;
+            }
+
+            if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int number))
+            {
+                return number;
+            }
+
+            if (value.ValueKind == JsonValueKind.String
+                && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
+            {
+                return number;
+            }
+
+            return defaultValue;
+        }
+
+        private static IList<T> ReadObject<T>(JsonElement json, Func<string, JsonElement, T> readItem)
+        {
+            if (json.ValueKind != JsonValueKind.Object)
+            {
+                return new List<T>(0);
+            }
+
+            var items = new List<T>();
+
+            foreach (JsonProperty property in json.EnumerateObject())
+            {
+                items.Add(readItem(property.Name, property.Value));
+            }
+
+            return items;
+        }
+
+        private static string ReadString(JsonElement json, string propertyName)
+        {
+            if (!json.TryGetProperty(propertyName, out JsonElement value))
+            {
+                return null;
+            }
+
+            return ReadValueAsString(value);
+        }
+
+        private static string ReadValueAsString(JsonElement value)
+        {
+            return value.ValueKind switch
+            {
+                JsonValueKind.String => value.GetString(),
+                JsonValueKind.Number => value.GetRawText(),
+                JsonValueKind.True => bool.TrueString,
+                JsonValueKind.False => bool.FalseString,
+                JsonValueKind.Null => null,
+                _ => throw new JsonException()
+            };
         }
 
         public static string Render(PackagesLockFile lockFile)
@@ -279,6 +457,103 @@ namespace NuGet.ProjectModel
             dependency.ContentHash = JsonUtility.ReadProperty<string>(jObject, ContentHashProperty);
 
             return dependency;
+        }
+
+        private static PackagesLockFileTarget ReadDependencyV2(string property, JsonElement json)
+        {
+            var parts = property.Split(PathSplitChars);
+
+            var target = new PackagesLockFileTarget
+            {
+                TargetFramework = NuGetFramework.Parse(parts[0]),
+                Dependencies = ReadObject(json, ReadTargetDependency)
+            };
+
+            if (parts.Length == 2)
+            {
+                target.RuntimeIdentifier = parts[1];
+            }
+
+            return target;
+        }
+
+        private static PackagesLockFileTarget ReadTargetV3(string property, JsonElement json)
+        {
+            if (json.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            string frameworkString = ReadString(json, FrameworkProperty);
+            if (string.IsNullOrEmpty(frameworkString))
+            {
+                return null;
+            }
+
+            var parts = property.Split(PathSplitChars);
+
+            var target = new PackagesLockFileTarget
+            {
+                TargetFramework = NuGetFramework.Parse(frameworkString),
+                RuntimeIdentifier = parts.Length == 2 ? parts[1] : null,
+                TargetAlias = parts[0],
+                Dependencies = json.TryGetProperty(DependenciesProperty, out JsonElement dependencies)
+                    ? ReadObject(dependencies, ReadTargetDependency)
+                    : new List<LockFileDependency>(0)
+            };
+
+            return target;
+        }
+
+        private static LockFileDependency ReadTargetDependency(string property, JsonElement json)
+        {
+            if (json.ValueKind != JsonValueKind.Object)
+            {
+                throw new JsonException();
+            }
+
+            var dependency = new LockFileDependency
+            {
+                Id = property,
+                Dependencies = json.TryGetProperty(DependenciesProperty, out JsonElement dependencies)
+                    ? ReadObject(dependencies, ReadPackageDependency)
+                    : new List<PackageDependency>(0)
+            };
+
+            string typeString = ReadString(json, TypeProperty);
+
+            if (!string.IsNullOrEmpty(typeString)
+                && Enum.TryParse<PackageDependencyType>(typeString, ignoreCase: true, result: out var installationType))
+            {
+                dependency.Type = installationType;
+            }
+
+            string resolvedString = ReadString(json, ResolvedProperty);
+
+            if (!string.IsNullOrEmpty(resolvedString))
+            {
+                dependency.ResolvedVersion = NuGetVersion.Parse(resolvedString);
+            }
+
+            string requestedString = ReadString(json, RequestedProperty);
+
+            if (!string.IsNullOrEmpty(requestedString))
+            {
+                dependency.RequestedVersion = VersionRange.Parse(requestedString);
+            }
+
+            dependency.ContentHash = ReadString(json, ContentHashProperty);
+
+            return dependency;
+        }
+
+        private static PackageDependency ReadPackageDependency(string property, JsonElement json)
+        {
+            string versionRange = ReadValueAsString(json);
+
+            return new PackageDependency(
+                property,
+                versionRange == null ? null : VersionRange.Parse(versionRange));
         }
 
         private static JProperty WriteTargetV3(PackagesLockFileTarget target)

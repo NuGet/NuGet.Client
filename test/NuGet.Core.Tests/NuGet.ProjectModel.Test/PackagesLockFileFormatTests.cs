@@ -1,10 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -58,6 +64,109 @@ namespace NuGet.ProjectModel.Test
             Assert.Null(target.Dependencies[1].RequestedVersion);
             Assert.Equal("1.0.0", target.Dependencies[0].ResolvedVersion.ToNormalizedString());
             Assert.NotEmpty(target.Dependencies[1].ContentHash);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_ReadWithCommentsAndVersionAfterDependencies()
+        {
+            var lockFileContent = @"{
+                // The version property is not required to be first.
+                ""dependencies"": {
+                    ""net8.0"": {
+                        ""PackageA"": {
+                            ""type"": ""Direct"",
+                            ""resolved"": ""1.0.0"",
+                            ""dependencies"": {
+                                ""PackageB"": null,
+                            },
+                        },
+                    },
+                },
+                ""version"": 1,
+            }";
+
+            PackagesLockFile lockFile = ParseWithSystemTextJson(lockFileContent);
+
+            Assert.Equal(1, lockFile.Version);
+            var target = Assert.Single(lockFile.Targets);
+            Assert.Equal(NuGetFramework.Parse("net8.0"), target.TargetFramework);
+            var package = Assert.Single(target.Dependencies);
+            Assert.Equal("PackageA", package.Id);
+            Assert.Equal(VersionRange.All, Assert.Single(package.Dependencies).VersionRange);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_ReadVersion3WithVersionAfterTargets()
+        {
+            var lockFileContent = @"{
+                ""net8.0"": {
+                    ""framework"": ""net8.0"",
+                    ""dependencies"": {
+                        ""PackageA"": {
+                            ""type"": ""Direct"",
+                            ""resolved"": ""1.0.0""
+                        }
+                    }
+                },
+                ""version"": 3
+            }";
+
+            PackagesLockFile lockFile = ParseWithSystemTextJson(lockFileContent);
+
+            Assert.Equal(3, lockFile.Version);
+            var target = Assert.Single(lockFile.Targets);
+            Assert.Equal("net8.0", target.TargetAlias);
+            Assert.Equal("PackageA", Assert.Single(target.Dependencies).Id);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_ReadMalformedJson_ReturnsInvalidLockFileAndLogs()
+        {
+            var logger = new TestLogger();
+
+            var lockFile = PackagesLockFileFormat.Parse(
+                @"{ ""version"": 1, ""dependencies"": {",
+                logger,
+                "packages.lock.json");
+
+            Assert.Equal(int.MinValue, lockFile.Version);
+            Assert.Equal("packages.lock.json", lockFile.Path);
+            Assert.Single(logger.InformationMessages);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_ReadStream_DisposesStreamAndReadsLargeValues()
+        {
+            string contentHash = new string('a', 20_000);
+            string lockFileContent = $@"{{
+                ""version"": 1,
+                ""dependencies"": {{
+                    ""net8.0"": {{
+                        ""PackageA"": {{
+                            ""type"": ""Direct"",
+                            ""resolved"": ""1.0.0"",
+                            ""contentHash"": ""{contentHash}""
+                        }}
+                    }}
+                }}
+            }}";
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(lockFileContent));
+
+            var lockFile = PackagesLockFileFormat.Read(stream, NullLogger.Instance, "In Memory");
+
+            Assert.False(stream.CanRead);
+            Assert.Equal(contentHash, Assert.Single(Assert.Single(lockFile.Targets).Dependencies).ContentHash);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_ReadLockFileWithSystemTextJsonStream_DisposesStream()
+        {
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(@"{ ""version"": 1, ""dependencies"": {} }"));
+
+            PackagesLockFile lockFile = PackagesLockFileFormat.ReadLockFileWithSystemTextJson(stream);
+
+            Assert.False(stream.CanRead);
+            Assert.Equal(1, lockFile.Version);
         }
 
         [Fact]
@@ -449,6 +558,18 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(2, lockFile.Version);
             Assert.Equal(1, lockFile.Targets.Count);
             Assert.Null(lockFile.Targets[0].TargetAlias);
+        }
+
+        private static PackagesLockFile ParseWithSystemTextJson(string content)
+        {
+            var environmentVariableReader = new TestEnvironmentVariableReader(
+                new Dictionary<string, string>
+                {
+                    ["NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"] = "true"
+                });
+
+            using var reader = new StringReader(content);
+            return PackagesLockFileFormat.ReadLockFile(reader, environmentVariableReader);
         }
     }
 }
