@@ -1,15 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Text.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.RuntimeModel.Test
 {
     public class JsonRuntimeFormatTests
     {
+        private const string SimpleRuntimeGraphContent = "{\"runtimes\":{\"any\":{}}}";
+
         [Theory]
         [InlineData("{}")]
         [InlineData("{\"runtimes\":{}}")]
@@ -122,6 +129,126 @@ namespace NuGet.RuntimeModel.Test
                     }), ParseRuntimeJsonString(content));
         }
 
+        [Fact]
+        public void ReadRuntimeGraph_WithFilePath_ParsesRuntimeGraph()
+        {
+            string filePath = Path.GetTempFileName();
+
+            try
+            {
+                File.WriteAllText(filePath, SimpleRuntimeGraphContent);
+
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(filePath));
+            }
+            finally
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraph_WithStream_ParsesRuntimeGraph()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
+            {
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
+            }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraph_WithEnvironmentOptIn_ParsesWithSystemTextJson()
+        {
+            var environmentVariableReader = new TestEnvironmentVariableReader(
+                new Dictionary<string, string>
+                {
+                    ["NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"] = "true"
+                });
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
+            {
+                Assert.Equal(
+                    CreateSimpleRuntimeGraph(),
+                    JsonRuntimeFormat.ReadRuntimeGraph(stream, environmentVariableReader));
+            }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithStream_ParsesRuntimeGraph()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
+            {
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
+            }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraph_WithJsonElement_ParsesRuntimeGraph()
+        {
+            using (JsonDocument document = JsonDocument.Parse(SimpleRuntimeGraphContent))
+            {
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(document.RootElement));
+            }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraph_WithJToken_ParsesRuntimeGraph()
+        {
+            const string content = """
+                {
+                    "runtimes": {
+                        "win-x64": {
+                            "#import": [ "win" ],
+                            "Some.Package": {
+                                "Some.Package.win-x64": "1.0.0"
+                            }
+                        }
+                    },
+                    "supports": {
+                        "windows": {
+                            "net8.0": [ "win-x64" ]
+                        }
+                    }
+                }
+                """;
+            JToken json = JToken.Parse(content);
+
+            Assert.Equal(ParseRuntimeJsonString(content), JsonRuntimeFormat.ReadRuntimeGraph(json));
+        }
+
+        [Fact]
+        public void ReadRuntimeGraph_WithCommentsAndTrailingCommas_ParsesRuntimeGraph()
+        {
+            const string content = """
+                {
+                    // Runtime identifiers
+                    "runtimes": {
+                        "any": {
+                            "#import": [],
+                        },
+                    },
+                }
+                """;
+
+            using (var reader = new StringReader(content))
+            {
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader));
+            }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithTextReader_ParsesRuntimeGraph()
+        {
+            using (var reader = new StringReader(SimpleRuntimeGraphContent))
+            {
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader));
+            }
+        }
+
+        private static RuntimeGraph CreateSimpleRuntimeGraph()
+        {
+            return new RuntimeGraph(new[] { new RuntimeDescription("any") });
+        }
+
         private RuntimeGraph ParseRuntimeJsonString(string content)
         {
             using (var reader = new StringReader(content))
@@ -129,5 +256,6 @@ namespace NuGet.RuntimeModel.Test
                 return JsonRuntimeFormat.ReadRuntimeGraph(reader);
             }
         }
+
     }
 }

@@ -1,0 +1,30 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
+
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace NuGet.RuntimeModel
+{
+    [JsonSourceGenerationOptions(
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip)]
+    [JsonSerializable(typeof(RuntimeGraphJsonModel))]
+    internal sealed partial class JsonRuntimeFormatContext : JsonSerializerContext
+    {
+    }
+
+    internal sealed class RuntimeGraphJsonModel
+    {
+        [JsonPropertyName("runtimes")]
+        [JsonConverter(typeof(RuntimeDescriptionCollectionJsonConverter))]
+        public List<RuntimeDescription>? Runtimes { get; set; }
+
+        [JsonPropertyName("supports")]
+        [JsonConverter(typeof(CompatibilityProfileCollectionJsonConverter))]
+        public List<CompatibilityProfile>? Supports { get; set; }
+    }
+}

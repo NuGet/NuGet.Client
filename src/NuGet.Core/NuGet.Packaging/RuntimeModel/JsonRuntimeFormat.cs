@@ -5,10 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Shared;
 using NuGet.Versioning;
+using STJJsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NuGet.RuntimeModel
 {
@@ -24,13 +28,57 @@ namespace NuGet.RuntimeModel
 
         public static RuntimeGraph ReadRuntimeGraph(Stream stream)
         {
-            using (var streamReader = new StreamReader(stream))
+            return ReadRuntimeGraph(stream, environmentVariableReader: null);
+        }
+
+        internal static RuntimeGraph ReadRuntimeGraph(
+            Stream stream,
+            IEnvironmentVariableReader? environmentVariableReader)
+        {
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
             {
-                return ReadRuntimeGraph(streamReader);
+                return ReadRuntimeGraphWithSystemTextJson(stream);
             }
+
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            {
+                return ReadRuntimeGraphWithSystemTextJson(stream);
+            }
+
+            return ReadRuntimeGraphWithNewtonsoftJson(stream);
         }
 
         public static RuntimeGraph ReadRuntimeGraph(TextReader textReader)
+        {
+            return ReadRuntimeGraph(textReader, environmentVariableReader: null);
+        }
+
+        internal static RuntimeGraph ReadRuntimeGraph(
+            TextReader textReader,
+            IEnvironmentVariableReader? environmentVariableReader)
+        {
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return ReadRuntimeGraphWithSystemTextJson(textReader);
+            }
+
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            {
+                return ReadRuntimeGraphWithSystemTextJson(textReader);
+            }
+
+            return ReadRuntimeGraphWithNewtonsoftJson(textReader);
+        }
+
+        private static RuntimeGraph ReadRuntimeGraphWithNewtonsoftJson(Stream stream)
+        {
+            using (var streamReader = new StreamReader(stream))
+            {
+                return ReadRuntimeGraphWithNewtonsoftJson(streamReader);
+            }
+        }
+
+        private static RuntimeGraph ReadRuntimeGraphWithNewtonsoftJson(TextReader textReader)
         {
             var loadSettings = new JsonLoadSettings()
             {
@@ -42,6 +90,29 @@ namespace NuGet.RuntimeModel
             {
                 return ReadRuntimeGraph(JToken.Load(jsonReader, loadSettings));
             }
+        }
+
+        internal static RuntimeGraph ReadRuntimeGraphWithSystemTextJson(Stream stream)
+        {
+            using (stream)
+            {
+                RuntimeGraphJsonModel json = STJJsonSerializer.Deserialize(
+                    stream,
+                    JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
+                    ?? throw new System.Text.Json.JsonException();
+
+                return ReadRuntimeGraph(json);
+            }
+        }
+
+        internal static RuntimeGraph ReadRuntimeGraphWithSystemTextJson(TextReader textReader)
+        {
+            RuntimeGraphJsonModel json = STJJsonSerializer.Deserialize(
+                textReader.ReadToEnd(),
+                JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
+                ?? throw new System.Text.Json.JsonException();
+
+            return ReadRuntimeGraph(json);
         }
 
         public static void WriteRuntimeGraph(string filePath, RuntimeGraph runtimeGraph)
@@ -63,6 +134,16 @@ namespace NuGet.RuntimeModel
             return new RuntimeGraph(
                 EachProperty(json["runtimes"]).Select(ReadRuntimeDescription),
                 EachProperty(json["supports"]).Select(ReadCompatibilityProfile));
+        }
+
+        internal static RuntimeGraph ReadRuntimeGraph(JsonElement json)
+        {
+            RuntimeGraphJsonModel data = STJJsonSerializer.Deserialize(
+                json,
+                JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
+                ?? throw new System.Text.Json.JsonException();
+
+            return ReadRuntimeGraph(data);
         }
 
         public static void WriteRuntimeGraph(IObjectWriter writer, RuntimeGraph runtimeGraph)
@@ -237,5 +318,18 @@ namespace NuGet.RuntimeModel
             return (json as IEnumerable<KeyValuePair<string, JToken>>)
                    ?? Enumerable.Empty<KeyValuePair<string, JToken>>();
         }
+
+        private static RuntimeGraph ReadRuntimeGraph(RuntimeGraphJsonModel json)
+        {
+            if (json == null)
+            {
+                return RuntimeGraph.Empty;
+            }
+
+            return new RuntimeGraph(
+                json.Runtimes ?? Enumerable.Empty<RuntimeDescription>(),
+                json.Supports ?? Enumerable.Empty<CompatibilityProfile>());
+        }
+
     }
 }
