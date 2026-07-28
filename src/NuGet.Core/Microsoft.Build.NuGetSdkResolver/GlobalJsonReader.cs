@@ -9,8 +9,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
+using NuGet.Common;
+using NuGet.Shared;
 
 namespace Microsoft.Build.NuGetSdkResolver
 {
@@ -35,6 +39,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// </summary>
         private static readonly ConcurrentDictionary<FileInfo, (DateTime LastWriteTime, Lazy<Dictionary<string, string>> Lazy)> FileCache = new ConcurrentDictionary<FileInfo, (DateTime, Lazy<Dictionary<string, string>>)>(FileSystemInfoFullNameEqualityComparer.Instance);
 
+        private static readonly byte[] MSBuildSdksPropertyNameUtf8 = Encoding.UTF8.GetBytes(MSBuildSdksPropertyName);
 
         private GlobalJsonReader()
         {
@@ -164,7 +169,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="json">The JSON to parse as a string.</param>
         /// <returns>A <see cref="Dictionary{TKey, TValue}" /> containing MSBuild project SDK versions if any were found, otherwise <see langword="null" />.</returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Dictionary<string, string> ParseMSBuildSdkVersionsFromJson(string json)
+        internal static Dictionary<string, string> ParseMSBuildSdkVersionsFromJsonWithNewtonsoftJson(string json)
         {
             using (var reader = new JsonTextReader(new StringReader(json)))
             {
@@ -217,6 +222,94 @@ namespace Microsoft.Build.NuGetSdkResolver
             return null;
         }
 
+        internal static Dictionary<string, string> ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(Stream stream)
+        {
+            using var reader = new Utf8JsonStreamReader(stream);
+
+            // Read to the first {
+            while (reader.TokenType != JsonTokenType.StartObject && reader.Read())
+            {
+            }
+
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                // Return null if no { was found
+                return null;
+            }
+
+            // Read through each top-level property
+            while (reader.Read())
+            {
+                // Look for the first "msbuild-sdks" section
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    bool isMSBuildSdksProperty = reader.ValueTextEquals(MSBuildSdksPropertyNameUtf8);
+
+                    reader.Read();
+
+                    if (isMSBuildSdksProperty && reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        return ReadMSBuildSdkVersions(reader);
+                    }
+
+                    reader.Skip();
+                }
+                else
+                {
+                    // Skip any top-level entry that's not a property
+                    reader.Skip();
+                }
+            }
+
+            // Return null if an "msbuild-sdks" section was not found
+            return null;
+        }
+
+        private static Dictionary<string, string> ReadMSBuildSdkVersions(Utf8JsonStreamReader reader)
+        {
+            Dictionary<string, string> versionsByName = null;
+
+            // Read each token in the "msbuild-sdks" section until the end
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                // Only read properties of type string
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    string name = reader.GetString();
+
+                    reader.Read();
+
+                    if (reader.TokenType == JsonTokenType.String)
+                    {
+                        versionsByName ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        versionsByName[name] = reader.GetString();
+
+                        continue;
+                    }
+                }
+
+                // Skips anything under the "msbuild-sdks" section that wasn't a property of type string
+                reader.Skip();
+            }
+
+            return versionsByName;
+        }
+
+        internal static bool UseSystemTextJson(IEnvironmentVariableReader environmentVariableReader = null)
+        {
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return true;
+            }
+
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Fires the <see cref="FileRead" /> event for the specified file.
         /// </summary>
@@ -237,8 +330,9 @@ namespace Microsoft.Build.NuGetSdkResolver
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Dictionary<string, string> ParseMSBuildSdkVersions(string globalJsonPath, SdkResolverContext sdkResolverContext)
         {
-            // Load the file as a string and check if it has an msbuild-sdks section.  Parsing the contents requires Newtonsoft.Json.dll to be loaded which can be expensive
-            string json;
+            bool useSystemTextJson = UseSystemTextJson();
+            Stream jsonStream = null;
+            string json = null;
 
             if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.GlobalJsonReadStart(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
 
@@ -246,7 +340,14 @@ namespace Microsoft.Build.NuGetSdkResolver
             {
                 try
                 {
-                    json = File.ReadAllText(globalJsonPath);
+                    if (useSystemTextJson)
+                    {
+                        jsonStream = File.OpenRead(globalJsonPath);
+                    }
+                    else
+                    {
+                        json = File.ReadAllText(globalJsonPath);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -260,14 +361,19 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 // Look ahead in the contents to see if there is an msbuild-sdks section.  Deserializing the file requires us to load
                 // Newtonsoft.Json which is 500 KB while a global.json is usually ~100 bytes of text.
-                if (json.IndexOf(MSBuildSdksPropertyName, StringComparison.Ordinal) == -1)
+                if (!useSystemTextJson && json.IndexOf(MSBuildSdksPropertyName, StringComparison.Ordinal) == -1)
                 {
                     return null;
                 }
 
                 try
                 {
-                    return ParseMSBuildSdkVersionsFromJson(json);
+                    if (useSystemTextJson)
+                    {
+                        return ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(jsonStream);
+                    }
+
+                    return ParseMSBuildSdkVersionsFromJsonWithNewtonsoftJson(json);
                 }
                 catch (Exception e)
                 {
@@ -279,6 +385,8 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
             finally
             {
+                jsonStream?.Dispose();
+
                 if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.GlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
             }
         }

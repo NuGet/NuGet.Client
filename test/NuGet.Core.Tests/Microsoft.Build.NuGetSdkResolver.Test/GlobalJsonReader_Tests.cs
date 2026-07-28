@@ -7,9 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace Microsoft.Build.NuGetSdkResolver.Test
@@ -19,6 +22,18 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
     /// </summary>
     public class GlobalJsonReaderTests
     {
+        [Fact]
+        public void UseSystemTextJson_WithEnvironmentOptIn_ReturnsTrue()
+        {
+            var environmentVariableReader = new TestEnvironmentVariableReader(
+                new Dictionary<string, string>
+                {
+                    ["NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"] = "true"
+                });
+
+            Assert.True(GlobalJsonReader.UseSystemTextJson(environmentVariableReader));
+        }
+
         /// <summary>
         /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> ignores duplicates in the msbuild-sdks section and uses the last specified version.
         /// </summary>
@@ -423,6 +438,50 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 wasGlobalJsonRead.Should().BeTrue();
             }
+        }
+
+        [Fact]
+        public void ParseMSBuildSdkVersionsFromJson_ParsersReturnEquivalentResults()
+        {
+            const string json = @"{
+  // This is a comment
+  ""unrelated-section"": { ""property"": ""value"" },
+  ""msbuild-sdks"": {
+    ""Sdk1"": ""1.0.0"",
+    ""Sdk2"": true,
+    ""Sdk1"": ""2.0.0"",
+  },
+}";
+
+            Dictionary<string, string> newtonsoftResult = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithNewtonsoftJson(json);
+            Dictionary<string, string> systemTextJsonResult;
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            {
+                systemTextJsonResult = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream);
+            }
+
+            systemTextJsonResult.Should().Equal(newtonsoftResult);
+        }
+
+        [Fact]
+        public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ReportsLocation_WhenJsonIsInvalid()
+        {
+            const string json = @"{
+  ""msbuild-sdks"": {
+    ""Sdk1"": ""1.0.0"",
+    invalid
+  }
+}";
+
+            JsonException exception;
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            {
+                exception = Assert.ThrowsAny<JsonException>(
+                    () => GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream));
+            }
+
+            exception.LineNumber.Should().NotBeNull();
+            exception.BytePositionInLine.Should().NotBeNull();
         }
 
         /// <summary>
