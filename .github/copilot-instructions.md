@@ -7,11 +7,13 @@ NuGet.Client is the .NET codebase for NuGet's client tooling and libraries acros
 - On Windows:
   - Run `.\configure.ps1` before the first build.
   - Use the `dotnet` or `msbuild` CLI for targeted builds.
+  - Run `dotnet build NuGet.sln` to build all projects.
 - On Linux and macOS:
   - Run `. ./configure.sh` before the first targeted build. It must be sourced, not executed.
-  - Use `dotnet` to build targeted cross-platform projects. For a broad build, run `./build.sh`, which also runs the cross-platform unit tests. Avoid building `NuGet.sln`, as it fails because the solution includes a few Windows-only projects.
+  - Use `dotnet` CLI to build targeted cross-platform projects.
+  - Run `./build.sh` to build all the cross-platform projects. Avoid building `NuGet.sln` since it includes a few Windows-only projects.
 - Run `dotnet test` to execute tests. Use `--filter` to run a subset.
-- Prefer building and testing the smallest relevant project.
+- Prefer building and testing the relevant project.
 - Use NuGet Central Package Management: declare package versions in `Directory.Packages.props` and add versionless `PackageReference` items to project files. Read the [package-update guidance](../docs/updating-packages.md) before changing dependency versions.
 
 ## Task-specific guidance
