@@ -7,7 +7,6 @@ NuGet.Client is the .NET codebase for NuGet's client tooling and libraries acros
 - On Windows:
   - Run `.\configure.ps1` before the first build.
   - Use the `dotnet` or `msbuild` CLI for targeted builds.
-  - Run `dotnet build NuGet.sln` to build all projects.
 - On Linux and macOS:
   - Run `. ./configure.sh` before the first targeted build. It must be sourced, not executed.
   - Use `dotnet` CLI to build targeted cross-platform projects.
