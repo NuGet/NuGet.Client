@@ -132,7 +132,13 @@ internal static class PackageUpdateCommandRunner
         IPackageUpdateIO packageUpdateIO,
         CancellationToken cancellationToken)
     {
-        LockFile assetsFile = await packageUpdateIO.GetProjectAssetsFileAsync(dgSpec, projectPath, logger, cancellationToken);
+        // A lot of people use TreatWarningsAsErrors, and when restore failed because of audit warnings, we need a way for them to fix it.
+        // If the project's restore is already up to date, disabling warnings as errors will cause no-op checks to fail, making the restore longer than
+        // necessary. But if there's a real failure, the assets file might be stale, and we don't want to use it. While it's possible
+        // there are non-vulnerability related warnings that be treated as errors, customers are unlikely to run dotnet package update --vulnerable when
+        // restore fails for other reasons. So, it's a good enough compromise.
+        DependencyGraphSpec scanDgSpec = CreateDgSpecForVulnerabilityScan(dgSpec);
+        LockFile assetsFile = await packageUpdateIO.GetProjectAssetsFileAsync(scanDgSpec, projectPath, logger, cancellationToken);
         PackageSpec projectSpec = assetsFile.PackageSpec;
 
         bool auditModeAll = IsNuGetAuditModeSetToAll(projectSpec);
@@ -240,6 +246,25 @@ internal static class PackageUpdateCommandRunner
             }
             return false;
         }
+    }
+
+    internal static DependencyGraphSpec CreateDgSpecForVulnerabilityScan(DependencyGraphSpec dgSpec)
+    {
+        var scanDgSpec = new DependencyGraphSpec();
+
+        foreach (var project in dgSpec.Projects)
+        {
+            var projectClone = project.Clone();
+            projectClone.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = false;
+            scanDgSpec.AddProject(projectClone);
+        }
+
+        foreach (var restoreEntry in dgSpec.Restore)
+        {
+            scanDgSpec.AddRestore(restoreEntry);
+        }
+
+        return scanDgSpec;
     }
 
     private static async Task<(int? exitCode, Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates, int totalPackagesScanned)>
