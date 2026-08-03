@@ -141,33 +141,10 @@ namespace NuGet.Build.Tasks.Pack
             return (packageId, version);
         }
 
-        /// <summary>
-        /// Performs $token$ substitution on a nuspec metadata value using the supplied property dictionary.
-        /// For any token that is not present in <paramref name="properties"/>, <paramref name="fallbackTokenValue"/> is used.
-        /// Literal text (non-token) portions are preserved unchanged.
-        /// </summary>
         private static string SubstituteNuspecTokens(string value, Dictionary<string, string> properties, string fallbackTokenValue)
         {
-            var tokenizer = new Tokenizer(value);
-            var result = new StringBuilder();
-            for (; ; )
-            {
-                Token token = tokenizer.Read();
-                if (token == null)
-                {
-                    break;
-                }
-
-                if (token.Category == TokenCategory.Variable)
-                {
-                    result.Append(properties.TryGetValue(token.Value, out string replacement) ? replacement : fallbackTokenValue);
-                }
-                else
-                {
-                    result.Append(token.Value);
-                }
-            }
-            return result.ToString();
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(value));
+            return Preprocessor.Process(stream, token => properties.TryGetValue(token, out string replacement) ? replacement : fallbackTokenValue);
         }
     }
 }
