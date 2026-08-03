@@ -217,6 +217,46 @@ namespace NuGet.Build.Tasks.Pack.Test
             actualPackageFiles.Should().BeEquivalentTo(new[] { "ProjectPackageId.1.0.0.nupkg" });
         }
 
+        // E2E scenario: nuspec uses a single property token that expands to the entire metadata block
+        // (e.g. <metadata>$CommonMetadata$</metadata>). GetPackOutputItemsTask must preprocess the
+        // nuspec stream first so that NuspecReader sees fully-formed XML, not raw token text.
+        [Fact]
+        public void GetPackOutputItemsTaskTests_Execute_EntireMetadataFromNuspecPropertiesToken_ResolvesIdAndVersion()
+        {
+            using var testDirectory = TestDirectory.Create();
+
+            var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+            File.WriteAllText(nuspecPath, """
+                <?xml version="1.0" encoding="utf-8"?>
+                <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+                  <metadata>
+                    $CommonMetadata$
+                  </metadata>
+                </package>
+                """);
+
+            var outputItemTask = new GetPackOutputItemsTask
+            {
+                PackageId = "ProjectPackageId",
+                PackageVersion = "1.0.0",
+                PackageOutputPath = testDirectory.Path,
+                NuspecOutputPath = testDirectory.Path,
+                NuspecFile = nuspecPath,
+                // CommonMetadata expands to the full set of required metadata elements.
+                NuspecProperties = ["CommonMetadata=<id>CommonPackage</id><version>3.2.1</version><authors>Test</authors><description>desc</description>"],
+            };
+
+            Assert.True(outputItemTask.Execute());
+
+            string[] actualPackageFiles = outputItemTask.OutputPackItems
+                .Select(item => Path.GetFileName(item.ItemSpec))
+                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            // The id and version must come from the expanded $CommonMetadata$ token.
+            actualPackageFiles.Should().BeEquivalentTo(new[] { "CommonPackage.3.2.1.nupkg" });
+        }
+
         // Token substitution: when nuspec has <version>$version$</version> and NuspecProperties does
         // not supply a version, the task must fall back to the project's PackageVersion property.
         [Fact]
