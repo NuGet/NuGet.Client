@@ -77,7 +77,6 @@ namespace NuGet.Build.Tasks.Pack
         {
             string packageId = PackageId;
             var packageVersion = PackageVersion;
-            NuGetVersion version = null;
 
             // Extract the version from the nuspec file if it exists and is valid, otherwise use the version from the project.
             if (!string.IsNullOrWhiteSpace(NuspecFile) && File.Exists(NuspecFile))
@@ -88,17 +87,9 @@ namespace NuGet.Build.Tasks.Pack
                 {
                     PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties));
                 }
-                // If the logic depends only on checking for a non-null value, it may incorrectly detect cases where the parsing logic changes the version based on a key other than the "version" key.
-                // Currently, supported only version property in NuspecProperties.
-                bool hasVersionInNuspecProperties = packArgs.Properties.ContainsKey("version");
-                if (hasVersionInNuspecProperties)
-                {
-                    packageVersion = packArgs.Version;
-                }
 
                 // Preprocess the raw nuspec stream first — matching how Pack calls Preprocessor.Process in
                 // Manifest.ReadFrom before parsing XML — then create NuspecReader from the result.
-                // Unknown tokens return null from GetPropertyValue, which Preprocessor renders as empty string.
                 NuspecReader nuspecReader;
                 using (Stream fileStream = File.OpenRead(NuspecFile))
                 {
@@ -106,26 +97,11 @@ namespace NuGet.Build.Tasks.Pack
                     nuspecReader = new NuspecReader(new MemoryStream(Encoding.UTF8.GetBytes(preprocessed)));
                 }
 
-                // Empty id means the token was unresolved; fall back to the project's PackageId.
-                string rawId = nuspecReader.GetId();
-                if (!string.IsNullOrEmpty(rawId))
-                {
-                    packageId = rawId;
-                }
-
-                if (!hasVersionInNuspecProperties)
-                {
-                    // Read the raw version string; TryParse guards against an unresolved (empty) token.
-                    string rawVersion = nuspecReader.GetMetadataValue("version");
-                    if (!string.IsNullOrEmpty(rawVersion) && NuGetVersion.TryParse(rawVersion, out var parsedVersion))
-                    {
-                        version = parsedVersion;
-                    }
-                    // If rawVersion is still unparseable, leave version as null and fall back to packageVersion below.
-                }
+                packageId = nuspecReader.GetId();
+                packageVersion = nuspecReader.GetMetadataValue("version");
             }
 
-            if (version == null && !NuGetVersion.TryParse(packageVersion, out version))
+            if (!NuGetVersion.TryParse(packageVersion, out var version))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
