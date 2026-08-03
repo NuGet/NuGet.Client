@@ -83,7 +83,7 @@ namespace NuGet.Build.Tasks.Pack
             if (!string.IsNullOrWhiteSpace(NuspecFile) && File.Exists(NuspecFile))
             {
                 // Parse NuspecProperties into a dictionary used for $token$ substitution.
-                Dictionary<string, string> tokenProperties;
+                Dictionary<string, string>? tokenProperties = null;
                 bool hasVersionInNuspecProperties = false;
 
                 if (NuspecProperties != null && NuspecProperties.Length > 0)
@@ -98,10 +98,6 @@ namespace NuGet.Build.Tasks.Pack
                         packageVersion = packArgs.Version;
                         hasVersionInNuspecProperties = true;
                     }
-                }
-                else
-                {
-                    tokenProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 }
 
                 var nuspecReader = new NuspecReader(NuspecFile);
@@ -141,10 +137,10 @@ namespace NuGet.Build.Tasks.Pack
             return (packageId, version);
         }
 
-        private static string SubstituteNuspecTokens(string value, Dictionary<string, string> properties, string fallbackTokenValue)
+        private static string SubstituteNuspecTokens(string value, Dictionary<string, string>? properties, string fallbackTokenValue)
         {
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(value));
-            return Preprocessor.Process(stream, token => properties.TryGetValue(token, out string replacement) ? replacement : fallbackTokenValue);
+            return Preprocessor.Process(stream, token => properties != null && properties.TryGetValue(token, out string replacement) ? replacement : fallbackTokenValue);
         }
     }
 }
