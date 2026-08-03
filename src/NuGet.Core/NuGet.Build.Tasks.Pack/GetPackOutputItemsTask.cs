@@ -82,47 +82,46 @@ namespace NuGet.Build.Tasks.Pack
             // Extract the version from the nuspec file if it exists and is valid, otherwise use the version from the project.
             if (!string.IsNullOrWhiteSpace(NuspecFile) && File.Exists(NuspecFile))
             {
-                // Parse NuspecProperties into a dictionary used for $token$ substitution.
-                Dictionary<string, string>? tokenProperties = null;
-                bool hasVersionInNuspecProperties = false;
-
+                // Build property bag from NuspecProperties, exactly as PackTaskLogic/PackCommandRunner does.
+                PackArgs packArgs = new PackArgs();
                 if (NuspecProperties != null && NuspecProperties.Length > 0)
                 {
-                    PackArgs packArgs = new PackArgs() { Version = packageVersion };
                     PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties));
-                    tokenProperties = packArgs.Properties;
-                    // If the logic depends only on checking for a non-null value, it may incorrectly detect cases where the parsing logic changes the version based on a key other than the "version" key.
-                    // Currently, supported only version property in NuspecProperties.
-                    if (packArgs.Properties.ContainsKey("version"))
-                    {
-                        packageVersion = packArgs.Version;
-                        hasVersionInNuspecProperties = true;
-                    }
+                }
+                // If the logic depends only on checking for a non-null value, it may incorrectly detect cases where the parsing logic changes the version based on a key other than the "version" key.
+                // Currently, supported only version property in NuspecProperties.
+                bool hasVersionInNuspecProperties = packArgs.Properties.ContainsKey("version");
+                if (hasVersionInNuspecProperties)
+                {
+                    packageVersion = packArgs.Version;
                 }
 
-                var nuspecReader = new NuspecReader(NuspecFile);
-
-                // Read the id from the nuspec and apply token substitution.
-                // A literal <id> element is used as-is; NuspecProperties only replace $token$ placeholders.
-                string rawId = nuspecReader.GetId();
-                if (rawId != null)
+                // Preprocess the raw nuspec stream first — matching how Pack calls Preprocessor.Process in
+                // Manifest.ReadFrom before parsing XML — then create NuspecReader from the result.
+                // Unknown tokens return null from GetPropertyValue, which Preprocessor renders as empty string.
+                NuspecReader nuspecReader;
+                using (Stream fileStream = File.OpenRead(NuspecFile))
                 {
-                    packageId = SubstituteNuspecTokens(rawId, tokenProperties, fallbackTokenValue: PackageId);
+                    string preprocessed = Preprocessor.Process(fileStream, packArgs.GetPropertyValue);
+                    nuspecReader = new NuspecReader(new MemoryStream(Encoding.UTF8.GetBytes(preprocessed)));
+                }
+
+                // Empty id means the token was unresolved; fall back to the project's PackageId.
+                string rawId = nuspecReader.GetId();
+                if (!string.IsNullOrEmpty(rawId))
+                {
+                    packageId = rawId;
                 }
 
                 if (!hasVersionInNuspecProperties)
                 {
-                    // Read the raw version string to detect $token$ placeholders before attempting to parse.
+                    // Read the raw version string; TryParse guards against an unresolved (empty) token.
                     string rawVersion = nuspecReader.GetMetadataValue("version");
-                    if (!string.IsNullOrEmpty(rawVersion))
+                    if (!string.IsNullOrEmpty(rawVersion) && NuGetVersion.TryParse(rawVersion, out var parsedVersion))
                     {
-                        string resolvedVersion = SubstituteNuspecTokens(rawVersion, tokenProperties, fallbackTokenValue: packageVersion);
-                        if (NuGetVersion.TryParse(resolvedVersion, out var parsedVersion))
-                        {
-                            version = parsedVersion;
-                        }
-                        // If resolvedVersion is still unparseable, leave version as null and fall back to packageVersion below.
+                        version = parsedVersion;
                     }
+                    // If rawVersion is still unparseable, leave version as null and fall back to packageVersion below.
                 }
             }
 
@@ -135,12 +134,6 @@ namespace NuGet.Build.Tasks.Pack
             }
 
             return (packageId, version);
-        }
-
-        private static string SubstituteNuspecTokens(string value, Dictionary<string, string>? properties, string fallbackTokenValue)
-        {
-            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(value));
-            return Preprocessor.Process(stream, token => properties != null && properties.TryGetValue(token, out string replacement) ? replacement : fallbackTokenValue);
         }
     }
 }
