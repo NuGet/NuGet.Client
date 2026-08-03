@@ -75,41 +75,44 @@ namespace NuGet.Build.Tasks.Pack
 
         private (string packageId, NuGetVersion version) GetPackageIdAndVersion()
         {
-            string packageId = PackageId;
-            var packageVersion = PackageVersion;
-
             // Extract the version from the nuspec file if it exists and is valid, otherwise use the version from the project.
-            if (!string.IsNullOrWhiteSpace(NuspecFile) && File.Exists(NuspecFile))
+            if (string.IsNullOrWhiteSpace(NuspecFile) || !File.Exists(NuspecFile))
             {
-                // Build property bag from NuspecProperties, exactly as PackTaskLogic/PackCommandRunner does.
-                PackArgs packArgs = new PackArgs();
-                if (NuspecProperties != null && NuspecProperties.Length > 0)
-                {
-                    PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties));
-                }
-
-                // Preprocess the raw nuspec stream first — matching how Pack calls Preprocessor.Process in
-                // Manifest.ReadFrom before parsing XML — then create NuspecReader from the result.
-                NuspecReader nuspecReader;
-                using (Stream fileStream = File.OpenRead(NuspecFile))
-                {
-                    string preprocessed = Preprocessor.Process(fileStream, packArgs.GetPropertyValue);
-                    nuspecReader = new NuspecReader(new MemoryStream(Encoding.UTF8.GetBytes(preprocessed)));
-                }
-
-                packageId = nuspecReader.GetId();
-                packageVersion = packArgs.Version ?? nuspecReader.GetVersion();
+                return (PackageId, ParseVersion(PackageVersion));
             }
 
-            if (!NuGetVersion.TryParse(packageVersion, out var version))
+            // Build property bag from NuspecProperties, exactly as PackTaskLogic/PackCommandRunner does.
+            PackArgs packArgs = new PackArgs();
+            if (NuspecProperties != null && NuspecProperties.Length > 0)
             {
-                throw new ArgumentException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.InvalidPackageVersion,
-                    packageVersion));
+                PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties));
             }
 
-            return (packageId, version);
+            // Preprocess the raw nuspec stream first — matching how Pack calls Preprocessor.Process in
+            // Manifest.ReadFrom before parsing XML — then create NuspecReader from the result.
+            using Stream fileStream = File.OpenRead(NuspecFile);
+            string preprocessed = Preprocessor.Process(fileStream, packArgs.GetPropertyValue);
+            var nuspecReader = new NuspecReader(new MemoryStream(Encoding.UTF8.GetBytes(preprocessed)));
+            string packageId = nuspecReader.GetId();
+            if (packArgs.Version is not null)
+            {
+                return (packageId, ParseVersion(packArgs.Version));
+            }
+
+            return (packageId, nuspecReader.GetVersion());
+
+            static NuGetVersion ParseVersion(string packageVersion)
+            {
+                if (!NuGetVersion.TryParse(packageVersion, out var version))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPackageVersion,
+                        packageVersion));
+                }
+
+                return version;
+            }
         }
     }
 }
