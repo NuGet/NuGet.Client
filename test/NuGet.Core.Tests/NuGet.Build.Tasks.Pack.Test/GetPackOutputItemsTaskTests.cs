@@ -98,7 +98,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         {
             using var testDirectory = TestDirectory.Create();
 
-            var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+            var nuspecPath = Path.Combine(testDirectory.Path, "test-substitution.nuspec");
             File.WriteAllText(nuspecPath, """
                 <?xml version="1.0" encoding="utf-8"?>
                 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
