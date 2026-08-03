@@ -96,7 +96,11 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 var nuspecReader = new NuspecReader(NuspecFile);
-                packageId = nuspecReader.GetId();
+                if (nuspecReader.GetId() is { } idFromNuspec)
+                {
+                    packageId = idFromNuspec;
+                }
+
                 if (!hasVersionInNuspecProperties)
                 {
                     version = nuspecReader.GetVersion();
