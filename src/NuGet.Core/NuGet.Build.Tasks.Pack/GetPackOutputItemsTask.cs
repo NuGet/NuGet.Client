@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Commands;
@@ -81,12 +82,16 @@ namespace NuGet.Build.Tasks.Pack
             // Extract the version from the nuspec file if it exists and is valid, otherwise use the version from the project.
             if (!string.IsNullOrWhiteSpace(NuspecFile) && File.Exists(NuspecFile))
             {
+                // Parse NuspecProperties into a dictionary used for $token$ substitution.
+                Dictionary<string, string> tokenProperties;
                 bool hasVersionInNuspecProperties = false;
+
                 if (NuspecProperties != null && NuspecProperties.Length > 0)
                 {
                     PackArgs packArgs = new PackArgs() { Version = packageVersion };
                     PackTaskLogic.SetPackArgsPropertiesFromNuspecProperties(packArgs, MSBuildStringUtility.TrimAndExcludeNullOrEmpty(NuspecProperties));
-                    // If the logic depends only on checking for a non-null value, it may incorrectly  detect cases where the parsing logic changes the version based on a key other than the "version" key.
+                    tokenProperties = packArgs.Properties;
+                    // If the logic depends only on checking for a non-null value, it may incorrectly detect cases where the parsing logic changes the version based on a key other than the "version" key.
                     // Currently, supported only version property in NuspecProperties.
                     if (packArgs.Properties.ContainsKey("version"))
                     {
@@ -94,16 +99,34 @@ namespace NuGet.Build.Tasks.Pack
                         hasVersionInNuspecProperties = true;
                     }
                 }
+                else
+                {
+                    tokenProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                }
 
                 var nuspecReader = new NuspecReader(NuspecFile);
-                if (nuspecReader.GetId() is { } idFromNuspec)
+
+                // Read the id from the nuspec and apply token substitution.
+                // A literal <id> element is used as-is; NuspecProperties only replace $token$ placeholders.
+                string rawId = nuspecReader.GetId();
+                if (rawId != null)
                 {
-                    packageId = idFromNuspec;
+                    packageId = SubstituteNuspecTokens(rawId, tokenProperties, fallbackTokenValue: PackageId);
                 }
 
                 if (!hasVersionInNuspecProperties)
                 {
-                    version = nuspecReader.GetVersion();
+                    // Read the raw version string to detect $token$ placeholders before attempting to parse.
+                    string rawVersion = nuspecReader.GetMetadataValue("version");
+                    if (!string.IsNullOrEmpty(rawVersion))
+                    {
+                        string resolvedVersion = SubstituteNuspecTokens(rawVersion, tokenProperties, fallbackTokenValue: packageVersion);
+                        if (NuGetVersion.TryParse(resolvedVersion, out var parsedVersion))
+                        {
+                            version = parsedVersion;
+                        }
+                        // If resolvedVersion is still unparseable, leave version as null and fall back to packageVersion below.
+                    }
                 }
             }
 
@@ -116,6 +139,35 @@ namespace NuGet.Build.Tasks.Pack
             }
 
             return (packageId, version);
+        }
+
+        /// <summary>
+        /// Performs $token$ substitution on a nuspec metadata value using the supplied property dictionary.
+        /// For any token that is not present in <paramref name="properties"/>, <paramref name="fallbackTokenValue"/> is used.
+        /// Literal text (non-token) portions are preserved unchanged.
+        /// </summary>
+        private static string SubstituteNuspecTokens(string value, Dictionary<string, string> properties, string fallbackTokenValue)
+        {
+            var tokenizer = new Tokenizer(value);
+            var result = new StringBuilder();
+            for (; ; )
+            {
+                Token token = tokenizer.Read();
+                if (token == null)
+                {
+                    break;
+                }
+
+                if (token.Category == TokenCategory.Variable)
+                {
+                    result.Append(properties.TryGetValue(token.Value, out string replacement) ? replacement : fallbackTokenValue);
+                }
+                else
+                {
+                    result.Append(token.Value);
+                }
+            }
+            return result.ToString();
         }
     }
 }

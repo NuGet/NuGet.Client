@@ -135,5 +135,126 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             actualPackageFiles.Should().BeEquivalentTo(new[] { "MyPackage.1.2.3.nupkg" });
         }
+
+        // Token substitution: when nuspec has <id>$id$</id>, the $id$ token must be replaced
+        // with the value supplied via NuspecProperties (e.g. "id=ResolvedPackage").
+        [Fact]
+        public void GetPackOutputItemsTaskTests_Execute_NuspecIdIsToken_SubstitutedFromNuspecProperties()
+        {
+            using var testDirectory = TestDirectory.Create();
+
+            var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+            File.WriteAllText(nuspecPath, """
+                <?xml version="1.0" encoding="utf-8"?>
+                <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+                  <metadata>
+                    <id>$id$</id>
+                    <version>1.0.0</version>
+                    <authors>Unit Test</authors>
+                    <description>Sample Description</description>
+                  </metadata>
+                </package>
+                """);
+
+            var outputItemTask = new GetPackOutputItemsTask
+            {
+                PackageId = "ProjectPackageId",
+                PackageVersion = "1.0.0",
+                PackageOutputPath = testDirectory.Path,
+                NuspecOutputPath = testDirectory.Path,
+                NuspecFile = nuspecPath,
+                NuspecProperties = ["id=ResolvedPackage"],
+            };
+
+            Assert.True(outputItemTask.Execute());
+
+            string[] actualPackageFiles = outputItemTask.OutputPackItems
+                .Select(item => Path.GetFileName(item.ItemSpec))
+                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            // The $id$ token must be replaced with the value from NuspecProperties.
+            actualPackageFiles.Should().BeEquivalentTo(new[] { "ResolvedPackage.1.0.0.nupkg" });
+        }
+
+        // Token substitution: when nuspec has <id>$id$</id> and NuspecProperties does not provide
+        // an id value, the task must fall back to the project's PackageId property.
+        [Fact]
+        public void GetPackOutputItemsTaskTests_Execute_NuspecIdIsToken_FallsBackToProjectPackageId()
+        {
+            using var testDirectory = TestDirectory.Create();
+
+            var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+            File.WriteAllText(nuspecPath, """
+                <?xml version="1.0" encoding="utf-8"?>
+                <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+                  <metadata>
+                    <id>$id$</id>
+                    <version>1.0.0</version>
+                    <authors>Unit Test</authors>
+                    <description>Sample Description</description>
+                  </metadata>
+                </package>
+                """);
+
+            var outputItemTask = new GetPackOutputItemsTask
+            {
+                PackageId = "ProjectPackageId",
+                PackageVersion = "1.0.0",
+                PackageOutputPath = testDirectory.Path,
+                NuspecOutputPath = testDirectory.Path,
+                NuspecFile = nuspecPath,
+                // No NuspecProperties for "id" — the $id$ token must fall back to PackageId.
+            };
+
+            Assert.True(outputItemTask.Execute());
+
+            string[] actualPackageFiles = outputItemTask.OutputPackItems
+                .Select(item => Path.GetFileName(item.ItemSpec))
+                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            actualPackageFiles.Should().BeEquivalentTo(new[] { "ProjectPackageId.1.0.0.nupkg" });
+        }
+
+        // Token substitution: when nuspec has <version>$version$</version> and NuspecProperties does
+        // not supply a version, the task must fall back to the project's PackageVersion property.
+        [Fact]
+        public void GetPackOutputItemsTaskTests_Execute_NuspecVersionIsToken_FallsBackToProjectPackageVersion()
+        {
+            using var testDirectory = TestDirectory.Create();
+
+            var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+            File.WriteAllText(nuspecPath, """
+                <?xml version="1.0" encoding="utf-8"?>
+                <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+                  <metadata>
+                    <id>MyPackage</id>
+                    <version>$version$</version>
+                    <authors>Unit Test</authors>
+                    <description>Sample Description</description>
+                  </metadata>
+                </package>
+                """);
+
+            var outputItemTask = new GetPackOutputItemsTask
+            {
+                PackageId = "MyPackage",
+                PackageVersion = "2.3.4",
+                PackageOutputPath = testDirectory.Path,
+                NuspecOutputPath = testDirectory.Path,
+                NuspecFile = nuspecPath,
+                // No NuspecProperties for "version" — the $version$ token must fall back to PackageVersion.
+            };
+
+            Assert.True(outputItemTask.Execute());
+
+            string[] actualPackageFiles = outputItemTask.OutputPackItems
+                .Select(item => Path.GetFileName(item.ItemSpec))
+                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            actualPackageFiles.Should().BeEquivalentTo(new[] { "MyPackage.2.3.4.nupkg" });
+        }
     }
 }
