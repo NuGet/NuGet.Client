@@ -67,6 +67,49 @@ namespace NuGet.Build.Tasks.Pack.Test
             actualPackageFiles.Should().BeEquivalentTo(testCase.OutputNupkgNames);
         }
 
+        // Regression test: when the nuspec file has no explicit <id> element and the id comes from
+        // NuspecProperties / the project's PackageId property, GetPackOutputItemsTask must resolve
+        // the id correctly (i.e. fall back to the PackageId MSBuild property rather than using null).
+        [Fact]
+        public void GetPackOutputItemsTaskTests_Execute_NuspecFileHasNoId_FallsBackToPackageId()
+        {
+            using var testDirectory = TestDirectory.Create();
+
+            // Write a nuspec that deliberately omits the <id> element.
+            var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
+            File.WriteAllText(nuspecPath, """
+                <?xml version="1.0" encoding="utf-8"?>
+                <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+                  <metadata>
+                    <version>1.0.0</version>
+                    <authors>Unit Test</authors>
+                    <description>Sample Description</description>
+                  </metadata>
+                </package>
+                """);
+
+            var outputItemTask = new GetPackOutputItemsTask
+            {
+                PackageId = "MyPackage",
+                PackageVersion = "1.0.0",
+                PackageOutputPath = testDirectory.Path,
+                NuspecOutputPath = testDirectory.Path,
+                NuspecFile = nuspecPath,
+                // Simulate the real-world scenario where the user declares the id via NuspecProperties.
+                NuspecProperties = ["id=MyPackage"],
+            };
+
+            Assert.True(outputItemTask.Execute());
+
+            string[] actualPackageFiles = outputItemTask.OutputPackItems
+                .Select(item => Path.GetFileName(item.ItemSpec))
+                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            // The id must come from the PackageId property ("MyPackage"), not from the missing nuspec element (null).
+            actualPackageFiles.Should().BeEquivalentTo(new[] { "MyPackage.1.0.0.nupkg" });
+        }
+
         [Fact]
         public void GetPackOutputItemsTaskTests_Execute_NuspecFileDoesNotExist_FallsBackToProjectProperties()
         {
