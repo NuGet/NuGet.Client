@@ -114,6 +114,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 PackageVersion = "1.0.0",
                 PackageOutputPath = testDirectory.Path,
                 NuspecOutputPath = testDirectory.Path,
+                SymbolPackageFormat = "snupkg",
                 NuspecFile = nuspecPath,
                 // CommonMetadata expands to the full set of required metadata elements.
                 NuspecProperties = ["CommonMetadata=<id>CommonPackage</id><version>3.2.1</version><authors>Test</authors><description>desc</description>"],
