@@ -98,7 +98,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
 
                 packageId = nuspecReader.GetId();
-                packageVersion = nuspecReader.GetMetadataValue("version");
+                packageVersion = packArgs.Version ?? nuspecReader.GetVersion();
             }
 
             if (!NuGetVersion.TryParse(packageVersion, out var version))
