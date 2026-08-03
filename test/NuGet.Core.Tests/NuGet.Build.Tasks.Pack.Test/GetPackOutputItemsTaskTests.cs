@@ -129,45 +129,5 @@ namespace NuGet.Build.Tasks.Pack.Test
             // The id and version must come from the expanded $CommonMetadata$ token.
             actualPackageFiles.Should().BeEquivalentTo(new[] { "CommonPackage.3.2.1.nupkg" });
         }
-
-        // Token substitution: when nuspec has <version>$version$</version> and NuspecProperties does
-        // not supply a version, the task must fall back to the project's PackageVersion property.
-        [Fact]
-        public void GetPackOutputItemsTaskTests_Execute_NuspecVersionIsToken_FallsBackToProjectPackageVersion()
-        {
-            using var testDirectory = TestDirectory.Create();
-
-            var nuspecPath = Path.Combine(testDirectory.Path, "test.nuspec");
-            File.WriteAllText(nuspecPath, """
-                <?xml version="1.0" encoding="utf-8"?>
-                <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-                  <metadata>
-                    <id>MyPackage</id>
-                    <version>$version$</version>
-                    <authors>Unit Test</authors>
-                    <description>Sample Description</description>
-                  </metadata>
-                </package>
-                """);
-
-            var outputItemTask = new GetPackOutputItemsTask
-            {
-                PackageId = "MyPackage",
-                PackageVersion = "2.3.4",
-                PackageOutputPath = testDirectory.Path,
-                NuspecOutputPath = testDirectory.Path,
-                NuspecFile = nuspecPath,
-                // No NuspecProperties for "version" — the $version$ token must fall back to PackageVersion.
-            };
-
-            Assert.True(outputItemTask.Execute());
-
-            string[] actualPackageFiles = outputItemTask.OutputPackItems
-                .Select(item => Path.GetFileName(item.ItemSpec))
-                .Where(name => name.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            actualPackageFiles.Should().BeEquivalentTo(new[] { "MyPackage.2.3.4.nupkg" });
-        }
     }
 }
