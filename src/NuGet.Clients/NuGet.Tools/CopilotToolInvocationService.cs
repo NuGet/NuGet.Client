@@ -138,6 +138,8 @@ namespace NuGetVSExtension
                 CopilotToolSessionError.ServiceBrokerNotAvailable => Resources.Error_ServiceBrokerNotAvailable,
                 CopilotToolSessionError.CopilotServiceNotAvailable => Resources.Error_CopilotServiceNotAvailable,
                 CopilotToolSessionError.McpToolServiceNotAvailable => Resources.Error_McpToolServiceNotAvailable,
+                CopilotToolSessionError.McpServerInfoServiceNotAvailable => Resources.Error_McpServerInfoServiceNotAvailable,
+                CopilotToolSessionError.McpServerNotActive => Resources.Error_McpServerNotActive,
                 CopilotToolSessionError.ToolNotAvailable => toolNotAvailableMessage,
                 _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
             };

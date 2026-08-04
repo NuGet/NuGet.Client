@@ -179,13 +179,16 @@ namespace NuGet.PackageManagement.Test.Telemetry
             Assert.Empty(_lastTelemetryEvent.GetPiiData());
         }
 
+        public static IEnumerable<object[]> CopilotToolSessionErrorTypes()
+        {
+            foreach (CopilotToolSessionError errorType in Enum.GetValues(typeof(CopilotToolSessionError)).Cast<CopilotToolSessionError>())
+            {
+                yield return new object[] { errorType };
+            }
+        }
+
         [Theory]
-        [InlineData(CopilotToolSessionError.None)]
-        [InlineData(CopilotToolSessionError.CopilotNotReady)]
-        [InlineData(CopilotToolSessionError.ServiceBrokerNotAvailable)]
-        [InlineData(CopilotToolSessionError.CopilotServiceNotAvailable)]
-        [InlineData(CopilotToolSessionError.McpToolServiceNotAvailable)]
-        [InlineData(CopilotToolSessionError.CopilotAccessDenied)]
+        [MemberData(nameof(CopilotToolSessionErrorTypes))]
         public void CreateWithReviewPackageSourceMappingCommand_WithAllErrorTypes_CreatesEventWithCorrectProperties(CopilotToolSessionError errorType)
         {
             // Arrange
@@ -390,4 +393,3 @@ namespace NuGet.PackageManagement.Test.Telemetry
         }
     }
 }
-
