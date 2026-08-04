@@ -51,6 +51,9 @@ namespace NuGetVSExtension
             NavigationOrigin navigationOrigin = source.NavigationOrigin;
             CopilotClientId clientId = new(source.CopilotClientId);
 
+            TelemetryActivity.EmitTelemetryEvent(
+                new NavigatedTelemetryEvent(NavigationType.Button, navigationOrigin));
+
             // Build the request first so we have a stable CorrelationId for function discovery
             CopilotRequest request = new(Resources.Prompt_FixNuGetPackageVulnerabilities)
             {
@@ -73,7 +76,10 @@ namespace NuGetVSExtension
                     result.Error,
                     Resources.Error_NuGetSolverNotAvailable,
                     Resources.Title_FixVulnerabilitiesWithCopilot,
-                    NavigatedTelemetryEvent.CreateWithFixVulnerabilitiesWithCopilot(navigationOrigin, MapSessionErrorToTelemetry(result.Error)));
+                    new CopilotToolSessionResultTelemetryEvent(
+                        navigationOrigin,
+                        McpServerConstants.NuGetSolverToolName,
+                        result.Error));
                 return;
             }
 
@@ -87,37 +93,23 @@ namespace NuGetVSExtension
             try
             {
                 _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
-                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None, navigationOrigin);
+                SendTelemetryEvent(CopilotToolSessionError.None, navigationOrigin);
             }
             catch (UnauthorizedAccessException ex)
             {
-                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied, navigationOrigin);
+                SendTelemetryEvent(CopilotToolSessionError.CopilotAccessDenied, navigationOrigin);
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_FixVulnerabilitiesWithCopilot);
             }
         }
 
-        private static void SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType errorType, NavigationOrigin navigationOrigin)
+        private static void SendTelemetryEvent(CopilotToolSessionError errorType, NavigationOrigin navigationOrigin)
         {
             TelemetryActivity.EmitTelemetryEvent(
-                NavigatedTelemetryEvent.CreateWithFixVulnerabilitiesWithCopilot(navigationOrigin, errorType));
-        }
-
-        private static FixVulnerabilitiesWithCopilotErrorType MapSessionErrorToTelemetry(CopilotToolSessionError error)
-        {
-            return error switch
-            {
-                CopilotToolSessionError.None => FixVulnerabilitiesWithCopilotErrorType.None,
-                CopilotToolSessionError.CopilotNotReady => FixVulnerabilitiesWithCopilotErrorType.CopilotNotReady,
-                CopilotToolSessionError.ServiceBrokerNotAvailable => FixVulnerabilitiesWithCopilotErrorType.ServiceBrokerNotAvailable,
-                CopilotToolSessionError.CopilotServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.CopilotServiceNotAvailable,
-                CopilotToolSessionError.McpToolServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.McpToolServiceNotAvailable,
-                CopilotToolSessionError.CopilotAccessDenied => FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied,
-                CopilotToolSessionError.ToolNotAvailable => FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable,
-                CopilotToolSessionError.McpServerInfoServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable,
-                CopilotToolSessionError.McpServerNotActive => FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive,
-                _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
-            };
+                new CopilotToolSessionResultTelemetryEvent(
+                    navigationOrigin,
+                    McpServerConstants.NuGetSolverToolName,
+                    errorType));
         }
 
         private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
