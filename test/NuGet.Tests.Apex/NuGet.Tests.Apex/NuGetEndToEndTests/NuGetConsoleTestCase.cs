@@ -1268,6 +1268,30 @@ namespace NuGet.Tests.Apex
             pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
         }
 
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void Console_PreservesGB18030SupplementaryText()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string sample =
+                char.ConvertFromUtf32(0x20000) +
+                char.ConvertFromUtf32(0x2A6B2) +
+                char.ConvertFromUtf32(0x1F600) +
+                char.ConvertFromUtf32(0xE000) +
+                char.ConvertFromUtf32(0x100000) +
+                "ABC";
+
+            nugetConsole.Execute($"$gb18030 = '{sample}'; Write-Host $gb18030");
+
+            string pmcText = nugetConsole.GetText();
+            pmcText.Should().Contain(sample, because: pmcText);
+            pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
+        }
+
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
             yield return new object[] { ProjectTemplate.NetCoreConsoleApp };
