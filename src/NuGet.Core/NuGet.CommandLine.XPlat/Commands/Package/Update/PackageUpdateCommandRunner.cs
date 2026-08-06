@@ -25,6 +25,14 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update;
 
 internal static class PackageUpdateCommandRunner
 {
+    private static readonly NuGetLogCode[] AuditWarningCodes =
+    {
+        NuGetLogCode.NU1901,
+        NuGetLogCode.NU1902,
+        NuGetLogCode.NU1903,
+        NuGetLogCode.NU1904,
+    };
+
     // This overload sets static state, so should not be used in tests.
     internal static Task<int> Run(PackageUpdateArgs args, IVirtualProjectBuilder? virtualProjectBuilder, CancellationToken cancellationToken)
     {
@@ -250,21 +258,58 @@ internal static class PackageUpdateCommandRunner
 
     internal static DependencyGraphSpec CreateDgSpecForVulnerabilityScan(DependencyGraphSpec dgSpec)
     {
-        var scanDgSpec = new DependencyGraphSpec();
-
-        foreach (var project in dgSpec.Projects)
+        if (!dgSpec.Projects.Any(ProjectWillFailOnAuditWarnings))
         {
-            var projectClone = project.Clone();
-            projectClone.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = false;
-            scanDgSpec.AddProject(projectClone);
+            return dgSpec;
         }
 
-        foreach (var restoreEntry in dgSpec.Restore)
+        var scanDgSpec = new DependencyGraphSpec();
+
+        foreach (PackageSpec project in dgSpec.Projects)
+        {
+            if (ProjectWillFailOnAuditWarnings(project))
+            {
+                PackageSpec projectClone = project.Clone();
+                WarningProperties warningProperties = projectClone.RestoreMetadata.ProjectWideWarningProperties;
+                warningProperties.AllWarningsAsErrors = false;
+                warningProperties.WarningsAsErrors.ExceptWith(AuditWarningCodes);
+                scanDgSpec.AddProject(projectClone);
+            }
+            else
+            {
+                scanDgSpec.AddProject(project);
+            }
+        }
+
+        foreach (string restoreEntry in dgSpec.Restore)
         {
             scanDgSpec.AddRestore(restoreEntry);
         }
 
         return scanDgSpec;
+
+        bool ProjectWillFailOnAuditWarnings(PackageSpec project)
+        {
+            WarningProperties warningProperties = project.RestoreMetadata.ProjectWideWarningProperties;
+
+            bool allAuditWarningsAreNotErrors =
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1901) &&
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1902) &&
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1903) &&
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1904);
+
+            if (allAuditWarningsAreNotErrors)
+            {
+                return false;
+            }
+
+            if (warningProperties.AllWarningsAsErrors)
+            {
+                return true;
+            }
+
+            return warningProperties.WarningsAsErrors.Overlaps(AuditWarningCodes);
+        }
     }
 
     private static async Task<(int? exitCode, Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates, int totalPackagesScanned)>
