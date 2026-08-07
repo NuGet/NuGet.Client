@@ -178,6 +178,16 @@
         <target state="translated">擁有者項目只能有文字內容且不可空白。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageSource_MinPublishAgeCannotBeNegative">
+        <source>The minimum publish age cannot be negative. Value: '{0}'.</source>
+        <target state="new">The minimum publish age cannot be negative. Value: '{0}'.</target>
+        <note>0 - minimum publish age</note>
+      </trans-unit>
+      <trans-unit id="PackageSource_MinPublishAgeMustBeWholeHours">
+        <source>The minimum publish age must be specified in whole hours. Value: '{0}'.</source>
+        <target state="new">The minimum publish age must be specified in whole hours. Value: '{0}'.</target>
+        <note>0 - minimum publish age</note>
+      </trans-unit>
       <trans-unit id="PropertyCannotBeNullOrEmpty">
         <source>{0} cannot be null or empty.</source>
         <target state="translated">{0} 不得為 null 或空白。</target>

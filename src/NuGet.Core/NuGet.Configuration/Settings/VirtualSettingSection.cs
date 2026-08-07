@@ -33,6 +33,13 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Error_MergeTwoDifferentSections);
             }
 
+            if (other.ElementName.Equals(ConfigurationConstants.MinPublishAgeExceptions, StringComparison.OrdinalIgnoreCase)
+                && other.Items.Count == 0)
+            {
+                Children.Clear();
+                return this;
+            }
+
             foreach (var item in other.Items.Where(item => item != null))
             {
                 if (item is ClearItem)

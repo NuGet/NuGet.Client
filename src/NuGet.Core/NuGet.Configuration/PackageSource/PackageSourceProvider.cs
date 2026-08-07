@@ -174,6 +174,114 @@ namespace NuGet.Configuration
         {
             return LoadAuditSources(EnvironmentVariableWrapper.Instance);
         }
+
+        public MinPublishAgeExceptions GetMinPublishAgeExceptions()
+        {
+            return new MinPublishAgeExceptions(GetMinPublishAgeExceptionItems());
+        }
+
+        public IReadOnlyList<MinPublishAgeExceptionItem> GetMinPublishAgeExceptionItems()
+        {
+            return GetClosestMinPublishAgeExceptionSectionItems()
+                .OfType<MinPublishAgeExceptionItem>()
+                .ToList();
+        }
+
+        public void SaveMinPublishAgeExceptions(IEnumerable<MinPublishAgeExceptionItem> exceptions)
+        {
+            if (exceptions == null)
+            {
+                throw new ArgumentNullException(nameof(exceptions));
+            }
+
+            var exceptionList = exceptions.ToList();
+            if (exceptionList.Any(exception => exception == null))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(exceptions));
+            }
+
+            var existingExceptions = GetClosestMinPublishAgeExceptionSectionItems();
+            foreach (var existingException in existingExceptions)
+            {
+                Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
+            }
+
+            if (exceptionList.Count == 0)
+            {
+                if (Settings is Settings concreteSettings)
+                {
+                    concreteSettings.AddEmptySection(ConfigurationConstants.MinPublishAgeExceptions);
+                }
+                else
+                {
+                    Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, new ClearItem());
+                }
+            }
+            else
+            {
+                foreach (var exception in exceptionList)
+                {
+                    Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, exception);
+                }
+            }
+
+            Settings.SaveToDisk();
+        }
+
+        public void RemoveMinPublishAgeException(MinPublishAgeExceptionItem exception)
+        {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
+            var existingException = GetClosestMinPublishAgeExceptionSectionItems()
+                .OfType<MinPublishAgeExceptionItem>()
+                .FirstOrDefault(item => item.Equals(exception));
+
+            if (existingException != null)
+            {
+                Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
+                Settings.SaveToDisk();
+            }
+        }
+
+        public void RemoveMinPublishAgeExceptions()
+        {
+            foreach (var existingException in GetClosestMinPublishAgeExceptionSectionItems())
+            {
+                Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
+            }
+
+            Settings.SaveToDisk();
+        }
+
+        private IReadOnlyCollection<SettingItem> GetClosestMinPublishAgeExceptionSectionItems()
+        {
+            var sectionItems = Settings.GetSection(ConfigurationConstants.MinPublishAgeExceptions)?
+                .Items ??
+                Array.Empty<SettingItem>();
+
+            if (sectionItems.Count <= 1 || sectionItems.All(item => item.Origin?.ConfigFilePath == null))
+            {
+                return sectionItems;
+            }
+
+            var configFilePaths = Settings.GetConfigFilePaths();
+            string? closestConfigFilePath = configFilePaths.FirstOrDefault(configFilePath =>
+                sectionItems.Any(item => string.Equals(
+                    item.Origin?.ConfigFilePath,
+                    configFilePath,
+                    StringComparison.OrdinalIgnoreCase)));
+
+            return closestConfigFilePath == null
+                ? sectionItems
+                : sectionItems.Where(item => string.Equals(
+                    item.Origin?.ConfigFilePath,
+                    closestConfigFilePath,
+                    StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         internal IReadOnlyList<PackageSource> LoadAuditSources(IEnvironmentVariableReader environmentVariableReader)
         {
             return LoadPackageSources(Settings, ConfigurationConstants.AuditSources, _configurationDefaultAuditSources, environmentVariableReader);
@@ -255,6 +363,7 @@ namespace NuGet.Configuration
             packageSource.ProtocolVersion = ReadProtocolVersion(setting);
             packageSource.AllowInsecureConnections = ReadAllowInsecureConnections(setting);
             packageSource.DisableTLSCertificateValidation = ReadDisableTLSCertificateValidation(setting);
+            packageSource.MinPublishAge = ReadMinPublishAge(setting);
 
             return packageSource;
         }
@@ -287,6 +396,32 @@ namespace NuGet.Configuration
             }
 
             return PackageSource.DefaultAllowInsecureConnections;
+        }
+
+        private static TimeSpan ReadMinPublishAge(SourceItem setting)
+        {
+            string? value = setting.MinPublishAgeHours;
+            if (value is null)
+            {
+                return PackageSource.DefaultMinPublishAge;
+            }
+
+            if (uint.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out uint hours) &&
+                hours <= TimeSpan.MaxValue.TotalHours)
+            {
+                return TimeSpan.FromHours(hours);
+            }
+
+            throw new NuGetConfigurationException(string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.UserSettings_UnableToParseConfigFile,
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.AttributeValueNotAllowed,
+                    $"{setting.Key}:{ConfigurationConstants.MinPublishAgeHours}",
+                    value,
+                    ConfigurationConstants.PackageSources),
+                setting.ConfigPath));
         }
 
         private static void AddOrUpdateIndexedSource(
@@ -627,7 +762,8 @@ namespace NuGet.Configuration
                 if ((!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) ||
                     newSource.ProtocolVersion != existingSource.ProtocolVersion ||
                     newSource.AllowInsecureConnections != existingSource.AllowInsecureConnections ||
-                    newSource.DisableTLSCertificateValidation != existingSource.DisableTLSCertificateValidation) && newSource.IsPersistable)
+                    newSource.DisableTLSCertificateValidation != existingSource.DisableTLSCertificateValidation ||
+                    newSource.MinPublishAge != existingSource.MinPublishAge) && newSource.IsPersistable)
                 {
                     Settings.AddOrUpdate(ConfigurationConstants.AuditSources, newSource.AsSourceItem());
                     isDirty = true;
@@ -657,7 +793,8 @@ namespace NuGet.Configuration
                 if ((!string.Equals(newSource.Source, existingSource.Source, StringComparison.OrdinalIgnoreCase) ||
                     newSource.ProtocolVersion != existingSource.ProtocolVersion ||
                     newSource.AllowInsecureConnections != existingSource.AllowInsecureConnections ||
-                    newSource.DisableTLSCertificateValidation != existingSource.DisableTLSCertificateValidation) && newSource.IsPersistable)
+                    newSource.DisableTLSCertificateValidation != existingSource.DisableTLSCertificateValidation ||
+                    newSource.MinPublishAge != existingSource.MinPublishAge) && newSource.IsPersistable)
                 {
                     Settings.AddOrUpdate(ConfigurationConstants.PackageSources, newSource.AsSourceItem());
                     isDirty = true;

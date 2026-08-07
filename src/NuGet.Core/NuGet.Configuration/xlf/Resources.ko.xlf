@@ -178,6 +178,16 @@
         <target state="translated">소유자 항목에는 텍스트 콘텐츠만 있어야 하고 비워 둘 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageSource_MinPublishAgeCannotBeNegative">
+        <source>The minimum publish age cannot be negative. Value: '{0}'.</source>
+        <target state="new">The minimum publish age cannot be negative. Value: '{0}'.</target>
+        <note>0 - minimum publish age</note>
+      </trans-unit>
+      <trans-unit id="PackageSource_MinPublishAgeMustBeWholeHours">
+        <source>The minimum publish age must be specified in whole hours. Value: '{0}'.</source>
+        <target state="new">The minimum publish age must be specified in whole hours. Value: '{0}'.</target>
+        <note>0 - minimum publish age</note>
+      </trans-unit>
       <trans-unit id="PropertyCannotBeNullOrEmpty">
         <source>{0} cannot be null or empty.</source>
         <target state="translated">{0}은(는) null이거나 비워 둘 수 없습니다.</target>
