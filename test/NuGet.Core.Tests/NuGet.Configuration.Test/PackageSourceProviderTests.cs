@@ -1395,7 +1395,12 @@ namespace NuGet.Configuration.Test
             SettingsTestUtils.CreateConfigurationFile("NuGet.Config", childDirectory, configContents);
 
             // Act
-            var settings = Settings.LoadDefaultSettings(childDirectory);
+            var settings = Settings.LoadSettings(
+                childDirectory,
+                configFileName: null,
+                machineWideSettings: null,
+                loadUserWideSettings: false,
+                useTestingGlobalPath: false);
             var exceptions = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance)
                 .GetMinPublishAgeExceptions();
 
@@ -1438,6 +1443,61 @@ namespace NuGet.Configuration.Test
             // Assert
             exceptions.IsEnabled.Should().BeFalse();
             exceptions.FindException("System.Text.Json").Should().BeNull();
+        }
+
+        [Fact]
+        public void SaveMinPublishAgeExceptions_ReplacesExceptionsAcrossHierarchy()
+        {
+            // Arrange
+            using var directory = TestDirectory.Create();
+            var childDirectory = Path.Combine(directory.Path, "child");
+            var parentConfigPath = Path.Combine(directory.Path, Settings.DefaultSettingsFileName);
+            SettingsTestUtils.CreateConfigurationFile(
+                Settings.DefaultSettingsFileName,
+                directory,
+                """
+                <configuration>
+                    <minPublishAgeExceptions>
+                        <add pattern="Legacy.*" />
+                    </minPublishAgeExceptions>
+                </configuration>
+                """);
+            var originalParentConfig = File.ReadAllText(parentConfigPath);
+            SettingsTestUtils.CreateConfigurationFile(
+                Settings.DefaultSettingsFileName,
+                childDirectory,
+                """
+                <configuration>
+                    <minPublishAgeExceptions>
+                        <add pattern="Contoso.*" />
+                    </minPublishAgeExceptions>
+                </configuration>
+                """);
+
+            var settings = Settings.LoadDefaultSettings(childDirectory);
+            var provider = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
+
+            // Act
+            provider.SaveMinPublishAgeExceptions(new[]
+            {
+                new MinPublishAgeExceptionItem { Pattern = "Contoso.*" },
+                new MinPublishAgeExceptionItem { Pattern = "Microsoft.*" },
+            });
+
+            // Assert
+            var reloadedProvider = new PackageSourceProvider(
+                Settings.LoadSettings(
+                    childDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadUserWideSettings: false,
+                    useTestingGlobalPath: false),
+                TestConfigurationDefaults.NullInstance);
+            reloadedProvider.GetMinPublishAgeExceptionItems()
+                .Select(exception => exception.Pattern)
+                .Should()
+                .BeEquivalentTo("Contoso.*", "Microsoft.*");
+            File.ReadAllText(parentConfigPath).Should().Be(originalParentConfig);
         }
 
         [Fact]

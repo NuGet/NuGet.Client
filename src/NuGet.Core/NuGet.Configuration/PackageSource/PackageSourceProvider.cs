@@ -200,28 +200,58 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(exceptions));
             }
 
-            var existingExceptions = GetClosestMinPublishAgeExceptionSectionItems();
-            foreach (var existingException in existingExceptions)
+            if (Settings is Settings concreteSettings
+                && concreteSettings.Priority.FirstOrDefault(settingsFile => !settingsFile.IsReadOnly) is SettingsFile outputSettingsFile)
             {
-                Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
-            }
-
-            if (exceptionList.Count == 0)
-            {
-                if (Settings is Settings concreteSettings)
+                var existingSection = outputSettingsFile.GetSection(ConfigurationConstants.MinPublishAgeExceptions);
+                if (existingSection != null)
                 {
-                    concreteSettings.AddEmptySection(ConfigurationConstants.MinPublishAgeExceptions);
+                    foreach (var existingException in existingSection.Items)
+                    {
+                        outputSettingsFile.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
+                    }
+                }
+
+                if (exceptionList.Count == 0)
+                {
+                    outputSettingsFile.AddEmptySection(ConfigurationConstants.MinPublishAgeExceptions);
                 }
                 else
                 {
-                    Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, new ClearItem());
+                    concreteSettings.AddOrUpdate(
+                        outputSettingsFile,
+                        ConfigurationConstants.MinPublishAgeExceptions,
+                        new ClearItem());
+                    foreach (var exception in exceptionList)
+                    {
+                        concreteSettings.AddOrUpdate(
+                            outputSettingsFile,
+                            ConfigurationConstants.MinPublishAgeExceptions,
+                            exception);
+                    }
                 }
             }
             else
             {
-                foreach (var exception in exceptionList)
+                IReadOnlyCollection<SettingItem> existingExceptions;
+                while ((existingExceptions = GetClosestMinPublishAgeExceptionSectionItems()).Count > 0)
                 {
-                    Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, exception);
+                    foreach (var existingException in existingExceptions)
+                    {
+                        Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
+                    }
+                }
+
+                if (exceptionList.Count == 0)
+                {
+                    Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, new ClearItem());
+                }
+                else
+                {
+                    foreach (var exception in exceptionList)
+                    {
+                        Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, exception);
+                    }
                 }
             }
 
