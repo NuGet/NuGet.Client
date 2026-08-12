@@ -4,16 +4,23 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
+    /// <summary>
+    /// Defines a package ID pattern that is exempt from minimum publish age enforcement.
+    /// </summary>
     public sealed class MinPublishAgeExceptionItem : SettingItem
     {
         private string _pattern = string.Empty;
 
         public override string ElementName => "add";
 
+        /// <summary>
+        /// Gets the package ID pattern.
+        /// </summary>
         public required string Pattern
         {
             get => _pattern;
@@ -37,6 +44,9 @@ namespace NuGet.Configuration
         protected override IReadOnlyCollection<string> RequiredAttributes { get; } =
             new HashSet<string>(new[] { ConfigurationConstants.PatternAttribute });
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MinPublishAgeExceptionItem"/> class.
+        /// </summary>
         public MinPublishAgeExceptionItem()
             : base()
         {
@@ -46,7 +56,25 @@ namespace NuGet.Configuration
         internal MinPublishAgeExceptionItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            Pattern = Attributes[ConfigurationConstants.PatternAttribute];
+            string pattern = Attributes[ConfigurationConstants.PatternAttribute];
+            try
+            {
+                Pattern = pattern;
+            }
+            catch (ArgumentException exception)
+            {
+                string reason = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Error_InvalidMinPublishAgeExceptionPattern,
+                    pattern);
+                throw new NuGetConfigurationException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.UserSettings_UnableToParseConfigFile,
+                        reason,
+                        origin.ConfigFilePath),
+                    exception);
+            }
         }
 
         public override SettingBase Clone()

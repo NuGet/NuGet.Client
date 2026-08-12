@@ -175,11 +175,17 @@ namespace NuGet.Configuration
             return LoadAuditSources(EnvironmentVariableWrapper.Instance);
         }
 
+        /// <summary>
+        /// Gets the package-specific minimum publish age exceptions used by this provider.
+        /// </summary>
         public MinPublishAgeExceptions GetMinPublishAgeExceptions()
         {
             return new MinPublishAgeExceptions(GetMinPublishAgeExceptionItems());
         }
 
+        /// <summary>
+        /// Gets the package-specific minimum publish age exception items from the closest applicable configuration.
+        /// </summary>
         public IReadOnlyList<MinPublishAgeExceptionItem> GetMinPublishAgeExceptionItems()
         {
             return GetClosestMinPublishAgeExceptionSectionItems()
@@ -187,6 +193,14 @@ namespace NuGet.Configuration
                 .ToList();
         }
 
+        /// <summary>
+        /// Saves the package-specific minimum publish age exceptions.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="exceptions"/> is empty, an empty <c>minPublishAgeExceptions</c> element is written
+        /// to clear exceptions inherited from parent configuration files.
+        /// </remarks>
+        /// <param name="exceptions">The package-specific minimum publish age exceptions to save.</param>
         public void SaveMinPublishAgeExceptions(IEnumerable<MinPublishAgeExceptionItem> exceptions)
         {
             if (exceptions == null)
@@ -258,24 +272,9 @@ namespace NuGet.Configuration
             Settings.SaveToDisk();
         }
 
-        public void RemoveMinPublishAgeException(MinPublishAgeExceptionItem exception)
-        {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            var existingException = GetClosestMinPublishAgeExceptionSectionItems()
-                .OfType<MinPublishAgeExceptionItem>()
-                .FirstOrDefault(item => item.Equals(exception));
-
-            if (existingException != null)
-            {
-                Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
-                Settings.SaveToDisk();
-            }
-        }
-
+        /// <summary>
+        /// Removes all package-specific minimum publish age exceptions from the closest applicable configuration.
+        /// </summary>
         public void RemoveMinPublishAgeExceptions()
         {
             foreach (var existingException in GetClosestMinPublishAgeExceptionSectionItems())

@@ -1253,7 +1253,8 @@ namespace NuGet.Configuration.Test
             var inMemoryException = Record.Exception(() => new MinPublishAgeExceptionItem { Pattern = pattern });
 
             // Assert
-            fileException.Should().BeOfType<ArgumentException>();
+            fileException.Should().BeOfType<NuGetConfigurationException>();
+            fileException!.Message.Should().Contain(Path.Combine(directory.Path, "NuGet.Config"));
             inMemoryException.Should().BeOfType<ArgumentException>();
         }
 
@@ -1278,7 +1279,9 @@ namespace NuGet.Configuration.Test
             var inMemoryException = Record.Exception(() => new MinPublishAgeExceptionItem { Pattern = pattern });
 
             // Assert
-            fileException.Should().BeOfType<ArgumentOutOfRangeException>();
+            fileException.Should().BeOfType<NuGetConfigurationException>();
+            fileException!.Message.Should().Contain(Path.Combine(directory.Path, "NuGet.Config"));
+            fileException.Message.Should().Contain(pattern);
             inMemoryException.Should().BeOfType<ArgumentOutOfRangeException>();
         }
 
@@ -1311,32 +1314,6 @@ namespace NuGet.Configuration.Test
             new PackageSourceProvider(new Settings(directory), TestConfigurationDefaults.NullInstance)
                 .GetMinPublishAgeExceptions()
                 .IsEnabled.Should().BeFalse();
-        }
-
-        [Fact]
-        public void RemoveMinPublishAgeException_RemovesMatchingException()
-        {
-            // Arrange
-            using var directory = TestDirectory.Create();
-            File.WriteAllText(
-                Path.Combine(directory.Path, "NuGet.Config"),
-                """
-                <configuration>
-                    <minPublishAgeExceptions>
-                        <add pattern="System.*" />
-                    </minPublishAgeExceptions>
-                </configuration>
-                """);
-
-            var provider = new PackageSourceProvider(
-                new Settings(directory),
-                TestConfigurationDefaults.NullInstance);
-
-            // Act
-            provider.RemoveMinPublishAgeException(new MinPublishAgeExceptionItem { Pattern = "System.*" });
-
-            // Assert
-            provider.GetMinPublishAgeExceptionItems().Should().BeEmpty();
         }
 
         [Fact]

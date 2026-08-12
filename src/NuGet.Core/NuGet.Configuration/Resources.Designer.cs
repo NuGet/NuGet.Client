@@ -194,6 +194,15 @@ namespace NuGet.Configuration {
                 return ResourceManager.GetString("Error_InvalidAttribute", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum publish age exception pattern '{0}' is invalid..
+        /// </summary>
+        internal static string Error_InvalidMinPublishAgeExceptionPattern {
+            get {
+                return ResourceManager.GetString("Error_InvalidMinPublishAgeExceptionPattern", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Package source &apos;{0}&apos; must have at least one package pattern..

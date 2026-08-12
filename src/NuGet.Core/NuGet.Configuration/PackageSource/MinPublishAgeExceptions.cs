@@ -6,13 +6,23 @@ using System.Collections.Generic;
 
 namespace NuGet.Configuration
 {
+    /// <summary>
+    /// Matches package IDs against package-specific minimum publish age exception patterns.
+    /// </summary>
     public sealed class MinPublishAgeExceptions
     {
         private readonly SearchTree _searchTree;
         private readonly IReadOnlyDictionary<string, MinPublishAgeExceptionItem> _itemsByPattern;
 
+        /// <summary>
+        /// Gets a value indicating whether at least one exception pattern is configured.
+        /// </summary>
         public bool IsEnabled { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MinPublishAgeExceptions"/> class.
+        /// </summary>
+        /// <param name="items">The exception items to use for matching.</param>
         public MinPublishAgeExceptions(IReadOnlyList<MinPublishAgeExceptionItem> items)
         {
             if (items == null)
@@ -45,6 +55,11 @@ namespace NuGet.Configuration
             _searchTree = new SearchTree(mapping);
         }
 
+        /// <summary>
+        /// Finds the exception that matches a package ID.
+        /// </summary>
+        /// <param name="packageId">The package ID to match.</param>
+        /// <returns>The matching exception, or <see langword="null"/> if no exception matches.</returns>
         public MinPublishAgeExceptionItem? FindException(string packageId)
         {
             string? matchingPattern = _searchTree.SearchForPattern(packageId);
