@@ -1200,8 +1200,8 @@ namespace NuGet.Configuration.Test
 
             var config = File.ReadAllText(Path.Combine(directory.Path, "NuGet.Config"));
             config.Should().Contain("<minPublishAgeExceptions>");
-            config.Should().Contain("<add pattern=\"System.*\" />");
-            config.Should().Contain("<add pattern=\"Fabrikam.WebApi.Client\" />");
+            config.Should().Contain("<package pattern=\"System.*\" />");
+            config.Should().Contain("<package pattern=\"Fabrikam.WebApi.Client\" />");
         }
 
         [Fact]
@@ -1216,7 +1216,7 @@ namespace NuGet.Configuration.Test
                 """
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add />
+                        <package />
                     </minPublishAgeExceptions>
                 </configuration>
                 """);
@@ -1227,7 +1227,7 @@ namespace NuGet.Configuration.Test
             // Assert
             exception.Should().BeOfType<NuGetConfigurationException>();
             exception!.Message.Should().Contain("'pattern'");
-            exception.Message.Should().Contain("'add'");
+            exception.Message.Should().Contain("'package'");
             exception.Message.Should().Contain(Path.Combine(directory.Path, fileName));
         }
 
@@ -1243,7 +1243,7 @@ namespace NuGet.Configuration.Test
                 $"""
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="{pattern}" />
+                        <package pattern="{pattern}" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """);
@@ -1269,7 +1269,7 @@ namespace NuGet.Configuration.Test
                 $"""
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="{pattern}" />
+                        <package pattern="{pattern}" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """);
@@ -1295,7 +1295,7 @@ namespace NuGet.Configuration.Test
                 """
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="System.*" />
+                        <package pattern="System.*" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """);
@@ -1326,8 +1326,8 @@ namespace NuGet.Configuration.Test
                 """
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="System.*" />
-                        <add pattern="Fabrikam.*" />
+                        <package pattern="System.*" />
+                        <package pattern="Fabrikam.*" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """);
@@ -1353,7 +1353,7 @@ namespace NuGet.Configuration.Test
                 <?xml version="1.0" encoding="utf-8"?>
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="System.*" />
+                        <package pattern="System.*" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """;
@@ -1364,7 +1364,7 @@ namespace NuGet.Configuration.Test
                 <?xml version="1.0" encoding="utf-8"?>
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="Fabrikam.*" />
+                        <package pattern="Fabrikam.*" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """;
@@ -1396,7 +1396,7 @@ namespace NuGet.Configuration.Test
                 <?xml version="1.0" encoding="utf-8"?>
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="System.*" />
+                        <package pattern="System.*" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """;
@@ -1435,7 +1435,7 @@ namespace NuGet.Configuration.Test
                 """
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="Legacy.*" />
+                        <package pattern="Legacy.*" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """);
@@ -1446,7 +1446,7 @@ namespace NuGet.Configuration.Test
                 """
                 <configuration>
                     <minPublishAgeExceptions>
-                        <add pattern="Contoso.*" />
+                        <package pattern="Contoso.*" />
                     </minPublishAgeExceptions>
                 </configuration>
                 """);

@@ -16,7 +16,7 @@ namespace NuGet.Configuration
     {
         private string _pattern = string.Empty;
 
-        public override string ElementName => "add";
+        public override string ElementName => "package";
 
         /// <summary>
         /// Gets the package ID pattern.
