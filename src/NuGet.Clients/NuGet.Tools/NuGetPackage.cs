@@ -695,6 +695,12 @@ namespace NuGetVSExtension
 
             Project project = VsMonitorSelection.GetActiveProject();
 
+            if (project == null)
+            {
+                MessageHelper.ShowWarningMessage(Resources.ProjectJsonMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
+                return;
+            }
+
             string uniqueName = await project.GetCustomUniqueNameAsync();
             NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
 
@@ -1211,7 +1217,15 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                string uniqueName = VsMonitorSelection.GetActiveProject().GetUniqueName();
+                Project project = VsMonitorSelection.GetActiveProject();
+                if (project == null)
+                {
+                    command.Visible = false;
+                    command.Enabled = false;
+                    return;
+                }
+
+                string uniqueName = project.GetUniqueName();
                 NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
 
                 command.Visible = GetIsSolutionOpen() && nuGetProject != null && nuGetProject is ProjectJsonNuGetProject;
@@ -1250,6 +1264,11 @@ namespace NuGetVSExtension
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dteProject = VsMonitorSelection.GetActiveProject();
+
+            if (dteProject == null)
+            {
+                return false;
+            }
 
             var uniqueName = dteProject.GetUniqueName();
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
