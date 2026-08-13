@@ -104,9 +104,26 @@ Separate:
 
 Explain what each important test proves. Do not equate the presence of a test file with coverage of the changed behavior.
 
-## 6. Produce the reviewer guide
+## 6. Write the reviewer guide to Markdown
 
-Use the following structure. Omit empty sections.
+Always save the complete reviewer guide as a Markdown file under the repository's git-ignored `.test` directory:
+
+- PR number available: `.test/pr-explanations/pr-<number>.md`
+- Local branch without a PR: `.test/pr-explanations/<sanitized-branch-name>.md`
+
+Create `.test/pr-explanations` when it does not exist. Sanitize branch names by replacing characters other than letters, numbers, dots, underscores, and hyphens with `-`.
+
+The file must:
+
+- Begin with `# PR <number>: <title>` for a PR, or `# <branch-name> PR explanation` for a local branch.
+- Include the PR URL, base and head references, and generation date immediately below the title.
+- Contain the complete output structure below.
+- Use repository-relative file links where useful.
+- Be overwritten when rerunning the explanation for the same PR or branch so stale results are not mistaken for current analysis.
+
+Do not commit the generated explanation. After writing it, return the repository-relative output path and a brief reviewer summary in chat. Do not duplicate the complete guide in chat unless the user asks.
+
+Use the following structure in the Markdown file. Omit empty sections.
 
 ### Reviewer brief
 
