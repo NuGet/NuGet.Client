@@ -106,12 +106,12 @@ Explain what each important test proves. Do not equate the presence of a test fi
 
 ## 6. Write the reviewer guide to Markdown
 
-Always save the complete reviewer guide as a Markdown file under the repository's git-ignored `.test` directory:
+Always save the complete reviewer guide as a Markdown file under the repository's dedicated, git-ignored `.pr-explanations` directory:
 
-- PR number available: `.test/pr-explanations/pr-<number>.md`
-- Local branch without a PR: `.test/pr-explanations/<sanitized-branch-name>.md`
+- PR number available: `.pr-explanations/pr-<number>.md`
+- Local branch without a PR: `.pr-explanations/<sanitized-branch-name>.md`
 
-Create `.test/pr-explanations` when it does not exist. Sanitize branch names by replacing characters other than letters, numbers, dots, underscores, and hyphens with `-`.
+Create `.pr-explanations` when it does not exist. Sanitize branch names by replacing characters other than letters, numbers, dots, underscores, and hyphens with `-`.
 
 The file must:
 

@@ -12,6 +12,9 @@ artifacts/
 # Tests
 .test/
 
+# Generated PR explanations
+.pr-explanations/
+
 # VSCode
 **/.vs/
 **/.vscode/
