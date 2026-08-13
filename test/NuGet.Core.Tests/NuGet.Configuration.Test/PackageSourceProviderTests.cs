@@ -1202,6 +1202,53 @@ namespace NuGet.Configuration.Test
             config.Should().Contain("<minPublishAgeExceptions>");
             config.Should().Contain("<package pattern=\"System.*\" />");
             config.Should().Contain("<package pattern=\"Fabrikam.WebApi.Client\" />");
+            config.Should().NotContain("<clear />");
+        }
+
+        [Fact]
+        public void SaveMinPublishAgeExceptions_UpdatesExistingProvider()
+        {
+            // Arrange
+            using var directory = TestDirectory.Create();
+            File.WriteAllText(
+                Path.Combine(directory.Path, "NuGet.Config"),
+                """
+                <configuration>
+                    <minPublishAgeExceptions>
+                        <package pattern="Legacy.*" />
+                    </minPublishAgeExceptions>
+                </configuration>
+                """);
+
+            var provider = new PackageSourceProvider(
+                new Settings(directory),
+                TestConfigurationDefaults.NullInstance);
+
+            // Act
+            provider.SaveMinPublishAgeExceptions(new[]
+            {
+                new MinPublishAgeExceptionItem { Pattern = "Contoso.*" },
+            });
+
+            // Assert
+            provider.GetMinPublishAgeExceptionItems()
+                .Select(exception => exception.Pattern)
+                .Should()
+                .BeEquivalentTo("Contoso.*");
+        }
+
+        [Fact]
+        public void SaveMinPublishAgeExceptions_WithUnsupportedSettings_Throws()
+        {
+            // Arrange
+            var settings = new Mock<ISettings>();
+            var provider = new PackageSourceProvider(settings.Object, TestConfigurationDefaults.NullInstance);
+
+            // Act
+            var exception = Record.Exception(() => provider.SaveMinPublishAgeExceptions(Array.Empty<MinPublishAgeExceptionItem>()));
+
+            // Assert
+            exception.Should().BeOfType<NotSupportedException>();
         }
 
         [Fact]
@@ -1311,9 +1358,24 @@ namespace NuGet.Configuration.Test
             var config = File.ReadAllText(Path.Combine(directory.Path, "NuGet.Config"));
             config.Should().Contain("<minPublishAgeExceptions />");
             config.Should().NotContain("<clear />");
-            new PackageSourceProvider(new Settings(directory), TestConfigurationDefaults.NullInstance)
-                .GetMinPublishAgeExceptions()
-                .IsEnabled.Should().BeFalse();
+            provider.GetMinPublishAgeExceptions().IsEnabled.Should().BeFalse();
+        }
+
+        [Fact]
+        public void MinPublishAgeExceptions_FindException_TrimsPattern()
+        {
+            // Arrange
+            var exceptions = new MinPublishAgeExceptions(new[]
+            {
+                new MinPublishAgeExceptionItem { Pattern = " System.* " },
+            });
+
+            // Act
+            var exception = exceptions.FindException("System.Text.Json");
+
+            // Assert
+            exception.Should().NotBeNull();
+            exception!.Pattern.Should().Be(" System.* ");
         }
 
         [Fact]
@@ -1474,6 +1536,9 @@ namespace NuGet.Configuration.Test
                 .Select(exception => exception.Pattern)
                 .Should()
                 .BeEquivalentTo("Contoso.*", "Microsoft.*");
+            File.ReadAllText(Path.Combine(childDirectory, Settings.DefaultSettingsFileName))
+                .Should()
+                .NotContain("<clear />");
             File.ReadAllText(parentConfigPath).Should().Be(originalParentConfig);
         }
 

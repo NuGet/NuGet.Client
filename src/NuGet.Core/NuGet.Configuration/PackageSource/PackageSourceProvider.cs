@@ -201,42 +201,41 @@ namespace NuGet.Configuration
         /// to clear exceptions inherited from parent configuration files.
         /// </remarks>
         /// <param name="exceptions">The package-specific minimum publish age exceptions to save.</param>
-        public void SaveMinPublishAgeExceptions(IEnumerable<MinPublishAgeExceptionItem> exceptions)
+        public void SaveMinPublishAgeExceptions(IReadOnlyList<MinPublishAgeExceptionItem> exceptions)
         {
             if (exceptions == null)
             {
                 throw new ArgumentNullException(nameof(exceptions));
             }
 
-            var exceptionList = exceptions.ToList();
-            if (exceptionList.Any(exception => exception == null))
+            if (Settings is not Settings concreteSettings)
+            {
+                throw new NotSupportedException();
+            }
+
+            if (exceptions.Any(exception => exception == null))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(exceptions));
             }
 
-            if (Settings is Settings concreteSettings
-                && concreteSettings.Priority.FirstOrDefault(settingsFile => !settingsFile.IsReadOnly) is SettingsFile outputSettingsFile)
+            if (concreteSettings.Priority.FirstOrDefault(settingsFile => !settingsFile.IsReadOnly) is SettingsFile outputSettingsFile)
             {
                 var existingSection = outputSettingsFile.GetSection(ConfigurationConstants.MinPublishAgeExceptions);
                 if (existingSection != null)
                 {
                     foreach (var existingException in existingSection.Items)
                     {
-                        outputSettingsFile.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
+                        concreteSettings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
                     }
                 }
 
-                if (exceptionList.Count == 0)
+                if (exceptions.Count == 0)
                 {
-                    outputSettingsFile.AddEmptySection(ConfigurationConstants.MinPublishAgeExceptions);
+                    concreteSettings.AddEmptySection(ConfigurationConstants.MinPublishAgeExceptions);
                 }
                 else
                 {
-                    concreteSettings.AddOrUpdate(
-                        outputSettingsFile,
-                        ConfigurationConstants.MinPublishAgeExceptions,
-                        new ClearItem());
-                    foreach (var exception in exceptionList)
+                    foreach (var exception in exceptions)
                     {
                         concreteSettings.AddOrUpdate(
                             outputSettingsFile,
@@ -245,31 +244,8 @@ namespace NuGet.Configuration
                     }
                 }
             }
-            else
-            {
-                IReadOnlyCollection<SettingItem> existingExceptions;
-                while ((existingExceptions = GetClosestMinPublishAgeExceptionSectionItems()).Count > 0)
-                {
-                    foreach (var existingException in existingExceptions)
-                    {
-                        Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
-                    }
-                }
 
-                if (exceptionList.Count == 0)
-                {
-                    Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, new ClearItem());
-                }
-                else
-                {
-                    foreach (var exception in exceptionList)
-                    {
-                        Settings.AddOrUpdate(ConfigurationConstants.MinPublishAgeExceptions, exception);
-                    }
-                }
-            }
-
-            Settings.SaveToDisk();
+            concreteSettings.SaveToDisk();
         }
 
         /// <summary>

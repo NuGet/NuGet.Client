@@ -34,10 +34,9 @@ namespace NuGet.Configuration
             }
 
             if (other.ElementName.Equals(ConfigurationConstants.MinPublishAgeExceptions, StringComparison.OrdinalIgnoreCase)
-                && other.Items.Count == 0)
+                && !other.Items.OfType<ClearItem>().Any())
             {
                 Children.Clear();
-                return this;
             }
 
             foreach (var item in other.Items.Where(item => item != null))

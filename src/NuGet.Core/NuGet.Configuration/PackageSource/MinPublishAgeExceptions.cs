@@ -42,7 +42,7 @@ namespace NuGet.Configuration
                 }
 
                 string pattern = item.Pattern;
-                itemsByPattern[pattern] = item;
+                itemsByPattern[pattern.Trim()] = item;
                 patterns[i] = pattern;
             }
 
