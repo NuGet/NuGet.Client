@@ -1268,6 +1268,25 @@ namespace NuGet.Tests.Apex
             pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
         }
 
+        [DataTestMethod]
+        [DataRow(0x20000)]
+        [DataRow(0xE000)]
+        [Timeout(DefaultTimeout)]
+        public void Console_BackspaceRemovesCompleteCharacter(int codePoint)
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            string character = char.ConvertFromUtf32(codePoint);
+
+            nugetConsole.Clear();
+            nugetConsole.Write("ABC" + character);
+            nugetConsole.WriteBackspace();
+
+            string pmcText = nugetConsole.GetText();
+            pmcText.Should().Be("ABC", because: pmcText);
+        }
+
         public static IEnumerable<object[]> GetNetCoreTemplates()
         {
             yield return new object[] { ProjectTemplate.NetCoreConsoleApp };

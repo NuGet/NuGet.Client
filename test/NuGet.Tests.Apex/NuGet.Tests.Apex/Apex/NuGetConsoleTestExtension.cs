@@ -70,6 +70,16 @@ namespace NuGet.Tests.Apex
             _pmConsole.Clear();
         }
 
+        public void Write(string text)
+        {
+            _pmConsole.Write(text);
+        }
+
+        public void WriteBackspace()
+        {
+            _pmConsole.WriteBackspace();
+        }
+
         public string GetText()
         {
             return _pmConsole.GetText();

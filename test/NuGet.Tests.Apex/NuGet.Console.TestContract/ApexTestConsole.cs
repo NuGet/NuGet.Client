@@ -102,6 +102,26 @@ namespace NuGet.Console.TestContract
             NuGetUIThreadHelper.JoinableTaskFactory.Run(() => _wpfConsole.ClearAsync());
         }
 
+        public void Write(string text)
+        {
+            if (!EnsureInitilizeConsole())
+            {
+                return;
+            }
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => _wpfConsole.WriteAsync(text));
+        }
+
+        public void WriteBackspace()
+        {
+            if (!EnsureInitilizeConsole())
+            {
+                return;
+            }
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => _wpfConsole.WriteBackspaceAsync());
+        }
+
         public void RunCommand(string command, TimeSpan timeout)
         {
             WaitForActionComplete(() => RunCommandWithoutWait(command), timeout);
