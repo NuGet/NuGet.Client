@@ -27,6 +27,69 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void StartMSBuildRestoreTasks_DoesNotDiscardTheLogThatLivePluginsWriteTo()
+        {
+            PluginLogger before = PluginLogger.DefaultInstance;
+            try
+            {
+                StaticState.RaiseStartMSBuildRestoreTasks();
+
+                // A build restores more than once and the plugins outlive each restore, so the start of a restore must
+                // not close the log they captured - writing to a disposed logger would fail the build.
+                Assert.Same(before, PluginLogger.DefaultInstance);
+            }
+            finally
+            {
+                PluginLogger.ResetDefaultInstance();
+            }
+        }
+
+        [Fact]
+        public void EndMSBuildRestoreTasks_DiscardsTheLog()
+        {
+            PluginLogger before = PluginLogger.DefaultInstance;
+            try
+            {
+                // The end of the build tears the plugins down, so the log they wrote to is closed with them.
+                StaticState.RaiseEndMSBuildRestoreTasks();
+
+                Assert.NotSame(before, PluginLogger.DefaultInstance);
+            }
+            finally
+            {
+                PluginLogger.ResetDefaultInstance();
+            }
+        }
+
+        [Fact]
+        public void Write_WhenDisposed_DoesNotThrow()
+        {
+            string original = Environment.GetEnvironmentVariable("NUGET_PLUGIN_ENABLE_LOG");
+            string originalLogDir = Environment.GetEnvironmentVariable("NUGET_PLUGIN_LOG_DIRECTORY_PATH");
+
+            using (var testDirectory = TestDirectory.Create())
+            {
+                try
+                {
+                    Environment.SetEnvironmentVariable("NUGET_PLUGIN_LOG_DIRECTORY_PATH", testDirectory.Path);
+                    Environment.SetEnvironmentVariable("NUGET_PLUGIN_ENABLE_LOG", bool.TrueString);
+
+                    var logger = new PluginLogger(EnvironmentVariableWrapper.Instance);
+                    logger.Dispose();
+
+                    // A plugin can still hold a logger that has been discarded, and teardown itself logs. Diagnostics
+                    // must never fail the operation being diagnosed.
+                    logger.Write(new StopwatchLogMessage(logger.Now, Stopwatch.Frequency));
+                }
+                finally
+                {
+                    Environment.SetEnvironmentVariable("NUGET_PLUGIN_ENABLE_LOG", original);
+                    Environment.SetEnvironmentVariable("NUGET_PLUGIN_LOG_DIRECTORY_PATH", originalLogDir);
+                }
+            }
+        }
+
+        [Fact]
         public void ResetDefaultInstance_ReReadsEnableLogFromEnvironment()
         {
             // DefaultInstance freezes its IsEnabled when created; in a process reused across builds, ResetDefaultInstance

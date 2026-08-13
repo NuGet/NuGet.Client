@@ -22,6 +22,10 @@ namespace NuGet.Credentials
         static DefaultCredentialServiceUtility()
         {
             StaticState.StartMSBuildRestoreTasks += ResetCredentialService;
+
+            // The credential service owns plugin-backed ICredentialProvider instances, so it must never outlive the
+            // plugin processes they talk to; discard it on the same event that tears those processes down.
+            StaticState.EndMSBuildRestoreTasks += ResetCredentialService;
         }
 
         /// <summary>
