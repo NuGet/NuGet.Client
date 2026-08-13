@@ -93,11 +93,11 @@ namespace NuGet.Credentials.Test
                 connectionClosed: true);
 
             using (var test = new PluginManagerMock(
-                pluginFilePath: "a",
+                pluginFilePath: "pluginA.exe",
                 pluginFileState: PluginFileState.Valid,
                 expectations: expectation))
             {
-                var discoveryResult = new PluginDiscoveryResult(new PluginFile("a", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
+                var discoveryResult = new PluginDiscoveryResult(new PluginFile("pluginA.exe", new Lazy<PluginFileState>(() => PluginFileState.Valid)));
                 var provider = new SecurePluginCredentialProvider(test.PluginManager, discoveryResult, canShowDialog: true, logger: NullLogger.Instance);
 
                 // A connection that is closing or closed - because the plugin process was torn down while the request
@@ -106,7 +106,7 @@ namespace NuGet.Credentials.Test
                 var exception = await Assert.ThrowsAsync<PluginException>(
                     () => provider.GetAsync(_uri, proxy: null, CredentialRequestType.Unauthorized, message: "nothing", isRetry: false, nonInteractive: false, cancellationToken: CancellationToken.None));
 
-                Assert.Contains("a", exception.Message);
+                Assert.Contains("pluginA.exe", exception.Message);
             }
         }
 

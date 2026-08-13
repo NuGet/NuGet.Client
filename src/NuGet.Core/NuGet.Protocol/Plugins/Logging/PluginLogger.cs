@@ -100,29 +100,28 @@ namespace NuGet.Protocol.Plugins
 
         public void Dispose()
         {
-            if (!_isDisposed)
+            lock (_streamWriterLock)
             {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 if (_streamWriter.IsValueCreated)
                 {
                     _streamWriter.Value.Dispose();
                 }
 
-                GC.SuppressFinalize(this);
                 _isDisposed = true;
             }
+
+            GC.SuppressFinalize(this);
         }
 
         public void Write(IPluginLogMessage message)
         {
             if (!IsEnabled)
             {
-                return;
-            }
-
-            if (_isDisposed)
-            {
-                // A plugin can outlive the logger it captured, and teardown itself logs. Diagnostics must never fail
-                // the operation being diagnosed, so drop the message rather than throwing.
                 return;
             }
 
@@ -133,6 +132,15 @@ namespace NuGet.Protocol.Plugins
 
             lock (_streamWriterLock)
             {
+                if (_isDisposed)
+                {
+                    // A plugin can outlive the logger it captured, and teardown itself logs, so writes race with
+                    // disposal. Diagnostics must never fail the operation being diagnosed, so drop the message rather
+                    // than writing to a closed stream. Checked under the same lock that disposal takes, so a write can
+                    // never slip past this and reach a disposed StreamWriter.
+                    return;
+                }
+
                 _streamWriter.Value.WriteLine(message.ToString());
             }
         }

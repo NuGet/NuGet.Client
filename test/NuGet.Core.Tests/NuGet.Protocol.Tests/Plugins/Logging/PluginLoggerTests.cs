@@ -16,6 +16,9 @@ using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
+    // Two of these tests raise StaticState's process-global events, which resets every subscriber in the process, so
+    // they must not run alongside tests that depend on that state.
+    [Collection(nameof(NuGet.Protocol.Tests.NotThreadSafeResourceCollection))]
     public class PluginLoggerTests : LogMessageTests
     {
         [Fact]

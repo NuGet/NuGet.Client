@@ -177,6 +177,7 @@ namespace NuGet.Build.Tasks
                 }
                 catch (Exception e)
                 {
+                    // Arranging the teardown must not fail the restore that just succeeded.
                     ExceptionUtilities.LogException(e, log);
                 }
             }
@@ -344,6 +345,11 @@ namespace NuGet.Build.Tasks
         /// Raises <see cref="StaticState.EndMSBuildRestoreTasks" /> when the build engine disposes it at the end of
         /// the build. See <see cref="ScheduleEndOfBuildStaticStateReset" />.
         /// </summary>
+        /// <remarks>
+        /// The build has finished by the time this runs, so there is no logger left to report to and MSBuild discards
+        /// anything thrown from here. Handlers of <see cref="StaticState.EndMSBuildRestoreTasks" /> are responsible for
+        /// guarding themselves, as that event documents.
+        /// </remarks>
         private sealed class EndOfBuildStaticStateReset : IDisposable
         {
             public void Dispose()
