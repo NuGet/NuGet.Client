@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -1064,9 +1065,10 @@ namespace NuGet.Commands.Test
         // Regression tests for NuGet/Home#15045.
         //
         // These mutate process-wide state (NUGET_CONCURRENCY_LIMIT and the static throttle behind
-        // ResetCache), so they are serialized against each other via the collection below and always
-        // restore the previous environment value.
-        [Collection(nameof(SharedThrottleTests))]
+        // ResetCache), which other tests in this assembly observe through any provider they construct.
+        // NotThreadSafeResourceCollection is declared with DisableParallelization, so this collection does
+        // not run alongside any other collection. The environment variable is also always restored.
+        [Collection(nameof(NotThreadSafeResourceCollection))]
         public class SharedThrottleTests
         {
             /// <summary>
@@ -1081,7 +1083,7 @@ namespace NuGet.Commands.Test
                 internal ThrottleScope(int limit)
                 {
                     _previous = Environment.GetEnvironmentVariable(LimitVariable);
-                    Environment.SetEnvironmentVariable(LimitVariable, limit.ToString());
+                    Environment.SetEnvironmentVariable(LimitVariable, limit.ToString(CultureInfo.InvariantCulture));
                     SourceRepositoryDependencyProvider.ResetCache();
                 }
 
@@ -1163,8 +1165,11 @@ namespace NuGet.Commands.Test
                         test.Logger,
                         CancellationToken.None);
 
-                    // A second caller cannot acquire, and its wait is canceled. Before the fix the finally
-                    // released a permit that was never acquired, inflating the count.
+                    // A second caller cannot acquire the permit and its wait is canceled, so it never takes
+                    // one. Before the fix the finally released a permit that was never acquired, inflating
+                    // the count. A pre-canceled token is used so the test is deterministic; it makes
+                    // WaitAsync fault without registering a waiter, but both cancellation paths converge on
+                    // the same `acquired` guard.
                     using (var cts = new CancellationTokenSource())
                     {
                         cts.Cancel();
