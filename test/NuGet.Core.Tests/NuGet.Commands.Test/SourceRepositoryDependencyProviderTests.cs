@@ -1061,6 +1061,133 @@ namespace NuGet.Commands.Test
             }
         }
 
+        // Regression tests for NuGet/Home#15045.
+        //
+        // These mutate process-wide state (NUGET_CONCURRENCY_LIMIT and the static throttle behind
+        // ResetCache), so they are serialized against each other via the collection below and always
+        // restore the previous environment value.
+        [Collection(nameof(SharedThrottleTests))]
+        public class SharedThrottleTests
+        {
+            /// <summary>
+            /// Sets NUGET_CONCURRENCY_LIMIT and rebuilds the shared throttle from it, restoring both on dispose.
+            /// A limit is required because the throttle is null unless one is configured (or the OS is macOS).
+            /// </summary>
+            private sealed class ThrottleScope : IDisposable
+            {
+                private const string LimitVariable = "NUGET_CONCURRENCY_LIMIT";
+                private readonly string _previous;
+
+                internal ThrottleScope(int limit)
+                {
+                    _previous = Environment.GetEnvironmentVariable(LimitVariable);
+                    Environment.SetEnvironmentVariable(LimitVariable, limit.ToString());
+                    SourceRepositoryDependencyProvider.ResetCache();
+                }
+
+                internal static void Reset() => SourceRepositoryDependencyProvider.ResetCache();
+
+                public void Dispose()
+                {
+                    Environment.SetEnvironmentVariable(LimitVariable, _previous);
+                    SourceRepositoryDependencyProvider.ResetCache();
+                }
+            }
+
+            private static Mock<FindPackageByIdResource> CreateGatedResource(TaskCompletionSource<bool> gate)
+            {
+                var resource = new Mock<FindPackageByIdResource>();
+
+                resource.Setup(x => x.GetAllVersionsAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<SourceCacheContext>(),
+                        It.IsAny<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .Returns(async () =>
+                    {
+                        await gate.Task;
+                        return Enumerable.Empty<NuGetVersion>();
+                    });
+
+                return resource;
+            }
+
+            [Fact]
+            public async Task GetAllVersionsAsync_WhenThrottleIsResetWhileInFlight_DoesNotOverReleaseAsync()
+            {
+                using (new ThrottleScope(limit: 2))
+                using (var test = SourceRepositoryDependencyProviderTest.Create())
+                {
+                    var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var resource = CreateGatedResource(gate);
+
+                    test.SourceRepository.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                        .ReturnsAsync(resource.Object);
+
+                    // Take a permit on the current throttle and stay inside the try/finally.
+                    Task<IEnumerable<NuGetVersion>> inFlight = test.Provider.GetAllVersionsAsync(
+                        "a",
+                        test.SourceCacheContext,
+                        test.Logger,
+                        CancellationToken.None);
+
+                    // A restore starting in this (reused) process swaps the throttle out from under the
+                    // in-flight call. Before the fix the finally released this NEW, already-full semaphore
+                    // and threw SemaphoreFullException.
+                    ThrottleScope.Reset();
+
+                    gate.SetResult(true);
+
+                    Func<Task> act = async () => await inFlight;
+
+                    await act.Should().NotThrowAsync();
+                }
+            }
+
+            [Fact]
+            public async Task GetAllVersionsAsync_WhenWaitIsCanceled_DoesNotReleaseUnacquiredPermitAsync()
+            {
+                using (new ThrottleScope(limit: 1))
+                using (var test = SourceRepositoryDependencyProviderTest.Create())
+                {
+                    var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var resource = CreateGatedResource(gate);
+
+                    test.SourceRepository.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(CancellationToken.None))
+                        .ReturnsAsync(resource.Object);
+
+                    // Occupy the single permit.
+                    Task<IEnumerable<NuGetVersion>> holder = test.Provider.GetAllVersionsAsync(
+                        "a",
+                        test.SourceCacheContext,
+                        test.Logger,
+                        CancellationToken.None);
+
+                    // A second caller cannot acquire, and its wait is canceled. Before the fix the finally
+                    // released a permit that was never acquired, inflating the count.
+                    using (var cts = new CancellationTokenSource())
+                    {
+                        cts.Cancel();
+
+                        Func<Task> canceled = async () => await test.Provider.GetAllVersionsAsync(
+                            "b",
+                            test.SourceCacheContext,
+                            test.Logger,
+                            cts.Token);
+
+                        await canceled.Should().ThrowAsync<OperationCanceledException>();
+                    }
+
+                    gate.SetResult(true);
+
+                    // The leaked permit surfaced here: releasing took the count above its maximum.
+                    Func<Task> act = async () => await holder;
+
+                    await act.Should().NotThrowAsync();
+                }
+            }
+        }
+
         private sealed class SourceRepositoryDependencyProviderTest : IDisposable
         {
             internal TestLogger Logger { get; }

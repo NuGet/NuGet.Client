@@ -48,16 +48,25 @@ namespace NuGet.Commands
         private readonly TaskResultCache<LibraryRange, LibraryIdentity> _libraryMatchCache = new();
 
         // Limiting concurrent requests to limit the amount of files open at a time.
+        // Mutable: ResetCache swaps this at the start of an MSBuild restore. Every use site must therefore
+        // capture it into a local and Wait/Release that same instance - re-reading the field between the two
+        // can release a different, already-full semaphore (SemaphoreFullException). See NuGet/Home#15045.
         private static SemaphoreSlim _throttle = GetThrottleSemaphoreSlim(EnvironmentVariableWrapper.Instance);
 
         /// <summary>
-        /// Recreates the shared concurrency throttle from the current environment (<c>NUGET_CONCURRENCY_LIMIT</c>),
-        /// disposing the previous one. The caller must ensure no restore is in flight.
+        /// Recreates the shared concurrency throttle from the current environment (<c>NUGET_CONCURRENCY_LIMIT</c>)
+        /// so a process reused across builds observes the current value.
         /// </summary>
+        /// <remarks>
+        /// The previous semaphore is deliberately NOT disposed. Restore work started before this reset still holds a
+        /// reference to it and must be able to release its permit; releasing a disposed
+        /// <see cref="SemaphoreSlim" /> throws <see cref="ObjectDisposedException" />. The orphaned instance is
+        /// unreferenced once that work drains and is reclaimed by the GC. <see cref="SemaphoreSlim" /> only needs
+        /// disposal when its <see cref="SemaphoreSlim.AvailableWaitHandle" /> was used, which NuGet never does.
+        /// </remarks>
         internal static void ResetCache()
         {
-            SemaphoreSlim previous = Interlocked.Exchange(ref _throttle, GetThrottleSemaphoreSlim(EnvironmentVariableWrapper.Instance));
-            previous?.Dispose();
+            _ = Interlocked.Exchange(ref _throttle, GetThrottleSemaphoreSlim(EnvironmentVariableWrapper.Instance));
         }
 
         internal static SemaphoreSlim GetThrottleSemaphoreSlim(IEnvironmentVariableReader env)
@@ -263,11 +272,14 @@ namespace NuGet.Commands
             {
                 // first check if the exact min version exist then simply return that
                 bool versionExists = false;
+                SemaphoreSlim throttle = _throttle;
+                bool acquired = false;
                 try
                 {
-                    if (_throttle != null)
+                    if (throttle != null)
                     {
-                        await _throttle.WaitAsync(cancellationToken);
+                        await throttle.WaitAsync(cancellationToken);
+                        acquired = true;
                     }
 
                     versionExists = await _findPackagesByIdResource.DoesPackageExistAsync(
@@ -279,7 +291,10 @@ namespace NuGet.Commands
                 }
                 finally
                 {
-                    _throttle?.Release();
+                    if (acquired)
+                    {
+                        throttle.Release();
+                    }
                 }
 
                 if (versionExists)
@@ -396,11 +411,14 @@ namespace NuGet.Commands
             CancellationToken cancellationToken)
         {
             FindPackageByIdDependencyInfo packageInfo = null;
+            SemaphoreSlim throttle = _throttle;
+            bool acquired = false;
             try
             {
-                if (_throttle != null)
+                if (throttle != null)
                 {
-                    await _throttle.WaitAsync(cancellationToken);
+                    await throttle.WaitAsync(cancellationToken);
+                    acquired = true;
                 }
 
                 await EnsureResource(cancellationToken);
@@ -427,7 +445,10 @@ namespace NuGet.Commands
             }
             finally
             {
-                _throttle?.Release();
+                if (acquired)
+                {
+                    throttle.Release();
+                }
             }
 
             LibraryDependencyInfo libraryDependencyInfo = null;
@@ -494,11 +515,14 @@ namespace NuGet.Commands
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            SemaphoreSlim throttle = _throttle;
+            bool acquired = false;
             try
             {
-                if (_throttle != null)
+                if (throttle != null)
                 {
-                    await _throttle.WaitAsync(cancellationToken);
+                    await throttle.WaitAsync(cancellationToken);
+                    acquired = true;
                 }
 
                 await EnsureResource(cancellationToken);
@@ -511,7 +535,9 @@ namespace NuGet.Commands
                     logger,
                     cancellationToken);
 
-                packageDownloader.SetThrottle(_throttle);
+                // The downloader keeps using this throttle after this method returns, so it must be
+                // handed the same instance this method waited on rather than re-reading the field.
+                packageDownloader.SetThrottle(throttle);
                 packageDownloader.SetExceptionHandler(async exception =>
                 {
                     if (exception is FatalProtocolException e)
@@ -546,7 +572,10 @@ namespace NuGet.Commands
             }
             finally
             {
-                _throttle?.Release();
+                if (acquired)
+                {
+                    throttle.Release();
+                }
             }
 
             return null;
@@ -665,11 +694,14 @@ namespace NuGet.Commands
             bool catchAndLogExceptions,
             CancellationToken cancellationToken)
         {
+            SemaphoreSlim throttle = _throttle;
+            bool acquired = false;
             try
             {
-                if (_throttle != null)
+                if (throttle != null)
                 {
-                    await _throttle.WaitAsync(cancellationToken);
+                    await throttle.WaitAsync(cancellationToken);
+                    acquired = true;
                 }
 
                 await EnsureResource(cancellationToken);
@@ -695,7 +727,10 @@ namespace NuGet.Commands
             }
             finally
             {
-                _throttle?.Release();
+                if (acquired)
+                {
+                    throttle.Release();
+                }
             }
         }
 
