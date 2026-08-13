@@ -7,6 +7,8 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using NuGet.VisualStudio;
@@ -107,6 +109,29 @@ namespace NuGet.Console.TestContract
             WaitForActionComplete(() => RunCommandWithoutWait(command), timeout);
         }
 
+        public void RunCommandWithInputAndBackspace(string command, string input, TimeSpan timeout)
+        {
+            WaitForActionComplete(
+                () =>
+                {
+                    RunCommandWithoutWait(command);
+                    WaitForReadKey(timeout);
+
+                    UIInvoke(() =>
+                    {
+                        var commandTarget = (IOleCommandTarget)_wpfConsole.VsTextView;
+                        foreach (char character in input)
+                        {
+                            commandTarget.Execute(VSConstants.VSStd2KCmdID.TYPECHAR, character);
+                        }
+
+                        commandTarget.Execute(VSConstants.VSStd2KCmdID.BACKSPACE);
+                        commandTarget.Execute(VSConstants.VSStd2KCmdID.RETURN);
+                    });
+                },
+                timeout);
+        }
+
         public void RunCommandWithoutWait(string command)
         {
             if (!string.IsNullOrEmpty(command))
@@ -157,6 +182,20 @@ namespace NuGet.Console.TestContract
                     asynchost.ExecuteEnd -= eventHandler;
                     dispatcher.SetExecutingCommand(false);
                 }
+            }
+        }
+
+        private void WaitForReadKey(TimeSpan timeout)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            while (!_wpfConsole.Dispatcher.IsExecutingReadKey && stopwatch.Elapsed < timeout)
+            {
+                Thread.Sleep(100);
+            }
+
+            if (!_wpfConsole.Dispatcher.IsExecutingReadKey)
+            {
+                throw new TimeoutException("The Package Manager Console did not begin waiting for input.");
             }
         }
 

@@ -1270,25 +1270,23 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public void Console_PreservesGB18030SupplementaryText()
+        public void Console_WhenBackspacingSupplementaryCharacter_PreservesRemainingText()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger);
 
             var nugetConsole = GetConsole(testContext.Project);
             nugetConsole.Clear();
 
-            string sample =
-                char.ConvertFromUtf32(0x20000) +
-                char.ConvertFromUtf32(0x2A6B2) +
-                char.ConvertFromUtf32(0x1F600) +
-                char.ConvertFromUtf32(0xE000) +
-                char.ConvertFromUtf32(0x100000) +
-                "ABC";
+            string supplementaryCharacter = char.ConvertFromUtf32(0x20000);
+            string input = "A" + supplementaryCharacter;
 
-            nugetConsole.Execute($"$gb18030 = '{sample}'; Write-Host $gb18030");
+            nugetConsole.ExecuteWithInputAndBackspace(
+                "$value = Read-Host; Write-Host \"Result=[$value]\"",
+                input);
 
             string pmcText = nugetConsole.GetText();
-            pmcText.Should().Contain(sample, because: pmcText);
+            pmcText.Should().Contain("Result=[A]", because: pmcText);
+            pmcText.Should().NotContain(supplementaryCharacter[0].ToString(), because: pmcText);
             pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
         }
 
