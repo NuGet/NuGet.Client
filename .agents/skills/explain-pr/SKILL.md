@@ -40,7 +40,18 @@ Treat these as claims until they are supported by the issue, diff, or tests.
 
 ---
 
-## Phase 3: Identify Change Structure
+## Phase 3: Read Linked Issue
+
+Use GitHub MCP tools to fetch the linked issue(s):
+- Read the issue body and all comments
+- Identify the reported problem, reproduction steps, and expected behavior
+- Note any discussion about design decisions or rejected approaches
+
+If no issue is linked, use the PR description as the sole source of problem context. Note this limitation in the report.
+
+---
+
+## Phase 4: Identify Change Structure
 
 Classify the changed files into:
 - Core implementation
@@ -53,15 +64,7 @@ Use this classification to determine the order in which to study the change.
 
 ---
 
-## Phase 4: Read Changed Files
-
-Read the complete PR version of every changed file, not only isolated diff hunks.
-
-For deleted files, read the base-branch version. For renamed files, read both the old and new paths when needed to understand the change.
-
----
-
-## Phase 5: Analyze the Diff
+## Phase 5: Analyze the Complete Diff
 
 Read the complete base-to-head diff.
 
@@ -73,23 +76,34 @@ Identify:
 
 ---
 
-## Phase 6: Read Linked Issue
+## Phase 6: Read Changed Files and Explore Surrounding Context
 
-Use GitHub MCP tools to fetch the linked issue(s):
-- Read the issue body and all comments
-- Identify the reported problem, reproduction steps, and expected behavior
-- Note any discussion about design decisions or rejected approaches
+Read the complete PR version of every changed file, not only isolated diff hunks.
 
-If no issue is linked, use the PR description as the sole source of problem context. Note this limitation in the report.
+For deleted files, read the base-branch version. For renamed files, read both the old and new paths when needed to understand the change.
+
+Before explaining the solution, explore the broader codebase:
+- Read files that are referenced by changed code but not themselves changed
+- Understand interfaces, base classes, and contracts that the changed code implements
+- Check if the changes are consistent with patterns used elsewhere in the codebase
+
+Use `git show` with the PR branch ref to read files:
+
+```powershell
+git show pr-{PR}:{file_path}
+```
+
+This is critical for detecting issues that only appear when you understand the full context.
 
 ---
 
 ## Phase 7: Understand the Problem
 
 Synthesize information from:
-- The linked issue (Phase 6)
+- The linked issue (Phase 3)
 - The PR description (Phase 2)
 - The diff (Phase 5) — what was wrong with the old code?
+- The surrounding code (Phase 6)
 
 Produce a clear, concise explanation of:
 1. What was broken, missing, or suboptimal
@@ -122,7 +136,7 @@ Do not invent measurements or outcomes. When exact values are unavailable, use a
 
 ## Phase 9: Understand and Explain the Solution
 
-Analyze the diff to understand the author's approach:
+Analyze the diff and surrounding code to understand the author's approach:
 1. What design pattern or strategy did they choose?
 2. Why this approach over alternatives?
 3. What are the key structural changes?
@@ -133,24 +147,7 @@ If the reason for choosing this approach is not documented in the PR, issue, or 
 
 ---
 
-## Phase 10: Explore Surrounding Context
-
-Before analyzing individual file changes, explore the broader codebase:
-- Read files that are referenced by changed code but not themselves changed
-- Understand interfaces, base classes, and contracts that the changed code implements
-- Check if the changes are consistent with patterns used elsewhere in the codebase
-
-Use `git show` with the PR branch ref to read files:
-
-```powershell
-git show pr-{PR}:{file_path}
-```
-
-This is critical for detecting issues that only appear when you understand the full context.
-
----
-
-## Phase 11: Per-File Change Analysis
+## Phase 10: Per-File Change Analysis
 
 For each changed file, produce:
 1. **File path** (relative to repo root)
@@ -163,7 +160,7 @@ Order files logically (core changes first, then tests, then config/build files).
 
 ---
 
-## Report Format
+## Phase 11: Write the Markdown Report
 
 Write `.pr-explanations/pr-{PR}.md` with:
 
