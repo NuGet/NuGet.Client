@@ -264,6 +264,27 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task CopyNupkgFileToAsync_WhenThrottleWaitIsCancelled_DoesNotReleaseThrottleAsync()
+        {
+            using (var test = await LocalPackageArchiveDownloaderTest.CreateAsync())
+            using (var throttle = new SemaphoreSlim(initialCount: 0, maxCount: 1))
+            {
+                test.Downloader.SetThrottle(throttle);
+
+                // SemaphoreSlim.WaitAsync surfaces cancellation as TaskCanceledException, so match the
+                // OperationCanceledException hierarchy rather than an exact type.
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => test.Downloader.CopyNupkgFileToAsync(
+                        destinationFilePath: Path.Combine(test.TestDirectory.Path, "a"),
+                        cancellationToken: new CancellationToken(canceled: true)));
+
+                // The permit was never acquired, so releasing it here would hand a permit to an unrelated
+                // caller and eventually throw SemaphoreFullException. The throttle is shared process-wide.
+                Assert.Equal(0, throttle.CurrentCount);
+            }
+        }
+
+        [Fact]
         public async Task GetPackageHashAsync_ThrowsIfDisposedAsync()
         {
             using (var test = await LocalPackageArchiveDownloaderTest.CreateAsync())

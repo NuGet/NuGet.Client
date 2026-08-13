@@ -168,11 +168,17 @@ namespace NuGet.Protocol
                     nameof(destinationFilePath));
             }
 
+            // _throttle is write-once (SetThrottle, before any use), so its identity cannot change here.
+            // The guard is needed because a canceled WaitAsync must not release a permit it never took -
+            // this semaphore is shared process-wide, so over-releasing it throws SemaphoreFullException
+            // for unrelated callers. See NuGet/Home#15045.
+            bool acquired = false;
             try
             {
                 if (_throttle != null)
                 {
                     await _throttle.WaitAsync(cancellationToken);
+                    acquired = true;
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -206,7 +212,10 @@ namespace NuGet.Protocol
             }
             finally
             {
-                _throttle?.Release();
+                if (acquired)
+                {
+                    _throttle!.Release();
+                }
             }
 
             return false;
