@@ -66,6 +66,9 @@ namespace NuGet.Commands
         /// </remarks>
         internal static void ResetCache()
         {
+            // Interlocked.Exchange rather than a plain assignment: the result is unused now that the previous
+            // instance is not disposed, but this still publishes the new semaphore atomically with a full fence,
+            // so a concurrent reader cannot observe a partially constructed instance.
             _ = Interlocked.Exchange(ref _throttle, GetThrottleSemaphoreSlim(EnvironmentVariableWrapper.Instance));
         }
 
