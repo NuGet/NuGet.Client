@@ -46,13 +46,13 @@ namespace NuGet.Configuration
                 patterns[i] = pattern;
             }
 
-            var mapping = new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>
+            var packageSourceMapping = new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>
             {
                 ["minPublishAgeExceptions"] = patterns
             });
 
             _itemsByPattern = itemsByPattern;
-            _searchTree = new SearchTree(mapping);
+            _searchTree = new SearchTree(packageSourceMapping);
         }
 
         /// <summary>

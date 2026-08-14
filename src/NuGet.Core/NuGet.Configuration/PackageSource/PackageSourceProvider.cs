@@ -190,7 +190,8 @@ namespace NuGet.Configuration
         {
             return GetClosestMinPublishAgeExceptionSectionItems()
                 .OfType<MinPublishAgeExceptionItem>()
-                .ToList();
+                .ToList()
+                .AsReadOnly();
         }
 
         /// <summary>
@@ -284,7 +285,7 @@ namespace NuGet.Configuration
                 : sectionItems.Where(item => string.Equals(
                     item.Origin?.ConfigFilePath,
                     closestConfigFilePath,
-                    StringComparison.OrdinalIgnoreCase)).ToList();
+                    StringComparison.OrdinalIgnoreCase)).ToList().AsReadOnly();
         }
 
         internal IReadOnlyList<PackageSource> LoadAuditSources(IEnvironmentVariableReader environmentVariableReader)

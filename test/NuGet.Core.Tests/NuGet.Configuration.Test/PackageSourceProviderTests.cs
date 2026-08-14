@@ -1273,7 +1273,7 @@ namespace NuGet.Configuration.Test
 
             // Assert
             exception.Should().BeOfType<NuGetConfigurationException>();
-            exception!.Message.Should().Contain("'pattern'");
+            exception.Message.Should().Contain("'pattern'");
             exception.Message.Should().Contain("'package'");
             exception.Message.Should().Contain(Path.Combine(directory.Path, fileName));
         }
