@@ -28,7 +28,7 @@ namespace NuGet.Build.Tasks
         /// The key under which <see cref="EndOfBuildStaticStateReset" /> is registered with the build engine. It is
         /// constant so that every restore of a build shares the single registration.
         /// </summary>
-        private const string EndOfBuildStaticStateResetKey = "NuGet.Build.Tasks.RestoreTask.EndMSBuildRestoreTasks";
+        private const string EndOfBuildStaticStateResetKey = "NuGet.Build.Tasks.RestoreTask.BuildEnded";
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly IEnvironmentVariableReader _environmentVariableReader;
@@ -184,24 +184,23 @@ namespace NuGet.Build.Tasks
         }
 
         /// <summary>
-        /// Arranges for <see cref="StaticState.RaiseEndMSBuildRestoreTasks" /> to be raised once, when the build ends.
+        /// Arranges for <see cref="StaticState.RaiseBuildEnded" /> to be raised once, when the build ends.
         /// </summary>
         /// <remarks>
         /// A build routinely runs several restores in one process - the Arcade SDK, which the entire .NET stack builds
-        /// on, restores its toolset and then the solution from a single target - and they are meant to share the plugin
-        /// processes that the end-of-restore teardown terminates. <see cref="Execute" /> cannot tell whether the build
-        /// will restore again, so tearing down here kills a plugin the next restore is entitled to reuse and forces it
-        /// to cold-start a replacement while the previous one is still being disposed. MSBuild disposes objects
-        /// registered with <see cref="RegisteredTaskObjectLifetime.Build" /> when the build ends - including before it
-        /// reuses a node for the next build, which is the case the teardown exists for - so registering there tears the
-        /// plugins down exactly once, after the last restore. Hosts that do not implement <see cref="IBuildEngine4" />
-        /// fall back to tearing down here rather than not at all.
+        /// on, restores its toolset and then the solution from a single target - and a restore's own network work can
+        /// still be draining when <see cref="Execute" /> returns. So end of restore is not a safe point to discard
+        /// process-global state, and <see cref="Execute" /> cannot tell whether the build will restore again. MSBuild
+        /// disposes objects registered with <see cref="RegisteredTaskObjectLifetime.Build" /> when the build ends -
+        /// including before it reuses a node for the next build, which is the case the reset exists for - so
+        /// registering there raises the event exactly once, after the last restore. Hosts that do not implement
+        /// <see cref="IBuildEngine4" /> fall back to raising it here rather than not at all.
         /// </remarks>
         private void ScheduleEndOfBuildStaticStateReset()
         {
             if (BuildEngine is not IBuildEngine4 buildEngine)
             {
-                StaticState.RaiseEndMSBuildRestoreTasks();
+                StaticState.RaiseBuildEnded();
                 return;
             }
 
@@ -342,19 +341,19 @@ namespace NuGet.Build.Tasks
         }
 
         /// <summary>
-        /// Raises <see cref="StaticState.EndMSBuildRestoreTasks" /> when the build engine disposes it at the end of
+        /// Raises <see cref="StaticState.BuildEnded" /> when the build engine disposes it at the end of
         /// the build. See <see cref="ScheduleEndOfBuildStaticStateReset" />.
         /// </summary>
         /// <remarks>
         /// The build has finished by the time this runs, so there is no logger left to report to and MSBuild discards
-        /// anything thrown from here. Handlers of <see cref="StaticState.EndMSBuildRestoreTasks" /> are responsible for
+        /// anything thrown from here. Handlers of <see cref="StaticState.BuildEnded" /> are responsible for
         /// guarding themselves, as that event documents.
         /// </remarks>
         private sealed class EndOfBuildStaticStateReset : IDisposable
         {
             public void Dispose()
             {
-                StaticState.RaiseEndMSBuildRestoreTasks();
+                StaticState.RaiseBuildEnded();
             }
         }
     }

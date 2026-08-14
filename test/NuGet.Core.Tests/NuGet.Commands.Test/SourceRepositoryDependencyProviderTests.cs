@@ -87,7 +87,7 @@ namespace NuGet.Commands.Test
                 await requestStarted.Task;
 
                 // A restore starting elsewhere in this process must not invalidate the throttle this request holds.
-                StaticState.RaiseStartMSBuildRestoreTasks();
+                StaticState.RaiseBuildEnded();
 
                 releaseRequest.SetResult(true);
 

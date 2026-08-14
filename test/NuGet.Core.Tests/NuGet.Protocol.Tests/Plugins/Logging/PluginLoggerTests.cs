@@ -30,31 +30,13 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void StartMSBuildRestoreTasks_DoesNotDiscardTheLogThatLivePluginsWriteTo()
-        {
-            PluginLogger before = PluginLogger.DefaultInstance;
-            try
-            {
-                StaticState.RaiseStartMSBuildRestoreTasks();
-
-                // A build restores more than once and the plugins outlive each restore, so the start of a restore must
-                // not close the log they captured - writing to a disposed logger would fail the build.
-                Assert.Same(before, PluginLogger.DefaultInstance);
-            }
-            finally
-            {
-                PluginLogger.ResetDefaultInstance();
-            }
-        }
-
-        [Fact]
-        public void EndMSBuildRestoreTasks_DiscardsTheLog()
+        public void BuildEnded_DiscardsTheLog()
         {
             PluginLogger before = PluginLogger.DefaultInstance;
             try
             {
                 // The end of the build tears the plugins down, so the log they wrote to is closed with them.
-                StaticState.RaiseEndMSBuildRestoreTasks();
+                StaticState.RaiseBuildEnded();
 
                 Assert.NotSame(before, PluginLogger.DefaultInstance);
             }

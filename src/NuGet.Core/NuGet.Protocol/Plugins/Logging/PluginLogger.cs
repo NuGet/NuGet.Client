@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Plugins
             // the end of the build rather than at the start of each restore. A plugin outlives the restore that
             // created it - a build commonly restores several times - and closing the log underneath it would leave it
             // holding a disposed logger.
-            StaticState.EndMSBuildRestoreTasks += ResetDefaultInstance;
+            StaticState.BuildEnded += ResetDefaultInstance;
         }
 
         private static readonly object s_defaultInstanceLock = new object();
@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Plugins
 
         /// <summary>
         /// Discards <see cref="DefaultInstance" />, closing its log file, so that the next build builds a new one from
-        /// its own environment. Subscribed to <see cref="StaticState.EndMSBuildRestoreTasks" />, which runs once the
+        /// its own environment. Subscribed to <see cref="StaticState.BuildEnded" />, which runs once the
         /// plugins that write to the log are being torn down.
         /// </summary>
         internal static void ResetDefaultInstance()

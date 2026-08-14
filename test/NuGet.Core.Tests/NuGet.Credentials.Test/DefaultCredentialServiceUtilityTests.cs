@@ -34,7 +34,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public void EndMSBuildRestoreTasks_ClearsPinnedCredentialService()
+        public void BuildEnded_ClearsPinnedCredentialService()
         {
             Lazy<ICredentialService>? original = HttpHandlerResourceV3.CredentialService;
             try
@@ -43,7 +43,7 @@ namespace NuGet.Credentials.Test
                 DefaultCredentialServiceUtility.SetupDefaultCredentialService(NullLogger.Instance, nonInteractive: true);
                 Assert.NotNull(HttpHandlerResourceV3.CredentialService);
 
-                StaticState.RaiseEndMSBuildRestoreTasks();
+                StaticState.RaiseBuildEnded();
 
                 // The credential service owns plugin-backed credential providers, so it must be discarded by the same
                 // event that terminates the plugin processes those providers talk to. Otherwise it outlives them and

@@ -22,7 +22,7 @@ namespace NuGet.Build.Tasks.Test
             var buildEngine = new TestBuildEngine();
             int ended = 0;
             Action handler = () => ended++;
-            StaticState.EndMSBuildRestoreTasks += handler;
+            StaticState.BuildEnded += handler;
 
             try
             {
@@ -42,7 +42,7 @@ namespace NuGet.Build.Tasks.Test
             }
             finally
             {
-                StaticState.EndMSBuildRestoreTasks -= handler;
+                StaticState.BuildEnded -= handler;
             }
         }
 
@@ -52,7 +52,7 @@ namespace NuGet.Build.Tasks.Test
             var buildEngine = new LegacyTestBuildEngine();
             int ended = 0;
             Action handler = () => ended++;
-            StaticState.EndMSBuildRestoreTasks += handler;
+            StaticState.BuildEnded += handler;
 
             try
             {
@@ -64,7 +64,7 @@ namespace NuGet.Build.Tasks.Test
             }
             finally
             {
-                StaticState.EndMSBuildRestoreTasks -= handler;
+                StaticState.BuildEnded -= handler;
             }
         }
 
