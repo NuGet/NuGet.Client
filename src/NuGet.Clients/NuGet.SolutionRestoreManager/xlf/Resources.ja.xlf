@@ -109,6 +109,11 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
 NuGet がビルド中にパッケージを復元しないようにするには、Visual Studio の [オプション] ダイアログ ボックスを開き、NuGet の [パッケージ マネージャー] ノードをクリックして、[ビルド中に足りないパッケージをダウンロードすることを NuGet に許可] チェック ボックスをオフにします。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Prompt_ResolveSupplyChainSecurityNUCode">
+        <source>Resolve {0} by reviewing my NuGet supply chain security configuration.</source>
+        <target state="new">Resolve {0} by reviewing my NuGet supply chain security configuration.</target>
+        <note>Do not translate NuGet</note>
+      </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
         <target state="translated">プロパティ {0} には、すべてのターゲット フレームワークに対して 1 つの値が必要ですが、代わりに次の値が指定されていました: {1}</target>
@@ -138,6 +143,11 @@ NuGet がビルド中にパッケージを復元しないようにするには�
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">NuGet パッケージの脆弱性を修正するよう Copilot に依頼する</target>
         <note>Do not translate Copilot or NuGet</note>
+      </trans-unit>
+      <trans-unit id="Title_ResolveNU1507WithCopilot">
+        <source>Ask Copilot to resolve NU1507</source>
+        <target state="new">Ask Copilot to resolve NU1507</target>
+        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>

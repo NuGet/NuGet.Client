@@ -109,6 +109,11 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
 Když nechcete, aby aplikace NuGet obnovovala balíčky během vytváření sestavení, otevřete dialogové okno Možnosti aplikace Visual Studio, klikněte na uzel Správce balíčků NuGet a zrušte zaškrtnutí políčka Umožnit správci balíčků NuGet stáhnout chybějící balíčky během vytváření sestavení.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Prompt_ResolveSupplyChainSecurityNUCode">
+        <source>Resolve {0} by reviewing my NuGet supply chain security configuration.</source>
+        <target state="new">Resolve {0} by reviewing my NuGet supply chain security configuration.</target>
+        <note>Do not translate NuGet</note>
+      </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
         <target state="translated">Očekávalo se, že vlastnost {0} bude mít jednu hodnotu ve všech cílových architekturách, ale místo toho bude mít následující hodnoty: {1}</target>
@@ -138,6 +143,11 @@ Když nechcete, aby aplikace NuGet obnovovala balíčky během vytváření sest
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">Požádejte Copilota o opravu ohrožení zabezpečení balíčku NuGet.</target>
         <note>Do not translate Copilot or NuGet</note>
+      </trans-unit>
+      <trans-unit id="Title_ResolveNU1507WithCopilot">
+        <source>Ask Copilot to resolve NU1507</source>
+        <target state="new">Ask Copilot to resolve NU1507</target>
+        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>

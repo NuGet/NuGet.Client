@@ -100,7 +100,19 @@ namespace NuGet.PackageManagement.Telemetry
         /// </summary>
         public static NavigatedTelemetryEvent CreateWithReviewPackageSourceMappingCommand(CopilotToolSessionError errorType)
         {
-            NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, NavigationOrigin.Options_PackageSourceMapping_Review);
+            return CreateWithResolveSupplyChainSecurity(
+                NavigationOrigin.Options_PackageSourceMapping_Review,
+                errorType);
+        }
+
+        /// <summary>
+        /// Navigating to resolve supply chain security with GitHub Copilot from a specific origin.
+        /// </summary>
+        public static NavigatedTelemetryEvent CreateWithResolveSupplyChainSecurity(
+            NavigationOrigin navigationOrigin,
+            CopilotToolSessionError errorType)
+        {
+            NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, navigationOrigin);
             navigatedTelemetryEvent[ErrorTypePropertyName] = errorType;
             return navigatedTelemetryEvent;
         }

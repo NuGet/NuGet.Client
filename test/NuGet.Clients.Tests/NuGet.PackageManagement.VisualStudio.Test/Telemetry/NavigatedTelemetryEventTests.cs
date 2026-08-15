@@ -206,6 +206,28 @@ namespace NuGet.PackageManagement.Test.Telemetry
             Assert.Equal(errorType, _lastTelemetryEvent[NavigatedTelemetryEvent.ErrorTypePropertyName]);
         }
 
+        [Theory]
+        [InlineData(NavigationOrigin.Options_PackageSourceMapping_Review)]
+        [InlineData(NavigationOrigin.ErrorList_ResolveSupplyChainSecurity)]
+        public void CreateWithResolveSupplyChainSecurity_WithOrigin_CreatesEventWithCorrectProperties(NavigationOrigin navigationOrigin)
+        {
+            // Arrange
+            var nuGetTelemetryService = SetupTelemetryListener();
+
+            // Act
+            var evt = NavigatedTelemetryEvent.CreateWithResolveSupplyChainSecurity(
+                navigationOrigin,
+                CopilotToolSessionError.None);
+            nuGetTelemetryService.EmitTelemetryEvent(evt);
+
+            // Assert
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(3, _lastTelemetryEvent.Count);
+            Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(navigationOrigin, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
+            Assert.Equal(CopilotToolSessionError.None, _lastTelemetryEvent[NavigatedTelemetryEvent.ErrorTypePropertyName]);
+        }
+
         [Fact]
         public void CreateWithAddPackageSourceMapping_WithValidProperties_CreatedWithoutPiiData()
         {

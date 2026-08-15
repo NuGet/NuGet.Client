@@ -109,6 +109,11 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
 Aby uniemożliwić narzędziu NuGet przywracanie pakietów podczas kompilacji, otwórz okno dialogowe Opcje programu Visual Studio, kliknij węzeł Menedżer pakietów NuGet i usuń zaznaczenie pozycji „Zezwalaj narzędziu NuGet na pobieranie brakujących pakietów podczas kompilacji”.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Prompt_ResolveSupplyChainSecurityNUCode">
+        <source>Resolve {0} by reviewing my NuGet supply chain security configuration.</source>
+        <target state="new">Resolve {0} by reviewing my NuGet supply chain security configuration.</target>
+        <note>Do not translate NuGet</note>
+      </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
         <target state="translated">Oczekiwano, że właściwość {0} będzie mieć pojedynczą wartość na wszystkich platformach docelowych, ale zamiast tego miała następujące wartości: {1}</target>
@@ -138,6 +143,11 @@ Aby uniemożliwić narzędziu NuGet przywracanie pakietów podczas kompilacji, o
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">Poproś funkcję Copilot o usunięcie luk w zabezpieczeniach pakietu NuGet</target>
         <note>Do not translate Copilot or NuGet</note>
+      </trans-unit>
+      <trans-unit id="Title_ResolveNU1507WithCopilot">
+        <source>Ask Copilot to resolve NU1507</source>
+        <target state="new">Ask Copilot to resolve NU1507</target>
+        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>

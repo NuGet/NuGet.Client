@@ -109,6 +109,11 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
 NuGet'in derleme sırasında paketleri geri yüklemesini önlemek için Visual Studio Seçenekleri iletişim kutusunu açın, NuGet Paket Yöneticisi düğümüne tıklayın ve 'NuGet'in derleme sırasında eksik kalan paketleri indirmesine izin ver' öğesinin işaretini kaldırın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Prompt_ResolveSupplyChainSecurityNUCode">
+        <source>Resolve {0} by reviewing my NuGet supply chain security configuration.</source>
+        <target state="new">Resolve {0} by reviewing my NuGet supply chain security configuration.</target>
+        <note>Do not translate NuGet</note>
+      </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
         <target state="translated">{0} özelliğinin tüm hedef Framework’lerde tek bir değer alması bekleniyordu ancak bunun yerine şu değerleri aldı: {1}</target>
@@ -138,6 +143,11 @@ NuGet'in derleme sırasında paketleri geri yüklemesini önlemek için Visual S
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">Copilot’tan NuGet paketi güvenlik açıklarını düzeltmesini isteyin</target>
         <note>Do not translate Copilot or NuGet</note>
+      </trans-unit>
+      <trans-unit id="Title_ResolveNU1507WithCopilot">
+        <source>Ask Copilot to resolve NU1507</source>
+        <target state="new">Ask Copilot to resolve NU1507</target>
+        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>
