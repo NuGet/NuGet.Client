@@ -31,16 +31,16 @@
 ## Test Strategy
 
 Build and run all tests:
-`
+```cmd
 dotnet build src\NuGet.Core\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj -c Release
 dotnet test test\NuGet.Core.Tests\NuGet.DependencyResolver.Core.Tests\NuGet.DependencyResolver.Core.Tests.csproj -v normal
-`
+```
 
 Test specific invariants:
-`
+```cmd
 dotnet test test\NuGet.Core.Tests\NuGet.DependencyResolver.Core.Tests\NuGet.DependencyResolver.Core.Tests.csproj --filter "FullyQualifiedName~GraphOperationsTests" -v normal
 dotnet test test\NuGet.Core.Tests\NuGet.DependencyResolver.Core.Tests\NuGet.DependencyResolver.Core.Tests.csproj --filter "FullyQualifiedName~RemoteDependencyWalkerTests" -v normal
-`
+```
 
 ## Key Dependencies
 

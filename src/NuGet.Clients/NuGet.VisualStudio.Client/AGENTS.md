@@ -23,7 +23,7 @@
 
 ## Validation Commands
 
-`powershell
+```powershell
 # Verify extension configuration
 dotnet build src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj
   -c Release --no-restore 2>&1 | Select-String "error"
@@ -35,7 +35,7 @@ dotnet test test\NuGet.Clients.Tests\NuGet.VisualStudio.Internal.Contracts.Test\
 # Verify VSIX manifest targets (VS 2022+, x86/amd64)
 Select-String '<InstallationTarget.*Version="\[17'
   src\NuGet.Clients\NuGet.VisualStudio.Client\source.extension.vsixmanifest | Measure-Object
-`
+```
 
 ## Known Gaps
 

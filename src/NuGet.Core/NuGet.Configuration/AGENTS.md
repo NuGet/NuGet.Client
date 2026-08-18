@@ -18,24 +18,24 @@ Settings load from multiple files (machine-wide read-only, user-level editable, 
 2. **Section merging:** Names case-insensitive; <clear/> resets all inherited values in section
 3. **Single-load semantics:** Settings loaded once per ISettings instance; external file changes require reload
 4. **File discovery:** Windows case-insensitive; Unix tries
-uget.config → NuGet.config → NuGet.Config
+   nuget.config → NuGet.config → NuGet.Config
 
 ## Build & Test
 
 **Unit tests (Configuration only):**
-`
+```cmd
 dotnet test test\NuGet.Core.Tests\NuGet.Configuration.Test\NuGet.Configuration.Test.csproj
-`
+```
 
 **Filter by class:**
-`
+```cmd
 dotnet test test\NuGet.Core.Tests\NuGet.Configuration.Test\NuGet.Configuration.Test.csproj --filter "FullyQualifiedName~SettingsTests"
-`
+```
 
 **Full module build:**
-`
+```cmd
 .\build.ps1 -f
-`
+```
 
 ## Matching Tests
 

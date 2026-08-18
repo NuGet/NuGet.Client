@@ -1,7 +1,7 @@
 # NuGet.Build.Tasks.Pack
 
 **Location**: src\NuGet.Core\NuGet.Build.Tasks.Pack\
-**Shipping**: true | **Tests**: 	est/NuGet.Core.Tests/NuGet.Build.Tasks.Pack.Test/
+**Shipping**: true | **Tests**: test/NuGet.Core.Tests/NuGet.Build.Tasks.Pack.Test/
 
 ## Purpose
 MSBuild task assembly for dotnet pack. Public surface: 5 tasks + 2 interfaces managing 82+ MSBuild properties (PackageId, IncludeSymbols, License, Readme, TargetFrameworks, etc.).
@@ -26,13 +26,13 @@ PackTaskTests (mock IPackTaskLogic), PackTaskLogicTests (GetPackArgs chain), Get
 
 ## Validation
 
-`powershell
+```powershell
 cd src\NuGet.Core\NuGet.Build.Tasks.Pack
 dotnet restore
 dotnet build --no-restore -c Release
 cd ..\..\..\test\NuGet.Core.Tests\NuGet.Build.Tasks.Pack.Test
 dotnet test test\NuGet.Core.Tests\NuGet.Build.Tasks.Pack.Test\NuGet.Build.Tasks.Pack.Test.csproj --logger console --filter "FullyQualifiedName~PackTask"
-`
+```
 
 ## Uncertainties
 - DEBUG_PACK_TASK env var (PackTask.cs) undocumented; DEBUG-only debugger launch

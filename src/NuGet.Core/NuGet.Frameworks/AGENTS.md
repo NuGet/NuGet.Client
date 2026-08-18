@@ -17,10 +17,10 @@ Framework abstraction and compatibility layer: parsing target frameworks (net, n
 4. **Platform Versions (net5.0+)**: net5.0+ NOT compatible with net4.x; requires explicit AssetTargetFallback. Platform-specific TFMs have distinct compatibility (net6.0-ios1.0 ≠ xamarin.ios).
 
 ## Test Validation
-`powershell
+```powershell
 dotnet build src\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj -c Debug
 dotnet test test\NuGet.Core.Tests\NuGet.Frameworks.Test\NuGet.Frameworks.Test.csproj -c Debug --filter "FullyQualifiedName~FrameworkReducerTests|FullyQualifiedName~CompatibilityTests|FullyQualifiedName~NuGetFrameworkParseTests"
-`
+```
 
 ## Uncertainties
 - **Portable Profiles**: DefaultPortableFrameworkMappings hardcodes profile→frameworks; legacy data structure not documented.

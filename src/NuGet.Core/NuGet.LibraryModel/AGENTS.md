@@ -35,19 +35,19 @@
 ## Test Commands
 
 **Build**:
-`
+```cmd
 dotnet build src\NuGet.Core\NuGet.LibraryModel\NuGet.LibraryModel.csproj -c Release
-`
+```
 
 **Test**:
-`
+```cmd
 dotnet test test\NuGet.Core.Tests\NuGet.LibraryModel.Tests\NuGet.LibraryModel.Tests.csproj -c Release --filter "Category!=Integration"
-`
+```
 
 **API Stability** (PublicAPI.Shipped.txt enforced):
-`
+```cmd
 dotnet build src\NuGet.Core\NuGet.LibraryModel\NuGet.LibraryModel.csproj /p:EnforceCodeStyleInBuild=true -c Release
-`
+```
 
 ## InternalsVisibleTo
 

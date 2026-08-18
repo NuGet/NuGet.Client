@@ -3,7 +3,7 @@
 ## Scope
 MEF-composed Visual Studio extensibility layer providing NuGet APIs to third-party extensions.
 Located: src\NuGet.Clients\NuGet.VisualStudio.Implementation\
-Tests: 	est/NuGet.Clients.Tests/NuGet.VisualStudio.Implementation.Test/
+Tests: test/NuGet.Clients.Tests/NuGet.VisualStudio.Implementation.Test/
 
 ## Architecture
 - **Platform**: Windows + Visual Studio only (net472, ExcludeFromDotNetBuild=true)
@@ -18,7 +18,7 @@ Tests: 	est/NuGet.Clients.Tests/NuGet.VisualStudio.Implementation.Test/
 4. **No Cross-Platform**: net472 desktop-only; do not add .NET Core or IPC servers
 
 ## Build & Test
-`powershell
+```powershell
 # Build (net472 desktop only)
 dotnet build src\NuGet.Clients\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj -c Release --no-restore
 
@@ -27,4 +27,4 @@ dotnet test test\NuGet.Clients.Tests\NuGet.VisualStudio.Implementation.Test\NuGe
 
 # Test specific class
 dotnet test test\NuGet.Clients.Tests\NuGet.VisualStudio.Implementation.Test\NuGet.VisualStudio.Implementation.Test.csproj --filter "FullyQualifiedName~YourTestClass"
-`
+```

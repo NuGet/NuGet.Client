@@ -20,11 +20,11 @@ Single source file TemplateWizard.cs implements COM interface IWizard (Microsoft
 2. **COM interop**: IWizard contract is external; breaking changes require VS side coordination
 3. **MEF composition**: Service resolution via DefaultExportProvider at runtime—no compile-time safety
 4. **Assembly version lock**: 1.0.0.0 frozen; binding redirects required if consumer expectations change
-5. **No isolated tests**: Validation via 	est/NuGet.Clients.Tests/NuGet.VisualStudio.Test (NuGet.VisualStudio.Test.csproj) as indirect dependency
+5. **No isolated tests**: Validation via test/NuGet.Clients.Tests/NuGet.VisualStudio.Test (NuGet.VisualStudio.Test.csproj) as indirect dependency
 
 ## Build & Validation
 
-`powershell
+```powershell
 # Build this project
 dotnet build src\NuGet.Clients\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj -c Release
 
@@ -33,7 +33,7 @@ dotnet test test\NuGet.Clients.Tests\NuGet.VisualStudio.Test\NuGet.VisualStudio.
 
 # Validate in solution
 dotnet build NuGet-VS.slnf --no-restore -c Release
-`
+```
 
 ## Known Constraints
 

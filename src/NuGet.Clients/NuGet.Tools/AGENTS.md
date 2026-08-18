@@ -7,14 +7,14 @@ VS Extension package implementing core NuGet UI shell, menu commands, and broker
 ## Build & Test
 
 ### Validate Build
-\\\cmd
+```cmd
 dotnet build src\NuGet.Clients\NuGet.Tools\NuGet.Tools.csproj -c Release
-\\\
+```
 
 ### Run Unit Tests
-\\\cmd
+```cmd
 dotnet test test\NuGet.Clients.Tests\NuGet.Tools.Test\NuGet.Tools.Test.csproj -c Release --filter "Category!=Integration" --logger "console;verbosity=normal"
-\\\
+```
 
 ## Architecture
 
@@ -36,7 +36,7 @@ dotnet test test\NuGet.Clients.Tests\NuGet.Tools.Test\NuGet.Tools.Test.csproj -c
    - MSBuild target AssignEnCultureToNeutralCto mangles CTO culture metadata
    - Manual XLF edits will be overwritten on rebuild
 
-4. **Copilot Mcp Integration:** CopilotToolInvocationService gates MCP server access
+4. **Copilot MCP Integration:** CopilotToolInvocationService gates MCP server access
    - Tests mock CopilotMcpFunctionDescriptor; production requires Copilot runtime
 
 ## Dependencies

@@ -17,7 +17,7 @@
 **Multi-Framework Public API (perTfm Analysis)**
 - UsePublicApiAnalyzer>perTfm enforces separate PublicAPI.{Shipped,Unshipped}.txt per TFM (net472, net8.0)
 - Build fails if new public members omit Unshipped.txt entry
-- Tools: 	ools-local/ship-public-apis moves Unshipped → Shipped
+- Tools: tools-local/ship-public-apis moves Unshipped → Shipped
 - *Risk:* TFM-specific overloads can masquerade as no API change
 
 **Generated Resources (4 .resx → 40+ .xlf files)**
@@ -34,24 +34,24 @@
 ## Test & Build Commands
 
 **Unit Tests (net472 + net8.0):**
-`
+```cmd
 dotnet test test\NuGet.Core.Tests\NuGet.Packaging.Test\NuGet.Packaging.Test.csproj -c Release --filter "FullyQualifiedName~PackageArchiveReader|FullyQualifiedName~NuspecReader"
-`
+```
 
 **Signing Verification (FuncTest with embedded .nupkg resources):**
-`
+```cmd
 dotnet test test\NuGet.Core.FuncTests\NuGet.Packaging.FuncTest\NuGet.Packaging.FuncTest.csproj -c Release --filter "Category=Signing"
-`
+```
 
 **Build + API Validation:**
-`
+```cmd
 dotnet build src\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj -c Release -v:m
-`
+```
 
 **Pack (generates NuGet.Packaging.nupkg):**
-`
+```cmd
 dotnet pack src\NuGet.Core\NuGet.Packaging\NuGet.Packaging.csproj -c Release -o artifacts
-`
+```
 
 ## Critical Checklist
 

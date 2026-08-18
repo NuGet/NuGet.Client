@@ -30,7 +30,7 @@ MessagePack RPC contract layer for VS IDE package management service communicati
 
 ## Validation
 
-`powershell
+```powershell
 # Build contracts library
 dotnet build src\NuGet.Clients\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj -c Debug
 
@@ -39,7 +39,7 @@ dotnet test test\NuGet.Clients.Tests\NuGet.VisualStudio.Internal.Contracts.Test\
 
 # Audit: Verify all formatters registered
 dotnet test test\NuGet.Clients.Tests\NuGet.VisualStudio.Internal.Contracts.Test\NuGet.VisualStudio.Internal.Contracts.Test.csproj -c Debug --filter "FullyQualifiedName~CreateMessagePackFormatters_Always_RegistersAllFormatters"
-`
+```
 
 ## Test Coverage
 
