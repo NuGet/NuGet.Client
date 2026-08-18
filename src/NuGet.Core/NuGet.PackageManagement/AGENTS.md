@@ -26,5 +26,7 @@ Core orchestration for package install/uninstall/restore operations across proje
 - Test: `dotnet test test\NuGet.Core.Tests\NuGet.PackageManagement.Test\NuGet.PackageManagement.Test.csproj --filter "FullyQualifiedName~BatchedEventTests"`
 
 ## Build & Validation
-`dotnet build src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj /p:TreatWarningsAsErrors=true`
-`dotnet test test\NuGet.Core.Tests\NuGet.PackageManagement.Test\NuGet.PackageManagement.Test.csproj`
+```cmd
+dotnet build src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj /p:TreatWarningsAsErrors=true
+dotnet test test\NuGet.Core.Tests\NuGet.PackageManagement.Test\NuGet.PackageManagement.Test.csproj
+```
