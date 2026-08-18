@@ -30,13 +30,19 @@ Shared MEF parts coordinate scheduling; NonShared jobs execute per-restore.
 ## Validation
 
 Build:
-  dotnet msbuild src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj
+```cmd
+dotnet msbuild src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj
+```
 
 Test (xUnit; requires VS runtime):
-  dotnet test test\NuGet.Clients.Tests\NuGet.SolutionRestoreManager.Test\NuGet.SolutionRestoreManager.Test.csproj --filter "FullyQualifiedName!~ErrorListFixers"
+```cmd
+dotnet test test\NuGet.Clients.Tests\NuGet.SolutionRestoreManager.Test\NuGet.SolutionRestoreManager.Test.csproj --filter "FullyQualifiedName!~ErrorListFixers"
+```
 
 Contract exports:
-  dotnet msbuild src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj /t:GeneratePkgDef
+```cmd
+dotnet msbuild src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj /t:GeneratePkgDef
+```
 
 ## Cross-Cutting Concerns
 

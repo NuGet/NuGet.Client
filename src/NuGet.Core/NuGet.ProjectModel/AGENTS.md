@@ -28,18 +28,15 @@ dotnet build src\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj -c Rele
 
 Run targeted serialization tests:
 ```powershell
-dotnet test test\NuGet.Core.Tests\NuGet.ProjectModel.Test\NuGet.ProjectModel.Test.csproj
-  -c Release --filter "LockFileFormat|DependencyGraphSpec" --no-build
+dotnet test test\NuGet.Core.Tests\NuGet.ProjectModel.Test\NuGet.ProjectModel.Test.csproj -c Release --filter "LockFileFormat|DependencyGraphSpec" --no-build
 ```
 
 Verify API surface (PublicAPI.Shipped.txt must be current):
 ```powershell
-dotnet build src\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj -c Release
-  /p:EnforceCodeStyleInBuild=true
+dotnet build src\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.csproj -c Release /p:EnforceCodeStyleInBuild=true
 ```
 
 Test hash regression (FNV64):
 ```powershell
-dotnet test test\NuGet.Core.Tests\NuGet.ProjectModel.Test\NuGet.ProjectModel.Test.csproj
-  -c Release --filter "FnvHash64" --no-build
+dotnet test test\NuGet.Core.Tests\NuGet.ProjectModel.Test\NuGet.ProjectModel.Test.csproj -c Release --filter "FnvHash64" --no-build
 ```

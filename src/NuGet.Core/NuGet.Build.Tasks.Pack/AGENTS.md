@@ -31,7 +31,7 @@ cd src\NuGet.Core\NuGet.Build.Tasks.Pack
 dotnet restore
 dotnet build --no-restore -c Release
 cd ..\..\..\test\NuGet.Core.Tests\NuGet.Build.Tasks.Pack.Test
-dotnet test test\NuGet.Core.Tests\NuGet.Build.Tasks.Pack.Test\NuGet.Build.Tasks.Pack.Test.csproj --logger console --filter "FullyQualifiedName~PackTask"
+dotnet test NuGet.Build.Tasks.Pack.Test.csproj --logger console --filter "FullyQualifiedName~PackTask"
 ```
 
 ## Uncertainties
