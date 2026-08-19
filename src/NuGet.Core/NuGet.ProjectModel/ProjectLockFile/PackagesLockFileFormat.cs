@@ -37,7 +37,6 @@ namespace NuGet.ProjectModel
         private const string DependenciesProperty = "dependencies";
         private const string TypeProperty = "type";
         private const string FrameworkProperty = "framework";
-        private static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
         private static readonly JsonDocumentOptions DocumentOptions = new()
         {
             AllowTrailingCommas = true,
@@ -149,23 +148,22 @@ namespace NuGet.ProjectModel
             return ReadLockFile(JsonUtility.LoadJson(reader));
         }
 
-        /// <summary>
-        /// Reader-based System.Text.Json reader overload to align with various API calling paths.
-        /// The stream-based overload is preferred to prevent buffering the entire stream in memory.
-        /// </summary>
         internal static PackagesLockFile ReadLockFileWithSystemTextJson(TextReader reader)
         {
             using JsonDocument document = JsonDocument.Parse(reader.ReadToEnd(), DocumentOptions);
             return ReadLockFile(document.RootElement);
         }
 
-        /// <summary>
-        /// Stream-based System.Text.Json reader overload to prevent buffering the entire stream in memory.
-        /// </summary>
         internal static PackagesLockFile ReadLockFileWithSystemTextJson(Stream stream)
         {
             using (stream)
             {
+                if (stream.RequiresTextReader())
+                {
+                    using var reader = new StreamReader(stream);
+                    return ReadLockFileWithSystemTextJson(reader);
+                }
+
                 using JsonDocument document = JsonDocument.Parse(stream, DocumentOptions);
                 return ReadLockFile(document.RootElement);
             }
@@ -216,7 +214,8 @@ namespace NuGet.ProjectModel
             {
                 // V3 format: read from root level (alias/rid keys with framework and dependencies inside)
                 targets = new List<PackagesLockFileTarget>();
-                foreach (JsonProperty property in cursor.EnumerateObject())
+
+                foreach (JsonProperty property in cursor.GetUniqueProperties())
                 {
                     if (property.Name != VersionProperty)
                     {
@@ -273,9 +272,9 @@ namespace NuGet.ProjectModel
                 return new List<T>(0);
             }
 
-            var items = new List<T>();
-
-            foreach (JsonProperty property in json.EnumerateObject())
+            List<JsonProperty> properties = json.GetUniqueProperties();
+            var items = new List<T>(properties.Count);
+            foreach (JsonProperty property in properties)
             {
                 items.Add(readItem(property.Name, property.Value));
             }
@@ -461,7 +460,7 @@ namespace NuGet.ProjectModel
 
         private static PackagesLockFileTarget ReadDependencyV2(string property, JsonElement json)
         {
-            var parts = property.Split(PathSplitChars);
+            var parts = property.Split(JsonUtility.PathSplitChars);
 
             var target = new PackagesLockFileTarget
             {
@@ -490,7 +489,7 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
-            var parts = property.Split(PathSplitChars);
+            var parts = property.Split(JsonUtility.PathSplitChars);
 
             var target = new PackagesLockFileTarget
             {

@@ -8,10 +8,45 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NuGet.Frameworks;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.RuntimeModel
 {
+    internal sealed class RuntimeGraphJsonModelConverter : JsonConverter<RuntimeGraphJsonModel>
+    {
+        public override RuntimeGraphJsonModel Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options)
+        {
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            var model = new RuntimeGraphJsonModel();
+
+            foreach (JsonProperty property in document.RootElement.GetUniqueProperties())
+            {
+                if (property.NameEquals("runtimes"))
+                {
+                    model.Runtimes = RuntimeDescriptionCollectionJsonConverter.Read(property.Value);
+                }
+                else if (property.NameEquals("supports"))
+                {
+                    model.Supports = CompatibilityProfileCollectionJsonConverter.Read(property.Value);
+                }
+            }
+
+            return model;
+        }
+
+        public override void Write(
+            Utf8JsonWriter writer,
+            RuntimeGraphJsonModel value,
+            JsonSerializerOptions options)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
     internal sealed class RuntimeDescriptionCollectionJsonConverter : JsonConverter<List<RuntimeDescription>>
     {
         public override List<RuntimeDescription> Read(
@@ -25,13 +60,22 @@ namespace NuGet.RuntimeModel
                 return runtimes;
             }
 
-            EnsureToken(reader.TokenType, JsonTokenType.StartObject);
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            return Read(document.RootElement);
+        }
+
+        internal static List<RuntimeDescription> Read(JsonElement json)
+        {
+            var runtimes = new List<RuntimeDescription>();
+
+            if (json.ValueKind == JsonValueKind.Null)
             {
-                EnsureToken(reader.TokenType, JsonTokenType.PropertyName);
-                string runtimeIdentifier = reader.GetString()!;
-                ReadNext(ref reader);
-                runtimes.Add(ReadRuntimeDescription(ref reader, runtimeIdentifier));
+                return runtimes;
+            }
+
+            foreach (JsonProperty runtime in json.GetUniqueProperties())
+            {
+                runtimes.Add(ReadRuntimeDescription(runtime.Name, runtime.Value));
             }
 
             return runtimes;
@@ -45,84 +89,59 @@ namespace NuGet.RuntimeModel
             throw new NotSupportedException();
         }
 
-        private static RuntimeDescription ReadRuntimeDescription(
-            ref Utf8JsonReader reader,
-            string runtimeIdentifier)
+        private static RuntimeDescription ReadRuntimeDescription(string runtimeIdentifier, JsonElement json)
         {
-            EnsureToken(reader.TokenType, JsonTokenType.StartObject);
             List<string>? inheritedRuntimes = null;
             List<RuntimeDependencySet>? dependencySets = null;
 
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            foreach (JsonProperty property in json.GetUniqueProperties())
             {
-                EnsureToken(reader.TokenType, JsonTokenType.PropertyName);
-                string propertyName = reader.GetString()!;
-                ReadNext(ref reader);
-
-                if (propertyName == "#import")
+                if (property.Name == "#import")
                 {
-                    inheritedRuntimes = ReadInheritedRuntimes(ref reader);
+                    inheritedRuntimes = ReadInheritedRuntimes(property.Value);
                 }
                 else
                 {
                     dependencySets ??= new List<RuntimeDependencySet>();
-                    dependencySets.Add(ReadRuntimeDependencySet(ref reader, propertyName));
+                    dependencySets.Add(ReadRuntimeDependencySet(property.Name, property.Value));
                 }
             }
 
             return new RuntimeDescription(runtimeIdentifier, inheritedRuntimes, dependencySets);
         }
 
-        private static List<string> ReadInheritedRuntimes(ref Utf8JsonReader reader)
+        private static List<string> ReadInheritedRuntimes(JsonElement json)
         {
-            EnsureToken(reader.TokenType, JsonTokenType.StartArray);
+            if (json.ValueKind != JsonValueKind.Array)
+            {
+                throw new JsonException();
+            }
+
             var inheritedRuntimes = new List<string>();
 
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+            foreach (JsonElement runtime in json.EnumerateArray())
             {
-                EnsureToken(reader.TokenType, JsonTokenType.String);
-                inheritedRuntimes.Add(reader.GetString()!);
+                inheritedRuntimes.Add(runtime.GetRequiredString());
             }
 
             return inheritedRuntimes;
         }
 
-        private static RuntimeDependencySet ReadRuntimeDependencySet(
-            ref Utf8JsonReader reader,
-            string dependencySetId)
+        private static RuntimeDependencySet ReadRuntimeDependencySet(string dependencySetId, JsonElement json)
         {
-            EnsureToken(reader.TokenType, JsonTokenType.StartObject);
             var dependencies = new List<RuntimePackageDependency>();
 
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            foreach (JsonProperty dependency in json.GetUniqueProperties())
             {
-                EnsureToken(reader.TokenType, JsonTokenType.PropertyName);
-                string dependencyId = reader.GetString()!;
-                ReadNext(ref reader);
-                EnsureToken(reader.TokenType, JsonTokenType.String);
-                dependencies.Add(new RuntimePackageDependency(
-                    dependencyId,
-                    VersionRange.Parse(reader.GetString()!)));
+                dependencies.Add(
+                    new RuntimePackageDependency(
+                        dependency.Name,
+                        VersionRange.Parse(dependency.Value.GetRequiredString())));
             }
 
             return new RuntimeDependencySet(dependencySetId, dependencies);
         }
 
-        private static void ReadNext(ref Utf8JsonReader reader)
-        {
-            if (!reader.Read())
-            {
-                throw new JsonException();
-            }
-        }
-
-        private static void EnsureToken(JsonTokenType actual, JsonTokenType expected)
-        {
-            if (actual != expected)
-            {
-                throw new JsonException();
-            }
-        }
     }
 
     internal sealed class CompatibilityProfileCollectionJsonConverter : JsonConverter<List<CompatibilityProfile>>
@@ -138,13 +157,22 @@ namespace NuGet.RuntimeModel
                 return profiles;
             }
 
-            EnsureToken(reader.TokenType, JsonTokenType.StartObject);
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            using JsonDocument document = JsonDocument.ParseValue(ref reader);
+            return Read(document.RootElement);
+        }
+
+        internal static List<CompatibilityProfile> Read(JsonElement json)
+        {
+            var profiles = new List<CompatibilityProfile>();
+
+            if (json.ValueKind == JsonValueKind.Null)
             {
-                EnsureToken(reader.TokenType, JsonTokenType.PropertyName);
-                string profileName = reader.GetString()!;
-                ReadNext(ref reader);
-                profiles.Add(ReadCompatibilityProfile(ref reader, profileName));
+                return profiles;
+            }
+
+            foreach (JsonProperty profile in json.GetUniqueProperties())
+            {
+                profiles.Add(ReadCompatibilityProfile(profile.Name, profile.Value));
             }
 
             return profiles;
@@ -158,67 +186,47 @@ namespace NuGet.RuntimeModel
             throw new NotSupportedException();
         }
 
-        private static CompatibilityProfile ReadCompatibilityProfile(
-            ref Utf8JsonReader reader,
-            string profileName)
+        private static CompatibilityProfile ReadCompatibilityProfile(string profileName, JsonElement json)
         {
             var restoreContexts = new List<FrameworkRuntimePair>();
-            if (reader.TokenType == JsonTokenType.Null)
+            if (json.ValueKind == JsonValueKind.Null)
             {
                 return new CompatibilityProfile(profileName, restoreContexts);
             }
 
-            EnsureToken(reader.TokenType, JsonTokenType.StartObject);
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            foreach (JsonProperty frameworkProperty in json.GetUniqueProperties())
             {
-                EnsureToken(reader.TokenType, JsonTokenType.PropertyName);
-                NuGetFramework framework = NuGetFramework.Parse(reader.GetString()!);
-                ReadNext(ref reader);
-                ReadRestoreContexts(ref reader, framework, restoreContexts);
+                NuGetFramework framework = NuGetFramework.Parse(frameworkProperty.Name);
+                ReadRestoreContexts(frameworkProperty.Value, framework, restoreContexts);
             }
 
             return new CompatibilityProfile(profileName, restoreContexts);
         }
 
         private static void ReadRestoreContexts(
-            ref Utf8JsonReader reader,
+            JsonElement json,
             NuGetFramework framework,
             List<FrameworkRuntimePair> restoreContexts)
         {
-            if (reader.TokenType == JsonTokenType.String)
+            if (json.ValueKind == JsonValueKind.String)
             {
-                restoreContexts.Add(new FrameworkRuntimePair(framework, reader.GetString()));
+                restoreContexts.Add(new FrameworkRuntimePair(framework, json.GetString()));
                 return;
             }
 
-            if (reader.TokenType == JsonTokenType.StartArray)
+            if (json.ValueKind == JsonValueKind.Array)
             {
-                while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                foreach (JsonElement runtime in json.EnumerateArray())
                 {
-                    EnsureToken(reader.TokenType, JsonTokenType.String);
-                    restoreContexts.Add(new FrameworkRuntimePair(framework, reader.GetString()));
+                    restoreContexts.Add(
+                        new FrameworkRuntimePair(
+                            framework,
+                            runtime.GetRequiredString()));
                 }
 
                 return;
             }
 
-            reader.Skip();
-        }
-
-        private static void ReadNext(ref Utf8JsonReader reader)
-        {
-            if (!reader.Read())
-            {
-                throw new JsonException();
-            }
-        }
-
-        private static void EnsureToken(JsonTokenType actual, JsonTokenType expected)
-        {
-            if (actual != expected)
-            {
-                throw new JsonException();
-            }
         }
     }
 }

@@ -6,7 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-// This is a supporting forwarder for an internal polyfill API.
+// Forward the polyfill API to the runtime type on .NET 9 and later.
 [assembly: TypeForwardedTo(typeof(FeatureSwitchDefinitionAttribute))]
 
 #else

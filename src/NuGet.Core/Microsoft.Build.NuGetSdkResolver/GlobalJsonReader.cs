@@ -224,55 +224,67 @@ namespace Microsoft.Build.NuGetSdkResolver
 
         internal static Dictionary<string, string> ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(Stream stream)
         {
-            using var reader = new Utf8JsonStreamReader(stream);
-
-            // Read to the first {
-            while (reader.TokenType != JsonTokenType.StartObject && reader.Read())
+            if (stream.RequiresTextReader())
             {
+                using var textReader = new StreamReader(
+                    stream,
+                    Encoding.UTF8,
+                    detectEncodingFromByteOrderMarks: true,
+                    bufferSize: 1024,
+                    leaveOpen: true);
+                byte[] utf8Json = Encoding.UTF8.GetBytes(textReader.ReadToEnd());
+                using var utf8Stream = new MemoryStream(utf8Json);
+                return ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(utf8Stream);
             }
 
-            if (reader.TokenType != JsonTokenType.StartObject)
+            var reader = new Utf8JsonStreamReader(stream);
+
+            try
             {
-                // Return null if no { was found
+                while (reader.TokenType != JsonTokenType.StartObject && reader.Read())
+                {
+                }
+
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    return null;
+                }
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.PropertyName)
+                    {
+                        bool isMSBuildSdksProperty = reader.ValueTextEquals(MSBuildSdksPropertyNameUtf8);
+
+                        reader.Read();
+
+                        if (isMSBuildSdksProperty && reader.TokenType == JsonTokenType.StartObject)
+                        {
+                            return ReadMSBuildSdkVersions(ref reader);
+                        }
+
+                        reader.Skip();
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
+                }
+
                 return null;
             }
-
-            // Read through each top-level property
-            while (reader.Read())
+            finally
             {
-                // Look for the first "msbuild-sdks" section
-                if (reader.TokenType == JsonTokenType.PropertyName)
-                {
-                    bool isMSBuildSdksProperty = reader.ValueTextEquals(MSBuildSdksPropertyNameUtf8);
-
-                    reader.Read();
-
-                    if (isMSBuildSdksProperty && reader.TokenType == JsonTokenType.StartObject)
-                    {
-                        return ReadMSBuildSdkVersions(reader);
-                    }
-
-                    reader.Skip();
-                }
-                else
-                {
-                    // Skip any top-level entry that's not a property
-                    reader.Skip();
-                }
+                reader.Dispose();
             }
-
-            // Return null if an "msbuild-sdks" section was not found
-            return null;
         }
 
-        private static Dictionary<string, string> ReadMSBuildSdkVersions(Utf8JsonStreamReader reader)
+        private static Dictionary<string, string> ReadMSBuildSdkVersions(ref Utf8JsonStreamReader reader)
         {
             Dictionary<string, string> versionsByName = null;
 
-            // Read each token in the "msbuild-sdks" section until the end
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                // Only read properties of type string
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
                     string name = reader.GetString();
@@ -288,7 +300,6 @@ namespace Microsoft.Build.NuGetSdkResolver
                     }
                 }
 
-                // Skips anything under the "msbuild-sdks" section that wasn't a property of type string
                 reader.Skip();
             }
 

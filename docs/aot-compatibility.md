@@ -1,11 +1,12 @@
 # AOT and Trimming Compatibility
 
-NuGet has `IsAotCompatible` enabled for all NuGet.Core libraries and the code itself is AOT compatible.
-However, NuGet still utilizes Newtonsoft.Json for deserialization, which uses reflection and is not AOT/trim compatible.
+NuGet enables `IsAotCompatible` for all NuGet.Core libraries.
+Some NuGet readers and writers still use Newtonsoft.Json, which uses reflection and is not trimming compatible.
 
-We are in the process of migrating to System.Text.Json source-generated deserialization.
-Until the migration is complete, both deserialization paths coexist, gated under a feature switch.
-Enabling the feature switch ensures NuGet.Protocol uses System.Text.Json instead of Newtonsoft.Json, allowing the linker to trim the Newtonsoft.Json code path entirely.
+NuGet is migrating its JSON readers to System.Text.Json.
+During this migration, the Newtonsoft.Json and System.Text.Json readers coexist behind a feature switch.
+The switch selects available System.Text.Json readers in NuGet.Protocol, NuGet.Packaging, NuGet.ProjectModel, and the NuGet SDK resolver.
+Readers without a System.Text.Json implementation continue to use Newtonsoft.Json.
 
 ## Using NuGet in a Native AOT Application
 
@@ -19,4 +20,6 @@ If you consume NuGet libraries in a native AOT app, add the following feature sw
 </ItemGroup>
 ```
 
-This tells NuGet to use the AOT-safe System.Text.Json path and tells the linker the value is constant so it can eliminate the Newtonsoft.Json code path from the binary.
+This option selects the AOT-compatible System.Text.Json readers.
+The `Trim` value tells the linker that the switch value is constant.
+The linker can then remove Newtonsoft.Json read paths that the application does not use.

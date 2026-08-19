@@ -25,10 +25,9 @@ using NuGet.Versioning;
 namespace Microsoft.Build.NuGetSdkResolver
 {
     /// <summary>
-    /// Represents a NuGet-based SDK resolver.  It is very important that this class does not reference any NuGet assemblies
-    /// directly as an optimization to avoid loading them unless they are needed. The current implementation only initializes
-    /// the JSON parser if a global.json contains the msbuild-sdks section and loads a few NuGet assemblies to parse a version.
-    /// The remaining NuGet assemblies are then loaded to do a restore.
+    /// Represents a NuGet SDK resolver. The resolver delays loading NuGet assemblies until it needs them.
+    /// It initializes the JSON parser only when global.json contains an msbuild-sdks section.
+    /// It then loads the assemblies required to parse a version and restore the SDK.
     /// </summary>
     public sealed class NuGetSdkResolver : SdkResolver
     {

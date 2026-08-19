@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -182,12 +181,53 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
-        public void ReadRuntimeGraph_WithJsonElement_ParsesRuntimeGraph()
+        public void ReadRuntimeGraphWithSystemTextJson_WithUtf16Stream_ParsesRuntimeGraph()
         {
-            using (JsonDocument document = JsonDocument.Parse(SimpleRuntimeGraphContent))
+            var stream = new MemoryStream();
+            using (var writer = new StreamWriter(stream, Encoding.Unicode, bufferSize: 1024, leaveOpen: true))
             {
-                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(document.RootElement));
+                writer.Write(SimpleRuntimeGraphContent);
             }
+            stream.Position = 0;
+
+            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithDuplicateProperties_UsesLastValue()
+        {
+            const string content = """
+                {
+                    "runtimes": {
+                        "win": null,
+                        "win": { "#import": [ "win8" ] }
+                    }
+                }
+                """;
+            using var reader = new StringReader(content);
+
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader);
+
+            RuntimeDescription runtime = Assert.Single(graph.Runtimes).Value;
+            Assert.Equal("win8", Assert.Single(runtime.InheritedRuntimes));
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithDuplicateRootProperties_UsesLastValue()
+        {
+            const string content = """
+                {
+                    "runtimes": "invalid",
+                    "runtimes": {
+                        "win": { "#import": [ "win8" ] }
+                    }
+                }
+                """;
+            using var reader = new StringReader(content);
+
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader);
+
+            Assert.Equal("win", Assert.Single(graph.Runtimes).Key);
         }
 
         [Fact]
@@ -235,15 +275,6 @@ namespace NuGet.RuntimeModel.Test
             }
         }
 
-        [Fact]
-        public void ReadRuntimeGraphWithSystemTextJson_WithTextReader_ParsesRuntimeGraph()
-        {
-            using (var reader = new StringReader(SimpleRuntimeGraphContent))
-            {
-                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader));
-            }
-        }
-
         private static RuntimeGraph CreateSimpleRuntimeGraph()
         {
             return new RuntimeGraph(new[] { new RuntimeDescription("any") });
@@ -256,6 +287,5 @@ namespace NuGet.RuntimeModel.Test
                 return JsonRuntimeFormat.ReadRuntimeGraph(reader);
             }
         }
-
     }
 }

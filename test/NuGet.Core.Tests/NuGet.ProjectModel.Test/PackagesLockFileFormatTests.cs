@@ -170,6 +170,59 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void PackagesLockFileFormat_ReadLockFileWithSystemTextJsonUtf16Stream_ParsesLockFile()
+        {
+            var stream = new MemoryStream();
+            using (var writer = new StreamWriter(stream, Encoding.Unicode, bufferSize: 1024, leaveOpen: true))
+            {
+                writer.Write(@"{ ""version"": 1, ""dependencies"": {} }");
+            }
+            stream.Position = 0;
+
+            PackagesLockFile lockFile = PackagesLockFileFormat.ReadLockFileWithSystemTextJson(stream);
+
+            Assert.False(stream.CanRead);
+            Assert.Equal(1, lockFile.Version);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_ReadLockFileWithSystemTextJsonDuplicateDependencies_UsesLastValue()
+        {
+            const string content = """
+                {
+                    "version": 1,
+                    "dependencies": {
+                        "net8.0": {
+                            "PackageA": null,
+                            "PackageA": { "type": "Direct", "resolved": "2.0.0" }
+                        }
+                    }
+                }
+                """;
+
+            PackagesLockFile lockFile = ParseWithSystemTextJson(content);
+
+            LockFileDependency dependency = Assert.Single(Assert.Single(lockFile.Targets).Dependencies);
+            Assert.Equal(NuGetVersion.Parse("2.0.0"), dependency.ResolvedVersion);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_ReadLockFileWithSystemTextJsonInvalidLastDuplicateTarget_IgnoresTarget()
+        {
+            const string content = """
+                {
+                    "version": 3,
+                    "net8.0": { "framework": "net8.0", "dependencies": {} },
+                    "net8.0": null
+                }
+                """;
+
+            PackagesLockFile lockFile = ParseWithSystemTextJson(content);
+
+            Assert.Empty(lockFile.Targets);
+        }
+
+        [Fact]
         public void Read_VariousTargetFrameworksAndRuntimeIdentifiers_ParsedCorrectly()
         {
             // Arrange

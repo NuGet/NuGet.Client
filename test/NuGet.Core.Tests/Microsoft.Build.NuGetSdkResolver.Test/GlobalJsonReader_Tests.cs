@@ -464,6 +464,34 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         [Fact]
+        public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ParsesUtf16Stream()
+        {
+            const string json = @"{ ""msbuild-sdks"": { ""Sdk1"": ""1.0.0"" } }";
+            using var stream = new MemoryStream();
+            using (var writer = new StreamWriter(stream, Encoding.Unicode, bufferSize: 1024, leaveOpen: true))
+            {
+                writer.Write(json);
+            }
+            stream.Position = 0;
+
+            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream);
+
+            result.Should().Equal(new Dictionary<string, string> { ["Sdk1"] = "1.0.0" });
+        }
+
+        [Fact]
+        public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ParsesLargeValue()
+        {
+            string version = new string('1', 20_000);
+            string json = $@"{{ ""msbuild-sdks"": {{ ""Sdk1"": ""{version}"" }} }}";
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+
+            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream);
+
+            result.Should().Equal(new Dictionary<string, string> { ["Sdk1"] = version });
+        }
+
+        [Fact]
         public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ReportsLocation_WhenJsonIsInvalid()
         {
             const string json = @"{

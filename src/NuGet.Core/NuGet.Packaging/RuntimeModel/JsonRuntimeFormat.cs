@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Shared;
 using NuGet.Versioning;
+using STJJsonException = System.Text.Json.JsonException;
 using STJJsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NuGet.RuntimeModel
@@ -96,10 +96,16 @@ namespace NuGet.RuntimeModel
         {
             using (stream)
             {
+                if (stream.RequiresTextReader())
+                {
+                    using var reader = new StreamReader(stream);
+                    return ReadRuntimeGraphWithSystemTextJson(reader);
+                }
+
                 RuntimeGraphJsonModel json = STJJsonSerializer.Deserialize(
                     stream,
                     JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
-                    ?? throw new System.Text.Json.JsonException();
+                    ?? throw new STJJsonException();
 
                 return ReadRuntimeGraph(json);
             }
@@ -110,7 +116,7 @@ namespace NuGet.RuntimeModel
             RuntimeGraphJsonModel json = STJJsonSerializer.Deserialize(
                 textReader.ReadToEnd(),
                 JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
-                ?? throw new System.Text.Json.JsonException();
+                ?? throw new STJJsonException();
 
             return ReadRuntimeGraph(json);
         }
@@ -134,16 +140,6 @@ namespace NuGet.RuntimeModel
             return new RuntimeGraph(
                 EachProperty(json["runtimes"]).Select(ReadRuntimeDescription),
                 EachProperty(json["supports"]).Select(ReadCompatibilityProfile));
-        }
-
-        internal static RuntimeGraph ReadRuntimeGraph(JsonElement json)
-        {
-            RuntimeGraphJsonModel data = STJJsonSerializer.Deserialize(
-                json,
-                JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
-                ?? throw new System.Text.Json.JsonException();
-
-            return ReadRuntimeGraph(data);
         }
 
         public static void WriteRuntimeGraph(IObjectWriter writer, RuntimeGraph runtimeGraph)
@@ -321,15 +317,9 @@ namespace NuGet.RuntimeModel
 
         private static RuntimeGraph ReadRuntimeGraph(RuntimeGraphJsonModel json)
         {
-            if (json == null)
-            {
-                return RuntimeGraph.Empty;
-            }
-
             return new RuntimeGraph(
                 json.Runtimes ?? Enumerable.Empty<RuntimeDescription>(),
                 json.Supports ?? Enumerable.Empty<CompatibilityProfile>());
         }
-
     }
 }
