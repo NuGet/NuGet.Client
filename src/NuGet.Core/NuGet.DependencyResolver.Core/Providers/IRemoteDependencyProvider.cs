@@ -118,7 +118,8 @@ namespace NuGet.DependencyResolver
             ILogger logger,
             CancellationToken cancellationToken);
 
-        Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+        /// <remarks>Returns <see langword="null" /> when the source is unreachable.</remarks>
+        Task<IEnumerable<NuGetVersion>?> GetAllVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,

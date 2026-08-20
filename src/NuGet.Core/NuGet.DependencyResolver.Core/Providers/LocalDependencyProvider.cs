@@ -158,7 +158,7 @@ namespace NuGet.DependencyResolver
             throw new NotSupportedException();
         }
 
-        public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+        public Task<IEnumerable<NuGetVersion>?> GetAllVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
