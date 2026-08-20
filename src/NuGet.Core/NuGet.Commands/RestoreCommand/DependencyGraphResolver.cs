@@ -425,7 +425,9 @@ namespace NuGet.Commands
                         }
 
                         // Verify downgrades only if the resolved dependency has a lower version than what was defined
-                        if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(childResolvedLibraryDependency.LibraryRange.VersionRange, childLibraryDependency.LibraryRange.VersionRange))
+                        if (childResolvedLibraryDependency.LibraryRange.VersionRange is VersionRange resolvedVersionRange &&
+                            childLibraryDependency.LibraryRange.VersionRange is VersionRange childVersionRange &&
+                            !RemoteDependencyWalker.IsGreaterThanOrEqualTo(resolvedVersionRange, childVersionRange))
                         {
                             // It is not a downgrade if: the dependency is transitive and is suppressed its parent or any of those parents' parent because the suppressions is an aggregate of everything suppressed above.
                             // For example, A -> B (PrivateAssets=All) -> C
@@ -562,7 +564,9 @@ namespace NuGet.Commands
                         && childLibraryDependency.SuppressParent != LibraryIncludeFlags.All
                         && !downgrades.ContainsKey(childResolvedLibraryRangeIndex)
                         && childLibraryDependency.LibraryRange.VersionRange != VersionRange.All
-                        && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(childResolvedDependencyGraphItem.LibraryDependency.LibraryRange.VersionRange, childLibraryDependency.LibraryRange.VersionRange))
+                        && childResolvedDependencyGraphItem.LibraryDependency.LibraryRange.VersionRange is VersionRange transitiveVersionRange &&
+                        childLibraryDependency.LibraryRange.VersionRange is VersionRange requestedVersionRange &&
+                        !RemoteDependencyWalker.IsGreaterThanOrEqualTo(transitiveVersionRange, requestedVersionRange))
                     {
                         // This is a downgrade if:
                         // 1. This is not a direct dependency
@@ -638,7 +642,7 @@ namespace NuGet.Commands
                     {
                         // Keep track of the resolved packages
                         resolvedPackages.Add(new ResolvedDependencyKey(
-                            parent: newGraphNode.OuterNode.Item.Key,
+                            parent: (newGraphNode.OuterNode ?? throw new InvalidOperationException()).Item!.Key,
                             range: newGraphNode.Key.VersionRange,
                             child: newGraphNode.Item.Key));
                     }
@@ -758,7 +762,11 @@ namespace NuGet.Commands
         {
             LibraryRange libraryRange = libraryDependency.LibraryRange;
 
-            if (runtimeGraph == null || string.IsNullOrEmpty(runtimeIdentifier) || !RemoteDependencyWalker.EvaluateRuntimeDependencies(ref libraryRange, runtimeIdentifier, runtimeGraph, ref runtimeDependencies))
+            if (runtimeGraph == null || runtimeIdentifier is not string runtimeName || runtimeName.Length == 0)
+            {
+                return false;
+            }
+            if (!RemoteDependencyWalker.EvaluateRuntimeDependencies(ref libraryRange, runtimeName, runtimeGraph, ref runtimeDependencies))
             {
                 return false;
             }

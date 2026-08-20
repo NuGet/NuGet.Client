@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,13 +29,13 @@ namespace NuGet.DependencyResolver
         /// Gets the package source.
         /// </summary>
         /// <remarks>Optional. This will be <see langword="null" /> for project providers.</remarks>
-        PackageSource Source { get; }
+        PackageSource? Source { get; }
 
         /// <summary>
         /// Gets the source repository.
         /// </summary>
         /// <remarks>Optional. This will be <see langword="null" /> for project providers.</remarks>
-        SourceRepository SourceRepository { get; }
+        SourceRepository? SourceRepository { get; }
 
         /// <summary>
         /// Asynchronously discovers all versions of a package from a source and selects the best match.
@@ -61,7 +59,7 @@ namespace NuGet.DependencyResolver
         /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        Task<LibraryIdentity> FindLibraryAsync(
+        Task<LibraryIdentity?> FindLibraryAsync(
             LibraryRange libraryRange,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,

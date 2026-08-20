@@ -161,10 +161,11 @@ namespace NuGet.Commands
                     if (isPackageSourceMappingEnabled && allRemoteLibraryProviders.Count != applicableRemoteLibraryProviders.Count)
                     {
                         lines.AddRange(GetUnusedLibraryProviders(applicableRemoteLibraryProviders, allRemoteLibraryProviders)
-                            .OrderBy(e => e.Source.Name)
+                            .Where(e => e.Source != null)
+                            .OrderBy(e => e.Source!.Name)
                             .Select(packageSource => string.Format(CultureInfo.CurrentCulture,
                                             Strings.SourceNotConsidered,
-                                            packageSource.Source.Name)));
+                                            packageSource.Source!.Name)));
                     }
 
                     message = DiagnosticUtility.GetMultiLineMessage(lines);
@@ -202,7 +203,7 @@ namespace NuGet.Commands
 
         private static string FormatProviderNames(IEnumerable<IRemoteDependencyProvider> allRemoteLibraryProviders)
         {
-            return string.Join(", ", allRemoteLibraryProviders.Select(e => e.Source.Name)
+            return string.Join(", ", allRemoteLibraryProviders.Select(e => e.Source?.Name ?? string.Empty)
                     .OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
         }
 
@@ -289,7 +290,7 @@ namespace NuGet.Commands
             var versions = await provider.GetAllVersionsAsync(id, cacheContext, logger, token);
 
             return new KeyValuePair<PackageSource, ImmutableArray<NuGetVersion>>(
-                provider.Source,
+                provider.Source ?? throw new InvalidOperationException("A remote provider must have a package source."),
                 versions != null ? [.. versions] : ImmutableArray<NuGetVersion>.Empty);
         }
 
