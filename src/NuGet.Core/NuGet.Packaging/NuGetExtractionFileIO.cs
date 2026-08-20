@@ -175,8 +175,7 @@ namespace NuGet.Packaging
                 return OpenWriteOnly | DarwinOpenCreate | DarwinOpenTruncate | DarwinOpenCloseOnExec;
             }
 
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-                System.Runtime.InteropServices.OSPlatform.Create("FREEBSD")))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD")))
             {
                 return OpenWriteOnly | FreeBsdOpenCreate | FreeBsdOpenTruncate | FreeBsdOpenCloseOnExec;
             }
