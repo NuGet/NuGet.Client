@@ -117,17 +117,19 @@ namespace NuGet.Console.TestContract
                     RunCommandWithoutWait(command);
                     WaitForReadKey(timeout);
 
-                    UIInvoke(() =>
+                    IOleCommandTarget commandTarget = null;
+                    UIInvoke(() => commandTarget = (IOleCommandTarget)_wpfConsole.VsTextView);
+                    foreach (char character in input)
                     {
-                        var commandTarget = (IOleCommandTarget)_wpfConsole.VsTextView;
-                        foreach (char character in input)
-                        {
-                            commandTarget.Execute(VSConstants.VSStd2KCmdID.TYPECHAR, character);
-                        }
+                        ExecuteReadKeyCommand(
+                            commandTarget,
+                            VSConstants.VSStd2KCmdID.TYPECHAR,
+                            timeout,
+                            character);
+                    }
 
-                        commandTarget.Execute(VSConstants.VSStd2KCmdID.BACKSPACE);
-                        commandTarget.Execute(VSConstants.VSStd2KCmdID.RETURN);
-                    });
+                    ExecuteReadKeyCommand(commandTarget, VSConstants.VSStd2KCmdID.BACKSPACE, timeout);
+                    UIInvoke(() => commandTarget.Execute(VSConstants.VSStd2KCmdID.RETURN));
                 },
                 timeout);
         }
@@ -196,6 +198,33 @@ namespace NuGet.Console.TestContract
             if (!_wpfConsole.Dispatcher.IsExecutingReadKey)
             {
                 throw new TimeoutException("The Package Manager Console did not begin waiting for input.");
+            }
+        }
+
+        private void ExecuteReadKeyCommand(
+            IOleCommandTarget commandTarget,
+            VSConstants.VSStd2KCmdID command,
+            TimeSpan timeout,
+            object argument = null)
+        {
+            using var semaphore = new ManualResetEventSlim();
+            EventHandler eventHandler = (sender, args) => semaphore.Set();
+            _wpfConsole.Dispatcher.StartWaitingKey += eventHandler;
+
+            try
+            {
+                UIInvoke(() => commandTarget.Execute(command, argument));
+
+                if (!semaphore.Wait(timeout))
+                {
+                    throw new TimeoutException("The Package Manager Console did not request the next input key.");
+                }
+
+                WaitForReadKey(timeout);
+            }
+            finally
+            {
+                _wpfConsole.Dispatcher.StartWaitingKey -= eventHandler;
             }
         }
 
