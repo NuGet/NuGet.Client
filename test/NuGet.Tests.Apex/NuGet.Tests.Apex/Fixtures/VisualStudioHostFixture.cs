@@ -20,9 +20,11 @@ namespace NuGet.Tests.Apex
             get { return _visualStudioHost; }
         }
 
+        public bool IsHostRunning => _visualStudioHost != null && _visualStudioHost.IsRunning;
+
         public void EnsureHost()
         {
-            if (_visualStudioHost == null || !_visualStudioHost.IsRunning)
+            if (!IsHostRunning)
             {
                 _messageFilterSingleton = new RetryMessageFilter();
                 _visualStudioHost = Operations.CreateAndStartHost<VisualStudioHost>(VisualStudioHostConfiguration);
@@ -32,28 +34,43 @@ namespace NuGet.Tests.Apex
 
         public void Dispose()
         {
-            if (_visualStudioHost != null && _visualStudioHost.IsRunning)
+            try
             {
-                try
+                if (_messageFilterSingleton != null)
                 {
-                    if (_messageFilterSingleton != null)
-                    {
-                        _messageFilterSingleton.Dispose();
-                    }
+                    _messageFilterSingleton.Dispose();
+                }
 
+            }
+            catch (COMException)
+            {
+                // VSO 178569: Access to DTE during shutdown may throw a variety of COM exceptions
+                // if inaccessible.
+            }
+            catch (Exception)
+            {
+                //this.Logger.WriteException(EntryType.Warning, filterException, "Could not to tear down the message filter.");
+            }
+
+            try
+            {
+                if (IsHostRunning)
+                {
                     _visualStudioHost.Stop();
                 }
-                catch (COMException)
-                {
-                    // VSO 178569: Access to DTE during shutdown may throw a variety of COM exceptions
-                    // if inaccessible.
-                }
-                catch (Exception)
-                {
-                    //this.Logger.WriteException(EntryType.Warning, filterException, "Could not to tear down the message filter.");
-                }
-                _visualStudioHost = null;
             }
+            catch (COMException)
+            {
+                // VSO 178569: Access to DTE during shutdown may throw a variety of COM exceptions
+                // if inaccessible.
+            }
+            catch (Exception)
+            {
+                //this.Logger.WriteException(EntryType.Warning, filterException, "Could not stop the Visual Studio host.");
+            }
+
+            _messageFilterSingleton = null;
+            _visualStudioHost = null;
         }
     }
 }

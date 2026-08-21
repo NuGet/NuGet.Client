@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Concurrent;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -14,7 +15,7 @@ namespace NuGet.Tests.Apex
     [TestClass]
     public abstract class SharedVisualStudioHostTestClass : ApexBaseTestClass
     {
-        private static readonly IVisualStudioHostFixtureFactory _contextFixtureFactory = new VisualStudioHostFixtureFactory();
+        private static readonly ConcurrentDictionary<string, IVisualStudioHostFixtureFactory> _contextFixtureFactories = new();
         private readonly Lazy<VisualStudioHostFixture> _hostFixture;
         private NuGetConsoleTestExtension _console;
         private string _packageManagerOutputWindowText;
@@ -25,7 +26,11 @@ namespace NuGet.Tests.Apex
         {
             _hostFixture = new Lazy<VisualStudioHostFixture>(() =>
             {
-                return _contextFixtureFactory.GetVisualStudioHostFixture();
+                IVisualStudioHostFixtureFactory contextFixtureFactory = _contextFixtureFactories.GetOrAdd(
+                    TestContext.FullyQualifiedTestClassName,
+                    _ => new VisualStudioHostFixtureFactory());
+
+                return contextFixtureFactory.GetVisualStudioHostFixture();
             });
         }
 
@@ -41,11 +46,43 @@ namespace NuGet.Tests.Apex
             _hostFixture.Value.EnsureHost();
         }
 
-        public override void CloseVisualStudioHost()
+        public override void CleanupVisualStudioHost()
         {
-            _packageManagerOutputWindowText = GetPackageManagerOutputWindowPaneText();
+            if (!_hostFixture.IsValueCreated)
+            {
+                return;
+            }
 
-            VisualStudio.Stop();
+            VisualStudioHostFixture hostFixture = _hostFixture.Value;
+
+            if (!hostFixture.IsHostRunning)
+            {
+                hostFixture.Dispose();
+                return;
+            }
+
+            if (HasVerificationFailures || TestContext.CurrentTestOutcome != UnitTestOutcome.Passed)
+            {
+                Logger.WriteMessage(
+                    $"Test '{TestContext.TestName}' did not pass. Visual Studio will be restarted before the next test.");
+                hostFixture.Dispose();
+                return;
+            }
+
+            try
+            {
+                hostFixture.VisualStudio.RuntimeReset();
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteWarning(
+                    $"Visual Studio failed to reset after test '{TestContext.TestName}'. The next test will use a new instance. {ex}");
+                hostFixture.Dispose();
+                return;
+            }
+
+            Logger.WriteMessage(
+                $"Test '{TestContext.TestName}' passed. The next test in this class will reuse Visual Studio process '{hostFixture.VisualStudio.HostProcess.Id}'.");
         }
 
         protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
@@ -75,23 +112,52 @@ namespace NuGet.Tests.Apex
 
         public override void Dispose()
         {
-            if (_console != null)
+            if (_hostFixture.IsValueCreated && _hostFixture.Value.IsHostRunning)
             {
-                string text = _console.GetText();
-
-                Logger.WriteMessage($"Package Manager Console contents:  {text}");
+                LogVisualStudioOutput();
             }
 
-            _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
-
-            Logger.WriteMessage($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
-
             base.Dispose();
+        }
+
+        private void LogVisualStudioOutput()
+        {
+            try
+            {
+                if (_console != null)
+                {
+                    string text = _console.GetText();
+
+                    Logger.WriteMessage($"Package Manager Console contents:  {text}");
+                }
+
+                _packageManagerOutputWindowText ??= GetPackageManagerOutputWindowPaneText();
+
+                Logger.WriteMessage($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteWarning($"Failed to collect Visual Studio output during test cleanup. {ex}");
+            }
         }
 
         internal string GetPackageManagerOutputWindowPaneText()
         {
             return string.Join(Environment.NewLine, VisualStudio.GetOutputWindowsLines());
+        }
+
+        [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
+        public static void ClassCleanup()
+        {
+            foreach (string testClassName in _contextFixtureFactories.Keys)
+            {
+                if (_contextFixtureFactories.TryRemove(
+                    testClassName,
+                    out IVisualStudioHostFixtureFactory contextFixtureFactory))
+                {
+                    contextFixtureFactory.Dispose();
+                }
+            }
         }
 
         [TestInitialize]
