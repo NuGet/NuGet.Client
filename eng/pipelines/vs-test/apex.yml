@@ -41,6 +41,13 @@ stages:
       testExecutionJobDisplayName: 'Apex Test Execution'
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testDeploymentCleanupMode: ${{parameters.testDeploymentCleanupMode}}
+      testMachineFilesToUpload:
+        - CopyDirectory: C:\Test\Results
+          Subdirectory: TestResults
+          IncludeFilePatterns:
+            - '**/*.dmp'
+            - '**/Sequence_*.xml'
+          Timeout: 10
       testMachineConfigurationJobVariables:
       - name: VisualStudio.InstallationUnderTest.BootstrapperBranch
         value: ${{parameters.VsBootstrapperBranch}}
