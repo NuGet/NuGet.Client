@@ -55,10 +55,10 @@
   </ItemGroup>
 
   <ItemGroup Label="Data Collectors">
-    <DataCollector Condition="'$(BlameHangDumpCollector)' == 'enabled'" Include="datacollector://Microsoft/TestPlatform/Blame/1.0">
+    <DataCollector Condition="'$(BlameHangDumpCollector)' == 'enabled' Or '$(BlameHangDumpCollector)' == 'true'" Include="datacollector://Microsoft/TestPlatform/Blame/1.0">
       <FriendlyName>blame</FriendlyName>
       <Configuration>
-        <CollectDumpOnTestSessionHang TestTimeout="4min" HangDumpType="Full" />
+        <CollectDumpOnTestSessionHang TestTimeout="9min" HangDumpType="Full" />
       </Configuration>
     </DataCollector>
     <DataCollector Condition="'$(RPSDataCollector)' == 'enabled' And '$(TestIterations)' != ''" Include="datacollector://Microsoft/DevDiv/TestExtensions/PerformanceDataCollector/v1">
