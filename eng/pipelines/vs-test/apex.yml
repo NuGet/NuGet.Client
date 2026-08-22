@@ -43,11 +43,13 @@ stages:
       testDeploymentCleanupMode: ${{parameters.testDeploymentCleanupMode}}
       testMachineFilesToUpload:
         - CopyDirectory: C:\Test\Results
-          Subdirectory: TestResults
+          Subdirectory: TestResults\Dumps
           IncludeFilePatterns:
             - '**/*.dmp'
+        - CopyDirectory: C:\Test\Results
+          Subdirectory: TestResults\Sequences
+          IncludeFilePatterns:
             - '**/Sequence_*.xml'
-          Timeout: 5
       testMachineConfigurationJobVariables:
       - name: VisualStudio.InstallationUnderTest.BootstrapperBranch
         value: ${{parameters.VsBootstrapperBranch}}
