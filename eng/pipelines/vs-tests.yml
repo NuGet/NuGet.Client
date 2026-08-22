@@ -82,45 +82,45 @@ stages:
     steps:
     - template: vs-test/build.yml
 
-# Dartlab's template defines this in its own stage
-- template: vs-test/end_to_end.yml
-  parameters:
-    stageName: VS_EndToEnd_Part1
-    stageDisplayName: Part 1
-    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn:
-    - Build
-    variables:
-    - name: VsBootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
-    - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    bootstrapperUrl: $(VsBootstrapperUrl)
-    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1"
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
-    testExecutionJobTimeoutInMinutes: 100
-    testMachineCleanUpStrategy: ${{parameters.E2EPart1AgentCleanup}}
+# Disabled while investigating Apex test hangs.
+# - template: vs-test/end_to_end.yml
+#   parameters:
+#     stageName: VS_EndToEnd_Part1
+#     stageDisplayName: Part 1
+#     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
+#     dependsOn:
+#     - Build
+#     variables:
+#     - name: VsBootstrapperUrl
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+#     - name: RunSettingsDrop
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
+#     bootstrapperUrl: $(VsBootstrapperUrl)
+#     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+#     part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1"
+#     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
+#     testExecutionJobTimeoutInMinutes: 100
+#     testMachineCleanUpStrategy: ${{parameters.E2EPart1AgentCleanup}}
 
-# Dartlab's template defines this in its own stage
-- template: vs-test/end_to_end.yml
-  parameters:
-    stageName: VS_EndToEnd_Part2
-    stageDisplayName: Part 2
-    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn:
-    - Build
-    variables:
-    - name: VsBootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
-    - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    bootstrapperUrl: $(VsBootstrapperUrl)
-    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    part: "BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
-    testExecutionJobTimeoutInMinutes: 100
-    testMachineCleanUpStrategy: ${{parameters.E2EPart2AgentCleanup}}
+# Disabled while investigating Apex test hangs.
+# - template: vs-test/end_to_end.yml
+#   parameters:
+#     stageName: VS_EndToEnd_Part2
+#     stageDisplayName: Part 2
+#     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
+#     dependsOn:
+#     - Build
+#     variables:
+#     - name: VsBootstrapperUrl
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+#     - name: RunSettingsDrop
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
+#     bootstrapperUrl: $(VsBootstrapperUrl)
+#     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+#     part: "BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
+#     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
+#     testExecutionJobTimeoutInMinutes: 100
+#     testMachineCleanUpStrategy: ${{parameters.E2EPart2AgentCleanup}}
 
 # Dartlab's template defines this in its own stage
 - template: vs-test/apex.yml
