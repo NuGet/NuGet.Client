@@ -97,7 +97,7 @@
          These aren't automatically included by the VSSDK in the correct spot.
         Work around https://dev.azure.com/devdiv/DevDiv/_workitems/edit/2523215
     -->
-    <Content Include="$(OutputPath)**/Microsoft.Web.XmlTransform.resources.dll">
+    <Content Include="$(PkgMicrosoft_Web_Xdt)\lib\netstandard2.0\**\Microsoft.Web.XmlTransform.resources.dll">
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
