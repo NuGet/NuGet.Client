@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using NuGet.Common;
 
 namespace NuGet.Packaging
 {
@@ -17,15 +16,16 @@ namespace NuGet.Packaging
             // To avoid breaking executable files in existing packages (which don't have the x-bit set)
             // we force the .NET Core 1.x default permissions.
 #if NET
-            if (!RuntimeEnvironmentHelper.IsWindows)
+            if (!System.OperatingSystem.IsWindows())
             {
+                // Match creat's write-only descriptor without restricting other processes from opening the file.
                 return new FileStream(
                     path,
                     new FileStreamOptions
                     {
                         Mode = FileMode.Create,
-                        Access = FileAccess.ReadWrite,
-                        Share = FileShare.None,
+                        Access = FileAccess.Write,
+                        Share = FileShare.ReadWrite | FileShare.Delete,
                         UnixCreateMode =
                             UnixFileMode.UserRead |
                             UnixFileMode.UserWrite |
