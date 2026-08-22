@@ -47,7 +47,7 @@ stages:
           IncludeFilePatterns:
             - '**/*.dmp'
             - '**/Sequence_*.xml'
-          Timeout: 10
+          Timeout: 5
       testMachineConfigurationJobVariables:
       - name: VisualStudio.InstallationUnderTest.BootstrapperBranch
         value: ${{parameters.VsBootstrapperBranch}}
