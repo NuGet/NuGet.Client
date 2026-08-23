@@ -10,15 +10,9 @@ internal static class CommonThreadCultureModule
     public static void Initialize()
     {
         var enus = CultureInfo.GetCultureInfo("en-us");
-        if (enus.LCID != CultureInfo.DefaultThreadCurrentCulture?.LCID)
-        {
-            CultureInfo.DefaultThreadCurrentCulture = enus;
-            CultureInfo.DefaultThreadCurrentUICulture = enus;
-        }
-        if (enus.LCID != Thread.CurrentThread.CurrentCulture.LCID)
-        {
-            Thread.CurrentThread.CurrentCulture = enus;
-            Thread.CurrentThread.CurrentUICulture = enus;
-        }
+        CultureInfo.DefaultThreadCurrentCulture = enus;
+        CultureInfo.DefaultThreadCurrentUICulture = enus;
+        Thread.CurrentThread.CurrentCulture = enus;
+        Thread.CurrentThread.CurrentUICulture = enus;
     }
 }
