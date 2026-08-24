@@ -2,7 +2,7 @@ namespace NuGet.DependencyResolver
 {
     public class DowngradeResult<TItem>
     {
-        public GraphNode<TItem> DowngradedFrom { get; set; } = null!;
-        public GraphNode<TItem> DowngradedTo { get; set; } = null!;
+        public required GraphNode<TItem> DowngradedFrom { get; set; }
+        public required GraphNode<TItem> DowngradedTo { get; set; }
     }
 }

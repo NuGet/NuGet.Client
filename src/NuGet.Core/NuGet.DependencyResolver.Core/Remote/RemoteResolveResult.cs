@@ -10,7 +10,7 @@ namespace NuGet.DependencyResolver
     {
         internal static readonly List<LibraryDependency> EmptyDependencies = new List<LibraryDependency>(0);
 
-        public RemoteMatch Match { get; set; } = null!;
-        public List<LibraryDependency> Dependencies { get; set; } = null!;
+        public required RemoteMatch Match { get; set; }
+        public required List<LibraryDependency> Dependencies { get; set; }
     }
 }

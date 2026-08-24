@@ -9,7 +9,7 @@ namespace NuGet.DependencyResolver
     public class RemoteMatch : IEquatable<RemoteMatch>
     {
         public IRemoteDependencyProvider? Provider { get; set; }
-        public LibraryIdentity Library { get; set; } = null!;
+        public required LibraryIdentity Library { get; set; }
         public string? Path { get; set; }
 
         public override bool Equals(object? obj)

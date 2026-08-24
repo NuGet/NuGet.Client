@@ -13,11 +13,11 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// Full local Library metadata
         /// </summary>
-        public Library LocalLibrary { get; set; } = null!;
+        public required Library LocalLibrary { get; set; }
 
         /// <summary>
         /// The local provider where the library was found.
         /// </summary>
-        public IDependencyProvider LocalProvider { get; set; } = null!;
+        public required IDependencyProvider LocalProvider { get; set; }
     }
 }
