@@ -222,6 +222,17 @@ namespace API.Test
             return solution2.SolutionBuild;
         }
 
+        public static void SetStartupProject(string projectUniqueName)
+        {
+            Utils.ThrowStringArgException(projectUniqueName, nameof(projectUniqueName));
+
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                var solutionBuild = await GetSolutionBuildAsync();
+                solutionBuild.StartupProjects = projectUniqueName;
+            });
+        }
+
         public static void BuildSolution()
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate

@@ -267,5 +267,11 @@ namespace NuGet.Tests.Apex
             PathContextProvider2.TryCreateNoSolutionContext(out var pathContext);
             return pathContext.UserPackageFolder;
         }
+
+        public string GetUserPackagesFolderFromProjectContext(string projectPath)
+        {
+            PathContextProvider2.TryCreateContext(projectPath, out var pathContext);
+            return pathContext.UserPackageFolder;
+        }
     }
 }

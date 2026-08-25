@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
@@ -149,6 +150,30 @@ namespace NuGet.Tests.Apex
 
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion, Logger);
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCPipelineInputAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "PipelineInputTestPackage";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+
+            nugetConsole.Execute(
+                $"Get-Package -ListAvailable -Filter '{packageName}' -Source '{escapedSource}' | Install-Package");
+
+            CommonUtility.AssertPackageInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                packageVersion,
+                Logger);
         }
 
         [DataTestMethod]
@@ -987,6 +1012,37 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCWhenMinClientVersionIsNotSatisfied_FailsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "kitty";
+            var packageVersion = "1.0.0";
+            var minClientVersion = "100.0.0";
+            var package = new SimpleTestPackageContext(packageName, packageVersion)
+            {
+                MinClientVersion = minClientVersion,
+            };
+            await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, package);
+
+            var currentVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
+            var expectedMessage =
+                $"The '{packageName} {packageVersion}' package requires NuGet client version '{minClientVersion}' or above, " +
+                $"but the current NuGet version is '{currentVersion}'. To upgrade NuGet, " +
+                "go to https://docs.nuget.org/consume/installing-nuget";
+            var nugetConsole = GetConsole(testContext.Project);
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+
+            nugetConsole.Execute($"Install-Package {packageName} -Source '{escapedSource}'");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromPMCWithWhatIf_DoesNotInstallPackageAsync()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
@@ -1055,6 +1111,55 @@ namespace NuGet.Tests.Apex
             Assert.IsTrue(
                 nugetConsole.IsMessageFoundInPMC(expectedMessage),
                 $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWhenMinClientVersionIsNotSatisfied_FailsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "kitty";
+            var installedVersion = "1.0.0";
+            var updateVersion = "2.0.0";
+            var minClientVersion = "100.0.0.1";
+            var installedPackage = new SimpleTestPackageContext(packageName, installedVersion);
+            var updatePackage = new SimpleTestPackageContext(packageName, updateVersion)
+            {
+                MinClientVersion = minClientVersion,
+            };
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                testContext.PackageSource,
+                installedPackage,
+                updatePackage);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.InstallPackageFromPMC(packageName, installedVersion);
+
+            var currentVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
+            var expectedMessage =
+                $"The '{packageName} {updateVersion}' package requires NuGet client version '{minClientVersion}' or above, " +
+                $"but the current NuGet version is '{currentVersion}'. To upgrade NuGet, " +
+                "go to https://docs.nuget.org/consume/installing-nuget";
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+
+            nugetConsole.Execute($"Update-Package {packageName} -Source '{escapedSource}'");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+            CommonUtility.AssertPackageNotInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                updateVersion,
+                Logger);
+            CommonUtility.AssertPackageInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                installedVersion,
+                Logger);
         }
 
         [TestMethod]

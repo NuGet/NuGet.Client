@@ -215,6 +215,8 @@ function Test-AmbiguousStartupProject {
    # Make sure the default project is p1
    Assert-DefaultProject $p1
 
+   [API.Test.VSSolutionHelper]::SetStartupProject($p1.UniqueName)
+
    $solutionFile = Get-SolutionFullName
    $p1.Save()
    $p2.Save()
@@ -248,5 +250,5 @@ function Test-GetProjectAfterDefaultProjectRemoved
 
 function Assert-DefaultProject($p) {
    $actual = Get-Project
-   Assert-AreEqual $p $actual "Expected $($actual.UniqueName), but Default project is actually $($p.UniqueName)"
+   Assert-AreEqual $p $actual "Expected $($p.UniqueName), but default project is actually $($actual.UniqueName)"
 }
