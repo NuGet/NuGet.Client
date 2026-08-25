@@ -18,6 +18,7 @@ namespace NuGet.Commands
     public class PackArgs
     {
         private string _currentDirectory;
+        private bool _deterministic;
         private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public IEnumerable<string> Arguments { get; set; }
@@ -45,7 +46,21 @@ namespace NuGet.Commands
         public bool Symbols { get; set; }
         public bool Tool { get; set; }
         public string Version { get; set; }
-        public bool Deterministic { get; set; }
+        public bool Deterministic
+        {
+            get
+            {
+                return _deterministic &&
+                    SdkAnalysisLevelMinimums.IsEnabled(
+                        SdkAnalysisLevel,
+                        UsingMicrosoftNETSdk,
+                        SdkAnalysisLevelMinimums.V11_0_100);
+            }
+            set
+            {
+                _deterministic = value;
+            }
+        }
         public string DeterministicTimestamp { get; set; }
         public WarningProperties WarningProperties { get; set; }
         public NuGetVersion SdkAnalysisLevel { get; set; }

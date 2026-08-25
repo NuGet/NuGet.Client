@@ -114,7 +114,14 @@ namespace NuGet.Build.Tasks.Pack
                     assetsFilePath));
             }
 
-            var builder = new PackageBuilder(request.Deterministic, request.Logger)
+            bool deterministic = new PackArgs
+            {
+                Deterministic = request.Deterministic,
+                SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(request.SdkAnalysisLevel),
+                UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(request.UsingMicrosoftNETSdk),
+            }.Deterministic;
+
+            var builder = new PackageBuilder(deterministic, request.Logger)
             {
                 Id = request.PackageId,
                 Description = request.Description,
