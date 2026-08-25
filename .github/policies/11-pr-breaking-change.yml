@@ -1,6 +1,6 @@
 id: 
 name: GitOps.PullRequestIssueManagement.BreakingChanges
-description: Breaking change label and documentation requirements
+description: Pull Requests with the breaking change label and documentation requirements
 owner: 
 resource: repository
 disabled: false
