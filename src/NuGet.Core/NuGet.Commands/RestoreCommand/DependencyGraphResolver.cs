@@ -542,6 +542,7 @@ namespace NuGet.Commands
                         Item = childResolvedDependencyGraphItem.Item
                     };
 
+                    GraphNode<RemoteResolveResult> parentGraphNode;
                     if (childResolvedDependencyGraphItem.IsCentrallyPinnedTransitivePackage && !childResolvedDependencyGraphItem.IsRootPackageReference)
                     {
                         // If this child is transitively pinned, the GraphNode needs to have certain properties set
@@ -549,15 +550,16 @@ namespace NuGet.Commands
                         newGraphNode.Item.IsCentralTransitive = true;
 
                         // Treat the transitively pinned dependency as a child of the root node
-                        newGraphNode.OuterNode = rootGraphNode;
-                        rootGraphNode.InnerNodes.Add(newGraphNode);
+                        parentGraphNode = rootGraphNode;
                     }
                     else
                     {
                         // Set properties for the node to represent a parent/child relationship
-                        newGraphNode.OuterNode = currentGraphNode;
-                        currentGraphNode.InnerNodes.Add(newGraphNode);
+                        parentGraphNode = currentGraphNode;
                     }
+
+                    newGraphNode.OuterNode = parentGraphNode;
+                    parentGraphNode.InnerNodes.Add(newGraphNode);
 
                     if (!childResolvedDependencyGraphItem.IsRootPackageReference
                         && isCentralPackageTransitivePinningEnabled
@@ -642,7 +644,7 @@ namespace NuGet.Commands
                     {
                         // Keep track of the resolved packages
                         resolvedPackages.Add(new ResolvedDependencyKey(
-                            parent: (newGraphNode.OuterNode ?? throw new InvalidOperationException()).Item!.Key,
+                            parent: parentGraphNode.Item!.Key,
                             range: newGraphNode.Key.VersionRange,
                             child: newGraphNode.Item.Key));
                     }

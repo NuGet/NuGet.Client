@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -23,6 +24,7 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// Gets a flag indicating whether or not the provider source is HTTP or HTTPS.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(Source))]
         bool IsHttp { get; }
 
         /// <summary>

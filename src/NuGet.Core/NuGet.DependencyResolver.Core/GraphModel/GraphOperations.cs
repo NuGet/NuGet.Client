@@ -357,17 +357,17 @@ namespace NuGet.DependencyResolver
             var tracker = Cache<TItem>.RentTracker();
             Func<GraphNode<TItem>, bool>? skipNode = null;
 
-            var centralTransitiveNodes = root.InnerNodes.Where(n => n.Item!.IsCentralTransitive).ToList();
+            var centralTransitiveNodes = root.InnerNodes.Where(n => n.Item?.IsCentralTransitive == true).ToList();
             var hasCentralTransitiveDependencies = centralTransitiveNodes.Count > 0;
             if (hasCentralTransitiveDependencies)
             {
-                skipNode = (node) => node.Item!.IsCentralTransitive;
+                skipNode = (node) => node.Item?.IsCentralTransitive == true;
             }
 
             while (incomplete && --patience != 0)
             {
                 // Create a picture of what has not been rejected yet
-                root.ForEach(true, (node, state, context) => WalkTreeRejectNodesOfRejectedNodes(state, node, context), tracker, skipNode!);
+                root.ForEach(true, (node, state, context) => WalkTreeRejectNodesOfRejectedNodes(state, node, context), tracker, skipNode);
 
                 if (hasCentralTransitiveDependencies)
                 {
