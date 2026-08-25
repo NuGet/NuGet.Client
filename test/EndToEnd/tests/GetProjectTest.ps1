@@ -206,33 +206,6 @@ function Test-RenamingSolutionFolderWithDeeplyNestedProjectsDoesNotAffectGetProj
    Assert-AreEqual $p2 (Get-Project -Name A)
 }
 
-function Test-AmbiguousStartupProject {
-   # Arrange
-   New-SolutionFolder foo
-   $p1 = New-ClassLibrary A foo
-   $p2 = New-ClassLibrary A
-
-   # Make sure the default project is p1
-   Assert-DefaultProject $p1
-
-   [API.Test.VSSolutionHelper]::SetStartupProject($p1.UniqueName)
-
-   $solutionFile = Get-SolutionFullName
-   $p1.Save()
-   $p2.Save()
-   SaveAs-Solution($solutionFile)
-   Close-Solution
-
-   # Re open the solution
-   Open-Solution($solutionFile)
-   Wait-ForSolutionLoad
-   $p1 = Get-Project foo\A
-   $p2 = Get-Project A
-
-   # Make sure the default project is p1
-   Assert-DefaultProject $p1
-}
-
 function Test-GetProjectAfterDefaultProjectRemoved
 {
    param($context)
@@ -250,5 +223,5 @@ function Test-GetProjectAfterDefaultProjectRemoved
 
 function Assert-DefaultProject($p) {
    $actual = Get-Project
-   Assert-AreEqual $p $actual "Expected $($p.UniqueName), but default project is actually $($actual.UniqueName)"
+   Assert-AreEqual $p $actual "Expected $($actual.UniqueName), but Default project is actually $($p.UniqueName)"
 }

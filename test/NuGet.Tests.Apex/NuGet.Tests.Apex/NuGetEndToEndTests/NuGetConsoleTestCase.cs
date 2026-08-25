@@ -1407,6 +1407,57 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        public void GetProjectFromPMCWithAmbiguousProjectNames_UsesStartupProjectAfterSolutionReload()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
+
+            var solutionFolder = solutionService.AddSolutionFolder("foo");
+            var nestedProjectInfo = new NewProjectInfo
+            {
+                Language = ProjectLanguage.CSharp,
+                Template = ProjectTemplate.ClassLibrary,
+                ProjectName = "A",
+                ProjectDirectory = Path.Combine(pathContext.SolutionRoot, "foo", "A"),
+                Parent = solutionFolder,
+            };
+            var nestedProject = solutionService.AddProject<ProjectTestExtension>(nestedProjectInfo);
+            _ = solutionService.AddProject(
+                ProjectLanguage.CSharp,
+                ProjectTemplate.ClassLibrary,
+                CommonUtility.DefaultTargetFramework,
+                "A");
+            solutionService.SaveAll();
+
+            var nestedProjectUniqueName = nestedProject.UniqueName;
+            var nugetConsole = GetConsole(nestedProject);
+            nugetConsole.Clear();
+            nugetConsole.Execute("(Get-Project).UniqueName");
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(nestedProjectUniqueName),
+                $"Expected '{nestedProjectUniqueName}' to be the default project. Actual output: {nugetConsole.GetText()}");
+
+            GetNuGetTestService().SetStartupProject(nestedProjectUniqueName);
+            var solutionPath = solutionService.FilePath!;
+            solutionService.Close();
+            solutionService.WaitForFullyLoadedOnOpen = true;
+            solutionService.Open(solutionPath);
+            solutionService.Verify.HasProject();
+
+            var reloadedNestedProject = solutionService.GetProjectExtension<ProjectTestExtension>(nestedProjectUniqueName);
+            nugetConsole = GetConsole(reloadedNestedProject);
+            nugetConsole.Clear();
+            nugetConsole.Execute("(Get-Project).UniqueName");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(nestedProjectUniqueName),
+                $"Expected '{nestedProjectUniqueName}' to be the default project after reopening the solution. " +
+                $"Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public void Console_WhenBackspacingSupplementaryCharacter_PreservesRemainingText()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger);

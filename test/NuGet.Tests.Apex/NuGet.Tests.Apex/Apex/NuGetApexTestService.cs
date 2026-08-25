@@ -273,5 +273,14 @@ namespace NuGet.Tests.Apex
             PathContextProvider2.TryCreateContext(projectPath, out var pathContext);
             return pathContext.UserPackageFolder;
         }
+
+        public void SetStartupProject(string projectUniqueName)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                Dte.Solution.SolutionBuild.StartupProjects = projectUniqueName;
+            });
+        }
     }
 }

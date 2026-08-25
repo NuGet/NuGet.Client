@@ -58,6 +58,7 @@ scenarios use `GetPackageTestCase.cs`; for other PMC commands use `NuGetConsoleT
 | PowerShell function | Apex equivalent |
 |---|---|
 | `New-SolutionFolder 'Name'` | `testContext.SolutionService.AddSolutionFolder("Name")` |
+| `New-ClassLibrary 'Name' 'Folder'` | `SolutionService.AddProject<ProjectTestExtension>(new NewProjectInfo { Parent = solutionFolder, ... })` |
 
 The package management style determines which assertion methods to use — packages.config projects
 use `AssertPackageInPackagesConfig`, while PackageReference projects use `AssertPackageInAssetsFile`.
@@ -339,6 +340,11 @@ Skip PS tests that:
 - **Daily vs regular Apex cadence matters** — a test in `NuGet.Tests.Apex.Daily` does NOT count as
   coverage for removing an E2E test that runs on every PR. Only regular Apex tests
   (`NuGet.Tests.Apex`) provide equivalent gating.
+- **Ambiguous startup project names require the unique name** — Apex
+  `SolutionService.SetStartupProject(ProjectTestExtension)` selects by the short project name, so
+  it cannot distinguish projects with the same name. For these scenarios, set
+  `DTE.Solution.SolutionBuild.StartupProjects` from a host-side Apex service using the project's
+  `UniqueName`.
 
 ## Learnings (continuously updated)
 
