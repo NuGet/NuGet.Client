@@ -269,13 +269,12 @@ namespace NuGet.Tests.Apex
             testContext.NuGetApexTestService.WaitForAutoRestore();
 
             // Assert
-            var warnings = VisualStudio.ObjectModel.Shell.ToolWindows.ErrorList.Warnings
-                .Select(warning => warning.Description)
-                .ToList();
-            Assert.IsTrue(
-                warnings.Contains(ExpectedWarning),
-                $"Expected the Error List to contain '{ExpectedWarning}'. Actual warnings:{Environment.NewLine}" +
-                string.Join(Environment.NewLine, warnings));
+            Omni.Common.WaitFor.IsTrue(
+                () => VisualStudio.ObjectModel.Shell.ToolWindows.ErrorList.AllItems
+                    .Any(item => item.Description == ExpectedWarning),
+                TimeSpan.FromMinutes(1),
+                TimeSpan.FromMilliseconds(500),
+                $"Expected the Error List to contain '{ExpectedWarning}'.");
 
             var assetsFilePath = CommonUtility.GetAssetsFilePath(testContext.Project.FullPath);
             AssertAssetsFileContainsWarning(assetsFilePath, NuGetLogCode.NU1604, "Visual Studio restore");

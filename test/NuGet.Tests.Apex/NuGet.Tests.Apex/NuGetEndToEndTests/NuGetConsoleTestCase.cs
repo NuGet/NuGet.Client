@@ -1134,16 +1134,26 @@ namespace NuGet.Tests.Apex
                 updatePackage);
 
             var nugetConsole = GetConsole(testContext.Project);
-            nugetConsole.InstallPackageFromPMC(packageName, installedVersion);
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+            var escapedProjectName = testContext.Project.Name.Replace("'", "''");
+            nugetConsole.Execute(
+                $"Install-Package {packageName} -ProjectName '{escapedProjectName}' " +
+                $"-Version {installedVersion} -Source '{escapedSource}'");
+            CommonUtility.AssertPackageInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                installedVersion,
+                Logger);
 
             var currentVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
             var expectedMessage =
                 $"The '{packageName} {updateVersion}' package requires NuGet client version '{minClientVersion}' or above, " +
                 $"but the current NuGet version is '{currentVersion}'. To upgrade NuGet, " +
                 "go to https://docs.nuget.org/consume/installing-nuget";
-            var escapedSource = testContext.PackageSource.Replace("'", "''");
 
-            nugetConsole.Execute($"Update-Package {packageName} -Source '{escapedSource}'");
+            nugetConsole.Execute(
+                $"Update-Package {packageName} -ProjectName '{escapedProjectName}' -Source '{escapedSource}'");
 
             Assert.IsTrue(
                 nugetConsole.IsMessageFoundInPMC(expectedMessage),
@@ -1413,24 +1423,11 @@ namespace NuGet.Tests.Apex
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
 
-            var solutionFolder = solutionService.AddSolutionFolder("foo");
-            var nestedProjectInfo = new NewProjectInfo
-            {
-                Language = ProjectLanguage.CSharp,
-                Template = ProjectTemplate.ClassLibrary,
-                ProjectName = "A",
-                ProjectDirectory = Path.Combine(pathContext.SolutionRoot, "foo", "A"),
-                Parent = solutionFolder,
-            };
-            var nestedProject = solutionService.AddProject<ProjectTestExtension>(nestedProjectInfo);
-            _ = solutionService.AddProject(
-                ProjectLanguage.CSharp,
-                ProjectTemplate.ClassLibrary,
-                CommonUtility.DefaultTargetFramework,
-                "A");
+            var nugetTestService = GetNuGetTestService();
+            var nestedProjectUniqueName = nugetTestService.CreateProjectsWithAmbiguousNames("foo", "A");
             solutionService.SaveAll();
 
-            var nestedProjectUniqueName = nestedProject.UniqueName;
+            var nestedProject = solutionService.GetProjectExtension<ProjectTestExtension>(nestedProjectUniqueName);
             var nugetConsole = GetConsole(nestedProject);
             nugetConsole.Clear();
             nugetConsole.Execute("(Get-Project).UniqueName");
@@ -1438,7 +1435,7 @@ namespace NuGet.Tests.Apex
                 nugetConsole.IsMessageFoundInPMC(nestedProjectUniqueName),
                 $"Expected '{nestedProjectUniqueName}' to be the default project. Actual output: {nugetConsole.GetText()}");
 
-            GetNuGetTestService().SetStartupProject(nestedProjectUniqueName);
+            nugetTestService.SetStartupProject(nestedProjectUniqueName);
             var solutionPath = solutionService.FilePath!;
             solutionService.Close();
             solutionService.WaitForFullyLoadedOnOpen = true;

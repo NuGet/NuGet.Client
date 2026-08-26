@@ -58,7 +58,6 @@ scenarios use `GetPackageTestCase.cs`; for other PMC commands use `NuGetConsoleT
 | PowerShell function | Apex equivalent |
 |---|---|
 | `New-SolutionFolder 'Name'` | `testContext.SolutionService.AddSolutionFolder("Name")` |
-| `New-ClassLibrary 'Name' 'Folder'` | `SolutionService.AddProject<ProjectTestExtension>(new NewProjectInfo { Parent = solutionFolder, ... })` |
 
 The package management style determines which assertion methods to use — packages.config projects
 use `AssertPackageInPackagesConfig`, while PackageReference projects use `AssertPackageInAssetsFile`.
@@ -345,6 +344,10 @@ Skip PS tests that:
   it cannot distinguish projects with the same name. For these scenarios, set
   `DTE.Solution.SolutionBuild.StartupProjects` from a host-side Apex service using the project's
   `UniqueName`.
+- **Create duplicate project names through host-side DTE APIs** — Apex
+  `SolutionService.AddProject` can fail when a project with the same short name already exists in a
+  solution folder. Use `SolutionFolder.AddFromTemplate` and `Solution2.AddFromTemplate` with
+  distinct destination directories from a host-side Apex service.
 
 ## Learnings (continuously updated)
 

@@ -6,10 +6,12 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using EnvDTE80;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
@@ -280,6 +282,32 @@ namespace NuGet.Tests.Apex
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 Dte.Solution.SolutionBuild.StartupProjects = projectUniqueName;
+            });
+        }
+
+        public string CreateProjectsWithAmbiguousNames(string solutionFolderName, string projectName)
+        {
+            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var solution = (Solution2)Dte.Solution;
+                var solutionDirectory = Path.GetDirectoryName(solution.FullName);
+                var projectTemplate = solution.GetProjectTemplate("ClassLibrary.zip", "CSharp");
+                var solutionFolderProject = solution.AddSolutionFolder(solutionFolderName);
+                var solutionFolder = (SolutionFolder)solutionFolderProject.Object;
+                var nestedProject = solutionFolder.AddFromTemplate(
+                    projectTemplate,
+                    Path.Combine(solutionDirectory, solutionFolderName, projectName),
+                    projectName);
+
+                solution.AddFromTemplate(
+                    projectTemplate,
+                    Path.Combine(solutionDirectory, projectName),
+                    projectName,
+                    Exclusive: false);
+
+                return nestedProject.UniqueName;
             });
         }
     }
