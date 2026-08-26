@@ -118,6 +118,7 @@ namespace NuGet.Tests.Apex
             VisualStudio.ObjectModel.Solution.WaitForFullyLoadedOnOpen = true;
             VisualStudio.ObjectModel.Solution.Open(solutionPath);
             VisualStudio.ObjectModel.Solution.Verify.HasProject();
+            testContext.NuGetApexTestService.WaitForAutoRestore();
 
             var userPackagesFolder = testContext.NuGetApexTestService.GetUserPackagesFolderFromProjectContext(projectPath);
 
