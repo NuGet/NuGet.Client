@@ -55,6 +55,17 @@ namespace NuGet.Commands
             var resultCollection = new X509Certificate2Collection();
             if (!string.IsNullOrEmpty(options.CertificatePath))
             {
+                if (!File.Exists(options.CertificatePath))
+                {
+                    throw new SignCommandException(
+                        LogMessage.CreateError(
+                            NuGetLogCode.NU3001,
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.SignCommandCertificateFileNotFound,
+                                options.CertificatePath)));
+                }
+
                 try
                 {
                     var cert = await LoadCertificateFromFileAsync(options);
