@@ -365,11 +365,6 @@ This section captures lessons learned from actual migration runs that don't fit 
 - **`-Source` by *name* and `-Updates` source filtering are UNIT-testable, not Apex-only.** `GetMatchingSource` resolves `-Source` against `ISourceRepositoryProvider.PackageSourceProvider.LoadPackageSources()`, and `-Updates` queries `PrimarySourceRepositories` (= just the matched `-Source` when one is given). The unit harness's `TestSourceRepositoryUtility.CreateSourceRepositoryProvider(IEnumerable<PackageSource>)` builds a real provider — pass `new PackageSource(path, "FriendlyName")` to test name resolution, and register a second empty source to verify `-Updates -Source EmptySource` returns 0. Don't reach for Apex just because a scenario mentions `-Source`.
 - **`-Source 'All'` is a host-level concept, NOT a cmdlet `-Source` value.** The aggregate "All" is handled by `PowerShellHost.SetPrivateDataOnHost` (the PMC source dropdown), which maps it to an empty active source. Passing `-Source 'All'` literally to a cmdlet hits `GetMatchingSource('All')` → null → `CheckSourceValidity` → throws "Unknown source 'All'". The old `GetPackageAcceptsAllAsSourceName` PS function had no `Test-` prefix (never ran) and relied on this non-existent behavior — do not migrate it.
 
-### 2026-08-25: Restore warning migration
-
-- To validate a warning from both Visual Studio restore and the Visual Studio installation's standalone MSBuild, read `LockFile.LogMessages` with `LockFileFormat` after each restore. Delete `project.assets.json` before invoking MSBuild through `VisualStudioMSBuildLocator` and `CommandRunner` so the second assertion cannot pass against Visual Studio's stale assets file.
-- Call `ErrorListService.ShowWarnings()` after constructing `ApexTestContext`, because context initialization clears the Error List before creating the project.
-
 ---
 
 # Migrating PowerShell E2E Tests to Unit Tests

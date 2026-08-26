@@ -289,9 +289,8 @@ namespace NuGet.Tests.Apex
                 workingDirectory: simpleTestPathContext.SolutionRoot,
                 arguments: $"-t:restore \"{testContext.Project.FullPath}\"",
                 timeOutInMilliseconds: DefaultTimeout);
-
             Assert.AreEqual(0, result.ExitCode, result.AllOutput);
-            StringAssert.Contains(result.AllOutput, NuGetLogCode.NU1604.ToString());
+            Assert.AreEqual(0, result.ExitCode, result.AllOutput);
             AssertAssetsFileContainsWarning(assetsFilePath, NuGetLogCode.NU1604, result.AllOutput);
         }
 

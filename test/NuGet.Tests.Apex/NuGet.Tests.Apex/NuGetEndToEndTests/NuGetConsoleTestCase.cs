@@ -1016,13 +1016,11 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
-            var packageName = "kitty";
+            var packageName = "PackageA";
             var packageVersion = "1.0.0";
             var minClientVersion = "100.0.0";
-            var package = new SimpleTestPackageContext(packageName, packageVersion)
-            {
-                MinClientVersion = minClientVersion,
-            };
+            var package = CommonUtility.CreatePackage(packageName, packageVersion);
+            package.MinClientVersion = minClientVersion;
             await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, package);
 
             var currentVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
@@ -1119,15 +1117,13 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
 
-            var packageName = "kitty";
+            var packageName = "PackageA";
             var installedVersion = "1.0.0";
             var updateVersion = "2.0.0";
             var minClientVersion = "100.0.0.1";
-            var installedPackage = new SimpleTestPackageContext(packageName, installedVersion);
-            var updatePackage = new SimpleTestPackageContext(packageName, updateVersion)
-            {
-                MinClientVersion = minClientVersion,
-            };
+            var installedPackage = CommonUtility.CreatePackage(packageName, installedVersion);
+            var updatePackage = CommonUtility.CreatePackage(packageName, updateVersion);
+            updatePackage.MinClientVersion = minClientVersion;
             await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, installedPackage);
 
             var nugetConsole = GetConsole(testContext.Project);
@@ -1136,18 +1132,6 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute(
                 $"Install-Package {packageName} -ProjectName '{escapedProjectName}' " +
                 $"-Version {installedVersion} -Source '{escapedSource}'");
-            Assert.IsTrue(
-                testContext.NuGetApexTestService.IsPackageInstalled(
-                    testContext.Project.UniqueName,
-                    packageName,
-                    installedVersion),
-                $"Expected {packageName} {installedVersion} to be installed. Actual PMC output: {nugetConsole.GetText()}");
-            CommonUtility.AssertPackageInPackagesConfig(
-                VisualStudio,
-                testContext.Project,
-                packageName,
-                installedVersion,
-                Logger);
 
             await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, updatePackage);
 

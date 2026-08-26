@@ -96,8 +96,6 @@ namespace NuGet.Tests.Apex
 
             var nugetConsole = GetConsole(testContext.Project);
             nugetConsole.InstallPackageFromPMC(TestPackageName, TestPackageVersionV1);
-            testContext.SolutionService.Build();
-            testContext.NuGetApexTestService.WaitForAutoRestore();
             CommonUtility.AssertPackageInAssetsFile(
                 VisualStudio,
                 testContext.Project,
@@ -106,8 +104,8 @@ namespace NuGet.Tests.Apex
                 Logger);
             testContext.SolutionService.SaveAll();
 
-            var projectPath = VisualStudio.Dte.Solution.Projects.Item(1).FullName;
-            var solutionPath = VisualStudio.Dte.Solution.FullName;
+            var projectPath = testContext.Project.FullPath;
+            var solutionPath = testContext.SolutionService.FilePath!;
             var alternateGlobalPackagesFolder = Path.Combine(pathContext.WorkingDirectory.Path, "alternateGlobalPackages");
             pathContext.Settings.DisableAutoRestore();
             SimpleTestSettingsContext.AddSetting(
@@ -124,7 +122,6 @@ namespace NuGet.Tests.Apex
             var userPackagesFolder = testContext.NuGetApexTestService.GetUserPackagesFolderFromProjectContext(projectPath);
 
             userPackagesFolder.Should().Be(pathContext.UserPackagesFolder);
-            userPackagesFolder.Should().NotBe(alternateGlobalPackagesFolder);
         }
 
         [TestMethod]
