@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 #if NETFRAMEWORK
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 using NuGet.Common;
 #endif
 
@@ -66,60 +65,16 @@ namespace NuGet.Packaging
             // The default on .NET Core 2.x has changed to 666.
             // To avoid breaking executable files in existing packages (which don't have the x-bit set)
             // we force the .NET Core 1.x default permissions.
-            if (RuntimeEnvironmentHelper.IsWindows)
+            if (RuntimeEnvironmentHelper.IsMono)
             {
-                // Windows doesn't use POSIX permission bits.
-                return File.Create;
-            }
-            else if (RuntimeEnvironmentHelper.IsMono)
-            {
-                // Mono doesn't work with the DotnetCoreCreateFile method below, so we'll chmod each file.
-                // But since the OS only applies the umask on creation, we'll need to figure out what the
-                // umask is so that we can apply the correct permissions bits to chmod.
+                // Since the OS only applies the umask on creation, figure out what the
+                // umask is so that we can apply the correct permission bits to chmod.
                 ApplyUMaskToUnixPermissions();
                 return MonoPosixCreateFile;
             }
-            else
-            {
-                return DotnetCoreCreateFile;
-            }
-        }
 
-        private static FileStream DotnetCoreCreateFile(string path)
-        {
-            // .NET APIs don't expose UNIX file permissions, so P/Invoke the POSIX create file API with our
-            // preferred permissions, and wrap the file handle/descriptor in a SafeFileHandle.
-            int fd;
-            try
-            {
-                fd = PosixCreate(path, _unixPermissions);
-            }
-            catch (Exception exception)
-            {
-                throw new Exception($"Error trying to create file {path}: {exception.Message}", exception);
-            }
-
-            if (fd == -1)
-            {
-                using (File.Create(path))
-                {
-                    // File.Create() should have thrown an exception with an appropriate error message
-                }
-                File.Delete(path);
-                throw new InvalidOperationException("libc creat failed, but File.Create did not");
-            }
-
-            var sfh = new SafeFileHandle((IntPtr)fd, ownsHandle: true);
-
-            try
-            {
-                return new FileStream(sfh, FileAccess.ReadWrite);
-            }
-            catch
-            {
-                sfh.Dispose();
-                throw;
-            }
+            // Windows doesn't use POSIX permission bits.
+            return File.Create;
         }
 
         private static FileStream MonoPosixCreateFile(string path)
@@ -193,10 +148,6 @@ namespace NuGet.Packaging
 
             _unixPermissions = _unixPermissions & ~mask;
         }
-
-
-        [DllImport("libc", EntryPoint = "creat")]
-        private static extern int PosixCreate([MarshalAs(UnmanagedType.LPStr)] string pathname, int mode);
 
         [DllImport("libc", EntryPoint = "chmod")]
         private static extern int PosixChmod([MarshalAs(UnmanagedType.LPStr)] string pathname, int mode);
