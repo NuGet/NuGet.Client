@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -103,6 +104,69 @@ namespace NuGet.Protocol.Tests
 
                 // Assert
                 Assert.False(result.IsListed);
+            }
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_ByPackageId_LiveFeedReturnsOnlyListedPackages(string useStj)
+        {
+            var source = new PackageSource("https://api.nuget.org/v3/index.json");
+            var repository = new SourceRepository(source, CreateProvidersWithEnvReader(useStj));
+            var resource = await repository.GetResourceAsync<PackageMetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected PackageMetadataResource.");
+
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var results = await resource.GetMetadataAsync(
+                    "HelixToolkit.Wpf",
+                    includePrerelease: false,
+                    includeUnlisted: false,
+                    sourceCacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                Assert.Equal(41, results.Count());
+            }
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_ByPackageId_FiltersUnlistedVersions(string useStj)
+        {
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+            responses.Add(
+                "https://api.nuget.org/v3/registration0/helixtoolkit.wpf/index.json",
+                JsonData.HelixToolkitWpfWithListedAndUnlistedVersionsRegistration);
+
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", CreateProvidersWithEnvReader(useStj), responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected PackageMetadataResource.");
+
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var allPackages = await resource.GetMetadataAsync(
+                    "HelixToolkit.Wpf",
+                    includePrerelease: true,
+                    includeUnlisted: true,
+                    sourceCacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+                var listedPackages = await resource.GetMetadataAsync(
+                    "HelixToolkit.Wpf",
+                    includePrerelease: true,
+                    includeUnlisted: false,
+                    sourceCacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                Assert.Equal(2, allPackages.Count());
+                var listedPackage = Assert.Single(listedPackages);
+                Assert.Equal(NuGetVersion.Parse("3.1.2"), listedPackage.Identity.Version);
+                Assert.DoesNotContain(listedPackages, package => package.Identity.Version == NuGetVersion.Parse("2015.1.715"));
             }
         }
 

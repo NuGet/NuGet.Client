@@ -3811,6 +3811,43 @@ namespace Test.Utility
 
         #endregion
 
+        #region HelixToolkitWpfWithListedAndUnlistedVersions
+
+        public const string HelixToolkitWpfWithListedAndUnlistedVersionsRegistration = @"{
+  ""@id"": ""https://api.nuget.org/v3/registration0/helixtoolkit.wpf/index.json"",
+  ""count"": 1,
+  ""items"": [
+    {
+      ""@id"": ""https://api.nuget.org/v3/registration0/helixtoolkit.wpf/page/3.1.2/2015.1.715.json"",
+      ""count"": 2,
+      ""lower"": ""3.1.2"",
+      ""upper"": ""2015.1.715"",
+      ""items"": [
+        {
+          ""@id"": ""https://api.nuget.org/v3/registration0/helixtoolkit.wpf/3.1.2.json"",
+          ""catalogEntry"": {
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/helixtoolkit.wpf.3.1.2.json"",
+            ""id"": ""HelixToolkit.Wpf"",
+            ""listed"": true,
+            ""version"": ""3.1.2""
+          }
+        },
+        {
+          ""@id"": ""https://api.nuget.org/v3/registration0/helixtoolkit.wpf/2015.1.715.json"",
+          ""catalogEntry"": {
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/helixtoolkit.wpf.2015.1.715.json"",
+            ""id"": ""HelixToolkit.Wpf"",
+            ""listed"": false,
+            ""version"": ""2015.1.715""
+          }
+        }
+      ]
+    }
+  ]
+}";
+
+        #endregion
+
         #region UnlistedPackageB
 
         public const string UnlistedPackageBRegistration = @"{
