@@ -39,7 +39,8 @@ namespace NuGet.SolutionRestoreManager.ErrorListFixers
 
         protected override bool TryFixCore(ITableEntryHandle entry)
         {
-            if (ResolveSupplyChainSecurityService == null)
+            if (ResolveSupplyChainSecurityService == null
+                || !SupportedCodesErrorListInspector.TryGetErrorCode(entry, out string errorCode))
             {
                 return false;
             }
@@ -51,7 +52,7 @@ namespace NuGet.SolutionRestoreManager.ErrorListFixers
                     prompt: string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.Prompt_ResolveSupplyChainSecurityNUCode,
-                        NuGetLogCode.NU1507),
+                        errorCode),
                     cancellationToken: CancellationToken.None);
             }).PostOnFailure(nameof(NuGetCPMErrorListEntryFixer), nameof(TryFixCore));
 
