@@ -1128,10 +1128,7 @@ namespace NuGet.Tests.Apex
             {
                 MinClientVersion = minClientVersion,
             };
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                testContext.PackageSource,
-                installedPackage,
-                updatePackage);
+            await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, installedPackage);
 
             var nugetConsole = GetConsole(testContext.Project);
             var escapedSource = testContext.PackageSource.Replace("'", "''");
@@ -1139,12 +1136,20 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute(
                 $"Install-Package {packageName} -ProjectName '{escapedProjectName}' " +
                 $"-Version {installedVersion} -Source '{escapedSource}'");
+            Assert.IsTrue(
+                testContext.NuGetApexTestService.IsPackageInstalled(
+                    testContext.Project.UniqueName,
+                    packageName,
+                    installedVersion),
+                $"Expected {packageName} {installedVersion} to be installed. Actual PMC output: {nugetConsole.GetText()}");
             CommonUtility.AssertPackageInPackagesConfig(
                 VisualStudio,
                 testContext.Project,
                 packageName,
                 installedVersion,
                 Logger);
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, updatePackage);
 
             var currentVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
             var expectedMessage =

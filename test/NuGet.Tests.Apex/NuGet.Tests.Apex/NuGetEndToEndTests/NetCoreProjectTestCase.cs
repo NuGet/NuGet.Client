@@ -249,6 +249,9 @@ namespace NuGet.Tests.Apex
                 directoryBuildPropsPath,
                 $"""
                 <Project>
+                  <PropertyGroup>
+                    <SdkAnalysisLevel>9.0.100</SdkAnalysisLevel>
+                  </PropertyGroup>
                   <ItemGroup>
                     <PackageReference Include="{PackageName}" />
                   </ItemGroup>
@@ -265,7 +268,9 @@ namespace NuGet.Tests.Apex
             errorListService.ShowWarnings();
 
             // Act
-            testContext.SolutionService.Build();
+            var assetsFilePath = CommonUtility.GetAssetsFilePath(testContext.Project.FullPath);
+            File.Delete(assetsFilePath);
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             testContext.NuGetApexTestService.WaitForAutoRestore();
 
             // Assert
@@ -276,7 +281,6 @@ namespace NuGet.Tests.Apex
                 TimeSpan.FromMilliseconds(500),
                 $"Expected the Error List to contain '{ExpectedWarning}'.");
 
-            var assetsFilePath = CommonUtility.GetAssetsFilePath(testContext.Project.FullPath);
             AssertAssetsFileContainsWarning(assetsFilePath, NuGetLogCode.NU1604, "Visual Studio restore");
 
             File.Delete(assetsFilePath);

@@ -296,10 +296,14 @@ namespace NuGet.Tests.Apex
                 var projectTemplate = solution.GetProjectTemplate("ClassLibrary.zip", "CSharp");
                 var solutionFolderProject = solution.AddSolutionFolder(solutionFolderName);
                 var solutionFolder = (SolutionFolder)solutionFolderProject.Object;
-                var nestedProject = solutionFolder.AddFromTemplate(
+                solutionFolder.AddFromTemplate(
                     projectTemplate,
                     Path.Combine(solutionDirectory, solutionFolderName, projectName),
                     projectName);
+                var nestedProject = solutionFolderProject.ProjectItems
+                    .Cast<ProjectItem>()
+                    .Single(item => item.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase))
+                    .SubProject;
 
                 solution.AddFromTemplate(
                     projectTemplate,
