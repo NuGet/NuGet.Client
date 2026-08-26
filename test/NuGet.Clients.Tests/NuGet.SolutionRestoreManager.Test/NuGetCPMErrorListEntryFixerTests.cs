@@ -15,21 +15,22 @@ using Xunit;
 namespace NuGet.SolutionRestoreManager.Test
 {
     [Collection(DispatcherThreadCollection.CollectionName)]
-    public class NuGetNU1507ErrorListEntryFixerTests
+    public class NuGetCPMErrorListEntryFixerTests
     {
-        public NuGetNU1507ErrorListEntryFixerTests(DispatcherThreadFixture fixture)
+        public NuGetCPMErrorListEntryFixerTests(DispatcherThreadFixture fixture)
         {
             Assumes.Present(fixture);
 
             NuGetUIThreadHelper.SetCustomJoinableTaskFactory(fixture.JoinableTaskFactory);
         }
 
-        [Fact]
-        public void CanFix_WithNU1507_ReturnsTrue()
+        [Theory]
+        [InlineData("NU1507")]
+        public void CanFix_WithSupportedNuGetCPMCode_ReturnsTrue(string code)
         {
             // Arrange
-            NuGetNU1507ErrorListEntryFixer fixer = new();
-            ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry("NU1507");
+            NuGetCPMErrorListEntryFixer fixer = new();
+            ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry(code);
 
             // Act
             bool result = fixer.CanFix(entry);
@@ -43,7 +44,7 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             // Arrange
             Mock<IResolveSupplyChainSecurityService> service = new();
-            NuGetNU1507ErrorListEntryFixer fixer = new()
+            NuGetCPMErrorListEntryFixer fixer = new()
             {
                 ResolveSupplyChainSecurityService = new Lazy<IResolveSupplyChainSecurityService>(() => service.Object),
             };
@@ -63,10 +64,10 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public void TryFix_WithNU1507AndMissingService_ReturnsFalse()
+        public void TryFix_WithMatchingEntryAndMissingService_ReturnsFalse()
         {
             // Arrange
-            NuGetNU1507ErrorListEntryFixer fixer = new();
+            NuGetCPMErrorListEntryFixer fixer = new();
             ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry("NU1507");
 
             // Act
@@ -76,24 +77,25 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.False(result);
         }
 
-        [Fact]
-        public void TryFix_WithNU1507AndAvailableService_LaunchesErrorListResolve()
+        [Theory]
+        [InlineData("NU1507")]
+        public void TryFix_WithMatchingEntryAndAvailableService_LaunchesErrorListResolve(string code)
         {
             // Arrange
             using ManualResetEventSlim serviceInvoked = new();
             Mock<IResolveSupplyChainSecurityService> service = new();
             service
                 .Setup(s => s.LaunchResolveAsync(
-                    ResolveSupplyChainSecuritySource.NU1507ErrorList,
-                    "Resolve NU1507 by reviewing my NuGet supply chain security configuration.",
-                    It.IsAny<CancellationToken>()))
+                    source: ResolveSupplyChainSecuritySource.ErrorList,
+                    prompt: $"Resolve {code} by reviewing my NuGet supply chain security configuration.",
+                    cancellationToken: It.IsAny<CancellationToken>()))
                 .Callback(() => serviceInvoked.Set())
                 .Returns(Task.CompletedTask);
-            NuGetNU1507ErrorListEntryFixer fixer = new()
+            NuGetCPMErrorListEntryFixer fixer = new()
             {
                 ResolveSupplyChainSecurityService = new Lazy<IResolveSupplyChainSecurityService>(() => service.Object),
             };
-            ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry("NU1507");
+            ITableEntryHandle entry = ErrorListEntryTestUtility.CreateEntry(code);
 
             // Act
             bool result = fixer.TryFix(entry);
@@ -103,9 +105,9 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(serviceInvoked.Wait(TimeSpan.FromSeconds(5)));
             service.Verify(
                 s => s.LaunchResolveAsync(
-                    ResolveSupplyChainSecuritySource.NU1507ErrorList,
-                    "Resolve NU1507 by reviewing my NuGet supply chain security configuration.",
-                    It.IsAny<CancellationToken>()),
+                    source: ResolveSupplyChainSecuritySource.ErrorList,
+                    prompt: $"Resolve {code} by reviewing my NuGet supply chain security configuration.",
+                    cancellationToken: It.IsAny<CancellationToken>()),
                 Times.Once());
         }
     }

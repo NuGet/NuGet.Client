@@ -139,15 +139,15 @@ Když nechcete, aby aplikace NuGet obnovovala balíčky během vytváření sest
         <target state="translated">Řešení není uložené. Než začnete spravovat balíčky NuGet, řešení uložte.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Title_AskCopilotForFix">
+        <source>Ask Copilot for a fix</source>
+        <target state="new">Ask Copilot for a fix</target>
+        <note>Do not translate Copilot</note>
+      </trans-unit>
       <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">Požádejte Copilota o opravu ohrožení zabezpečení balíčku NuGet.</target>
         <note>Do not translate Copilot or NuGet</note>
-      </trans-unit>
-      <trans-unit id="Title_ResolveNU1507WithCopilot">
-        <source>Ask Copilot to resolve NU1507</source>
-        <target state="new">Ask Copilot to resolve NU1507</target>
-        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>

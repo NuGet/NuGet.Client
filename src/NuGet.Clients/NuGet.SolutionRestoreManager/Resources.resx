@@ -205,9 +205,9 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
     <value>Ask Copilot to fix NuGet package vulnerabilities</value>
     <comment>Do not translate Copilot or NuGet</comment>
   </data>
-  <data name="Title_ResolveNU1507WithCopilot" xml:space="preserve">
-    <value>Ask Copilot to resolve NU1507</value>
-    <comment>Do not translate Copilot or NU1507</comment>
+  <data name="Title_AskCopilotForFix" xml:space="preserve">
+    <value>Ask Copilot for a fix</value>
+    <comment>Do not translate Copilot</comment>
   </data>
   <data name="Prompt_ResolveSupplyChainSecurityNUCode" xml:space="preserve">
     <value>Resolve {0} by reviewing my NuGet supply chain security configuration.</value>

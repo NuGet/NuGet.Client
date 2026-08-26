@@ -139,15 +139,15 @@ Para impedir que o NuGet restaure pacotes durante o build, abra a caixa de diál
         <target state="translated">A solução não está salva. Salve sua solução antes de gerenciar os pacotes NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Title_AskCopilotForFix">
+        <source>Ask Copilot for a fix</source>
+        <target state="new">Ask Copilot for a fix</target>
+        <note>Do not translate Copilot</note>
+      </trans-unit>
       <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">Peça ao Copilot para corrigir vulnerabilidades do pacote NuGet</target>
         <note>Do not translate Copilot or NuGet</note>
-      </trans-unit>
-      <trans-unit id="Title_ResolveNU1507WithCopilot">
-        <source>Ask Copilot to resolve NU1507</source>
-        <target state="new">Ask Copilot to resolve NU1507</target>
-        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>

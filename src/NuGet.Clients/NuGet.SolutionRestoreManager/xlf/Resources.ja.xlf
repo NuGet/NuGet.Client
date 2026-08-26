@@ -139,15 +139,15 @@ NuGet がビルド中にパッケージを復元しないようにするには�
         <target state="translated">ソリューションが保存されていません。NuGet パッケージを管理する前に、ソリューションを保存してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Title_AskCopilotForFix">
+        <source>Ask Copilot for a fix</source>
+        <target state="new">Ask Copilot for a fix</target>
+        <note>Do not translate Copilot</note>
+      </trans-unit>
       <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">NuGet パッケージの脆弱性を修正するよう Copilot に依頼する</target>
         <note>Do not translate Copilot or NuGet</note>
-      </trans-unit>
-      <trans-unit id="Title_ResolveNU1507WithCopilot">
-        <source>Ask Copilot to resolve NU1507</source>
-        <target state="new">Ask Copilot to resolve NU1507</target>
-        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>

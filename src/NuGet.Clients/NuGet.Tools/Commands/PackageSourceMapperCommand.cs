@@ -59,9 +59,9 @@ namespace NuGet.Tools.Commands
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                 _resolveSupplyChainSecurityService.Value.LaunchResolveAsync(
-                    ResolveSupplyChainSecuritySource.PackageSourceMappingOptions,
-                    NuGetVSExtension.Resources.Prompt_ReviewPackageSourceMapping,
-                    CancellationToken.None))
+                    source: ResolveSupplyChainSecuritySource.PackageSourceMappingOptions,
+                    prompt: Resources.Prompt_ReviewPackageSourceMapping,
+                    cancellationToken: CancellationToken.None))
                 .PostOnFailure(nameof(NuGetPackage), nameof(ExecutePackageSourceMapperCommand));
         }
     }

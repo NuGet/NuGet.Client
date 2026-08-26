@@ -20,10 +20,10 @@ namespace NuGet.SolutionRestoreManager.ErrorListFixers
     [Export(typeof(IErrorListEntryFixer))]
 #pragma warning restore CS0618
     [DataSource(StandardTableDataSources.ErrorTableDataSource)]
-    [Name(NuGetErrorListFixerConstants.NU1507FixerName)]
+    [Name(NuGetErrorListFixerConstants.CPMFixerName)]
     [Order(Before = NuGetErrorListFixerConstants.CopilotFixerName)]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    internal sealed class NuGetNU1507ErrorListEntryFixer : NuGetErrorListEntryFixerBase
+    internal sealed class NuGetCPMErrorListEntryFixer : NuGetErrorListEntryFixerBase
     {
         private static readonly HashSet<string> SupportedCodes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -33,7 +33,7 @@ namespace NuGet.SolutionRestoreManager.ErrorListFixers
         [Import(typeof(IResolveSupplyChainSecurityService), AllowDefault = true)]
         public Lazy<IResolveSupplyChainSecurityService>? ResolveSupplyChainSecurityService { get; set; }
 
-        public override string Tooltip => Resources.Title_ResolveNU1507WithCopilot;
+        public override string Tooltip => Resources.Title_AskCopilotForFix;
 
         protected override IErrorListEntryInspector EntryInspector { get; } = new SupportedCodesErrorListInspector(SupportedCodes);
 
@@ -47,13 +47,13 @@ namespace NuGet.SolutionRestoreManager.ErrorListFixers
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ResolveSupplyChainSecurityService.Value.LaunchResolveAsync(
-                    ResolveSupplyChainSecuritySource.NU1507ErrorList,
-                    string.Format(
+                    source: ResolveSupplyChainSecuritySource.ErrorList,
+                    prompt: string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.Prompt_ResolveSupplyChainSecurityNUCode,
                         NuGetLogCode.NU1507),
-                    CancellationToken.None);
-            }).PostOnFailure(nameof(NuGetNU1507ErrorListEntryFixer), nameof(TryFixCore));
+                    cancellationToken: CancellationToken.None);
+            }).PostOnFailure(nameof(NuGetCPMErrorListEntryFixer), nameof(TryFixCore));
 
             return true;
         }

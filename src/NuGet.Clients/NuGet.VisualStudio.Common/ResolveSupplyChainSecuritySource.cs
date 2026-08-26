@@ -17,10 +17,10 @@ namespace NuGet.VisualStudio
             NavigationOrigin.Options_PackageSourceMapping_Review,
             CopilotClientIdPrefix + "PackageSourceMapper");
 
-        /// <summary>The NU1507 action in the Visual Studio Error List.</summary>
-        public static readonly ResolveSupplyChainSecuritySource NU1507ErrorList = new(
+        /// <summary>The Error List.</summary>
+        public static readonly ResolveSupplyChainSecuritySource ErrorList = new(
             NavigationOrigin.ErrorList_ResolveSupplyChainSecurity,
-            CopilotClientIdPrefix + "ErrorList.NU1507");
+            CopilotClientIdPrefix + "ErrorList");
 
         private ResolveSupplyChainSecuritySource(NavigationOrigin navigationOrigin, string copilotClientId)
         {

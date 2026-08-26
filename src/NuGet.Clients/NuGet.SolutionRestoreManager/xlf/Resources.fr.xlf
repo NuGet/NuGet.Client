@@ -139,15 +139,15 @@ Pour empêcher NuGet de restaurer les packages lors de la génération, ouvrez l
         <target state="translated">La solution n’est pas enregistrée. Enregistrez votre solution avant de gérer des packages NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Title_AskCopilotForFix">
+        <source>Ask Copilot for a fix</source>
+        <target state="new">Ask Copilot for a fix</target>
+        <note>Do not translate Copilot</note>
+      </trans-unit>
       <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
         <source>Ask Copilot to fix NuGet package vulnerabilities</source>
         <target state="translated">Demander à Copilot de corriger les vulnérabilités du package NuGet</target>
         <note>Do not translate Copilot or NuGet</note>
-      </trans-unit>
-      <trans-unit id="Title_ResolveNU1507WithCopilot">
-        <source>Ask Copilot to resolve NU1507</source>
-        <target state="new">Ask Copilot to resolve NU1507</target>
-        <note>Do not translate Copilot or NU1507</note>
       </trans-unit>
     </body>
   </file>

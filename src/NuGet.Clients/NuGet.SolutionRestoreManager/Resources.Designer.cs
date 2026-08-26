@@ -298,20 +298,20 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ask Copilot for a fix.
+        /// </summary>
+        internal static string Title_AskCopilotForFix {
+            get {
+                return ResourceManager.GetString("Title_AskCopilotForFix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ask Copilot to fix NuGet package vulnerabilities.
         /// </summary>
         internal static string Title_FixVulnerabilitiesWithCopilot {
             get {
                 return ResourceManager.GetString("Title_FixVulnerabilitiesWithCopilot", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Ask Copilot to resolve NU1507.
-        /// </summary>
-        internal static string Title_ResolveNU1507WithCopilot {
-            get {
-                return ResourceManager.GetString("Title_ResolveNU1507WithCopilot", resourceCulture);
             }
         }
     }
