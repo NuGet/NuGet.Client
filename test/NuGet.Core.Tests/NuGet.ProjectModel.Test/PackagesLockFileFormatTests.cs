@@ -8,6 +8,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Shared;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
@@ -358,8 +359,10 @@ namespace NuGet.ProjectModel.Test
             Assert.NotEmpty(target.Dependencies[1].ContentHash);
         }
 
-        [Fact]
-        public void PackagesLockFileFormat_Write()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void PackagesLockFileFormat_Write(bool useSystemTextJson)
         {
             var nuGetLockFileContent = @"{
                 ""version"": 1,
@@ -386,14 +389,16 @@ namespace NuGet.ProjectModel.Test
             PackagesLockFile lockFile = PackagesLockFileFormat.Parse(nuGetLockFileContent, "In Memory");
             string expected = JObject.Parse(nuGetLockFileContent).ToString();
 
-            string output = PackagesLockFileFormat.Render(lockFile);
+            string output = Render(lockFile, useSystemTextJson);
 
             // Assert
             Assert.Equal(expected, output);
         }
 
-        [Fact]
-        public void PackagesLockFileFormat_WriteVersion2_PreservesNewtonsoftOutput()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void PackagesLockFileFormat_WriteVersion2_PreservesNewtonsoftOutput(bool useSystemTextJson)
         {
             const string lockFileContent = """
                 {
@@ -415,7 +420,7 @@ namespace NuGet.ProjectModel.Test
             PackagesLockFile lockFile = PackagesLockFileFormat.Parse(lockFileContent, "In Memory");
             string expected = JObject.Parse(lockFileContent).ToString();
 
-            string output = PackagesLockFileFormat.Render(lockFile);
+            string output = Render(lockFile, useSystemTextJson);
 
             Assert.Equal(expected, output);
         }
@@ -560,8 +565,10 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(target2Json["dependencies"]);
         }
 
-        [Fact]
-        public void PackagesLockFileFormat_RoundTripVersion3WithAliases()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void PackagesLockFileFormat_RoundTripVersion3WithAliases(bool useSystemTextJson)
         {
             var originalContent = @"{
                 ""version"": 3,
@@ -590,7 +597,7 @@ namespace NuGet.ProjectModel.Test
             PackagesLockFile lockFile = PackagesLockFileFormat.Parse(originalContent, "In Memory");
             string expected = JObject.Parse(originalContent).ToString();
 
-            string output = PackagesLockFileFormat.Render(lockFile);
+            string output = Render(lockFile, useSystemTextJson);
 
             Assert.Equal(expected, output);
         }
@@ -652,6 +659,21 @@ namespace NuGet.ProjectModel.Test
 
             using var reader = new StringReader(content);
             return PackagesLockFileFormat.ReadLockFile(reader, environmentVariableReader);
+        }
+
+        private static string Render(PackagesLockFile lockFile, bool useSystemTextJson)
+        {
+            IEnvironmentVariableReader environmentVariableReader = useSystemTextJson
+                ? new TestEnvironmentVariableReader(
+                    new Dictionary<string, string>
+                    {
+                        [NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar] = "true"
+                    })
+                : TestEnvironmentVariableReader.EmptyInstance;
+
+            using var writer = new StringWriter();
+            PackagesLockFileFormat.Write(writer, lockFile, environmentVariableReader);
+            return writer.ToString();
         }
     }
 }

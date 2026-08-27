@@ -11,12 +11,14 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
 using NuGet.Versioning;
+using JsonException = System.Text.Json.JsonException;
 
 namespace NuGet.ProjectModel
 {
@@ -345,6 +347,27 @@ namespace NuGet.ProjectModel
 
         public static void Write(TextWriter textWriter, PackagesLockFile lockFile)
         {
+            Write(textWriter, lockFile, environmentVariableReader: null);
+        }
+
+        internal static void Write(
+            TextWriter textWriter,
+            PackagesLockFile lockFile,
+            IEnvironmentVariableReader environmentVariableReader)
+        {
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            {
+                WriteWithSystemTextJson(textWriter, lockFile);
+            }
+            else
+            {
+                WriteWithNewtonsoftJson(textWriter, lockFile);
+            }
+        }
+
+        private static void WriteWithSystemTextJson(TextWriter textWriter, PackagesLockFile lockFile)
+        {
             using (var stream = new MemoryStream())
             {
                 using (var jsonWriter = new Utf8JsonWriter(stream, WriterOptions))
@@ -359,6 +382,19 @@ namespace NuGet.ProjectModel
                 }
 
                 textWriter.Write(json);
+            }
+        }
+
+        private static void WriteWithNewtonsoftJson(TextWriter textWriter, PackagesLockFile lockFile)
+        {
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            {
+                jsonWriter.Formatting = Formatting.Indented;
+
+                JObject json = WriteLockFileWithNewtonsoftJson(lockFile);
+#pragma warning disable IL2026, IL3050 // WriteTo without converters is safe. See https://github.com/JamesNK/Newtonsoft.Json/blob/13.0.4/Src/Newtonsoft.Json/Linq/JToken.cs
+                json.WriteTo(jsonWriter, Array.Empty<Newtonsoft.Json.JsonConverter>());
+#pragma warning restore IL2026, IL3050
             }
         }
 
@@ -383,6 +419,30 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteEndObject();
+        }
+
+        private static JObject WriteLockFileWithNewtonsoftJson(PackagesLockFile lockFile)
+        {
+            var json = new JObject
+            {
+                [VersionProperty] = new JValue(lockFile.Version)
+            };
+
+            if (lockFile.Version >= AliasedVersion)
+            {
+                // V3 format: write targets at root level with framework and dependencies inside
+                foreach (PackagesLockFileTarget target in lockFile.Targets)
+                {
+                    json.Add(WriteTargetV3WithNewtonsoftJson(target));
+                }
+            }
+            else
+            {
+                // V1 and V2 format: write targets under dependencies property
+                json[DependenciesProperty] = JsonUtility.WriteObject(lockFile.Targets, WriteTargetWithNewtonsoftJson);
+            }
+
+            return json;
         }
 
         private static PackagesLockFileTarget ReadDependencyV2(string property, JToken json)
@@ -646,6 +706,61 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteEndObject();
+        }
+
+        private static JProperty WriteTargetV3WithNewtonsoftJson(PackagesLockFileTarget target)
+        {
+            var json = new JObject
+            {
+                [FrameworkProperty] = target.TargetFramework.ToString(),
+                [DependenciesProperty] = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependencyWithNewtonsoftJson)
+            };
+
+            return new JProperty(target.Name, json);
+        }
+
+        private static JProperty WriteTargetWithNewtonsoftJson(PackagesLockFileTarget target)
+        {
+            JObject json = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependencyWithNewtonsoftJson);
+            return new JProperty(target.Name, json);
+        }
+
+        private static JProperty WriteTargetDependencyWithNewtonsoftJson(LockFileDependency dependency)
+        {
+            var json = new JObject
+            {
+                [TypeProperty] = dependency.Type.ToString()
+            };
+
+            if (dependency.RequestedVersion != null)
+            {
+                json[RequestedProperty] = dependency.RequestedVersion.ToNormalizedString();
+            }
+
+            if (dependency.ResolvedVersion != null)
+            {
+                json[ResolvedProperty] = dependency.ResolvedVersion.ToNormalizedString();
+            }
+
+            if (dependency.ContentHash != null)
+            {
+                json[ContentHashProperty] = dependency.ContentHash;
+            }
+
+            if (dependency.Dependencies?.Count > 0)
+            {
+                IOrderedEnumerable<PackageDependency> orderedDependencies = dependency.Dependencies.OrderBy(
+                    dependency => dependency.Id,
+                    StringComparer.Ordinal);
+
+                json[DependenciesProperty] = JsonUtility.WriteObject(
+                    orderedDependencies,
+                    dependency.Type == PackageDependencyType.Project
+                        ? JsonUtility.WritePackageDependency
+                        : JsonUtility.WritePackageDependencyWithLegacyString);
+            }
+
+            return new JProperty(dependency.Id, json);
         }
 
     }

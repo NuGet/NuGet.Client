@@ -25,12 +25,15 @@ namespace NuGet.Shared
             _isSystemTextJsonDeserializationEnabledByEnvironment =
                 new Lazy<bool>(() => IsSystemTextJsonDeserializationEnabledByEnvironment(EnvironmentVariableWrapper.Instance));
 
-        /// <summary>Feature switch for System.Text.Json deserialization. Defaults to <see langword="false"/> (Newtonsoft is the default).</summary>
+        /// <summary>
+        /// Selects System.Text.Json deserialization and <c>packages.lock.json</c> serialization.
+        /// Defaults to <see langword="false"/> (Newtonsoft.Json is the default).
+        /// </summary>
         [FeatureSwitchDefinition(UseSystemTextJsonDeserializationSwitchName)]
         internal static bool UseSystemTextJsonDeserializationFeatureSwitch { get; } =
             AppContext.TryGetSwitch(UseSystemTextJsonDeserializationSwitchName, out bool value) && value;
 
-        /// <summary>Returns <see langword="true"/> when env var <c>NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION</c> is <c>true</c>.</summary>
+        /// <summary>Returns <see langword="true"/> when the environment variable enables System.Text.Json.</summary>
         /// <param name="env">
         /// Pass <see langword="null"/> (or omit) in production code to use the cached <see cref="Lazy{T}"/> value,
         /// avoiding repeated allocations on .NET Framework. Pass an explicit <see cref="IEnvironmentVariableReader"/>
