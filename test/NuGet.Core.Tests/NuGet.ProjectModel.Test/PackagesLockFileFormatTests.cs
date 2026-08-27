@@ -383,13 +383,41 @@ namespace NuGet.ProjectModel.Test
                 }
             }";
 
-            var lockFile = PackagesLockFileFormat.Parse(nuGetLockFileContent, "In Memory");
+            PackagesLockFile lockFile = PackagesLockFileFormat.Parse(nuGetLockFileContent, "In Memory");
+            string expected = JObject.Parse(nuGetLockFileContent).ToString();
 
-            var output = JObject.Parse(PackagesLockFileFormat.Render(lockFile));
-            var expected = JObject.Parse(nuGetLockFileContent);
+            string output = PackagesLockFileFormat.Render(lockFile);
 
             // Assert
-            Assert.Equal(expected.ToString(), output.ToString());
+            Assert.Equal(expected, output);
+        }
+
+        [Fact]
+        public void PackagesLockFileFormat_WriteVersion2_PreservesNewtonsoftOutput()
+        {
+            const string lockFileContent = """
+                {
+                  "version": 2,
+                  "dependencies": {
+                    "net8.0": {
+                      "ProjectA": {
+                        "type": "Project",
+                        "resolved": "1.0.0",
+                        "contentHash": "caf\u00e9<&",
+                        "dependencies": {
+                          "PackageB": "[1.0.0, 2.0.0)"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
+            PackagesLockFile lockFile = PackagesLockFileFormat.Parse(lockFileContent, "In Memory");
+            string expected = JObject.Parse(lockFileContent).ToString();
+
+            string output = PackagesLockFileFormat.Render(lockFile);
+
+            Assert.Equal(expected, output);
         }
 
         [Fact]
@@ -559,9 +587,10 @@ namespace NuGet.ProjectModel.Test
                 }
             }";
 
-            var lockFile = PackagesLockFileFormat.Parse(originalContent, "In Memory");
-            var output = JObject.Parse(PackagesLockFileFormat.Render(lockFile)).ToString();
-            var expected = JObject.Parse(originalContent).ToString();
+            PackagesLockFile lockFile = PackagesLockFileFormat.Parse(originalContent, "In Memory");
+            string expected = JObject.Parse(originalContent).ToString();
+
+            string output = PackagesLockFileFormat.Render(lockFile);
 
             Assert.Equal(expected, output);
         }

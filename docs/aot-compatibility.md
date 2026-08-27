@@ -7,6 +7,7 @@ NuGet is migrating its JSON readers to System.Text.Json.
 During this migration, the Newtonsoft.Json and System.Text.Json readers coexist behind a feature switch.
 The switch selects available System.Text.Json readers in NuGet.Protocol, NuGet.Packaging, NuGet.ProjectModel, and the NuGet SDK resolver.
 Readers without a System.Text.Json implementation continue to use Newtonsoft.Json.
+The `packages.lock.json` writer uses System.Text.Json without a feature switch.
 
 ## Using NuGet in a Native AOT Application
 

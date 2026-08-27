@@ -8,15 +8,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
 using NuGet.Versioning;
-using JsonException = System.Text.Json.JsonException;
 
 namespace NuGet.ProjectModel
 {
@@ -41,6 +41,11 @@ namespace NuGet.ProjectModel
         {
             AllowTrailingCommas = true,
             CommentHandling = JsonCommentHandling.Skip
+        };
+        private static readonly JsonWriterOptions WriterOptions = new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Indented = true
         };
 
         public static PackagesLockFile Parse(string lockFileContent, string path)
@@ -340,40 +345,44 @@ namespace NuGet.ProjectModel
 
         public static void Write(TextWriter textWriter, PackagesLockFile lockFile)
         {
-            using (var jsonWriter = new JsonTextWriter(textWriter))
+            using (var stream = new MemoryStream())
             {
-                jsonWriter.Formatting = Formatting.Indented;
+                using (var jsonWriter = new Utf8JsonWriter(stream, WriterOptions))
+                {
+                    WriteLockFile(jsonWriter, lockFile);
+                }
 
-                var json = WriteLockFile(lockFile);
-#pragma warning disable IL2026, IL3050 // WriteTo without converters is safe. See https://github.com/JamesNK/Newtonsoft.Json/blob/13.0.4/Src/Newtonsoft.Json/Linq/JToken.cs
-                json.WriteTo(jsonWriter, Array.Empty<JsonConverter>());
-#pragma warning restore IL2026, IL3050
+                string json = Encoding.UTF8.GetString(stream.ToArray()).Replace("\r\n", "\n");
+                if (textWriter.NewLine != "\n")
+                {
+                    json = json.Replace("\n", textWriter.NewLine);
+                }
+
+                textWriter.Write(json);
             }
         }
 
-        private static JObject WriteLockFile(PackagesLockFile lockFile)
+        private static void WriteLockFile(Utf8JsonWriter writer, PackagesLockFile lockFile)
         {
-            var json = new JObject
-            {
-                [VersionProperty] = new JValue(lockFile.Version)
-            };
+            writer.WriteStartObject();
+            writer.WriteNumber(VersionProperty, lockFile.Version);
 
             if (lockFile.Version >= AliasedVersion)
             {
                 // V3 format: write targets at root level with framework and dependencies inside
-                foreach (var target in lockFile.Targets)
+                foreach (PackagesLockFileTarget target in lockFile.Targets)
                 {
-                    var targetProperty = WriteTargetV3(target);
-                    json.Add(targetProperty);
+                    WriteTargetV3(writer, target);
                 }
             }
             else
             {
                 // V1 and V2 format: write targets under dependencies property
-                json[DependenciesProperty] = JsonUtility.WriteObject(lockFile.Targets, WriteTarget);
+                writer.WritePropertyName(DependenciesProperty);
+                WriteObject(writer, lockFile.Targets, WriteTarget);
             }
 
-            return json;
+            writer.WriteEndObject();
         }
 
         private static PackagesLockFileTarget ReadDependencyV2(string property, JToken json)
@@ -555,60 +564,88 @@ namespace NuGet.ProjectModel
                 versionRange == null ? null : VersionRange.Parse(versionRange));
         }
 
-        private static JProperty WriteTargetV3(PackagesLockFileTarget target)
+        private static void WriteTargetV3(Utf8JsonWriter writer, PackagesLockFileTarget target)
         {
-            var key = target.Name;
-
-            var json = new JObject
-            {
-                [FrameworkProperty] = target.TargetFramework.ToString(),
-                [DependenciesProperty] = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependency)
-            };
-
-            return new JProperty(key, json);
+            writer.WritePropertyName(target.Name);
+            writer.WriteStartObject();
+            writer.WriteString(FrameworkProperty, target.TargetFramework.ToString());
+            writer.WritePropertyName(DependenciesProperty);
+            WriteObject(writer, target.Dependencies, WriteTargetDependency);
+            writer.WriteEndObject();
         }
 
-        private static JProperty WriteTarget(PackagesLockFileTarget target)
+        private static void WriteTarget(Utf8JsonWriter writer, PackagesLockFileTarget target)
         {
-            var json = JsonUtility.WriteObject(target.Dependencies, WriteTargetDependency);
-
-            var key = target.Name;
-
-            return new JProperty(key, json);
+            writer.WritePropertyName(target.Name);
+            WriteObject(writer, target.Dependencies, WriteTargetDependency);
         }
 
-
-        private static JProperty WriteTargetDependency(LockFileDependency dependency)
+        private static void WriteTargetDependency(Utf8JsonWriter writer, LockFileDependency dependency)
         {
-            var json = new JObject
-            {
-                [TypeProperty] = dependency.Type.ToString()
-            };
+            writer.WritePropertyName(dependency.Id);
+            writer.WriteStartObject();
+            writer.WriteString(TypeProperty, dependency.Type.ToString());
 
             if (dependency.RequestedVersion != null)
             {
-                json[RequestedProperty] = dependency.RequestedVersion.ToNormalizedString();
+                writer.WriteString(RequestedProperty, dependency.RequestedVersion.ToNormalizedString());
             }
 
             if (dependency.ResolvedVersion != null)
             {
-                json[ResolvedProperty] = dependency.ResolvedVersion.ToNormalizedString();
+                writer.WriteString(ResolvedProperty, dependency.ResolvedVersion.ToNormalizedString());
             }
 
             if (dependency.ContentHash != null)
             {
-                json[ContentHashProperty] = dependency.ContentHash;
+                writer.WriteString(ContentHashProperty, dependency.ContentHash);
             }
 
             if (dependency.Dependencies?.Count > 0)
             {
-                var ordered = dependency.Dependencies.OrderBy(dep => dep.Id, StringComparer.Ordinal);
+                IEnumerable<PackageDependency> orderedDependencies = dependency.Dependencies.OrderBy(
+                    dependency => dependency.Id,
+                    StringComparer.Ordinal);
 
-                json[DependenciesProperty] = JsonUtility.WriteObject(ordered, dependency.Type == PackageDependencyType.Project ?
-                    JsonUtility.WritePackageDependency : JsonUtility.WritePackageDependencyWithLegacyString);
+                writer.WritePropertyName(DependenciesProperty);
+                writer.WriteStartObject();
+
+                foreach (PackageDependency packageDependency in orderedDependencies)
+                {
+                    writer.WritePropertyName(packageDependency.Id);
+                    string versionRange = dependency.Type == PackageDependencyType.Project
+                        ? packageDependency.VersionRange?.ToString()
+                        : packageDependency.VersionRange?.ToNonSnapshotRange().ToLegacyShortString();
+
+                    if (versionRange == null)
+                    {
+                        writer.WriteNullValue();
+                    }
+                    else
+                    {
+                        writer.WriteStringValue(versionRange);
+                    }
+                }
+
+                writer.WriteEndObject();
             }
 
-            return new JProperty(dependency.Id, json);
+            writer.WriteEndObject();
+        }
+
+        private static void WriteObject<T>(
+            Utf8JsonWriter writer,
+            IEnumerable<T> items,
+            Action<Utf8JsonWriter, T> writeItem)
+        {
+            writer.WriteStartObject();
+
+            foreach (T item in items)
+            {
+                writeItem(writer, item);
+            }
+
+            writer.WriteEndObject();
         }
 
     }
