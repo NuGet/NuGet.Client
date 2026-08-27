@@ -23,6 +23,9 @@ namespace NuGet.CommandLine.Xplat.Tests
 {
     public class ListPackageCommandRunnerTests
     {
+        private static readonly PackageSourceMapping NoPackageSourceMapping =
+            new(new Dictionary<string, IReadOnlyList<string>>());
+
         public class TopLevelPackagesFilterForOutdated
         {
             [Fact]
@@ -153,7 +156,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false,
                     auditSources: null,
                     logger: new Mock<ILogger>().Object,
-                    cancellationToken: CancellationToken.None);
+                    cancellationToken: CancellationToken.None,
+                    packageSourceMapping: NoPackageSourceMapping);
 
                 // Act
                 var isFilteredSetNonEmpty = ListPackageCommandRunner.FilterPackages(allPackages, listPackageArgs);
@@ -201,7 +205,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                     includeTransitive: true, prerelease: false, highestPatch: true, highestMinor: true,
                     auditSources: null,
                     logger: new Mock<ILogger>().Object,
-                    cancellationToken: CancellationToken.None);
+                    cancellationToken: CancellationToken.None,
+                    packageSourceMapping: NoPackageSourceMapping);
 
                 // Act
                 var emptyPackageSearchMetadata = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count);
@@ -279,7 +284,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                     reportType: ReportType.Deprecated,
                     renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object,
-                    cancellationToken: CancellationToken.None);
+                    cancellationToken: CancellationToken.None,
+                    packageSourceMapping: NoPackageSourceMapping);
 
                 // Act
                 var isFilteredSetNonEmpty = ListPackageCommandRunner.FilterPackages(allPackages, listPackageArgs);
@@ -358,7 +364,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                     reportType: ReportType.Vulnerable,
                     renderer: new ListPackageConsoleRenderer(consoleOut, consoleError),
                     includeTransitive: true, prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object,
-                    cancellationToken: CancellationToken.None);
+                    cancellationToken: CancellationToken.None,
+                    packageSourceMapping: NoPackageSourceMapping);
 
                 // Act
                 var isFilteredSetNonEmpty = ListPackageCommandRunner.FilterPackages(allPackages, listPackageArgs);
@@ -400,7 +407,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 highestMinor: false,
                 auditSources: null,
                 logger: new Mock<ILogger>().Object,
-                cancellationToken: CancellationToken.None);
+                cancellationToken: CancellationToken.None,
+                packageSourceMapping: NoPackageSourceMapping);
 
             var listPackageRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, virtualProjectBuilder: null));
 
@@ -411,6 +419,72 @@ namespace NuGet.CommandLine.Xplat.Tests
             });
 
             Assert.Null(exception);
+        }
+
+        [Fact]
+        public void GetPackageIds_UnionsTopLevelAndTransitivePackageIdsIgnoringCase()
+        {
+            List<FrameworkPackages> frameworks =
+            [
+                new("net8.0", "net8.0", [new("PackageA")], [new("PackageB")]),
+                new("net472", "net472", [new("packagea")], []),
+            ];
+
+            List<string> result = ListPackageCommandRunner.GetPackageIds(frameworks, includeTransitive: true);
+
+            IEnumerable<string> actual = result.OrderBy(id => id, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(new[] { "PackageA", "PackageB" }, actual);
+        }
+
+        [Fact]
+        public void SponsorshipOrder_FollowsConfiguredSourceOrder()
+        {
+            List<PackageSource> packageSources = [new("https://first"), new("https://second")];
+            var sponsorships = packageSources.AsEnumerable().Reverse()
+                .Select(source => new PackageSponsorship(source.Source, []));
+            var renderer = new ListPackageConsoleRenderer();
+            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs("", packageSources, renderer);
+
+            List<PackageSponsorship> result = ListPackageCommandRunner.OrderSponsorshipsByConfiguredSource(sponsorships, args);
+
+            IEnumerable<string> expected = packageSources.Select(source => source.Source);
+            IEnumerable<string> actual = result.Select(sponsorship => sponsorship.Source);
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("", "mapped,unmapped")]
+        [InlineData("Newtonsoft.Json", "mapped")]
+        [InlineData("Some.Other.Package", "")]
+        public void FilterSourcesByPackageSourceMapping_ReturnsOnlyMappedConfiguredSources(
+            string mappedPattern,
+            string expectedSourceNames)
+        {
+            var packageSources = new List<PackageSource>
+            {
+                new PackageSource("https://mapped.test/v3/index.json", name: "mapped"),
+                new PackageSource("https://unmapped.test/v3/index.json", name: "unmapped"),
+            };
+            PackageSourceMapping sourceMapping = NoPackageSourceMapping;
+            if (mappedPattern.Length != 0)
+            {
+                var patterns = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["mapped"] = new[] { mappedPattern },
+                    ["unmapped"] = new[] { "Some.Other.Package" },
+                };
+                sourceMapping = new PackageSourceMapping(patterns);
+            }
+
+            var renderer = new ListPackageConsoleRenderer();
+            ListPackageArgs listPackageArgs = ListPackageTestHelper.CreateSponsorArgs(
+                "", packageSources, renderer, packageSourceMapping: sourceMapping);
+            List<PackageSource> result = ListPackageCommandRunner.FilterSourcesByPackageSourceMapping(
+                "Newtonsoft.Json", listPackageArgs);
+
+            IEnumerable<string> values = result.Select(source => source.Name);
+            string actual = string.Join(",", values);
+            Assert.Equal(expectedSourceNames, actual);
         }
     }
 }

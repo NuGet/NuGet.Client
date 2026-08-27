@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Protocol;
@@ -76,16 +77,28 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             frameworkPackages = frameworkPackages.OrderBy(p => p.Name);
 
-            var packages = frameworkPackages.Select(p => new ListReportPackage(
-                packageId: p.Name,
-                requestedVersion: printingTransitive ? string.Empty : p.OriginalRequestedVersion,
-                autoReference: printingTransitive ? false : p.AutoReference,
-                resolvedVersion: GetPackageVersion(p),
-                latestVersion: reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
-                vulnerabilities: reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
-                deprecationReasons: reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
-                alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
-            ));
+            var packages = frameworkPackages.Select(p =>
+            {
+                string packageId = p.Name;
+                string requestedVersion = printingTransitive ? string.Empty : p.OriginalRequestedVersion;
+                bool autoReference = printingTransitive ? false : p.AutoReference;
+                string resolvedVersion = GetPackageVersion(p);
+                string latestVersion = reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null;
+                List<PackageVulnerabilityMetadata> vulnerabilities = reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null;
+                PackageDeprecationMetadata deprecationReasons = reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null;
+                AlternatePackageMetadata alternativePackage = reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null;
+                IReadOnlyList<PackageSponsorship> sponsorships = reportType == ReportType.Sponsor ? p.Sponsorships : Array.Empty<PackageSponsorship>();
+                return new ListReportPackage(
+                    packageId: packageId,
+                    requestedVersion: requestedVersion,
+                    autoReference: autoReference,
+                    resolvedVersion: resolvedVersion,
+                    latestVersion: latestVersion,
+                    vulnerabilities: vulnerabilities,
+                    deprecationReasons: deprecationReasons,
+                    alternativePackage: alternativePackage,
+                    sponsorships: sponsorships);
+            });
 
             tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
 
@@ -121,14 +134,17 @@ namespace NuGet.CommandLine.XPlat.Utility
                 p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged)),
             };
 
-            // Include "Requested" version column for top level package list
-            if (!printingTransitive)
+            if (listPackageArgs.ReportType != ReportType.Sponsor)
             {
-                valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
-            }
+                // Include "Requested" version column for top level package list
+                if (!printingTransitive)
+                {
+                    valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
+                }
 
-            // "Resolved" version
-            valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
+                // "Resolved" version
+                valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
+            }
 
             switch (listPackageArgs.ReportType)
             {
@@ -145,6 +161,9 @@ namespace NuGet.CommandLine.XPlat.Utility
                 case ReportType.Vulnerable:
                     valueSelectors.Add(p => PrintVulnerabilitiesSeverities(p.Vulnerabilities));
                     valueSelectors.Add(p => PrintVulnerabilitiesAdvisoryUrls(p.Vulnerabilities));
+                    break;
+                case ReportType.Sponsor:
+                    valueSelectors.Add(p => PrintSponsorships(p.Sponsorships));
                     break;
             }
 
@@ -184,6 +203,29 @@ namespace NuGet.CommandLine.XPlat.Utility
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
                 ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
                 : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, foregroundColor: null));
+        }
+
+        internal static IEnumerable<FormattedCell> PrintSponsorships(IReadOnlyList<PackageSponsorship> sponsorships)
+        {
+            IReadOnlyList<SponsorReportAggregator.MergedSponsorship> mergedSponsorships =
+                SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships);
+
+            return mergedSponsorships.Count == 0
+                ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
+                : mergedSponsorships.SelectMany(sponsorship =>
+                {
+                    IEnumerable<FormattedCell> first = sponsorship.Sources.Select(source =>
+                    {
+                        string value = string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_SponsorSourceLine, source);
+                        return new FormattedCell(value, foregroundColor: null);
+                    });
+                    IEnumerable<FormattedCell> second = sponsorship.Urls.Select(url =>
+                    {
+                        string value = "  " + url;
+                        return new FormattedCell(value, foregroundColor: null);
+                    });
+                    return first.Concat(second);
+                });
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)
@@ -272,6 +314,16 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <returns></returns>
         internal static string[] BuildTableHeaders(bool printingTransitive, ListPackageArgs listPackageArgs)
         {
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                return new[]
+                {
+                    printingTransitive ? Strings.ListPkg_TransitiveHeader : Strings.ListPkg_TopLevelHeader,
+                    string.Empty,
+                    Strings.ListPkg_SponsorHeader
+                };
+            }
+
             var result = new List<string>();
 
             if (printingTransitive)
