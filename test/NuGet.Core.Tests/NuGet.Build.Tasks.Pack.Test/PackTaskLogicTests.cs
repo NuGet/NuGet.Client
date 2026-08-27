@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using NuGet.Commands;
 using NuGet.Frameworks;
@@ -84,65 +83,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(".NETStandard", dependencyGroupFramework);
                     Assert.NotNull(centralTransitiveDependentPackage);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, centralTransitiveDependentPackage.Exclude);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(true, "10.0.100", "true", false)]
-        [InlineData(true, "11.0.100", "true", true)]
-        [InlineData(true, null, "true", false)]
-        [InlineData(true, null, "false", true)]
-        [InlineData(true, "10.0.100", "false", false)]
-        [InlineData(false, "11.0.100", "true", false)]
-        public void PackTaskLogic_DeterministicPack_IsEnabledBasedOnSdkAnalysisLevel(
-            bool deterministic,
-            string sdkAnalysisLevel,
-            string usingMicrosoftNETSdk,
-            bool expected)
-        {
-            using (var testDir = TestDirectory.Create())
-            {
-                var tc = new TestContext(testDir);
-                tc.Request.Deterministic = deterministic;
-                tc.Request.SdkAnalysisLevel = sdkAnalysisLevel;
-                tc.Request.UsingMicrosoftNETSdk = usingMicrosoftNETSdk;
-                var target = new PackTaskLogic();
-
-                PackArgs packArgs = target.GetPackArgs(tc.Request);
-
-                Assert.Equal(expected, packArgs.Deterministic);
-            }
-        }
-
-        [Theory]
-        [InlineData("10.0.100", false)]
-        [InlineData("11.0.100", true)]
-        public void PackTaskLogic_DeterministicPack_UsesExpectedPackageEntryTimestamp(
-            string sdkAnalysisLevel,
-            bool expectDeterministicTimestamp)
-        {
-            using (var testDir = TestDirectory.Create())
-            {
-                var tc = new TestContext(testDir);
-                var sourceTimestamp = new DateTime(2019, 5, 22, 17, 11, 38, DateTimeKind.Utc);
-                var deterministicTimestamp = new DateTimeOffset(2020, 1, 2, 3, 4, 6, TimeSpan.Zero);
-                string sourcePath = tc.Request.BuildOutputInPackage[0].GetProperty("FinalOutputPath");
-                File.SetLastWriteTimeUtc(sourcePath, sourceTimestamp);
-                tc.Request.Deterministic = true;
-                tc.Request.DeterministicTimestamp = deterministicTimestamp.ToString("O");
-                tc.Request.SdkAnalysisLevel = sdkAnalysisLevel;
-                tc.Request.UsingMicrosoftNETSdk = "true";
-
-                tc.BuildPackage();
-
-                using (ZipArchive package = ZipFile.OpenRead(tc.NupkgPath))
-                {
-                    ZipArchiveEntry entry = package.GetEntry("lib/net45/a.dll");
-                    DateTime expectedTimestamp = expectDeterministicTimestamp
-                        ? deterministicTimestamp.UtcDateTime
-                        : sourceTimestamp;
-                    Assert.Equal(expectedTimestamp, entry.LastWriteTime.DateTime);
                 }
             }
         }

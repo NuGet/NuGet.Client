@@ -226,6 +226,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <DeterministicTimestamp Condition="'$(DeterministicTimestamp)' == '' AND '$(SOURCE_DATE_EPOCH)' != ''">$(SOURCE_DATE_EPOCH)</DeterministicTimestamp>
+      <DeterministicTimestamp Condition="'$(DeterministicTimestamp)' == ''">false</DeterministicTimestamp>
     </PropertyGroup>
 
     <!-- Call Pack -->
