@@ -20,12 +20,8 @@ namespace NuGet.RuntimeModel
     [JsonConverter(typeof(RuntimeGraphJsonModelConverter))]
     internal sealed class RuntimeGraphJsonModel
     {
-        [JsonPropertyName("runtimes")]
-        [JsonConverter(typeof(RuntimeDescriptionCollectionJsonConverter))]
         public List<RuntimeDescription>? Runtimes { get; set; }
 
-        [JsonPropertyName("supports")]
-        [JsonConverter(typeof(CompatibilityProfileCollectionJsonConverter))]
         public List<CompatibilityProfile>? Supports { get; set; }
     }
 }

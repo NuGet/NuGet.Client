@@ -20,6 +20,7 @@ namespace NuGet.RuntimeModel
             Type typeToConvert,
             JsonSerializerOptions options)
         {
+            // Parse the complete object first so duplicate properties use the final value, as Newtonsoft.Json does.
             using JsonDocument document = JsonDocument.ParseValue(ref reader);
             var model = new RuntimeGraphJsonModel();
 
