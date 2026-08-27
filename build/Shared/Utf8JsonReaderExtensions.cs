@@ -16,6 +16,8 @@ namespace NuGet.Shared
         {
             if (!stream.CanSeek)
             {
+                // A non-seekable stream cannot be inspected without consuming input.
+                // A TextReader detects its encoding while it reads.
                 return true;
             }
 
@@ -23,6 +25,7 @@ namespace NuGet.Shared
 
             try
             {
+                // System.Text.Json stream APIs require UTF-8. Detect UTF-16 and UTF-32 byte order marks.
                 int first = stream.ReadByte();
                 int second = stream.ReadByte();
 
