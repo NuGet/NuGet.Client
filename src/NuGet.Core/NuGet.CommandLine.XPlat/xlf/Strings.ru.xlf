@@ -587,8 +587,8 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
-        <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
-        <target state="translated">Параметры "--outdated", "--deprecated" и "--vulnerable" не могут использоваться вместе.</target>
+        <source>Options '--outdated', '--deprecated', '--vulnerable', and '--sponsor' cannot be combined.</source>
+        <target state="needs-review-translation">Параметры "--outdated", "--deprecated" и "--vulnerable" не могут использоваться вместе.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOutputFormat">
@@ -624,6 +624,11 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       <trans-unit id="ListPkg_NoPackagesFoundForFrameworks">
         <source>No packages were found for the project `{0}` given the specified frameworks.</source>
         <target state="translated">Пакеты для проекта "{0}" для указанных платформ не обнаружены.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_NoSponsorshipForProject">
+        <source>Project '{0}' has no sponsorable packages.</source>
+        <target state="new">Project '{0}' has no sponsorable packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -691,6 +696,11 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
         <target state="translated">Проект "{0}" содержит следующие ссылки на пакеты</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
+        <source>Project '{0}' has the following sponsorable packages</source>
+        <target state="new">Project '{0}' has the following sponsorable packages</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">
         <source>Project `{0}` has the following updates to its packages</source>
         <target state="translated">Проект "{0}" содержит следующие обновления пакетов</target>
@@ -719,6 +729,21 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       <trans-unit id="ListPkg_SourcesUsedDescription">
         <source>The following sources were used:</source>
         <target state="translated">Использовались следующие источники:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorDescription">
+        <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
+        <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorHeader">
+        <source>Sponsor</source>
+        <target state="new">Sponsor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorSourceLine">
+        <source>Source: {0}</source>
+        <target state="new">Source: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_TopLevelHeader">

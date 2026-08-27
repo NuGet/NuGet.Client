@@ -554,6 +554,91 @@ namespace NuGet.XPlat.FuncTest
         }
 
 
+        [Theory]
+        [InlineData("--outdated", nameof(ReportType.Outdated))]
+        [InlineData("--deprecated", nameof(ReportType.Deprecated))]
+        [InlineData("--vulnerable", nameof(ReportType.Vulnerable))]
+        [InlineData("--sponsor", nameof(ReportType.Sponsor))]
+        public void BasicListPackageParsing_SingleReportOption_SelectsMatchingReportType(string reportOption, string expectedReportType)
+        {
+            VerifyCommand(
+                (projectPath, mockCommandRunner, testApp, getLogLevel) =>
+                {
+                    // Arrange
+                    ListPackageArgs capturedArgs = null;
+                    mockCommandRunner
+                        .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
+                        .Callback<ListPackageArgs>(args => capturedArgs = args)
+                        .Returns(Task.FromResult(0));
+
+                    // Act
+                    var result = testApp.Parse(new[] { "list", projectPath, reportOption }).Invoke();
+
+                    // Assert
+                    Assert.Equal(0, result);
+                    Assert.Equal(expectedReportType, capturedArgs.ReportType.ToString());
+                });
+        }
+
+        [Theory]
+        [InlineData("--outdated")]
+        [InlineData("--deprecated")]
+        [InlineData("--vulnerable")]
+        public void BasicListPackageParsing_SponsorCombinedWithAnotherReport_ReturnsNonZero(string otherReportOption)
+        {
+            VerifyCommand(
+                (projectPath, mockCommandRunner, testApp, getLogLevel) =>
+                {
+                    // Act
+                    var result = testApp.Parse(new[] { "list", projectPath, "--sponsor", otherReportOption }).Invoke();
+
+                    // Assert
+                    Assert.NotEqual(0, result);
+                });
+        }
+
+        [Fact]
+        public void ConsoleRenderer_Sponsor_WithNoSponsorablePackages_WritesNoSponsorshipMessage()
+        {
+            // Arrange
+            var output = new StringBuilder();
+            var error = new StringBuilder();
+            using TextWriter consoleOut = new StringWriter(output);
+            using TextWriter consoleError = new StringWriter(error);
+
+            var renderer = new ListPackageConsoleRenderer(consoleOut, consoleError);
+            var listPackageArgs = new ListPackageArgs(
+                path: string.Empty,
+                packageSources: new List<PackageSource>(),
+                frameworks: new List<string>(),
+                reportType: ReportType.Sponsor,
+                renderer: renderer,
+                includeTransitive: false,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                auditSources: null,
+                logger: NullLogger.Instance,
+                cancellationToken: CancellationToken.None);
+
+            var reportModel = new ListPackageReportModel(listPackageArgs);
+            var projectModel = new ListPackageProjectModel("projectA.csproj", "ProjectA")
+            {
+                // Every package was filtered out because no source returned sponsorship URLs.
+                TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>
+                {
+                    new ListPackageReportFrameworkPackage("net8.0", "net8.0")
+                }
+            };
+            reportModel.Projects.Add(projectModel);
+
+            // Act
+            renderer.Render(reportModel);
+
+            // Assert
+            Assert.Contains("Project 'ProjectA' has no sponsorable packages.", output.ToString());
+        }
+
         private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, RootCommand, Func<LogLevel>> verify)
         {
             // Arrange

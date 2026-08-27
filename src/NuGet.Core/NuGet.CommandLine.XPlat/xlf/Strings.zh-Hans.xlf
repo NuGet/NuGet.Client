@@ -587,8 +587,8 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
-        <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
-        <target state="translated">不能将 ‘--outdated’、‘--deprecated’ 和 ‘--vulnerable’ 选项结合使用。</target>
+        <source>Options '--outdated', '--deprecated', '--vulnerable', and '--sponsor' cannot be combined.</source>
+        <target state="needs-review-translation">不能将 ‘--outdated’、‘--deprecated’ 和 ‘--vulnerable’ 选项结合使用。</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOutputFormat">
@@ -624,6 +624,11 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
       <trans-unit id="ListPkg_NoPackagesFoundForFrameworks">
         <source>No packages were found for the project `{0}` given the specified frameworks.</source>
         <target state="translated">未找到给定指定框架的项目“{0}”的任何包。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_NoSponsorshipForProject">
+        <source>Project '{0}' has no sponsorable packages.</source>
+        <target state="new">Project '{0}' has no sponsorable packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -691,6 +696,11 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
         <target state="translated">项目“{0}”具有以下包引用</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
+        <source>Project '{0}' has the following sponsorable packages</source>
+        <target state="new">Project '{0}' has the following sponsorable packages</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">
         <source>Project `{0}` has the following updates to its packages</source>
         <target state="translated">项目“{0}”具有以下针对其包的更新</target>
@@ -719,6 +729,21 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
       <trans-unit id="ListPkg_SourcesUsedDescription">
         <source>The following sources were used:</source>
         <target state="translated">使用了以下源:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorDescription">
+        <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
+        <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorHeader">
+        <source>Sponsor</source>
+        <target state="new">Sponsor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorSourceLine">
+        <source>Source: {0}</source>
+        <target state="new">Source: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_TopLevelHeader">

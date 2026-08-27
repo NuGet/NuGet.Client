@@ -588,8 +588,8 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
-        <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
-        <target state="translated">'--outdated', '--deprecated' ve '--vulnerable' seçenekleri birleştirilemez.</target>
+        <source>Options '--outdated', '--deprecated', '--vulnerable', and '--sponsor' cannot be combined.</source>
+        <target state="needs-review-translation">'--outdated', '--deprecated' ve '--vulnerable' seçenekleri birleştirilemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOutputFormat">
@@ -625,6 +625,11 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
       <trans-unit id="ListPkg_NoPackagesFoundForFrameworks">
         <source>No packages were found for the project `{0}` given the specified frameworks.</source>
         <target state="translated">Belirtilen çerçevelerde `{0}` projesi için paket bulunamadı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_NoSponsorshipForProject">
+        <source>Project '{0}' has no sponsorable packages.</source>
+        <target state="new">Project '{0}' has no sponsorable packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -692,6 +697,11 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
         <target state="translated">'{0}' projesi aşağıdaki paket başvurularına sahip</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
+        <source>Project '{0}' has the following sponsorable packages</source>
+        <target state="new">Project '{0}' has the following sponsorable packages</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">
         <source>Project `{0}` has the following updates to its packages</source>
         <target state="translated">`{0}` projesinin paketleri için aşağıdaki güncelleştirmeler var</target>
@@ -720,6 +730,21 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
       <trans-unit id="ListPkg_SourcesUsedDescription">
         <source>The following sources were used:</source>
         <target state="translated">Şu kaynaklar kullanıldı:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorDescription">
+        <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
+        <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorHeader">
+        <source>Sponsor</source>
+        <target state="new">Sponsor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorSourceLine">
+        <source>Source: {0}</source>
+        <target state="new">Source: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_TopLevelHeader">

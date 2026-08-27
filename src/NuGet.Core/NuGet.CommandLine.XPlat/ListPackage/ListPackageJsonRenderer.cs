@@ -39,6 +39,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private const string SeverityProperty = "severity";
         private const string AdvisoryUrlProperty = "advisoryurl";
         private const string VulnerabilitiesProperty = "vulnerabilities";
+        private const string SponsorshipsProperty = "sponsorships"; // add sponsorships property to the json output for sponsorship report
+        private const string UrlsProperty = "urls"; // add urls property to the json output for sponsorship report
+        private const string PackagesProperty = "packages"; // add packages property to the json output for sponsorship report
+        private const string RelationshipProperty = "relationship"; // add relationship property to the json output for sponsorship report
+        private const string TopLevelRelationship = "topLevel"; // add topLevel relationship value to the json output for sponsorship report
+        private const string TransitiveRelationship = "transitive"; // add transitive relationship value to the json output for sponsorship report
         private const string LatestVersionProperty = "latestVersion";
         private const string DeprecationReasonsProperty = "deprecationReasons";
         private const string AlternativePackageProperty = "alternativePackage";
@@ -105,7 +111,16 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
 
             WriteSources(writer, listPackageReportModel);
-            WriteProjects(writer, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
+
+            if (listPackageArgs.ReportType == ReportType.Sponsor) // sponsorship report is not framework-specific, so collapse all frameworks into one table
+            {
+                WriteSponsorPackages(writer, listPackageReportModel);
+            }
+            else
+            {
+                WriteProjects(writer, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
+            }
+
             writer.WriteEndObject();
         }
 
@@ -357,6 +372,77 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
                 writer.WritePropertyName(AdvisoryUrlProperty);
                 writer.WriteValue(vulnerability.AdvisoryUrl);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        // Each source is emitted as its own entry
+        private static void WriteSponsorships(JsonWriter writer, IReadOnlyList<PackageSponsorship> sponsorships)
+        {
+            if (sponsorships == null || sponsorships.Count == 0)
+            {
+                return;
+            }
+
+            writer.WritePropertyName(SponsorshipsProperty);
+            writer.WriteStartArray();
+
+            foreach (PackageSponsorship sponsorship in sponsorships)
+            {
+                writer.WriteStartObject();
+
+                writer.WritePropertyName(SourcesProperty);
+                writer.WriteStartArray();
+                writer.WriteValue(sponsorship.Source);
+                writer.WriteEndArray();
+
+                writer.WritePropertyName(UrlsProperty);
+                writer.WriteStartArray();
+                foreach (string url in sponsorship.Urls)
+                {
+                    writer.WriteValue(url);
+                }
+                writer.WriteEndArray();
+
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        /// <summary>
+        /// Writes the sponsorship report as a package-keyed <c>packages</c> array: each package ID
+        /// appears once, listing every project that uses it and that project's relationship to it.
+        /// </summary>
+        private static void WriteSponsorPackages(JsonWriter writer, ListPackageReportModel listPackageReportModel)
+        {
+            writer.WritePropertyName(PackagesProperty);
+            writer.WriteStartArray();
+
+            foreach (var package in SponsorReportAggregator.CollapseProjects(listPackageReportModel.Projects))
+            {
+                writer.WriteStartObject();
+
+                writer.WritePropertyName(IdProperty);
+                writer.WriteValue(package.PackageId);
+
+                writer.WritePropertyName(ProjectsProperty);
+                writer.WriteStartArray();
+                foreach ((string projectPath, bool isTopLevel) in package.Projects)
+                {
+                    writer.WriteStartObject();
+                    writer.WritePropertyName(PathProperty);
+                    writer.WriteValue(PathUtility.GetPathWithForwardSlashes(projectPath));
+                    writer.WritePropertyName(RelationshipProperty);
+                    writer.WriteValue(isTopLevel ? TopLevelRelationship : TransitiveRelationship);
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
+
+                WriteSponsorships(writer, package.Sponsorships);
+
                 writer.WriteEndObject();
             }
 

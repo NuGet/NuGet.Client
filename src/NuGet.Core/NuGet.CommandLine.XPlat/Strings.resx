@@ -441,7 +441,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The following sources were used:</value>
   </data>
   <data name="ListPkg_InvalidOptions" xml:space="preserve">
-    <value>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</value>
+    <value>Options '--outdated', '--deprecated', '--vulnerable', and '--sponsor' cannot be combined.</value>
   </data>
   <data name="ListPkg_NoDeprecatedPackagesForProject" xml:space="preserve">
     <value>The given project `{0}` has no deprecated packages given the current sources.</value>
@@ -1173,5 +1173,20 @@ Do not translate "PackageVersion"</comment>
   </data>
   <data name="WhyCommand_Error_InconsistentAssetsFile" xml:space="preserve">
     <value>Internal error: Assets file is inconsistent</value>
+  </data>
+  <data name="ListPkg_SponsorDescription" xml:space="preserve">
+    <value>Lists packages that have sponsorship information. Transitive packages included by default</value>
+  </data>
+  <data name="ListPkg_SponsorHeader" xml:space="preserve">
+    <value>Sponsor</value>
+  </data>
+  <data name="ListPkg_ProjectSponsorHeaderLog" xml:space="preserve">
+    <value>Project '{0}' has the following sponsorable packages</value>
+  </data>
+  <data name="ListPkg_NoSponsorshipForProject" xml:space="preserve">
+    <value>Project '{0}' has no sponsorable packages.</value>
+  </data>
+  <data name="ListPkg_SponsorSourceLine" xml:space="preserve">
+    <value>Source: {0}</value>
   </data>
 </root>

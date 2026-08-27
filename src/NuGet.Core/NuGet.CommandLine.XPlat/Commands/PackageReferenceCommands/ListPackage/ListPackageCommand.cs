@@ -67,6 +67,12 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.Zero
             };
 
+            var sponsorReport = new Option<bool>("--sponsor") // add sponsorship option to list command
+            {
+                Description = Strings.ListPkg_SponsorDescription,
+                Arity = ArgumentArity.Zero
+            };
+
             var includeTransitive = new Option<bool>("--include-transitive")
             {
                 Description = Strings.ListPkg_TransitiveDescription,
@@ -132,6 +138,7 @@ namespace NuGet.CommandLine.XPlat
             listCommand.Options.Add(deprecatedReport);
             listCommand.Options.Add(outdatedReport);
             listCommand.Options.Add(vulnerableReport);
+            listCommand.Options.Add(sponsorReport); // add sponsorship option to list command
             listCommand.Options.Add(includeTransitive);
             listCommand.Options.Add(prerelease);
             listCommand.Options.Add(highestPatch);
@@ -162,7 +169,8 @@ namespace NuGet.CommandLine.XPlat
                 var reportType = GetReportType(
                     isOutdated: parseResult.GetValue(outdatedReport),
                     isDeprecated: parseResult.GetValue(deprecatedReport),
-                    isVulnerable: parseResult.GetValue(vulnerableReport));
+                    isVulnerable: parseResult.GetValue(vulnerableReport),
+                    isSponsor: parseResult.GetValue(sponsorReport)); // add sponsorship option 
 
                 IReportRenderer reportRenderer = GetOutputType(consoleOut ?? Console.Out, consoleError ?? Console.Error, parseResult.GetValue(outputFormat), outputVersionOption: parseResult.GetValue(outputVersion));
                 var provider = new PackageSourceProvider(settings);
@@ -192,19 +200,20 @@ namespace NuGet.CommandLine.XPlat
             parent.Subcommands.Add(listCommand);
         }
 
-        private static ReportType GetReportType(bool isDeprecated, bool isOutdated, bool isVulnerable)
+        private static ReportType GetReportType(bool isDeprecated, bool isOutdated, bool isVulnerable, bool isSponsor) // add isSponsor parameter to method, allows user to specify sponsorship
         {
             var mutexCount = 0;
             mutexCount += isDeprecated ? 1 : 0;
             mutexCount += isOutdated ? 1 : 0;
             mutexCount += isVulnerable ? 1 : 0;
+            mutexCount += isSponsor ? 1 : 0; // only one report can be used at a time
             if (mutexCount == 0)
             {
                 return ReportType.Default;
             }
             else if (mutexCount == 1)
             {
-                return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : ReportType.Vulnerable;
+                return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : isSponsor ? ReportType.Sponsor : ReportType.Vulnerable; // add sponsorship here
             }
 
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_InvalidOptions));

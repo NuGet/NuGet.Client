@@ -15,5 +15,12 @@ namespace NuGet.Protocol.Model
         [JsonProperty("items")]
         [JsonPropertyName("items")]
         public List<RegistrationPage>? Items { get; set; }
+
+        /// <summary>
+        /// Sponsorship URLs declared at the root of the registration index.
+        /// </summary>
+        [JsonProperty("sponsorshipUrls")]
+        [JsonPropertyName("sponsorshipUrls")]
+        public IReadOnlyList<string>? SponsorshipUrls { get; set; }
     }
 }

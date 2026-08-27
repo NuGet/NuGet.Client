@@ -1394,6 +1394,196 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        [Fact]
+        public void JsonRenderer_ListPackage_Sponsor_SucceedsAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                string framework31 = "netcoreapp3.1";
+                var projectAPath = Path.Combine(pathContext.SolutionRoot, "projectA.csproj");
+                var projectBPath = Path.Combine(pathContext.SolutionRoot, "projectB.csproj");
+                var sponsorshipsForA = new[]
+                {
+                    new PackageSponsorship("https://source1", new[] { "https://sponsor/a1", "https://sponsor/a2" }),
+                    new PackageSponsorship("https://source2", new[] { "https://sponsor/a3" }),
+                };
+
+                // Act
+                string actual = RenderSponsorReport(pathContext,
+                    (
+                        projectAPath,
+                        new List<ListPackageReportFrameworkPackage>()
+                        {
+                            new ListPackageReportFrameworkPackage(framework31, framework31)
+                            {
+                                TopLevelPackages = new List<ListReportPackage>()
+                                {
+                                    CreateSponsoredPackage("A", sponsorshipsForA)
+                                },
+                                TransitivePackages = new List<ListReportPackage>()
+                                {
+                                    CreateSponsoredPackage("B", new PackageSponsorship("https://source1", new[] { "https://sponsor/b" }))
+                                }
+                            }
+                        },
+                        projectProblems: null
+                    ),
+                    (
+                        projectBPath,
+                        new List<ListPackageReportFrameworkPackage>()
+                        {
+                            new ListPackageReportFrameworkPackage(framework31, framework31)
+                            {
+                                TransitivePackages = new List<ListReportPackage>()
+                                {
+                                    CreateSponsoredPackage("A", sponsorshipsForA)
+                                }
+                            }
+                        },
+                        projectProblems: null
+                    )
+                );
+
+                // Assert
+                // Keyed by package id rather than by project, with URLs attributed to the source that returned them.
+                var expected = SettingsTestUtils.RemoveWhitespace($@"
+                {{
+                  'version': 1,
+                  'parameters': '--sponsor',
+                  'sources': [
+                    '{pathContext.PackageSource}'
+                  ],
+                  'packages': [
+                    {{
+                      'id': 'A',
+                      'projects': [
+                        {{
+                          'path': '{projectAPath}',
+                          'relationship': 'topLevel'
+                        }},
+                        {{
+                          'path': '{projectBPath}',
+                          'relationship': 'transitive'
+                        }}
+                      ],
+                      'sponsorships': [
+                        {{
+                          'sources': [ 'https://source1' ],
+                          'urls': [ 'https://sponsor/a1', 'https://sponsor/a2' ]
+                        }},
+                        {{
+                          'sources': [ 'https://source2' ],
+                          'urls': [ 'https://sponsor/a3' ]
+                        }}
+                      ]
+                    }},
+                    {{
+                      'id': 'B',
+                      'projects': [
+                        {{
+                          'path': '{projectAPath}',
+                          'relationship': 'transitive'
+                        }}
+                      ],
+                      'sponsorships': [
+                        {{
+                          'sources': [ 'https://source1' ],
+                          'urls': [ 'https://sponsor/b' ]
+                        }}
+                      ]
+                    }}
+                  ]
+                }}
+                ".Replace("'", "\""));
+
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
+            }
+        }
+
+        [Fact]
+        public void JsonRenderer_ListPackage_Sponsor_NoSponsorablePackages_WritesEmptyPackagesArray()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                string framework31 = "netcoreapp3.1";
+
+                // Act
+                string actual = RenderSponsorReport(pathContext,
+                    (
+                        Path.Combine(pathContext.SolutionRoot, "projectA.csproj"),
+                        new List<ListPackageReportFrameworkPackage>()
+                        {
+                            new ListPackageReportFrameworkPackage(framework31, framework31)
+                        },
+                        projectProblems: null
+                    )
+                );
+
+                // Assert
+                var expected = SettingsTestUtils.RemoveWhitespace($@"
+                {{
+                  'version': 1,
+                  'parameters': '--sponsor',
+                  'sources': [
+                    '{pathContext.PackageSource}'
+                  ],
+                  'packages': []
+                }}
+                ".Replace("'", "\""));
+
+                actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
+            }
+        }
+
+        private string RenderSponsorReport(
+            SimpleTestPathContext pathContext,
+            params (string projectPath, List<ListPackageReportFrameworkPackage> projectPackages, List<ReportProblem> projectProblems)[] projects)
+        {
+            string consoleOutputFileName = Path.Combine(pathContext.SolutionRoot, "consoleOutput.txt");
+
+            using (FileStream stream = new FileStream(consoleOutputFileName, FileMode.Create))
+            {
+                using StreamWriter writer = new StreamWriter(stream);
+                writer.AutoFlush = true;
+
+                ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
+                var packageRefArgs = new ListPackageArgs(
+                            path: pathContext.SolutionRoot,
+                            packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                            frameworks: new List<string>() { },
+                            reportType: ReportType.Sponsor,
+                            renderer: jsonRenderer,
+                            includeTransitive: false,
+                            prerelease: false,
+                            highestPatch: false,
+                            highestMinor: false,
+                            auditSources: null,
+                            NullLogger.Instance,
+                            CancellationToken.None);
+
+                jsonRenderer.Render(CreateListReportModel(packageRefArgs, projects));
+            }
+
+            return SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
+        }
+
+        private static ListReportPackage CreateSponsoredPackage(string packageId, params PackageSponsorship[] sponsorships)
+        {
+            // Versions are populated but never rendered: the sponsorship report is package-scoped.
+            return new ListReportPackage(
+                packageId: packageId,
+                resolvedVersion: "1.0.0",
+                latestVersion: "2.0.0",
+                vulnerabilities: null,
+                deprecationReasons: null,
+                alternativePackage: null,
+                requestedVersion: "1.0.0",
+                autoReference: false,
+                sponsorships: sponsorships);
+        }
+
         internal ListPackageReportModel CreateListReportModel(ListPackageArgs packageRefArgs,
             params (string projectPath, List<ListPackageReportFrameworkPackage> projectPackages, List<ReportProblem> projectProblems)[] projects)
 

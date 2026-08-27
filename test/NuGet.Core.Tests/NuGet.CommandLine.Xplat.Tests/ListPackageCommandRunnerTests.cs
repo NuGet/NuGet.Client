@@ -412,5 +412,98 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             Assert.Null(exception);
         }
+
+        public class PackagesFilterForSponsorship
+        {
+            [Theory]
+            [InlineData(0, false)]
+            [InlineData(1, true)]
+            public void IncludesOnlyPackagesWithAtLeastOneSponsorship(int sponsorshipCount, bool expected)
+            {
+                // Arrange
+                var installedPackageReference = ListPackageTestHelper.CreateInstalledPackageReference();
+                if (sponsorshipCount > 0)
+                {
+                    installedPackageReference.Sponsorships = new[] { new PackageSponsorship("https://source", new[] { "https://sponsor/a" }) };
+                }
+
+                // Act & Assert
+                Assert.Equal(expected, ListPackageHelper.PackagesFilterForSponsorship.Invoke(installedPackageReference));
+            }
+        }
+
+        [Fact]
+        public async Task GetSponsorshipMetadataAsync_UnionsTopLevelAndTransitivePackageIdsIgnoringCase()
+        {
+            // Arrange
+            var frameworks = new List<FrameworkPackages>
+            {
+                new FrameworkPackages("net8.0", "net8.0",
+                    new List<InstalledPackageReference> { ListPackageTestHelper.CreateInstalledPackageReference("Newtonsoft.Json") },
+                    new List<InstalledPackageReference> { ListPackageTestHelper.CreateInstalledPackageReference("Serilog") }),
+                new FrameworkPackages("net472", "net472",
+                    new List<InstalledPackageReference> { ListPackageTestHelper.CreateInstalledPackageReference("newtonsoft.json") },
+                    new List<InstalledPackageReference>()),
+            };
+
+            // With no package sources no source is queried, so every package resolves to an empty sponsorship list.
+            var listPackageArgs = new ListPackageArgs(
+                path: "",
+                packageSources: new List<PackageSource>(),
+                frameworks: new List<string>(),
+                reportType: ReportType.Sponsor,
+                renderer: new ListPackageConsoleRenderer(),
+                includeTransitive: false,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                auditSources: null,
+                logger: new Mock<ILogger>().Object,
+                cancellationToken: CancellationToken.None);
+
+            var listPackageRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, virtualProjectBuilder: null));
+
+            // Act
+            Dictionary<string, List<PackageSponsorship>> result = await listPackageRunner.GetSponsorshipMetadataAsync(frameworks, listPackageArgs);
+
+            // Assert
+            Assert.Equal(new[] { "Newtonsoft.Json", "Serilog" }, result.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase));
+            // UpdatePackagesWithSponsorshipMetadata looks up by package name, so casing differences must still resolve.
+            Assert.True(result.ContainsKey("NEWTONSOFT.JSON"));
+            Assert.All(result.Values, sponsorships => Assert.Empty(sponsorships));
+        }
+
+        [Fact]
+        public void UpdatePackagesWithSponsorshipMetadata_GivesEveryReferenceOfAPackageTheSameListInstance()
+        {
+            // Arrange
+            InstalledPackageReference topLevel = ListPackageTestHelper.CreateInstalledPackageReference("Newtonsoft.Json");
+            InstalledPackageReference transitiveDifferentCase = ListPackageTestHelper.CreateInstalledPackageReference("newtonsoft.json");
+            InstalledPackageReference unsponsored = ListPackageTestHelper.CreateInstalledPackageReference("Serilog");
+            var frameworks = new List<FrameworkPackages>
+            {
+                new FrameworkPackages("net8.0", "net8.0",
+                    new List<InstalledPackageReference> { topLevel },
+                    new List<InstalledPackageReference> { unsponsored }),
+                new FrameworkPackages("net472", "net472",
+                    new List<InstalledPackageReference>(),
+                    new List<InstalledPackageReference> { transitiveDifferentCase }),
+            };
+            var sponsorships = new List<PackageSponsorship> { new PackageSponsorship("https://source", new[] { "https://sponsor/a" }) };
+            var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Newtonsoft.Json"] = sponsorships,
+            };
+
+            // Act
+            ListPackageCommandRunner.UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorshipsById);
+
+            // Assert
+            // SponsorReportAggregator keeps only the first instance of a package id, which is only safe
+            // because every instance is handed the same list.
+            Assert.Same(sponsorships, topLevel.Sponsorships);
+            Assert.Same(sponsorships, transitiveDifferentCase.Sponsorships);
+            Assert.Empty(unsponsored.Sponsorships);
+        }
     }
 }

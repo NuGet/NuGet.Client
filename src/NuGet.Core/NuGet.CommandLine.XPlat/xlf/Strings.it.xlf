@@ -587,8 +587,8 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
-        <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
-        <target state="translated">Non è possibile combinare le opzioni '--outdated', '--deprecated' e '--vulnerable'.</target>
+        <source>Options '--outdated', '--deprecated', '--vulnerable', and '--sponsor' cannot be combined.</source>
+        <target state="needs-review-translation">Non è possibile combinare le opzioni '--outdated', '--deprecated' e '--vulnerable'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOutputFormat">
@@ -624,6 +624,11 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
       <trans-unit id="ListPkg_NoPackagesFoundForFrameworks">
         <source>No packages were found for the project `{0}` given the specified frameworks.</source>
         <target state="translated">Non sono stati trovati pacchetti per il progetto `{0}` considerati i framework specificati.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_NoSponsorshipForProject">
+        <source>Project '{0}' has no sponsorable packages.</source>
+        <target state="new">Project '{0}' has no sponsorable packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -691,6 +696,11 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
         <target state="translated">Il progetto '{0}' contiene i riferimenti al pacchetto seguenti</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
+        <source>Project '{0}' has the following sponsorable packages</source>
+        <target state="new">Project '{0}' has the following sponsorable packages</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">
         <source>Project `{0}` has the following updates to its packages</source>
         <target state="translated">Il progetto `{0} ` contiene gli aggiornamenti seguenti ai relativi pacchetti</target>
@@ -719,6 +729,21 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
       <trans-unit id="ListPkg_SourcesUsedDescription">
         <source>The following sources were used:</source>
         <target state="translated">Sono state usate le origini seguenti:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorDescription">
+        <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
+        <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorHeader">
+        <source>Sponsor</source>
+        <target state="new">Sponsor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorSourceLine">
+        <source>Source: {0}</source>
+        <target state="new">Source: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_TopLevelHeader">

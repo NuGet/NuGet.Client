@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Protocol;
@@ -84,7 +85,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                 latestVersion: reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
                 vulnerabilities: reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
                 deprecationReasons: reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
-                alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
+                alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null,
+                sponsorships: reportType == ReportType.Sponsor ? p.Sponsorships : null // per-source sponsorship results
             ));
 
             tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
@@ -120,15 +122,19 @@ namespace NuGet.CommandLine.XPlat.Utility
                 p => new FormattedCell(p.PackageId),
                 p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged)),
             };
+            bool isSponsor = listPackageArgs.ReportType == ReportType.Sponsor;
 
-            // Include "Requested" version column for top level package list
-            if (!printingTransitive)
+            // "Requested" version column is not needed for sponsorship report
+            if (!printingTransitive && !isSponsor)
             {
                 valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
             }
 
-            // "Resolved" version
-            valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
+            // "Resolved" version column is not needed for sponsorship report
+            if (!isSponsor)
+            {
+                valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
+            }
 
             switch (listPackageArgs.ReportType)
             {
@@ -145,6 +151,9 @@ namespace NuGet.CommandLine.XPlat.Utility
                 case ReportType.Vulnerable:
                     valueSelectors.Add(p => PrintVulnerabilitiesSeverities(p.Vulnerabilities));
                     valueSelectors.Add(p => PrintVulnerabilitiesAdvisoryUrls(p.Vulnerabilities));
+                    break;
+                case ReportType.Sponsor:
+                    valueSelectors.Add(p => PrintSponsorships(p.Sponsorships));
                     break;
             }
 
@@ -184,6 +193,14 @@ namespace NuGet.CommandLine.XPlat.Utility
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
                 ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
                 : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, foregroundColor: null));
+        }
+
+        internal static IEnumerable<FormattedCell> PrintSponsorships(IReadOnlyList<PackageSponsorship> sponsorships) // print sponsorships per source, with each source's urls indented on the next line
+        {
+            return sponsorships == null || sponsorships.Count == 0
+                ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
+                : sponsorships.SelectMany(s => new[] { new FormattedCell(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_SponsorSourceLine, s.Source), foregroundColor: null) }
+                    .Concat(s.Urls.Select(url => new FormattedCell("  " + url, foregroundColor: null))));
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)
@@ -273,6 +290,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         internal static string[] BuildTableHeaders(bool printingTransitive, ListPackageArgs listPackageArgs)
         {
             var result = new List<string>();
+            bool isSponsor = listPackageArgs.ReportType == ReportType.Sponsor;
 
             if (printingTransitive)
             {
@@ -283,10 +301,16 @@ namespace NuGet.CommandLine.XPlat.Utility
             {
                 result.Add(Strings.ListPkg_TopLevelHeader);
                 result.Add(string.Empty);
-                result.Add(Strings.ListPkg_Requested);
+                if (!isSponsor) // "Requested" version column is not needed for sponsorship report
+                {
+                    result.Add(Strings.ListPkg_Requested);
+                }
             }
 
-            result.Add(Strings.ListPkg_Resolved);
+            if (!isSponsor) // "Resolved" version column is not needed for sponsorship report
+            {
+                result.Add(Strings.ListPkg_Resolved);
+            }
 
             switch (listPackageArgs.ReportType)
             {
@@ -300,6 +324,9 @@ namespace NuGet.CommandLine.XPlat.Utility
                 case ReportType.Vulnerable:
                     result.Add(Strings.ListPkg_VulnerabilitySeverity);
                     result.Add(Strings.ListPkg_VulnerabilityAdvisoryUrl);
+                    break;
+                case ReportType.Sponsor:
+                    result.Add(Strings.ListPkg_SponsorHeader);
                     break;
             }
 

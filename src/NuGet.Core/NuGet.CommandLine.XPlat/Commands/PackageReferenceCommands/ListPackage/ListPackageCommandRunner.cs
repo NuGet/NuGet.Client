@@ -160,8 +160,16 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
-                        await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
+                        if (listPackageArgs.ReportType == ReportType.Sponsor)
+                        {
+                            Dictionary<string, List<PackageSponsorship>> sponsorships = await GetSponsorshipMetadataAsync(frameworks, listPackageArgs);
+                            UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorships);
+                        }
+                        else
+                        {
+                            var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
+                            await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
+                        }
                     }
                 }
 
@@ -372,6 +380,12 @@ namespace NuGet.CommandLine.XPlat
                         ListPackageHelper.PackagesFilterForVulnerable,
                         ListPackageHelper.PackagesFilterForVulnerable);
                     break;
+                case ReportType.Sponsor:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.PackagesFilterForSponsorship,
+                        ListPackageHelper.PackagesFilterForSponsorship);
+                    break;
             }
 
             return packages.Any(p => p.TopLevelPackages.Any() ||
@@ -452,6 +466,86 @@ namespace NuGet.CommandLine.XPlat
                 List<string> allPackages = intermediateEnumerable.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
                 return allPackages;
             }
+        }
+
+        internal async Task<Dictionary<string, List<PackageSponsorship>>> GetSponsorshipMetadataAsync(
+            List<FrameworkPackages> targetFrameworks,
+            ListPackageArgs listPackageArgs)
+        {
+            // The sponsorship report always covers top-level and transitive packages.
+            List<string> allPackages = targetFrameworks
+                .SelectMany(f => f.TopLevelPackages.Concat(f.TransitivePackages))
+                .Select(p => p.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(
+                capacity: allPackages.Count,
+                comparer: StringComparer.OrdinalIgnoreCase);
+
+            int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
+                ? 8 // Try to be nice to HTTP package sources
+                : listPackageArgs.PackageSources.Count == 0
+                    ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
+                    : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
+
+            await ThrottledForEachAsync(allPackages,
+                async (packageId, cancellationToken) => await GetSponsorshipsForPackageAsync(packageId, listPackageArgs, cancellationToken),
+                sponsorships => sponsorshipsById[sponsorships.Key] = sponsorships.Value,
+                maxParallel,
+                listPackageArgs.CancellationToken);
+
+            return sponsorshipsById;
+        }
+
+        private async Task<KeyValuePair<string, List<PackageSponsorship>>> GetSponsorshipsForPackageAsync(
+            string package,
+            ListPackageArgs listPackageArgs,
+            CancellationToken cancellationToken)
+        {
+            var sponsorships = new List<PackageSponsorship>();
+            List<PackageSource> sources = listPackageArgs.PackageSources;
+
+            await ThrottledForEachAsync(sources,
+                async (source, innerCancellationToken) => await GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
+                continuation: sponsorship =>
+                {
+                    if (sponsorship != null)
+                    {
+                        sponsorships.Add(sponsorship);
+                    }
+                },
+                maxParallel: sources.Count,
+                cancellationToken);
+
+            return new KeyValuePair<string, List<PackageSponsorship>>(package, sponsorships);
+        }
+
+        private async Task<PackageSponsorship> GetSponsorshipFromSourceAsync(
+            PackageSource packageSource,
+            ListPackageArgs listPackageArgs,
+            string package,
+            CancellationToken cancellationToken)
+        {
+            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
+            RegistrationResourceV3 registrationResource = await sourceRepository.GetResourceAsync<RegistrationResourceV3>(cancellationToken);
+
+            if (registrationResource == null)
+            {
+                // The source has no registration resource, so it cannot report sponsorship.
+                return null;
+            }
+
+            using var sourceCacheContext = new SourceCacheContext();
+            PackageRegistrationMetadata metadata = await registrationResource.GetPackageRegistrationMetadataAsync(
+                package,
+                sourceCacheContext,
+                listPackageArgs.Logger,
+                cancellationToken);
+
+            return metadata == null || metadata.SponsorshipUrls.Count == 0
+                ? null
+                : new PackageSponsorship(packageSource.Source, metadata.SponsorshipUrls);
         }
 
         /// <summary>Run a throttled iteration of a list that performs async work, with a "single threaded" collection of results.</summary>
@@ -633,6 +727,19 @@ namespace NuGet.CommandLine.XPlat
                             transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
                         }
                     }
+                }
+            }
+        }
+
+        internal static void UpdatePackagesWithSponsorshipMetadata(
+            List<FrameworkPackages> frameworks,
+            Dictionary<string, List<PackageSponsorship>> sponsorshipsById)
+        {
+            foreach (InstalledPackageReference package in frameworks.SelectMany(f => f.TopLevelPackages.Concat(f.TransitivePackages)))
+            {
+                if (sponsorshipsById.TryGetValue(package.Name, out List<PackageSponsorship> sponsorships))
+                {
+                    package.Sponsorships = sponsorships;
                 }
             }
         }

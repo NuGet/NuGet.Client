@@ -6,12 +6,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Converters;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -22,8 +26,14 @@ namespace NuGet.Protocol
     public class RegistrationResourceV3 : INuGetResource
     {
         private readonly HttpSource _client;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         public RegistrationResourceV3(HttpSource client, Uri baseUrl)
+            : this(client, baseUrl, EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        internal RegistrationResourceV3(HttpSource client, Uri baseUrl, IEnvironmentVariableReader environmentVariableReader)
         {
             if (client == null)
             {
@@ -37,6 +47,7 @@ namespace NuGet.Protocol
 
             _client = client;
             BaseUri = baseUrl;
+            _environmentVariableReader = environmentVariableReader ?? EnvironmentVariableWrapper.Instance;
         }
 
         /// <summary>
@@ -229,6 +240,73 @@ namespace NuGet.Protocol
         internal virtual async Task<RegistrationLeafItem?> GetPackageMetadataItemAsync(PackageIdentity identity, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
             return (await GetPackageMetadataItemsAsync(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, cacheContext, log, token)).SingleOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the package-ID-scoped metadata declared at the root of a package's registration
+        /// index, without enumerating any version pages.
+        /// </summary>
+        /// <param name="packageId">The package ID to look up.</param>
+        /// <param name="cacheContext">Cache context.</param>
+        /// <param name="log">Logger.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>
+        /// The root metadata, or <see langword="null" /> when the source has no registration index
+        /// for this package.
+        /// </returns>
+        /// <remarks>
+        /// The other retrieval methods on this resource return version-scoped data and discard the
+        /// index root. This is the package-scoped counterpart.
+        /// </remarks>
+        public virtual async Task<PackageRegistrationMetadata?> GetPackageRegistrationMetadataAsync(
+            string packageId,
+            SourceCacheContext cacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            Uri registrationUri = GetUri(packageId);
+            string packageIdLowerCase = packageId.ToLowerInvariant();
+            HttpSourceCacheContext httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retryCount: 0);
+
+            RegistrationIndex? index = await _client.GetAsync(
+                new HttpSourceCachedRequest(
+                    registrationUri.OriginalString,
+                    $"list_{packageIdLowerCase}_index",
+                    httpSourceCacheContext)
+                {
+                    IgnoreNotFounds = true,
+                },
+                httpSourceResult => DeserializeRegistrationIndexAsync(httpSourceResult.Stream, token),
+                log,
+                token);
+
+            if (index == null)
+            {
+                return null;
+            }
+
+            return new PackageRegistrationMetadata(index.SponsorshipUrls);
+        }
+
+        private async Task<RegistrationIndex?> DeserializeRegistrationIndexAsync(Stream? stream, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (stream == null)
+            {
+                return null;
+            }
+
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            {
+                var typeInfo = (JsonTypeInfo<RegistrationIndex>)PackageSearchJsonContext.Default.GetTypeInfo(typeof(RegistrationIndex))!;
+                return await System.Text.Json.JsonSerializer.DeserializeAsync(stream, typeInfo, token);
+            }
+
+            using var streamReader = new StreamReader(stream);
+            using var jsonReader = new Newtonsoft.Json.JsonTextReader(streamReader);
+            return JsonExtensions.JsonObjectSerializer.Deserialize<RegistrationIndex>(jsonReader);
         }
     }
 }

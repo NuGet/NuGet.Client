@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.XPlat
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             ReportType = reportType;
             Renderer = renderer;
-            IncludeTransitive = includeTransitive;
+            IncludeTransitive = includeTransitive || reportType == ReportType.Sponsor; // force transitive for sponsorships, to be updated after v1
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
@@ -93,11 +93,15 @@ namespace NuGet.CommandLine.XPlat
                 case ReportType.Vulnerable:
                     sb.Append(" --vulnerable");
                     break;
+                case ReportType.Sponsor: // add --sponsor flag for sponsorship report
+                    sb.Append(" --sponsor");
+                    break;
                 default:
                     break;
             }
 
-            if (IncludeTransitive)
+            // Transitive is implied by --sponsor rather than user-supplied. To be updated after v1.
+            if (IncludeTransitive && ReportType != ReportType.Sponsor)
             {
                 sb.Append(" --include-transitive");
             }

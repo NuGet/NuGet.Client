@@ -28,5 +28,8 @@ namespace NuGet.CommandLine.XPlat.Utility
             p => p.ResolvedPackageMetadata.Vulnerabilities != null;
         internal static readonly Func<InstalledPackageReference, bool> LatestPackagesFilterForVulnerable =
             p => p.LatestPackageMetadata.Vulnerabilities != null;
+
+        internal static readonly Func<InstalledPackageReference, bool> PackagesFilterForSponsorship =
+            p => p.Sponsorships.Count > 0; // include packages when at least one source returns sponsorship information
     }
 }

@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using NuGet.Protocol;
 
@@ -18,13 +19,15 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         internal AlternatePackageMetadata AlternativePackage { get; private set; }
         internal string RequestedVersion { get; private set; } // not needed for transitive package
         internal bool AutoReference { get; private set; } // not needed for transitive package
+        internal IReadOnlyList<PackageSponsorship> Sponsorships { get; private set; } = Array.Empty<PackageSponsorship>(); // sponsorship details for the package, grouped by the source
 
-        public ListReportPackage(string packageId, string resolvedVersion, string latestVersion, List<PackageVulnerabilityMetadata> vulnerabilities, PackageDeprecationMetadata deprecationReasons, AlternatePackageMetadata alternativePackage, string requestedVersion, bool autoReference)
+        public ListReportPackage(string packageId, string resolvedVersion, string latestVersion, List<PackageVulnerabilityMetadata> vulnerabilities, PackageDeprecationMetadata deprecationReasons, AlternatePackageMetadata alternativePackage, string requestedVersion, bool autoReference, IReadOnlyList<PackageSponsorship> sponsorships = null)
         {
             PackageId = packageId;
             ResolvedVersion = resolvedVersion;
             LatestVersion = latestVersion;
             Vulnerabilities = vulnerabilities;
+            Sponsorships = sponsorships ?? Array.Empty<PackageSponsorship>();
             DeprecationReasons = deprecationReasons;
             AlternativePackage = alternativePackage;
             RequestedVersion = requestedVersion;

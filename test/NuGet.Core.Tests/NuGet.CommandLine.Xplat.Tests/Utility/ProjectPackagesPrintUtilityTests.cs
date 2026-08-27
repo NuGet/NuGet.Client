@@ -62,6 +62,77 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             }
         }
 
+        [Fact]
+        public void PrintSponsorships_ReturnsSourceLineFollowedByIndentedUrls()
+        {
+            // Arrange
+            var sponsorships = new[]
+            {
+                new PackageSponsorship("https://source1", new[] { "https://sponsor/a", "https://sponsor/b" }),
+                new PackageSponsorship("https://source2", new[] { "https://sponsor/c" }),
+            };
+
+            // Act
+            IEnumerable<FormattedCell> cells = ProjectPackagesPrintUtility.PrintSponsorships(sponsorships);
+
+            // Assert
+            Assert.Equal(
+                new[] { "Source: https://source1", "  https://sponsor/a", "  https://sponsor/b", "Source: https://source2", "  https://sponsor/c" },
+                cells.Select(c => c.Value));
+            Assert.All(cells, c => Assert.Null(c.ForegroundColor));
+        }
+
+        [Fact]
+        public void PrintSponsorships_NoSponsorships_ReturnsSingleEmptyCell()
+        {
+            // Act & Assert
+            Assert.Equal(string.Empty, Assert.Single(ProjectPackagesPrintUtility.PrintSponsorships(null)).Value);
+            Assert.Equal(string.Empty, Assert.Single(ProjectPackagesPrintUtility.PrintSponsorships(Array.Empty<PackageSponsorship>())).Value);
+        }
+
+        [Theory]
+        [InlineData(false, "Top-level Package")]
+        [InlineData(true, "Transitive Package")]
+        public void BuildTableHeaders_Sponsor_OmitsRequestedAndResolvedColumns(bool printingTransitive, string expectedFirstHeader)
+        {
+            // Act
+            string[] headers = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive, SponsorReportArgs);
+
+            // Assert
+            Assert.Equal(new[] { expectedFirstHeader, string.Empty, "Sponsor" }, headers);
+        }
+
+        [Fact]
+        public void BuildPackagesTable_Sponsor_EmitsOneCellPerHeader()
+        {
+            // Arrange
+            // BuildTableHeaders and BuildPackagesTable each compute "isSponsor" independently. If they drift,
+            // the header row and the value selectors disagree on column count with nothing else to catch it.
+            var packages = new[]
+            {
+                new ListReportPackage(
+                    packageId: "Package.Sponsored",
+                    resolvedVersion: "1.0.0",
+                    latestVersion: null,
+                    vulnerabilities: null,
+                    deprecationReasons: null,
+                    alternativePackage: null,
+                    requestedVersion: "1.0.0",
+                    autoReference: false,
+                    sponsorships: new[] { new PackageSponsorship("https://source", new[] { "https://sponsor/a" }) })
+            };
+            int headerCount = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive: false, SponsorReportArgs).Length;
+            bool autoReferenceFound = false;
+
+            // Act
+            FormattedCell[] table = ProjectPackagesPrintUtility
+                .BuildPackagesTable(packages, printingTransitive: false, SponsorReportArgs, ref autoReferenceFound)
+                .ToArray();
+
+            // Assert - the header row ends after exactly one cell per header.
+            Assert.Equal(Environment.NewLine, table[headerCount].Value);
+        }
+
         public static IEnumerable<object[]> ReportData =>
             new List<object[]>
             {
@@ -181,6 +252,13 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             new ListPackageArgs(
                         path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
                         ReportType.Vulnerable, new ListPackageConsoleRenderer(), includeTransitive: false,
+                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None));
+
+        private static ListPackageArgs SponsorReportArgsCache;
+        private static ListPackageArgs SponsorReportArgs => SponsorReportArgsCache ?? (SponsorReportArgsCache =
+            new ListPackageArgs(
+                        path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
+                        ReportType.Sponsor, new ListPackageConsoleRenderer(), includeTransitive: false,
                         prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None));
 
         private static InstalledPackageReference StandardPackageCache;

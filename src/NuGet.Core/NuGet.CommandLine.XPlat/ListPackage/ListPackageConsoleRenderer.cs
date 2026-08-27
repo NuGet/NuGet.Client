@@ -124,6 +124,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                         case ReportType.Vulnerable:
                             consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, project.ProjectName));
                             break;
+                        case ReportType.Sponsor:
+                            consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoSponsorshipForProject, project.ProjectName)); // report when no sponsorships found for any package in the project
+                            break;
                     }
                 }
 
@@ -134,6 +137,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 }
 
                 consoleOut.WriteLine(GetProjectHeader(project.ProjectName, listPackageArgs));
+
+                if (listPackageArgs.ReportType == ReportType.Sponsor) // sponsorship report is not framework-specific, so collapse all frameworks into one table
+                {
+                    PrintSponsorPackages(project, listPackageArgs);
+                    continue;
+                }
 
                 foreach (ListPackageReportFrameworkPackage frameworkPackages in project.TargetFrameworkPackages)
                 {
@@ -242,11 +251,38 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     return string.Format(Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName);
                 case ReportType.Vulnerable:
                     return string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName);
+                case ReportType.Sponsor:
+                    return string.Format(Strings.ListPkg_ProjectSponsorHeaderLog, projectName);
                 case ReportType.Default:
                     break;
             }
 
             return string.Format(Strings.ListPkg_ProjectHeaderLog, projectName);
+        }
+
+        private static void PrintSponsorPackages(ListPackageProjectModel project, ListPackageArgs listPackageArgs)
+        {
+            (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
+
+            PrintTable(topLevel, printingTransitive: false);
+            PrintTable(transitive, printingTransitive: true);
+
+            void PrintTable(List<ListReportPackage> packages, bool printingTransitive)
+            {
+                if (packages.Count == 0)
+                {
+                    return;
+                }
+
+                bool tableHasAutoReference = false;
+                IEnumerable<FormattedCell> tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
+                    packages, printingTransitive, listPackageArgs, ref tableHasAutoReference);
+
+                if (tableToPrint != null)
+                {
+                    ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
+                }
+            }
         }
     }
 }
