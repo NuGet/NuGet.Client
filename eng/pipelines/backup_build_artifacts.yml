@@ -13,7 +13,7 @@ jobs:
     timeoutInMinutes: 10
     pool:
       name: VSEng-MicroBuildVSLegacy
-      image: server2025-microbuildVS2022-1es
+      demands: ImageOverride -equals server2025-microbuildVS2022-1es
 
     steps:
       - checkout: none

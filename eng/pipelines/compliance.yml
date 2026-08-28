@@ -15,7 +15,7 @@ jobs:
     timeoutInMinutes: 180
     pool:
       name: VSEng-MicroBuildVSLegacy
-      image: server2025-microbuildVS2022-1es
+      demands: ImageOverride -equals server2025-microbuildVS2022-1es
 
     steps:
       - task: CredScan@2

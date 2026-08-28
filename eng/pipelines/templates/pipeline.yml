@@ -66,7 +66,7 @@ stages:
       ProfilingInputsDropName: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
     pool:
       name: VSEng-MicroBuildVSLegacy
-      image: server2025-microbuildVS2022-1es
+      demands: ImageOverride -equals server2025-microbuildVS2022-1es
     templateContext:
       mb:
         localization:
@@ -194,7 +194,7 @@ stages:
       BuildRTM: "true"
     pool:
       name: VSEng-MicroBuildVSLegacy
-      image: server2025-microbuildVS2022-1es
+      demands: ImageOverride -equals server2025-microbuildVS2022-1es
     templateContext:
       mb:
         localization:
