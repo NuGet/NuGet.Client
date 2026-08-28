@@ -38,8 +38,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Unit
         testTargetFramework: net472
 
@@ -55,8 +55,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: Msbuild.Integration.Test
@@ -73,8 +73,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.FuncTest
@@ -91,8 +91,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.Test
@@ -111,8 +111,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Commands.FuncTest
@@ -129,8 +129,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Packaging.FuncTest
@@ -147,8 +147,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.Protocol.FuncTest
@@ -165,8 +165,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.XPlat.FuncTest
@@ -183,8 +183,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.Xplat.Tests
@@ -201,8 +201,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ else }}:
-          agentPool: VSEngSS-MicroBuild2019-1ES
-          agentDemands: ImageOverride -equals server2022-microbuildVS2019-1es
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2019-1es
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.MSSigning.Extensions.FuncTest
