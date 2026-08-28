@@ -33,7 +33,7 @@ extends:
     settings:
       networkIsolationPolicy: Permissive,CFSClean
     sdl:
-      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
+      sourceAnalysisPool: VSEng-MicroBuildVSStable
       binskim:
         enabled: true
         scanOutputDirectoryOnly: true
@@ -42,7 +42,8 @@ extends:
       credscan:
         enabled: false
     pool:
-      name: VSEngSS-MicroBuild2017-1ES
+      name: VSEng-MicroBuildVSLegacy
+      image: server2025-microbuildVS2019-1es
       os: windows
     featureFlags:
       enablePrepareFilesForSbom: true

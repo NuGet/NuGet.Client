@@ -20,7 +20,8 @@ stages:
     displayName: Get NuGet.Client semantic version
     timeoutInMinutes: 10
     pool:
-      name: VSEngSS-MicroBuild2017-1ES
+      name: VSEng-MicroBuildVSLegacy
+      image: server2025-microbuildVS2019-1es
       os: windows
     steps:
     - template: /eng/pipelines/templates/Initialize_Build_SemanticVersion.yml@self
@@ -32,7 +33,8 @@ stages:
       SemanticVersion: $[dependencies.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
       BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 1)]
     pool:
-      name: VSEngSS-MicroBuild2017-1ES
+      name: VSEng-MicroBuildVSLegacy
+      image: server2025-microbuildVS2019-1es
       os: windows
     steps:
     - template: /eng/pipelines/templates/Initialize_Build.yml@self
@@ -49,7 +51,8 @@ stages:
       isOfficialBuild: ${{ parameters.isOfficialBuild }}
       BuildRTM: "false"
     pool:
-      name: VSEngSS-MicroBuild2017-1ES
+      name: VSEng-MicroBuildVSLegacy
+      image: server2025-microbuildVS2019-1es
       os: windows
     templateContext:
       mb:
@@ -135,7 +138,8 @@ stages:
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       BuildRTM: "true"
     pool:
-      name: VSEngSS-MicroBuild2017-1ES
+      name: VSEng-MicroBuildVSLegacy
+      image: server2025-microbuildVS2019-1es
       os: windows
     templateContext:
       mb:
@@ -191,7 +195,8 @@ stages:
 #       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
 #     condition: "and(succeeded(), eq(variables['RunFunctionalTestsOnWindows'], 'true'))"
 #     pool:
-#       name: VSEngSS-MicroBuild2017-1ES
+#       name: VSEng-MicroBuildVSLegacy
+#       image: server2025-microbuildVS2019-1es
 #       os: windows
 #     steps:
 #     - template: /eng/pipelines/templates/Functional_Tests_On_Windows.yml@self
@@ -238,7 +243,8 @@ stages:
 #       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
 #     condition: "and(succeeded(), eq(variables['RunEndToEndTests'], 'true'))"
 #     pool:
-#       name: VSEngSS-MicroBuild2017-1ES
+#       name: VSEng-MicroBuildVSLegacy
+#       image: server2025-microbuildVS2019-1es
 #       os: windows
 #     steps:
 #     - template: /eng/pipelines/templates/End_To_End_Tests_On_Windows.yml@self
@@ -256,7 +262,8 @@ stages:
 #       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
 #     condition: "and(succeeded(), eq(variables['RunApexTests'], 'true'))"
 #     pool:
-#       name: VSEngSS-MicroBuild2017-1ES
+#       name: VSEng-MicroBuildVSLegacy
+#       image: server2025-microbuildVS2019-1es
 #       os: windows
 #     steps:
 #     - template: /eng/pipelines/templates/Apex_Tests_On_Windows.yml@self
