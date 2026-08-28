@@ -15,6 +15,7 @@ $Nupkgs = Join-Path $Artifacts nupkgs
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
 $ILMergeOutputDir = Join-Path $Artifacts "VS14"
+$VSWhereExe = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -194,7 +195,7 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
-    $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin\msbuild.exe'
+    $msbuildExe = Get-MSBuildExe
     $CliTargetBranch = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliTargetBranch
 
     $cli = @{
@@ -290,6 +291,20 @@ Function Get-MSBuildRoot {
     $MSBuildRoot
 }
 
+Function Get-VisualStudioInstallationPath {
+    if (-not (Test-Path $VSWhereExe)) {
+        return
+    }
+
+    $InstallationPath = & $VSWhereExe -latest -products * -version '[15.0,17.0)' -requires Microsoft.Component.MSBuild -property installationPath |
+        Select-Object -First 1
+
+    if ($InstallationPath) {
+        Verbose-Log "Found Visual Studio at `"$InstallationPath`""
+        $InstallationPath
+    }
+}
+
 Function Get-MSBuildExe {
     param(
         [ValidateSet(15)]
@@ -300,6 +315,22 @@ Function Get-MSBuildExe {
         return Get-MSBuildExe 15
     }
 
+    $InstallationPath = Get-VisualStudioInstallationPath
+    if ($InstallationPath) {
+        $MSBuildPaths = @(
+            (Join-Path $InstallationPath 'MSBuild\Current\Bin\MSBuild.exe'),
+            (Join-Path $InstallationPath 'MSBuild\15.0\Bin\MSBuild.exe')
+        )
+
+        foreach ($MSBuildExe in $MSBuildPaths) {
+            if (Test-Path $MSBuildExe) {
+                Verbose-Log "Found MSBuild.exe at `"$MSBuildExe`""
+                return $MSBuildExe
+            }
+        }
+    }
+
+    # VS 2017 versions before 15.2 did not install vswhere.
     $MSBuildRoot = Get-MSBuildRoot $MSBuildVersion
     Join-Path $MSBuildRoot "${MSBuildVersion}.0\bin\msbuild.exe"
 }

@@ -86,8 +86,17 @@ Function New-BuildToolset {
     param(
         [int]$ToolsetVersion
     )
+    if ($ToolsetVersion -eq 15) {
+        $InstallationPath = Get-VisualStudioInstallationPath
+        if ($InstallationPath) {
+            $ToolsetObject = @{
+                VisualStudioInstallDir = Join-Path $InstallationPath 'Common7\IDE'
+            }
+        }
+    }
+
     $CommonToolsVar = "Env:VS${ToolsetVersion}0COMNTOOLS"
-    if (Test-Path $CommonToolsVar) {
+    if (-not $ToolsetObject -and (Test-Path $CommonToolsVar)) {
         $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
         Verbose-Log "Using environment variable `"$CommonToolsVar`" = `"$CommonToolsValue`""
         $ToolsetObject = @{
@@ -101,25 +110,6 @@ Function New-BuildToolset {
             Verbose-Log "Retrieving Visual Studio installation path from registry '$VisualStudioRegistryKey'"
             $ToolsetObject = @{
                 VisualStudioInstallDir = gp $VisualStudioRegistryKey | select -expand InstallDir -ea Ignore
-            }
-        }
-    }
-
-    if (-not $ToolsetObject -and $ToolsetVersion -gt 14) {
-        $VisualStudioPackageInstancesPath = "$env:ProgramData\Microsoft\VisualStudio\Packages\_Instances"
-
-        if (Test-Path $VisualStudioPackageInstancesPath) {
-            $WillowInstance = Get-ChildItem $VisualStudioPackageInstancesPath -filter state.json -recurse |
-                sort LastWriteTime |
-                select -last 1 |
-                Get-Content -raw |
-                ConvertFrom-Json
-
-            if ($WillowInstance) {
-                Verbose-Log "Using willow instance '$($WillowInstance.installationName)' installation path"
-                $ToolsetObject = @{
-                    VisualStudioInstallDir = [System.IO.Path]::GetFullPath((Join-Path $WillowInstance.installationPath Common7\IDE\))
-                }
             }
         }
     }
@@ -163,11 +153,7 @@ Invoke-BuildStep 'Validating VS15 toolset installation' {
     $vs15 = New-BuildToolset 15
     if ($vs15) {
         $ConfigureObject.Toolsets.Add('vs15', $vs15)
-        $WillowMSBuild = Join-Path $vs15.VisualStudioInstallDir ..\..\MSBuild
-        $script:MSBuildExe = switch (Test-Path $WillowMSBuild) {
-            $True { Join-Path $WillowMSBuild "15.0\${MSBuildRelativePath}" }
-            $False { Join-Path $MSBuildDefaultRoot "15.0\${MSBuildRelativePath}" }
-        }
+        $script:MSBuildExe = Get-MSBuildExe 15
 
         # Hack VSSDK path
         $VSToolsPath = Join-Path $MSBuildDefaultRoot 'Microsoft\VisualStudio\v15.0'
@@ -176,8 +162,10 @@ Invoke-BuildStep 'Validating VS15 toolset installation' {
             Warning-Log "VSSDK is not found at default location '$VSToolsPath'. Attempting to override."
             # Attempting to fix VS SDK path for VS15 willow install builds
             # as MSBUILD failes to resolve it correctly
-            $VSToolsPath = Join-Path $vs15.VisualStudioInstallDir '..\..\MSBuild\Microsoft\VisualStudio\v15.0' -Resolve
-            $ConfigureObject.Add('EnvVars', @{ VSToolsPath = $VSToolsPath })
+            $VSToolsPath = Join-Path $vs15.VisualStudioInstallDir '..\..\MSBuild\Microsoft\VisualStudio\v15.0'
+            if (Test-Path $VSToolsPath) {
+                $ConfigureObject.Add('EnvVars', @{ VSToolsPath = [System.IO.Path]::GetFullPath($VSToolsPath) })
+            }
         }
     }
 } -skip:($SkipVS15) -ev +BuildErrors
