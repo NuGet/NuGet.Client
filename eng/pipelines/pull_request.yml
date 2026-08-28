@@ -35,7 +35,7 @@ extends:
   template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
   parameters:
     settings:
-      networkIsolationPolicy: Permissive,CFSClean,GitHub
+      networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3,GitHub,AzureStorage
     sdl:
       sourceAnalysisPool: VSEng-MicroBuildVSStable
       binskim:
