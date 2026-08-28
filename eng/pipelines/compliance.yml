@@ -14,7 +14,8 @@ jobs:
     displayName: "Static Analysis"
     timeoutInMinutes: 180
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEng-MicroBuildVSLegacy
+      demands: ImageOverride -equals server2025-microbuildVS2022-1es
 
     steps:
       - task: CredScan@2
