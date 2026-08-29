@@ -40,7 +40,7 @@ extends:
         enabled: false
     pool:
       name: VSEng-MicroBuildVSLegacy
-      demands: ImageOverride -equals server2025-microbuildVS2019-1es
+      demands: ImageOverride -equals server2025-microbuildVS2017-1es
       os: windows
     featureFlags:
       enablePrepareFilesForSbom: true
