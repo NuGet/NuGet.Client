@@ -144,5 +144,6 @@ stages:
     bootstrapperUrl: $(bootstrapperUrl)
     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
+    testMachineTotalCount: '2'
     testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
     VsBootstrapperBranch: $(VsBootstrapperBranch)

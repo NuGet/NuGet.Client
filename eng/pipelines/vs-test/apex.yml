@@ -13,6 +13,9 @@ parameters:
     type: object
   - name: testExecutionJobTimeoutInMinutes
     type: number
+  - name: testMachineTotalCount
+    type: string
+    default: '1'
   - name: testDeploymentCleanupMode
     type: string
     default: OnSuccess
@@ -33,6 +36,7 @@ stages:
           - ${{parameters.variables}}
       owner: nugetclienteng
       testMachineLab: "NuGet"
+      testMachineTotalCount: ${{parameters.testMachineTotalCount}}
       runSettingsURI: ${{parameters.runSettingsURI}}
       visualStudioBootstrapperURI: ${{parameters.bootstrapperUrl}}
       visualStudioSigning: Test
