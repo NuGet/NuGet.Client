@@ -425,9 +425,9 @@ namespace NuGet.Commands
                         }
 
                         // Verify downgrades only if the resolved dependency has a lower version than what was defined
-                        if (childResolvedLibraryDependency.LibraryRange.VersionRange is VersionRange resolvedVersionRange &&
-                            childLibraryDependency.LibraryRange.VersionRange is VersionRange childVersionRange &&
-                            !RemoteDependencyWalker.IsGreaterThanOrEqualTo(resolvedVersionRange, childVersionRange))
+                        if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(
+                            childResolvedLibraryDependency.LibraryRange.VersionRange!,
+                            childLibraryDependency.LibraryRange.VersionRange!))
                         {
                             // It is not a downgrade if: the dependency is transitive and is suppressed its parent or any of those parents' parent because the suppressions is an aggregate of everything suppressed above.
                             // For example, A -> B (PrivateAssets=All) -> C
@@ -566,9 +566,9 @@ namespace NuGet.Commands
                         && childLibraryDependency.SuppressParent != LibraryIncludeFlags.All
                         && !downgrades.ContainsKey(childResolvedLibraryRangeIndex)
                         && childLibraryDependency.LibraryRange.VersionRange != VersionRange.All
-                        && childResolvedDependencyGraphItem.LibraryDependency.LibraryRange.VersionRange is VersionRange transitiveVersionRange &&
-                        childLibraryDependency.LibraryRange.VersionRange is VersionRange requestedVersionRange &&
-                        !RemoteDependencyWalker.IsGreaterThanOrEqualTo(transitiveVersionRange, requestedVersionRange))
+                        && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(
+                            childResolvedDependencyGraphItem.LibraryDependency.LibraryRange.VersionRange!,
+                            childLibraryDependency.LibraryRange.VersionRange!))
                     {
                         // This is a downgrade if:
                         // 1. This is not a direct dependency

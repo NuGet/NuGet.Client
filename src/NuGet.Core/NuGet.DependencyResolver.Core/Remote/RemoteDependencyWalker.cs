@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,8 +50,7 @@ namespace NuGet.DependencyResolver
 
             var transitiveCentralPackageVersionNodes = new List<GraphNode<RemoteResolveResult>>();
             LibraryDependency? centralPackageVersionDependency;
-            while (transitiveCentralPackageVersions.TryTake(out centralPackageVersionDependency) &&
-                centralPackageVersionDependency != null)
+            while (transitiveCentralPackageVersions.TryTake(out centralPackageVersionDependency))
             {
                 // do not add a transitive dependency node if it is direct already
                 if (!indexedDirectDependenciesKeyNames.Value.Contains(centralPackageVersionDependency.Name))
@@ -366,14 +366,13 @@ namespace NuGet.DependencyResolver
 
         private static Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency? conflictingDependency)> ChainPredicate(
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency? conflictingDependency)> predicate,
-            GraphNode<RemoteResolveResult> node,
+            GraphItem<RemoteResolveResult> item,
+            bool isRoot,
             LibraryDependency dependency)
         {
-            var item = node.Item ?? throw new InvalidOperationException();
-
             return library =>
             {
-                (DependencyResult? dependencyResult, LibraryDependency? conflictingDependency) = CalculateDependencyResult(item, dependency, library, node.OuterNode == null);
+                (DependencyResult? dependencyResult, LibraryDependency? conflictingDependency) = CalculateDependencyResult(item, dependency, library, isRoot);
 
                 if (dependencyResult.HasValue)
                     return (dependencyResult.Value, conflictingDependency);
@@ -449,8 +448,8 @@ namespace NuGet.DependencyResolver
                 }
                 else
                 {
-                    nearMinVersion = nearVersion.MinVersion ?? throw new InvalidOperationException();
-                    nearRelease = (nearVersion.MinVersion ?? throw new InvalidOperationException()).Release;
+                    nearMinVersion = nearVersion.MinVersion;
+                    nearRelease = nearVersion.MinVersion.Release;
                 }
 
                 if (farVersion.IsFloating)
@@ -466,8 +465,8 @@ namespace NuGet.DependencyResolver
                 }
                 else
                 {
-                    farMinVersion = farVersion.MinVersion ?? throw new InvalidOperationException();
-                    farRelease = (farVersion.MinVersion ?? throw new InvalidOperationException()).Release;
+                    farMinVersion = farVersion.MinVersion;
+                    farRelease = farVersion.MinVersion.Release;
                 }
 
                 var result = nearMinVersion.CompareTo(farMinVersion, VersionComparison.Version);
@@ -594,12 +593,18 @@ namespace NuGet.DependencyResolver
             RuntimeGraph runtimeGraph,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
+            Debug.Assert(rootNode.Item != null);
+
             GraphNode<RemoteResolveResult> node = await CreateGraphNodeAsync(
                     libraryRange: centralPackageVersionDependency.LibraryRange,
                     framework: framework,
                     runtimeName: runtimeIdentifier,
                     runtimeGraph: runtimeGraph,
-                    predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
+                    predicate: ChainPredicate(
+                        _ => (DependencyResult.Acceptable, null),
+                        rootNode.Item!,
+                        rootNode.OuterNode == null,
+                        centralPackageVersionDependency),
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions,
                     hasParentNodes: true);
@@ -648,7 +653,7 @@ namespace NuGet.DependencyResolver
                 }
             }
 
-            internal bool TryTake(out LibraryDependency? centralPackageVersionDependency)
+            internal bool TryTake([NotNullWhen(true)] out LibraryDependency? centralPackageVersionDependency)
             {
                 return _toBeProcessedTransitiveCentralPackageVersions.TryDequeue(out centralPackageVersionDependency);
 
