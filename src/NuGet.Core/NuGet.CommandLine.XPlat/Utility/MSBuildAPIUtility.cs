@@ -714,6 +714,15 @@ namespace NuGet.CommandLine.XPlat
                     project.GetPropertyValue(ASSETS_FILE_PATH_TAG) != "");
         }
 
+        internal static bool IsPackagesConfigProject(Project project)
+        {
+            return project.GetPropertyValue(RESTORE_STYLE_TAG)
+                       .Equals("PackagesConfig", StringComparison.OrdinalIgnoreCase) ||
+                   project.GetPropertyValue(NUGET_STYLE_TAG)
+                       .Equals("PackagesConfig", StringComparison.OrdinalIgnoreCase) ||
+                   File.Exists(Path.Combine(project.DirectoryPath, "packages.config"));
+        }
+
         /// <summary>
         /// Prepares the dictionary that maps frameworks to packages top-level
         /// and transitive.

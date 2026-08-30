@@ -28,6 +28,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             MSBuildLocator.RegisterDefaults();
         }
+
         [PlatformFact(Platform.Windows)]
         public void GetDirectoryBuildPropsRootElementWhenItExists_Success()
         {
@@ -723,6 +724,51 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => msObject.GetListOfProjectsFromPathArgument(pathContext.SolutionRoot));
+        }
+
+        [Theory]
+        [InlineData("RestoreProjectStyle")]
+        [InlineData("NuGetProjectStyle")]
+        public void IsPackagesConfigProject_WithPackagesConfigStyleProperty_ReturnsTrue(string propertyName)
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+            using var projectCollection = new ProjectCollection();
+            string projectPath = Path.Combine(testDirectory, "project.csproj");
+            File.WriteAllText(
+                projectPath,
+                $"<Project><PropertyGroup><{propertyName}>PackagesConfig</{propertyName}></PropertyGroup></Project>");
+            var project = new Project(projectPath, globalProperties: null, toolsVersion: null, projectCollection);
+
+            // Act
+            bool result = MSBuildAPIUtility.IsPackagesConfigProject(project);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void IsPackagesConfigProject_BasedOnPackagesConfigFile(bool createPackagesConfig)
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+            using var projectCollection = new ProjectCollection();
+            string projectPath = Path.Combine(testDirectory, "project.csproj");
+            File.WriteAllText(projectPath, "<Project />");
+            if (createPackagesConfig)
+            {
+                File.WriteAllText(Path.Combine(testDirectory, "packages.config"), "<packages />");
+            }
+
+            var project = new Project(projectPath, globalProperties: null, toolsVersion: null, projectCollection);
+
+            // Act
+            bool result = MSBuildAPIUtility.IsPackagesConfigProject(project);
+
+            // Assert
+            Assert.Equal(createPackagesConfig, result);
         }
 
         [Fact]

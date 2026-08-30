@@ -104,8 +104,11 @@ namespace NuGet.CommandLine.XPlat
 
             if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
             {
+                string message = MSBuildAPIUtility.IsPackagesConfigProject(project)
+                    ? string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath)
+                    : string.Format(CultureInfo.CurrentCulture, Strings.Error_ProjectAssetsFilePropertyNotFound, projectPath);
                 projectModel.AddProjectInformation(problemType: ProblemType.Error,
-                    string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath));
+                    message);
                 return;
             }
 
