@@ -8,18 +8,10 @@ using Newtonsoft.Json;
 namespace NuGet.Protocol.Model
 {
     /// <summary>
-    /// Source: https://docs.microsoft.com/en-us/nuget/api/registration-base-url-resource#registration-index
+    /// The optional package ID-level <c>metadata</c> container on the registration index root.
     /// </summary>
-    internal class RegistrationIndex
+    internal class RegistrationIndexMetadata
     {
-        [JsonProperty("items")]
-        [JsonPropertyName("items")]
-        public List<RegistrationPage>? Items { get; set; }
-
-        [JsonProperty("metadata")]
-        [JsonPropertyName("metadata")]
-        public RegistrationIndexMetadata? Metadata { get; set; }
-
         [JsonProperty("sponsorshipUrls")]
         [JsonPropertyName("sponsorshipUrls")]
         public List<string>? SponsorshipUrls { get; set; }

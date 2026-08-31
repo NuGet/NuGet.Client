@@ -537,7 +537,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             using var sourceCacheContext = new SourceCacheContext();
-            PackageRegistrationMetadata metadata = await registrationResource.GetPackageRegistrationMetadataAsync(
+            PackageIdMetadata metadata = await registrationResource.GetPackageIdMetadataAsync(
                 package,
                 sourceCacheContext,
                 listPackageArgs.Logger,

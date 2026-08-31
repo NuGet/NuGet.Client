@@ -258,7 +258,7 @@ namespace NuGet.Protocol
         /// The other retrieval methods on this resource return version-scoped data and discard the
         /// index root. This is the package-scoped counterpart.
         /// </remarks>
-        public virtual async Task<PackageRegistrationMetadata?> GetPackageRegistrationMetadataAsync(
+        public virtual async Task<PackageIdMetadata?> GetPackageIdMetadataAsync(
             string packageId,
             SourceCacheContext cacheContext,
             Common.ILogger log,
@@ -285,7 +285,7 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            return new PackageRegistrationMetadata(index.SponsorshipUrls);
+            return new PackageIdMetadata(index.Metadata?.SponsorshipUrls ?? index.SponsorshipUrls);
         }
 
         private async Task<RegistrationIndex?> DeserializeRegistrationIndexAsync(Stream? stream, CancellationToken token)

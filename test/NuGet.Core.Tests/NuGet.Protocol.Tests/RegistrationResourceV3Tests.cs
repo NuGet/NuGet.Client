@@ -27,7 +27,8 @@ namespace NuGet.Protocol.Tests
 
             var envReader = new Mock<IEnvironmentVariableReader>();
             envReader
-                .Setup(e => e.GetEnvironmentVariable(NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
+                .Setup(e => e.GetEnvironmentVariable(
+                    NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
                 .Returns(useStj);
 
             var httpSource = new HttpSource(
@@ -38,57 +39,57 @@ namespace NuGet.Protocol.Tests
             return new RegistrationResourceV3(httpSource, new Uri(BaseUrl), envReader.Object);
         }
 
-        private static async Task<PackageRegistrationMetadata?> GetMetadataAsync(string indexJson, string useStj)
+        private static async Task<PackageIdMetadata?> GetMetadataAsync(
+            string indexJson,
+            string useStj)
         {
             RegistrationResourceV3 resource = CreateResource(indexJson, useStj);
 
             using var cacheContext = new SourceCacheContext { NoCache = true };
-            return await resource.GetPackageRegistrationMetadataAsync(
+            return await resource.GetPackageIdMetadataAsync(
                 "contoso.tools", cacheContext, NullLogger.Instance, CancellationToken.None);
         }
 
         [Theory]
         [InlineData("true")]
         [InlineData("false")]
-        public async Task GetPackageRegistrationMetadataAsync_RootLevelUrls_ReturnsUrls(string useStj)
+        public async Task GetPackageIdMetadataAsync_ReturnsExpectedMetadata(string useStj)
         {
-            // v1 reads sponsorshipUrls from the registration index root.
-            var json = @"{
-                ""items"": [],
-                ""sponsorshipUrls"": [ ""https://b.example/two"", ""https://a.example/one"" ]
-            }";
+            var cases = new (string Json, string[]? Expected)[]
+            {
+                (
+                    @"{ ""sponsorshipUrls"": [ ""https://b"", ""https://a"" ] }",
+                    new[] { "https://b", "https://a" }),
+                (
+                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ],
+                        ""metadata"": { ""sponsorshipUrls"": [ ""https://b"", null, "" "", ""https://a"" ] } }",
+                    new[] { "https://b", "https://a" }),
+                (
+                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ], ""metadata"": { ""sponsorshipUrls"": [] } }",
+                    Array.Empty<string>()),
+                (
+                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ], ""metadata"": {} }",
+                    new[] { "https://flat" }),
+                // TestMessageHandler maps an empty response body to a 404.
+                (
+                    string.Empty,
+                    null),
+            };
 
-            PackageRegistrationMetadata? result = await GetMetadataAsync(json, useStj);
+            foreach ((string json, string[]? expected) in cases)
+            {
+                PackageIdMetadata? result = await GetMetadataAsync(json, useStj);
 
-            // Order must be preserved exactly as returned, not sorted.
-            result!.SponsorshipUrls.Should().Equal("https://b.example/two", "https://a.example/one");
-        }
-
-        [Theory]
-        [InlineData(@"{ ""items"": [] }", "true")]
-        [InlineData(@"{ ""items"": [] }", "false")]
-        [InlineData(@"{ ""items"": [], ""sponsorshipUrls"": null }", "true")]
-        [InlineData(@"{ ""items"": [], ""sponsorshipUrls"": null }", "false")]
-        [InlineData(@"{ ""items"": [], ""sponsorshipUrls"": [] }", "true")]
-        [InlineData(@"{ ""items"": [], ""sponsorshipUrls"": [] }", "false")]
-        public async Task GetPackageRegistrationMetadataAsync_MissingNullOrEmpty_ReturnsEmpty(string json, string useStj)
-        {
-            // A successful response with no sponsorship data is a successful empty result, not an error.
-            PackageRegistrationMetadata? result = await GetMetadataAsync(json, useStj);
-
-            result.Should().NotBeNull();
-            result!.SponsorshipUrls.Should().BeEmpty();
-        }
-
-        [Theory]
-        [InlineData("true")]
-        [InlineData("false")]
-        public async Task GetPackageRegistrationMetadataAsync_PackageNotFound_ReturnsNull(string useStj)
-        {
-            // TestMessageHandler maps an empty response body to a 404.
-            PackageRegistrationMetadata? result = await GetMetadataAsync(string.Empty, useStj);
-
-            result.Should().BeNull();
+                if (expected is null)
+                {
+                    result.Should().BeNull();
+                }
+                else
+                {
+                    result.Should().NotBeNull();
+                    result!.SponsorshipUrls.Should().Equal(expected);
+                }
+            }
         }
 
         [Theory]

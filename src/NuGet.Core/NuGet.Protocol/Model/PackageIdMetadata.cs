@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.Protocol
 {
@@ -12,12 +11,7 @@ namespace NuGet.Protocol
     /// Metadata declared at the root of a package's registration index, scoped to the package ID
     /// rather than to a single package version.
     /// </summary>
-    /// <remarks>
-    /// Version-scoped metadata is exposed through <see cref="Core.Types.PackageMetadataResource"/>.
-    /// This type is the package-scoped counterpart: future package-level properties added to the
-    /// registration root belong here.
-    /// </remarks>
-    public class PackageRegistrationMetadata
+    public class PackageIdMetadata
     {
         /// <summary>
         /// Sponsorship URLs the source advertises for this package, in the order returned.
@@ -25,9 +19,12 @@ namespace NuGet.Protocol
         /// </summary>
         public IReadOnlyList<string> SponsorshipUrls { get; }
 
-        public PackageRegistrationMetadata(IReadOnlyList<string>? sponsorshipUrls)
+        public PackageIdMetadata(IReadOnlyList<string>? sponsorshipUrls)
         {
-            SponsorshipUrls = sponsorshipUrls ?? Array.Empty<string>();
+            SponsorshipUrls = sponsorshipUrls?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .ToArray()
+                ?? Array.Empty<string>();
         }
     }
 }

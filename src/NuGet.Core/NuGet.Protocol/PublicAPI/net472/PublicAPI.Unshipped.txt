@@ -1,5 +1,5 @@
 #nullable enable
-NuGet.Protocol.PackageRegistrationMetadata
-NuGet.Protocol.PackageRegistrationMetadata.PackageRegistrationMetadata(System.Collections.Generic.IReadOnlyList<string!>? sponsorshipUrls) -> void
-NuGet.Protocol.PackageRegistrationMetadata.SponsorshipUrls.get -> System.Collections.Generic.IReadOnlyList<string!>!
-virtual NuGet.Protocol.RegistrationResourceV3.GetPackageRegistrationMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageRegistrationMetadata?>!
+NuGet.Protocol.PackageIdMetadata
+NuGet.Protocol.PackageIdMetadata.PackageIdMetadata(System.Collections.Generic.IReadOnlyList<string!>? sponsorshipUrls) -> void
+NuGet.Protocol.PackageIdMetadata.SponsorshipUrls.get -> System.Collections.Generic.IReadOnlyList<string!>!
+virtual NuGet.Protocol.RegistrationResourceV3.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
