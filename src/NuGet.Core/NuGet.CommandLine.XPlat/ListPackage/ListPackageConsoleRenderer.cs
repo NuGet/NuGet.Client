@@ -125,7 +125,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                             consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, project.ProjectName));
                             break;
                         case ReportType.Sponsor:
-                            consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoSponsorshipForProject, project.ProjectName)); // report when no sponsorships found for any package in the project
+                            consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoSponsorshipForProject, project.ProjectName));
+                            PrintSponsorshipSourceDiagnostics(consoleOut, project);
                             break;
                     }
                 }
@@ -206,6 +207,31 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                         }
                     }
                 }
+            }
+        }
+
+        private static void PrintSponsorshipSourceDiagnostics(TextWriter consoleOut, ListPackageProjectModel project)
+        {
+            IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails = project.SponsorshipQueriedSources;
+            IReadOnlyList<PackageSource> unsupportedSources = project.SponsorshipUnsupportedSources;
+
+            if (sourcesWithoutSponsorshipDetails.Count > 0)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorNoDetailsHeader);
+                PrintSources(consoleOut, sourcesWithoutSponsorshipDetails);
+                consoleOut.WriteLine();
+            }
+
+            if (unsupportedSources.Count > 0)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorUnsupportedSourcesHeader);
+                PrintSources(consoleOut, unsupportedSources);
+                consoleOut.WriteLine();
+            }
+
+            if (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorSourceHint);
             }
         }
 

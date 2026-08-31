@@ -1195,4 +1195,21 @@ Do not translate "PackageVersion"</comment>
   <data name="ListPkg_SponsorPackageSourceMappingWithSource" xml:space="preserve">
     <value>Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting.</value>
   </data>
+  <data name="ListPkg_SponsorNoDetailsHeader" xml:space="preserve">
+    <value>The following package sources did not return sponsorship details:</value>
+  </data>
+  <data name="ListPkg_SponsorSourceHint" xml:space="preserve">
+    <value>Consider configuring an additional package source that provides sponsorship metadata, such as https://api.nuget.org/v3/index.json.</value>
+  </data>
+  <data name="ListPkg_SponsorProblemNoDetails" xml:space="preserve">
+    <value>Package source '{0}' did not return sponsorship details.</value>
+    <comment>0 - Package source</comment>
+  </data>
+  <data name="ListPkg_SponsorUnsupportedSourcesHeader" xml:space="preserve">
+    <value>The following package sources do not support sponsorship reporting:</value>
+  </data>
+  <data name="ListPkg_SponsorProblemUnsupportedSource" xml:space="preserve">
+    <value>Package source '{0}' does not support sponsorship reporting.</value>
+    <comment>0 - Package source</comment>
+  </data>
 </root>

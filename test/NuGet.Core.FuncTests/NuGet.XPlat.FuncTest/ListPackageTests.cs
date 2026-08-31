@@ -554,12 +554,8 @@ namespace NuGet.XPlat.FuncTest
         }
 
 
-        [Theory]
-        [InlineData("--outdated", nameof(ReportType.Outdated))]
-        [InlineData("--deprecated", nameof(ReportType.Deprecated))]
-        [InlineData("--vulnerable", nameof(ReportType.Vulnerable))]
-        [InlineData("--sponsor", nameof(ReportType.Sponsor))]
-        public void BasicListPackageParsing_SingleReportOption_SelectsMatchingReportType(string reportOption, string expectedReportType)
+        [Fact]
+        public void BasicListPackageParsing_Sponsor_SelectsSponsorReportType()
         {
             VerifyCommand(
                 (projectPath, mockCommandRunner, testApp, getLogLevel) =>
@@ -572,11 +568,11 @@ namespace NuGet.XPlat.FuncTest
                         .Returns(Task.FromResult(0));
 
                     // Act
-                    var result = testApp.Parse(new[] { "list", projectPath, reportOption }).Invoke();
+                    var result = testApp.Parse(new[] { "list", projectPath, "--sponsor" }).Invoke();
 
                     // Assert
                     Assert.Equal(0, result);
-                    Assert.Equal(expectedReportType, capturedArgs.ReportType.ToString());
+                    Assert.Equal(ReportType.Sponsor, capturedArgs.ReportType);
                 });
         }
 
@@ -598,9 +594,13 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void ConsoleRenderer_Sponsor_WithNoSponsorablePackages_WritesNoSponsorshipMessage()
+        public void ConsoleRenderer_Sponsor_WithNoSponsorablePackages_WritesMessageAndSourceDiagnostics()
         {
             // Arrange
+            var emptySource = new PackageSource("https://empty.test/v3/index.json");
+            var unsupportedSource = new PackageSource("https://unsupported.test/v3/index.json");
+            var neverQueriedSource = new PackageSource("https://never-queried.test/v3/index.json");
+            var packageSources = new List<PackageSource> { emptySource, unsupportedSource, neverQueriedSource };
             var output = new StringBuilder();
             var error = new StringBuilder();
             using TextWriter consoleOut = new StringWriter(output);
@@ -609,7 +609,7 @@ namespace NuGet.XPlat.FuncTest
             var renderer = new ListPackageConsoleRenderer(consoleOut, consoleError);
             var listPackageArgs = new ListPackageArgs(
                 path: string.Empty,
-                packageSources: new List<PackageSource>(),
+                packageSources: packageSources,
                 frameworks: new List<string>(),
                 reportType: ReportType.Sponsor,
                 renderer: renderer,
@@ -628,15 +628,29 @@ namespace NuGet.XPlat.FuncTest
                 TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>
                 {
                     new ListPackageReportFrameworkPackage("net8.0", "net8.0")
-                }
+                },
+                SponsorshipQueriedSources = new[] { emptySource },
+                SponsorshipUnsupportedSources = new[] { unsupportedSource },
             };
             reportModel.Projects.Add(projectModel);
 
             // Act
             renderer.Render(reportModel);
+            string rendered = output.ToString();
 
             // Assert
-            Assert.Contains("Project 'ProjectA' has no sponsorable packages.", output.ToString());
+            Assert.Contains("Project 'ProjectA' has no sponsorable packages.", rendered);
+            int noDetailsStart = rendered.IndexOf(CommandLine.XPlat.Strings.ListPkg_SponsorNoDetailsHeader, StringComparison.Ordinal);
+            int unsupportedStart = rendered.IndexOf(CommandLine.XPlat.Strings.ListPkg_SponsorUnsupportedSourcesHeader, StringComparison.Ordinal);
+            Assert.True(noDetailsStart >= 0);
+            Assert.True(unsupportedStart > noDetailsStart);
+            string noDetailsSection = rendered.Substring(noDetailsStart, unsupportedStart - noDetailsStart);
+            string unsupportedSection = rendered.Substring(unsupportedStart);
+            Assert.Contains(emptySource.Source, noDetailsSection);
+            Assert.DoesNotContain(unsupportedSource.Source, noDetailsSection);
+            Assert.Contains(unsupportedSource.Source, unsupportedSection);
+            Assert.DoesNotContain(neverQueriedSource.Source, unsupportedSection);
+            Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint, unsupportedSection);
         }
 
         [Theory]

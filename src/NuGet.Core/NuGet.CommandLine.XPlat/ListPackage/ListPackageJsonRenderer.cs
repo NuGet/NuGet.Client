@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -76,8 +77,46 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         {
             // Aggregate problems from projects.
             _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
+            AddSponsorshipSourceProblems(listPackageReportModel);
             var jsonRenderedOutput = WriteJson(listPackageReportModel);
             _writer.WriteLine(jsonRenderedOutput);
+        }
+
+        private void AddSponsorshipSourceProblems(ListPackageReportModel listPackageReportModel)
+        {
+            if (listPackageReportModel.ListPackageArgs.ReportType != ReportType.Sponsor)
+            {
+                return;
+            }
+
+            var sourcesWithSponsorshipDetails = new HashSet<string>(
+                SponsorReportAggregator.CollapseProjects(listPackageReportModel.Projects)
+                    .SelectMany(package => package.Sponsorships ?? Array.Empty<PackageSponsorship>())
+                    .Select(sponsorship => sponsorship.Source),
+                StringComparer.Ordinal);
+
+            IEnumerable<PackageSource> sourcesWithoutSponsorshipDetails = listPackageReportModel.Projects
+                .SelectMany(project => project.SponsorshipQueriedSources)
+                .Where(source => !sourcesWithSponsorshipDetails.Contains(source.Source));
+
+            AddSourceProblems(sourcesWithoutSponsorshipDetails, Strings.ListPkg_SponsorProblemNoDetails);
+
+            IEnumerable<PackageSource> unsupportedSources = listPackageReportModel.Projects
+                .SelectMany(project => project.SponsorshipUnsupportedSources);
+
+            AddSourceProblems(unsupportedSources, Strings.ListPkg_SponsorProblemUnsupportedSource);
+        }
+
+        private void AddSourceProblems(IEnumerable<PackageSource> packageSources, string messageFormat)
+        {
+            foreach (PackageSource source in packageSources
+                .GroupBy(source => source.Source, StringComparer.Ordinal)
+                .Select(group => group.First()))
+            {
+                AddProblem(
+                    ProblemType.Warning,
+                    string.Format(CultureInfo.CurrentCulture, messageFormat, source.Source));
+            }
         }
 
         internal string WriteJson(ListPackageReportModel listPackageReportModel)

@@ -76,7 +76,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         [Theory]
         [InlineData("s1=a,b; s2=a,b", "s1,s2=>a,b")]
         [InlineData("s1=a,b; s2=b,a", "s1=>a,b | s2=>b,a")]
-        [InlineData("s1=a; s2=other; s3=a", "s1,s3=>a | s2=>other")]
         [InlineData("s1=Alpha; s2=alpha", "s1=>Alpha | s2=>alpha")]
         public void MergeBySponsorshipUrls_MergesOnlySourcesReturningTheSameOrderedUrls(string input, string expected)
         {

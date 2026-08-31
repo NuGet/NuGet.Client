@@ -1395,7 +1395,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void JsonRenderer_ListPackage_Sponsor_SucceedsAsync()
+        public void JsonRenderer_ListPackage_Sponsor_WritesPackagesAndSourceDiagnostics()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1403,28 +1403,41 @@ namespace NuGet.XPlat.FuncTest
                 string framework31 = "netcoreapp3.1";
                 var projectAPath = Path.Combine(pathContext.SolutionRoot, "projectA.csproj");
                 var projectBPath = Path.Combine(pathContext.SolutionRoot, "projectB.csproj");
+                var source1 = new PackageSource("https://source1");
+                var source2 = new PackageSource("https://source2");
+                var noDetailsSource = new PackageSource("https://no-details.test/v3/index.json");
+                var unsupportedSource = new PackageSource("https://unsupported.test/v3/index.json");
+                var neverQueriedSource = new PackageSource("https://never-queried.test/v3/index.json");
                 var sponsorshipsForA = new[]
                 {
-                    new PackageSponsorship("https://source1", new[] { "https://sponsor/a1", "https://sponsor/a2" }),
-                    new PackageSponsorship("https://source2", new[] { "https://sponsor/other" }),
-                    new PackageSponsorship("https://source3", new[] { "https://sponsor/a1", "https://sponsor/a2" }),
+                    new PackageSponsorship(source1.Source, new[] { "https://sponsor/a1", "https://sponsor/a2" }),
+                    new PackageSponsorship(source2.Source, new[] { "https://sponsor/a1", "https://sponsor/a2" }),
                 };
                 var sponsorshipsForB = new[]
                 {
-                    new PackageSponsorship("https://source1", new[] { "https://sponsor/b1", "https://sponsor/b2" }),
-                    new PackageSponsorship("https://source2", new[] { "https://sponsor/b2", "https://sponsor/b1" }),
+                    new PackageSponsorship(source1.Source, new[] { "https://sponsor/b1", "https://sponsor/b2" }),
+                    new PackageSponsorship(source2.Source, new[] { "https://sponsor/b2", "https://sponsor/b1" }),
                 };
 
                 // Act
                 var packageSources = new List<PackageSource>
                 {
-                    new PackageSource("https://source1"),
-                    new PackageSource("https://source2"),
-                    new PackageSource("https://source3"),
-                    new PackageSource("https://silent.test/v3/index.json"),
+                    source1,
+                    source2,
+                    noDetailsSource,
+                    unsupportedSource,
+                    neverQueriedSource,
                 };
 
-                string actual = RenderSponsorReport(packageSources, pathContext,
+                string actual = RenderSponsorReport(
+                    packageSources,
+                    pathContext,
+                    reportModel =>
+                    {
+                        reportModel.Projects[0].SponsorshipQueriedSources =
+                            new[] { source1, source2, noDetailsSource };
+                        reportModel.Projects[0].SponsorshipUnsupportedSources = new[] { unsupportedSource };
+                    },
                     (
                         projectAPath,
                         new List<ListPackageReportFrameworkPackage>()
@@ -1464,11 +1477,22 @@ namespace NuGet.XPlat.FuncTest
                 {{
                   'version': 1,
                   'parameters': '--sponsor',
+                  'problems': [
+                    {{
+                      'level': 'warning',
+                      'text': 'Package source __APOSTROPHE__{noDetailsSource.Source}__APOSTROPHE__ did not return sponsorship details.'
+                    }},
+                    {{
+                      'level': 'warning',
+                      'text': 'Package source __APOSTROPHE__{unsupportedSource.Source}__APOSTROPHE__ does not support sponsorship reporting.'
+                    }}
+                  ],
                   'sources': [
-                    'https://source1',
-                    'https://source2',
-                    'https://source3',
-                    'https://silent.test/v3/index.json'
+                    '{source1.Source}',
+                    '{source2.Source}',
+                    '{noDetailsSource.Source}',
+                    '{unsupportedSource.Source}',
+                    '{neverQueriedSource.Source}'
                   ],
                   'packages': [
                     {{
@@ -1485,12 +1509,8 @@ namespace NuGet.XPlat.FuncTest
                       ],
                       'sponsorships': [
                         {{
-                          'sources': [ 'https://source1', 'https://source3' ],
+                          'sources': [ 'https://source1', 'https://source2' ],
                           'urls': [ 'https://sponsor/a1', 'https://sponsor/a2' ]
-                        }},
-                        {{
-                          'sources': [ 'https://source2' ],
-                          'urls': [ 'https://sponsor/other' ]
                         }}
                       ]
                     }},
@@ -1515,7 +1535,7 @@ namespace NuGet.XPlat.FuncTest
                     }}
                   ]
                 }}
-                ".Replace("'", "\""));
+                ".Replace("'", "\"").Replace("__APOSTROPHE__", "'"));
 
                 actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
@@ -1533,6 +1553,7 @@ namespace NuGet.XPlat.FuncTest
                 string actual = RenderSponsorReport(
                     new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
                     pathContext,
+                    configureReport: null,
                     (
                         Path.Combine(pathContext.SolutionRoot, "projectA.csproj"),
                         new List<ListPackageReportFrameworkPackage>()
@@ -1562,6 +1583,7 @@ namespace NuGet.XPlat.FuncTest
         private string RenderSponsorReport(
             List<PackageSource> packageSources,
             SimpleTestPathContext pathContext,
+            Action<ListPackageReportModel> configureReport,
             params (string projectPath, List<ListPackageReportFrameworkPackage> projectPackages, List<ReportProblem> projectProblems)[] projects)
         {
             string consoleOutputFileName = Path.Combine(pathContext.SolutionRoot, "consoleOutput.txt");
@@ -1572,8 +1594,10 @@ namespace NuGet.XPlat.FuncTest
                 writer.AutoFlush = true;
 
                 ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
-                jsonRenderer.Render(CreateListReportModel(
-                    SponsorJsonArgs(pathContext.SolutionRoot, packageSources, jsonRenderer), projects));
+                ListPackageReportModel reportModel = CreateListReportModel(
+                    SponsorJsonArgs(pathContext.SolutionRoot, packageSources, jsonRenderer), projects);
+                configureReport?.Invoke(reportModel);
+                jsonRenderer.Render(reportModel);
             }
 
             return SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));

@@ -30,6 +30,7 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
+        private const string SponsorshipRegistrationType = "RegistrationsBaseUrl/7.12.0";
         private const int GenericSuccessExitCode = 0;
         private const int GenericFailureExitCode = 1;
         private readonly MSBuildAPIUtility _msbuildUtility;
@@ -160,8 +161,14 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else if (listPackageArgs.ReportType == ReportType.Sponsor)
                     {
-                        Dictionary<string, List<PackageSponsorship>> sponsorships =
-                            await GetSponsorshipMetadataAsync(frameworks, listPackageArgs);
+                        (
+                            Dictionary<string, List<PackageSponsorship>> sponsorships,
+                            IReadOnlyList<PackageSource> sponsorshipQueriedSources,
+                            IReadOnlyList<PackageSource> sponsorshipUnsupportedSources) =
+                            await GetSponsorshipMetadataAndSourceDiagnosticsAsync(frameworks, listPackageArgs);
+
+                        projectModel.SponsorshipQueriedSources = sponsorshipQueriedSources;
+                        projectModel.SponsorshipUnsupportedSources = sponsorshipUnsupportedSources;
                         UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorships);
                     }
                     else
@@ -470,10 +477,16 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Queries the selected sources for each package's sponsorship URLs.
+        /// Queries sponsorship metadata and returns the capable sources queried and unsupported
+        /// sources selected after package source mapping was applied.
         /// </summary>
-        internal async Task<Dictionary<string, List<PackageSponsorship>>>
-            GetSponsorshipMetadataAsync(List<FrameworkPackages> targetFrameworks, ListPackageArgs listPackageArgs)
+        internal async Task<(
+            Dictionary<string, List<PackageSponsorship>> SponsorshipsById,
+            IReadOnlyList<PackageSource> QueriedSources,
+            IReadOnlyList<PackageSource> UnsupportedSources)>
+            GetSponsorshipMetadataAndSourceDiagnosticsAsync(
+                List<FrameworkPackages> targetFrameworks,
+                ListPackageArgs listPackageArgs)
         {
             List<string> packageIds = GetPackageIds(
                 targetFrameworks,
@@ -482,14 +495,28 @@ namespace NuGet.CommandLine.XPlat
             var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(
                 capacity: packageIds.Count,
                 comparer: StringComparer.OrdinalIgnoreCase);
+            var queriedSourceSet = new HashSet<PackageSource>();
+            var unsupportedSourceSet = new HashSet<PackageSource>();
 
             await ThrottledForEachAsync(packageIds,
                 async (packageId, cancellationToken) => await GetSponsorshipsForPackageAsync(packageId, listPackageArgs, cancellationToken),
-                result => sponsorshipsById[result.Key] = result.Value,
+                result =>
+                {
+                    sponsorshipsById[result.PackageId] = result.Sponsorships;
+                    queriedSourceSet.UnionWith(result.QueriedSources);
+                    unsupportedSourceSet.UnionWith(result.UnsupportedSources);
+                },
                 GetMaxParallel(listPackageArgs),
                 listPackageArgs.CancellationToken);
 
-            return sponsorshipsById;
+            IReadOnlyList<PackageSource> queriedSources = listPackageArgs.PackageSources
+                .Where(queriedSourceSet.Contains)
+                .ToList();
+            IReadOnlyList<PackageSource> unsupportedSources = listPackageArgs.PackageSources
+                .Where(unsupportedSourceSet.Contains)
+                .ToList();
+
+            return (sponsorshipsById, queriedSources, unsupportedSources);
         }
 
         private static List<PackageSponsorship> OrderSponsorshipsByConfiguredSource(
@@ -511,36 +538,52 @@ namespace NuGet.CommandLine.XPlat
                 .ToList();
         }
 
-        private async Task<KeyValuePair<string, List<PackageSponsorship>>>
+        private async Task<(
+            string PackageId,
+            List<PackageSponsorship> Sponsorships,
+            IReadOnlyList<PackageSource> QueriedSources,
+            IReadOnlyList<PackageSource> UnsupportedSources)>
             GetSponsorshipsForPackageAsync(
                 string package,
                 ListPackageArgs listPackageArgs,
                 CancellationToken cancellationToken)
         {
             var sponsorships = new List<PackageSponsorship>();
+            var queriedSources = new List<PackageSource>();
+            var unsupportedSources = new List<PackageSource>();
             List<PackageSource> sources = FilterSourcesByPackageSourceMapping(package, listPackageArgs);
 
             if (sources.Count == 0)
             {
-                return new KeyValuePair<string, List<PackageSponsorship>>(package, sponsorships);
+                return (package, sponsorships, queriedSources, unsupportedSources);
             }
 
             await ThrottledForEachAsync(sources,
                 async (source, innerCancellationToken) => await GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
-                continuation: sponsorship =>
+                continuation: result =>
                 {
-                    // Sources that had nothing to report simply do not appear on the package.
-                    if (sponsorship != null)
+                    if (!result.SupportsSponsorship)
                     {
-                        sponsorships.Add(sponsorship);
+                        unsupportedSources.Add(result.Source);
+                    }
+                    else
+                    {
+                        queriedSources.Add(result.Source);
+
+                        if (result.Sponsorship != null)
+                        {
+                            sponsorships.Add(result.Sponsorship);
+                        }
                     }
                 },
                 maxParallel: sources.Count,
                 cancellationToken);
 
-            return new KeyValuePair<string, List<PackageSponsorship>>(
+            return (
                 package,
-                OrderSponsorshipsByConfiguredSource(sponsorships, listPackageArgs));
+                OrderSponsorshipsByConfiguredSource(sponsorships, listPackageArgs),
+                queriedSources,
+                unsupportedSources);
         }
 
         /// <summary>
@@ -570,21 +613,30 @@ namespace NuGet.CommandLine.XPlat
                 .ToList();
         }
 
-        /// <summary>The sponsorship one source reports for one package, or null when it has none.</summary>
-        private async Task<PackageSponsorship> GetSponsorshipFromSourceAsync(
+        private async Task<(
+            PackageSource Source,
+            PackageSponsorship Sponsorship,
+            bool SupportsSponsorship)>
+            GetSponsorshipFromSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
             string package,
             CancellationToken cancellationToken)
         {
             SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
+            ServiceIndexResourceV3 serviceIndex =
+                await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
+
+            if (serviceIndex?.GetServiceEntryUri(SponsorshipRegistrationType) == null)
+            {
+                return (packageSource, null, SupportsSponsorship: false);
+            }
+
             RegistrationResourceV3 registrationResource = await sourceRepository.GetResourceAsync<RegistrationResourceV3>(cancellationToken);
 
             if (registrationResource == null)
             {
-                // The source cannot serve registration metadata, which is reported the same way as
-                // having nothing to report.
-                return null;
+                return (packageSource, null, SupportsSponsorship: true);
             }
 
             using var sourceCacheContext = new SourceCacheContext();
@@ -596,9 +648,11 @@ namespace NuGet.CommandLine.XPlat
 
             // A missing or empty sponsorshipUrls and a package the source does not carry are both
             // successful empty results. Network and protocol failures propagate instead.
-            return metadata == null || metadata.SponsorshipUrls.Count == 0
+            PackageSponsorship sponsorship = metadata == null || metadata.SponsorshipUrls.Count == 0
                 ? null
                 : new PackageSponsorship(packageSource.Source, metadata.SponsorshipUrls);
+
+            return (packageSource, sponsorship, SupportsSponsorship: true);
         }
 
         /// <summary>Run a throttled iteration of a list that performs async work, with a "single threaded" collection of results.</summary>

@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.CommandLine.XPlat.Utility;
@@ -419,51 +420,52 @@ namespace NuGet.CommandLine.Xplat.Tests
         private static SourceRepository StubSourceRepository(
             PackageSource source,
             IReadOnlyList<string> sponsorshipUrls = null,
-            bool hasRegistrationResource = true,
+            bool supportsSponsorship = true,
             Action onQueried = null,
             Task completeAfter = null)
         {
-            RegistrationResourceV3 registrationResource = null;
+            var httpSource = new HttpSource(
+                source,
+                () => Task.FromResult<HttpHandlerResource>(
+                    new TestHttpHandler(
+                        new TestMessageHandler(new Dictionary<string, string>(), string.Empty))),
+                new Mock<IThrottle>().Object);
 
-            if (hasRegistrationResource)
+            var stub = new Mock<RegistrationResourceV3>(
+                httpSource,
+                new Uri("https://stub.test"))
             {
-                var httpSource = new HttpSource(
-                    source,
-                    () => Task.FromResult<HttpHandlerResource>(
-                        new TestHttpHandler(
-                            new TestMessageHandler(new Dictionary<string, string>(), string.Empty))),
-                    new Mock<IThrottle>().Object);
-
-                var stub = new Mock<RegistrationResourceV3>(
-                    httpSource,
-                    new Uri("https://stub.test"))
+                CallBase = false
+            };
+            stub
+                .Setup(r => r.GetPackageIdMetadataAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(async () =>
                 {
-                    CallBase = false
-                };
-                stub
-                    .Setup(r => r.GetPackageIdMetadataAsync(
-                        It.IsAny<string>(),
-                        It.IsAny<SourceCacheContext>(),
-                        It.IsAny<ILogger>(),
-                        It.IsAny<CancellationToken>()))
-                    .Returns(async () =>
+                    if (completeAfter != null)
                     {
-                        if (completeAfter != null)
-                        {
-                            await Task.WhenAny(completeAfter, Task.Delay(TimeSpan.FromSeconds(30)));
-                        }
+                        await Task.WhenAny(completeAfter, Task.Delay(TimeSpan.FromSeconds(30)));
+                    }
 
-                        onQueried?.Invoke();
-                        return sponsorshipUrls == null ? null : new PackageIdMetadata(sponsorshipUrls);
-                    });
+                    onQueried?.Invoke();
+                    return sponsorshipUrls == null ? null : new PackageIdMetadata(sponsorshipUrls);
+                });
 
-                registrationResource = stub.Object;
-            }
+            string serviceIndexJson = supportsSponsorship
+                ? @"{""version"":""3.0.0"",""resources"":[{""@id"":""https://stub.test/registration/"",""@type"":""RegistrationsBaseUrl/7.12.0""}]}"
+                : @"{""version"":""3.0.0"",""resources"":[]}";
+            var serviceIndex = new ServiceIndexResourceV3(JObject.Parse(serviceIndexJson), DateTime.UtcNow);
 
             var repository = new Mock<SourceRepository>(source, Enumerable.Empty<INuGetResourceProvider>());
             repository
+                .Setup(r => r.GetResourceAsync<ServiceIndexResourceV3>(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(serviceIndex);
+            repository
                 .Setup(r => r.GetResourceAsync<RegistrationResourceV3>(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(registrationResource);
+                .ReturnsAsync(stub.Object);
 
             return repository.Object;
         }
@@ -534,31 +536,22 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new List<InstalledPackageReference>()),
             };
 
-            // With no package sources no source is queried, so every package resolves to an empty sponsorship list.
-            var listPackageArgs = new ListPackageArgs(
-                path: "",
-                packageSources: new List<PackageSource>(),
-                frameworks: new List<string>(),
-                reportType: ReportType.Sponsor,
-                renderer: new ListPackageConsoleRenderer(),
-                includeTransitive: false,
-                prerelease: false,
-                highestPatch: false,
-                highestMinor: false,
-                auditSources: null,
-                logger: new Mock<ILogger>().Object,
-                cancellationToken: CancellationToken.None);
-
-            var listPackageRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(NullLogger.Instance, virtualProjectBuilder: null));
-
             // Act
-            Dictionary<string, List<PackageSponsorship>> result = await listPackageRunner.GetSponsorshipMetadataAsync(frameworks, listPackageArgs);
+            (
+                Dictionary<string, List<PackageSponsorship>> result,
+                IReadOnlyList<PackageSource> queriedSources,
+                IReadOnlyList<PackageSource> unsupportedSources) =
+                await SponsorRunner().GetSponsorshipMetadataAndSourceDiagnosticsAsync(
+                    frameworks,
+                    SponsorArgs(new List<PackageSource>()));
 
             // Assert
             Assert.Equal(new[] { "Newtonsoft.Json", "Serilog" }, result.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase));
             // UpdatePackagesWithSponsorshipMetadata looks up by package name, so casing differences must still resolve.
             Assert.True(result.ContainsKey("NEWTONSOFT.JSON"));
             Assert.All(result.Values, sponsorships => Assert.Empty(sponsorships));
+            Assert.Empty(queriedSources);
+            Assert.Empty(unsupportedSources);
         }
 
         [Fact]
@@ -599,87 +592,90 @@ namespace NuGet.CommandLine.Xplat.Tests
             private const string SponsoringSource = "https://sponsoring.test/v3/index.json";
             private const string EmptySource = "https://empty.test/v3/index.json";
             private const string NotFoundSource = "https://notfound.test/v3/index.json";
-            private const string SourceWithoutRegistrationResource = "https://local.test/v3/index.json";
+            private const string UnsupportedSource = "https://unsupported.test/v3/index.json";
 
             private static readonly string[] SponsorshipUrls = { "https://sponsor/a", "https://sponsor/b" };
 
             [Fact]
-            public async Task OnlySourcesThatReturnUrls_AppearOnThePackage()
+            public async Task Sources_AreClassifiedBySponsorshipSupportAndResults()
             {
                 // Arrange
-                var sources = new List<PackageSource>
+                var packageSources = new List<PackageSource>
                 {
                     new PackageSource(SponsoringSource),
                     new PackageSource(EmptySource),
                     new PackageSource(NotFoundSource),
-                    new PackageSource(SourceWithoutRegistrationResource),
+                    new PackageSource(UnsupportedSource),
                 };
                 ListPackageCommandRunner runner = SponsorRunner();
-                runner._sourceRepositoryCache[sources[0]] = StubSourceRepository(sources[0], SponsorshipUrls);
-                runner._sourceRepositoryCache[sources[1]] = StubSourceRepository(sources[1], Array.Empty<string>());
-                runner._sourceRepositoryCache[sources[2]] = StubSourceRepository(sources[2], sponsorshipUrls: null);
-                runner._sourceRepositoryCache[sources[3]] = StubSourceRepository(
-                    sources[3],
-                    hasRegistrationResource: false);
+                runner._sourceRepositoryCache[packageSources[0]] = StubSourceRepository(packageSources[0], SponsorshipUrls);
+                runner._sourceRepositoryCache[packageSources[1]] = StubSourceRepository(packageSources[1], Array.Empty<string>());
+                runner._sourceRepositoryCache[packageSources[2]] = StubSourceRepository(packageSources[2], sponsorshipUrls: null);
+                runner._sourceRepositoryCache[packageSources[3]] = StubSourceRepository(
+                    packageSources[3],
+                    supportsSponsorship: false);
 
                 // Act
-                Dictionary<string, List<PackageSponsorship>> sponsorshipsById =
-                    await runner.GetSponsorshipMetadataAsync(
+                (
+                    Dictionary<string, List<PackageSponsorship>> sponsorshipsById,
+                    IReadOnlyList<PackageSource> queriedSources,
+                    IReadOnlyList<PackageSource> unsupportedSources) =
+                    await runner.GetSponsorshipMetadataAndSourceDiagnosticsAsync(
                         SponsorFrameworks("Newtonsoft.Json"),
-                        SponsorArgs(sources));
+                        SponsorArgs(packageSources));
 
                 // Assert
                 PackageSponsorship sponsorship = Assert.Single(sponsorshipsById["Newtonsoft.Json"]);
                 Assert.Equal(SponsoringSource, sponsorship.Source);
                 Assert.Equal(SponsorshipUrls, sponsorship.Urls);
+                Assert.Equal(packageSources.Take(3), queriedSources);
+                Assert.Equal(packageSources.Skip(3), unsupportedSources);
             }
 
             [Fact]
             public async Task SponsorshipOrder_FollowsConfiguredSourceOrder_WhenSourcesRespondOutOfOrder()
             {
                 // Arrange
-                var lastSourceAnswered = new TaskCompletionSource<bool>(
+                var secondSourceAnswered = new TaskCompletionSource<bool>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
                 var actualCompletionOrder = new ConcurrentQueue<string>();
-                var sources = new List<PackageSource>
+                var packageSources = new List<PackageSource>
                 {
                     new PackageSource("https://gated.test/v3/index.json"),
-                    new PackageSource("https://middle.test/v3/index.json"),
                     new PackageSource("https://first-to-answer.test/v3/index.json"),
                 };
                 ListPackageCommandRunner runner = SponsorRunner();
-
-                for (int i = 0; i < sources.Count; i++)
-                {
-                    PackageSource source = sources[i];
-                    bool isLast = i == sources.Count - 1;
-
-                    runner._sourceRepositoryCache[source] = StubSourceRepository(
-                        source,
-                        SponsorshipUrls,
-                        onQueried: () =>
-                        {
-                            actualCompletionOrder.Enqueue(source.Source);
-                            if (isLast)
-                            {
-                                lastSourceAnswered.TrySetResult(true);
-                            }
-                        },
-                        completeAfter: i == 0 ? lastSourceAnswered.Task : null);
-                }
+                runner._sourceRepositoryCache[packageSources[0]] = StubSourceRepository(
+                    packageSources[0],
+                    SponsorshipUrls,
+                    onQueried: () => actualCompletionOrder.Enqueue(packageSources[0].Source),
+                    completeAfter: secondSourceAnswered.Task);
+                runner._sourceRepositoryCache[packageSources[1]] = StubSourceRepository(
+                    packageSources[1],
+                    SponsorshipUrls,
+                    onQueried: () =>
+                    {
+                        actualCompletionOrder.Enqueue(packageSources[1].Source);
+                        secondSourceAnswered.TrySetResult(true);
+                    });
 
                 // Act
-                Dictionary<string, List<PackageSponsorship>> sponsorshipsById =
-                    await runner.GetSponsorshipMetadataAsync(
+                (
+                    Dictionary<string, List<PackageSponsorship>> sponsorshipsById,
+                    IReadOnlyList<PackageSource> queriedSources,
+                    IReadOnlyList<PackageSource> unsupportedSources) =
+                    await runner.GetSponsorshipMetadataAndSourceDiagnosticsAsync(
                         SponsorFrameworks("Newtonsoft.Json"),
-                        SponsorArgs(sources));
+                        SponsorArgs(packageSources));
 
                 // Assert
-                Assert.Equal(sources[0].Source, actualCompletionOrder.Last());
+                Assert.Equal(packageSources[0].Source, actualCompletionOrder.Last());
 
                 Assert.Equal(
-                    sources.Select(s => s.Source),
-                    sponsorshipsById["Newtonsoft.Json"].Select(s => s.Source));
+                    packageSources.Select(source => source.Source),
+                    sponsorshipsById["Newtonsoft.Json"].Select(sponsorship => sponsorship.Source));
+                Assert.Equal(packageSources, queriedSources);
+                Assert.Empty(unsupportedSources);
             }
         }
 
@@ -709,7 +705,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             {
                 // Arrange
                 var queriedSourceNames = new ConcurrentBag<string>();
-                var sources = new List<PackageSource>
+                var packageSources = new List<PackageSource>
                 {
                     new PackageSource(MappedSource, name: "mapped"),
                     new PackageSource(UnmappedSource, name: "unmapped"),
@@ -721,7 +717,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                         ("unmapped", "Some.Other.Package"));
                 ListPackageCommandRunner runner = SponsorRunner();
 
-                foreach (PackageSource source in sources)
+                foreach (PackageSource source in packageSources)
                 {
                     runner._sourceRepositoryCache[source] = StubSourceRepository(
                         source,
@@ -730,10 +726,13 @@ namespace NuGet.CommandLine.Xplat.Tests
                 }
 
                 // Act
-                Dictionary<string, List<PackageSponsorship>> sponsorshipsById =
-                    await runner.GetSponsorshipMetadataAsync(
-                    SponsorFrameworks(PackageId),
-                    SponsorArgs(sources, sourceMapping));
+                (
+                    Dictionary<string, List<PackageSponsorship>> sponsorshipsById,
+                    IReadOnlyList<PackageSource> queriedSources,
+                    IReadOnlyList<PackageSource> unsupportedSources) =
+                    await runner.GetSponsorshipMetadataAndSourceDiagnosticsAsync(
+                        SponsorFrameworks(PackageId),
+                        SponsorArgs(packageSources, sourceMapping));
 
                 // Assert
                 string[] expected = expectedSourceNames.Length == 0
@@ -742,6 +741,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Assert.Equal(
                     expected,
                     queriedSourceNames.OrderBy(name => name, StringComparer.Ordinal));
+                Assert.Equal(expected, queriedSources.Select(source => source.Name));
+                Assert.Empty(unsupportedSources);
                 Assert.Equal(expected.Length, sponsorshipsById[PackageId].Count);
             }
         }

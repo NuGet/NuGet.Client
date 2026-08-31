@@ -1358,6 +1358,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following package sources did not return sponsorship details:.
+        /// </summary>
+        internal static string ListPkg_SponsorNoDetailsHeader {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorNoDetailsHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages..
         /// </summary>
         internal static string ListPkg_SponsorPackageSourceMappingEnabled {
@@ -1376,11 +1385,47 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; did not return sponsorship details..
+        /// </summary>
+        internal static string ListPkg_SponsorProblemNoDetails {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorProblemNoDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; does not support sponsorship reporting..
+        /// </summary>
+        internal static string ListPkg_SponsorProblemUnsupportedSource {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorProblemUnsupportedSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Consider configuring an additional package source that provides sponsorship metadata, such as https://api.nuget.org/v3/index.json..
+        /// </summary>
+        internal static string ListPkg_SponsorSourceHint {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorSourceHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source: {0}.
         /// </summary>
         internal static string ListPkg_SponsorSourceLine {
             get {
                 return ResourceManager.GetString("ListPkg_SponsorSourceLine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following package sources do not support sponsorship reporting:.
+        /// </summary>
+        internal static string ListPkg_SponsorUnsupportedSourcesHeader {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorUnsupportedSourcesHeader", resourceCulture);
             }
         }
         

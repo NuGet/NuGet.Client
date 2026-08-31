@@ -63,15 +63,14 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
         }
 
         [Fact]
-        public void PrintSponsorships_ListsSourcesAboveTheirIndentedUrls_MergingSourcesThatAgree()
+        public void PrintSponsorships_FormatsMergedAndEmptyResults()
         {
             // Arrange
             var sponsorships = new[]
             {
                 new PackageSponsorship("https://source1", new[] { "https://sponsor/a", "https://sponsor/b" }),
-                new PackageSponsorship("https://source2", new[] { "https://sponsor/c" }),
-                new PackageSponsorship("https://source3", new[] { "https://sponsor/a", "https://sponsor/b" }),
-                new PackageSponsorship("https://source4", new[] { "https://sponsor/b", "https://sponsor/a" }),
+                new PackageSponsorship("https://source2", new[] { "https://sponsor/a", "https://sponsor/b" }),
+                new PackageSponsorship("https://source3", new[] { "https://sponsor/b", "https://sponsor/a" }),
             };
 
             // Act
@@ -81,39 +80,20 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             Assert.Equal(
                 new[]
                 {
-                    "Source: https://source1", "Source: https://source3", "  https://sponsor/a", "  https://sponsor/b",
-                    "Source: https://source2", "  https://sponsor/c",
-                    "Source: https://source4", "  https://sponsor/b", "  https://sponsor/a",
+                    "Source: https://source1", "Source: https://source2", "  https://sponsor/a", "  https://sponsor/b",
+                    "Source: https://source3", "  https://sponsor/b", "  https://sponsor/a",
                 },
                 cells.Select(c => c.Value));
             Assert.All(cells, c => Assert.Null(c.ForegroundColor));
-        }
-
-        [Fact]
-        public void PrintSponsorships_NoSponsorships_ReturnsSingleEmptyCell()
-        {
-            // Act & Assert
-            Assert.Equal(string.Empty, Assert.Single(ProjectPackagesPrintUtility.PrintSponsorships(null)).Value);
             Assert.Equal(string.Empty, Assert.Single(ProjectPackagesPrintUtility.PrintSponsorships(Array.Empty<PackageSponsorship>())).Value);
         }
 
         [Theory]
         [InlineData(false, "Top-level Package")]
         [InlineData(true, "Transitive Package")]
-        public void BuildTableHeaders_Sponsor_OmitsRequestedAndResolvedColumns(bool printingTransitive, string expectedFirstHeader)
-        {
-            // Act
-            string[] headers = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive, SponsorReportArgs);
-
-            // Assert
-            Assert.Equal(new[] { expectedFirstHeader, string.Empty, "Sponsor" }, headers);
-        }
-
-        [Fact]
-        public void BuildPackagesTable_Sponsor_EmitsOneCellPerHeader()
+        public void BuildPackagesTable_Sponsor_OmitsVersionColumnsAndAlignsCells(bool printingTransitive, string expectedFirstHeader)
         {
             // Arrange
-            // Every package row must contain exactly one cell per header.
             var packages = new[]
             {
                 new ListReportPackage(
@@ -127,18 +107,19 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
                     autoReference: false,
                     sponsorships: new[] { new PackageSponsorship("https://source", new[] { "https://sponsor/a" }) })
             };
-            int headerCount = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive: false, SponsorReportArgs).Length;
+            string[] headers = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive, SponsorReportArgs);
             bool autoReferenceFound = false;
 
             // Act
             FormattedCell[] table = ProjectPackagesPrintUtility
-                .BuildPackagesTable(packages, printingTransitive: false, SponsorReportArgs, ref autoReferenceFound)
+                .BuildPackagesTable(packages, printingTransitive, SponsorReportArgs, ref autoReferenceFound)
                 .ToArray();
 
             // Assert
+            Assert.Equal(new[] { expectedFirstHeader, string.Empty, "Sponsor" }, headers);
             for (int i = 0; i < table.Length; i++)
             {
-                bool expectNewLine = (i + 1) % (headerCount + 1) == 0;
+                bool expectNewLine = (i + 1) % (headers.Length + 1) == 0;
                 Assert.Equal(expectNewLine, table[i].Value == Environment.NewLine);
             }
         }

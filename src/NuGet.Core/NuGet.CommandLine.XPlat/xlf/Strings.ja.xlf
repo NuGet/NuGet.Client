@@ -741,6 +741,11 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
         <target state="new">Sponsor</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_SponsorNoDetailsHeader">
+        <source>The following package sources did not return sponsorship details:</source>
+        <target state="new">The following package sources did not return sponsorship details:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_SponsorPackageSourceMappingEnabled">
         <source>Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages.</source>
         <target state="new">Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages.</target>
@@ -751,9 +756,29 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
         <target state="new">Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_SponsorProblemNoDetails">
+        <source>Package source '{0}' did not return sponsorship details.</source>
+        <target state="new">Package source '{0}' did not return sponsorship details.</target>
+        <note>0 - Package source</note>
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorProblemUnsupportedSource">
+        <source>Package source '{0}' does not support sponsorship reporting.</source>
+        <target state="new">Package source '{0}' does not support sponsorship reporting.</target>
+        <note>0 - Package source</note>
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorSourceHint">
+        <source>Consider configuring an additional package source that provides sponsorship metadata, such as https://api.nuget.org/v3/index.json.</source>
+        <target state="new">Consider configuring an additional package source that provides sponsorship metadata, such as https://api.nuget.org/v3/index.json.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_SponsorSourceLine">
         <source>Source: {0}</source>
         <target state="new">Source: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorUnsupportedSourcesHeader">
+        <source>The following package sources do not support sponsorship reporting:</source>
+        <target state="new">The following package sources do not support sponsorship reporting:</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_TopLevelHeader">

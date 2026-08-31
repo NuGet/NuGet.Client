@@ -31,10 +31,8 @@ namespace NuGet.CommandLine.XPlat
         public IReadOnlyList<PackageSource> AuditSources { get; }
 
         /// <summary>
-        /// The configured package source mapping, or <see langword="null"/> when it was not resolved.
-        /// Sponsorship reporting honors it because registration requests disclose package IDs to
-        /// sources (CLI spec: "Registration requests may disclose package IDs to package sources;
-        /// therefore, sponsorship reporting will honor Package Source Mapping").
+        /// The package source mapping used for sponsorship reporting, or <see langword="null"/>
+        /// when no mapping was resolved.
         /// </summary>
         public PackageSourceMapping? PackageSourceMapping { get; }
 
