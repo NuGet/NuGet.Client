@@ -1189,4 +1189,10 @@ Do not translate "PackageVersion"</comment>
   <data name="ListPkg_SponsorSourceLine" xml:space="preserve">
     <value>Source: {0}</value>
   </data>
+  <data name="ListPkg_SponsorPackageSourceMappingEnabled" xml:space="preserve">
+    <value>Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages.</value>
+  </data>
+  <data name="ListPkg_SponsorPackageSourceMappingWithSource" xml:space="preserve">
+    <value>Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting.</value>
+  </data>
 </root>

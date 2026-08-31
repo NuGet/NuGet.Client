@@ -1358,6 +1358,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages..
+        /// </summary>
+        internal static string ListPkg_SponsorPackageSourceMappingEnabled {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorPackageSourceMappingEnabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting..
+        /// </summary>
+        internal static string ListPkg_SponsorPackageSourceMappingWithSource {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorPackageSourceMappingWithSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Source: {0}.
         /// </summary>
         internal static string ListPkg_SponsorSourceLine {

@@ -639,7 +639,79 @@ namespace NuGet.XPlat.FuncTest
             Assert.Contains("Project 'ProjectA' has no sponsorable packages.", output.ToString());
         }
 
+        [Theory]
+        [InlineData("--sponsor", false, true, true)]
+        [InlineData("--sponsor", true, false, false)]
+        [InlineData("--outdated", true, false, true)]
+        public void ListPackage_WithPackageSourceMapping_UsesMappingOnlyForSponsorWithoutSource(
+            string reportOption,
+            bool hasExplicitSource,
+            bool shouldUseMapping,
+            bool shouldRun)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                ConfigurePackageSourceMapping(pathContext);
+
+                VerifyCommand((projectPath, mockCommandRunner, testApp, getLogLevel, logger) =>
+                {
+                    // Arrange
+                    ListPackageArgs capturedArgs = null;
+                    mockCommandRunner
+                        .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
+                        .Callback<ListPackageArgs>(args => capturedArgs = args)
+                        .Returns(Task.FromResult(0));
+
+                    var argList = new List<string> { "list", projectPath, reportOption, "--config", pathContext.NuGetConfig };
+                    if (hasExplicitSource)
+                    {
+                        argList.AddRange(new[] { "--source", "https://api.nuget.org/v3/index.json" });
+                    }
+
+                    // Act
+                    var result = testApp.Parse(argList.ToArray()).Invoke();
+
+                    // Assert
+                    if (!shouldRun)
+                    {
+                        Assert.NotEqual(0, result);
+                        Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingWithSource, logger.ShowErrors());
+                        Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled, logger.ShowMessages());
+                        mockCommandRunner.Verify(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()), Times.Never);
+                        return;
+                    }
+
+                    Assert.Equal(0, result);
+                    Assert.NotNull(capturedArgs);
+                    if (shouldUseMapping)
+                    {
+                        Assert.NotNull(capturedArgs.PackageSourceMapping);
+                        Assert.True(capturedArgs.PackageSourceMapping.IsEnabled);
+                        Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled, logger.ShowMessages());
+                    }
+                    else
+                    {
+                        Assert.Null(capturedArgs.PackageSourceMapping);
+                        Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled, logger.ShowMessages());
+                    }
+                    mockCommandRunner.Verify(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()), Times.Once);
+                });
+            }
+        }
+
+        private static void ConfigurePackageSourceMapping(SimpleTestPathContext pathContext)
+        {
+            pathContext.Settings.AddSource("mapped", "https://mapped.test/v3/index.json");
+            pathContext.Settings.AddPackageSourceMapping("mapped", "*");
+        }
+
         private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, RootCommand, Func<LogLevel>> verify)
+        {
+            VerifyCommand((projectPath, mockCommandRunner, testApp, getLogLevel, logger) =>
+                verify(projectPath, mockCommandRunner, testApp, getLogLevel));
+        }
+
+        private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, RootCommand, Func<LogLevel>, TestCommandOutputLogger> verify)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -663,7 +735,7 @@ namespace NuGet.XPlat.FuncTest
                 // Act & Assert
                 try
                 {
-                    verify(projectPath, mockCommandRunner, testApp, () => logLevel);
+                    verify(projectPath, mockCommandRunner, testApp, () => logLevel, logger);
                 }
                 finally
                 {

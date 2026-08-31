@@ -741,6 +741,16 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
         <target state="new">Sponsor</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_SponsorPackageSourceMappingEnabled">
+        <source>Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages.</source>
+        <target state="new">Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorPackageSourceMappingWithSource">
+        <source>Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting.</source>
+        <target state="new">Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_SponsorSourceLine">
         <source>Source: {0}</source>
         <target state="new">Source: {0}</target>
