@@ -7,14 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Protocol.Plugins;
-using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -88,13 +86,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
             }
 
-            // can only interact when VS is not in server mode.
-            bool nonInteractive = await VisualStudioContextHelper.IsInServerModeAsync(CancellationToken.None);
-
-            // Initialize the credential service.
+            // VSSM_Server was removed from Visual Studio. Preserve the behavior of all remaining modes
+            // without querying the UI thread.
             var credentialService = new CredentialService(
                 new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)),
-                nonInteractive: nonInteractive,
+                nonInteractive: false,
                 handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             return credentialService;
