@@ -452,7 +452,7 @@ namespace NuGet.XPlat.FuncTest
                 string.Format(CultureInfo.CurrentCulture, CommandLine.XPlat.Strings.Error_NotPRProject, packagesConfigProject.ProjectPath),
                 error.ToString());
             Assert.Contains(
-                string.Format(CultureInfo.CurrentCulture, CommandLine.XPlat.Strings.Error_ProjectAssetsFilePropertyNotFound, unsupportedProject.ProjectPath),
+                string.Format(CultureInfo.CurrentCulture, CommandLine.XPlat.Strings.Error_NotPRProject, unsupportedProject.ProjectPath),
                 error.ToString());
             Assert.Contains("Project 'ProjectA'", output.ToString());
         }
