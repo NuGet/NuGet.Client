@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System.Collections.Generic;
 
 namespace NuGet.CommandLine.XPlat
@@ -12,10 +10,10 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal sealed class PackageSponsorship
     {
-        internal string Source { get; } // source url that returns data
-        internal IReadOnlyList<string> Urls { get; } // urls in original order
+        internal string Source { get; }
+        internal IReadOnlyList<string> Urls { get; }
 
-        internal PackageSponsorship(string source, IReadOnlyList<string> urls) // pairs the two
+        internal PackageSponsorship(string source, IReadOnlyList<string> urls)
         {
             Source = source;
             Urls = urls;

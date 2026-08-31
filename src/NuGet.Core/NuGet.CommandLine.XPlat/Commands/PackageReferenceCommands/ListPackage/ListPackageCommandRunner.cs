@@ -33,7 +33,7 @@ namespace NuGet.CommandLine.XPlat
         private const int GenericSuccessExitCode = 0;
         private const int GenericFailureExitCode = 1;
         private readonly MSBuildAPIUtility _msbuildUtility;
-        private readonly Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
+        internal readonly Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
 
         public ListPackageCommandRunner(MSBuildAPIUtility msbuildUtility)
         {
@@ -158,18 +158,16 @@ namespace NuGet.CommandLine.XPlat
                         await GetVulnerabilitiesFromAuditSourcesAsync(listPackageArgs, listPackageReportModel, projectModel, frameworks);
                         vulnerabilitiesCheckedFromAuditSources = true;
                     }
+                    else if (listPackageArgs.ReportType == ReportType.Sponsor)
+                    {
+                        Dictionary<string, List<PackageSponsorship>> sponsorships =
+                            await GetSponsorshipMetadataAsync(frameworks, listPackageArgs);
+                        UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorships);
+                    }
                     else
                     {
-                        if (listPackageArgs.ReportType == ReportType.Sponsor)
-                        {
-                            Dictionary<string, List<PackageSponsorship>> sponsorships = await GetSponsorshipMetadataAsync(frameworks, listPackageArgs);
-                            UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorships);
-                        }
-                        else
-                        {
-                            var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
-                            await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
-                        }
+                        var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
+                        await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
                     }
                 }
 
@@ -439,77 +437,99 @@ namespace NuGet.CommandLine.XPlat
             List<FrameworkPackages> targetFrameworks,
             ListPackageArgs listPackageArgs)
         {
-            List<string> allPackages = GetAllPackageIdentifiers(targetFrameworks, listPackageArgs.IncludeTransitive);
-            var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count);
+            List<string> packageIds = GetPackageIds(
+                targetFrameworks,
+                listPackageArgs.IncludeTransitive);
+            var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: packageIds.Count);
 
-            int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
-                ? 8 // Try to be nice to HTTP package sources
-                : listPackageArgs.PackageSources.Count == 0
-                    ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
-                    : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
-
-            await ThrottledForEachAsync(allPackages,
+            await ThrottledForEachAsync(packageIds,
                 async (packageId, cancellationToken) => await GetPackageMetadataAsync(packageId, listPackageArgs, cancellationToken),
                 packageMetadata => packageMetadataById[packageMetadata.Key] = packageMetadata.Value,
-                maxParallel,
+                GetMaxParallel(listPackageArgs),
                 listPackageArgs.CancellationToken);
 
             return packageMetadataById;
-
-            static List<string> GetAllPackageIdentifiers(List<FrameworkPackages> frameworks, bool includeTransitive)
-            {
-                IEnumerable<InstalledPackageReference> intermediateEnumerable = frameworks.SelectMany(f => f.TopLevelPackages);
-                if (includeTransitive)
-                {
-                    intermediateEnumerable = intermediateEnumerable.Concat(frameworks.SelectMany(f => f.TransitivePackages));
-                }
-                List<string> allPackages = intermediateEnumerable.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-                return allPackages;
-            }
         }
 
-        internal async Task<Dictionary<string, List<PackageSponsorship>>> GetSponsorshipMetadataAsync(
-            List<FrameworkPackages> targetFrameworks,
-            ListPackageArgs listPackageArgs)
-        {
-            // The sponsorship report always covers top-level and transitive packages.
-            List<string> allPackages = targetFrameworks
-                .SelectMany(f => f.TopLevelPackages.Concat(f.TransitivePackages))
-                .Select(p => p.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(
-                capacity: allPackages.Count,
-                comparer: StringComparer.OrdinalIgnoreCase);
-
-            int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
+        private static int GetMaxParallel(ListPackageArgs listPackageArgs) =>
+            listPackageArgs.PackageSources.Any(s => s.IsHttp)
                 ? 8 // Try to be nice to HTTP package sources
                 : listPackageArgs.PackageSources.Count == 0
                     ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
                     : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
 
-            await ThrottledForEachAsync(allPackages,
+        private static List<string> GetPackageIds(List<FrameworkPackages> frameworks, bool includeTransitive)
+        {
+            IEnumerable<InstalledPackageReference> packages = frameworks.SelectMany(f => f.TopLevelPackages);
+            if (includeTransitive)
+            {
+                packages = packages.Concat(frameworks.SelectMany(f => f.TransitivePackages));
+            }
+
+            return packages.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        /// <summary>
+        /// Queries the selected sources for each package's sponsorship URLs.
+        /// </summary>
+        internal async Task<Dictionary<string, List<PackageSponsorship>>>
+            GetSponsorshipMetadataAsync(List<FrameworkPackages> targetFrameworks, ListPackageArgs listPackageArgs)
+        {
+            List<string> packageIds = GetPackageIds(
+                targetFrameworks,
+                includeTransitive: true);
+
+            var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(
+                capacity: packageIds.Count,
+                comparer: StringComparer.OrdinalIgnoreCase);
+
+            await ThrottledForEachAsync(packageIds,
                 async (packageId, cancellationToken) => await GetSponsorshipsForPackageAsync(packageId, listPackageArgs, cancellationToken),
-                sponsorships => sponsorshipsById[sponsorships.Key] = sponsorships.Value,
-                maxParallel,
+                result => sponsorshipsById[result.Key] = result.Value,
+                GetMaxParallel(listPackageArgs),
                 listPackageArgs.CancellationToken);
 
             return sponsorshipsById;
         }
 
-        private async Task<KeyValuePair<string, List<PackageSponsorship>>> GetSponsorshipsForPackageAsync(
-            string package,
-            ListPackageArgs listPackageArgs,
-            CancellationToken cancellationToken)
+        private static List<PackageSponsorship> OrderSponsorshipsByConfiguredSource(
+            IEnumerable<PackageSponsorship> sponsorships,
+            ListPackageArgs listPackageArgs)
+        {
+            List<PackageSource> configuredSources = listPackageArgs.PackageSources;
+
+            return sponsorships
+                .OrderBy(sponsorship =>
+                {
+                    int index = configuredSources.FindIndex(
+                        source => string.Equals(
+                            source.Source,
+                            sponsorship.Source,
+                            StringComparison.Ordinal));
+                    return index < 0 ? int.MaxValue : index;
+                })
+                .ToList();
+        }
+
+        private async Task<KeyValuePair<string, List<PackageSponsorship>>>
+            GetSponsorshipsForPackageAsync(
+                string package,
+                ListPackageArgs listPackageArgs,
+                CancellationToken cancellationToken)
         {
             var sponsorships = new List<PackageSponsorship>();
-            List<PackageSource> sources = listPackageArgs.PackageSources;
+            List<PackageSource> sources = FilterSourcesByPackageSourceMapping(package, listPackageArgs);
+
+            if (sources.Count == 0)
+            {
+                return new KeyValuePair<string, List<PackageSponsorship>>(package, sponsorships);
+            }
 
             await ThrottledForEachAsync(sources,
                 async (source, innerCancellationToken) => await GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
                 continuation: sponsorship =>
                 {
+                    // Sources that had nothing to report simply do not appear on the package.
                     if (sponsorship != null)
                     {
                         sponsorships.Add(sponsorship);
@@ -518,9 +538,39 @@ namespace NuGet.CommandLine.XPlat
                 maxParallel: sources.Count,
                 cancellationToken);
 
-            return new KeyValuePair<string, List<PackageSponsorship>>(package, sponsorships);
+            return new KeyValuePair<string, List<PackageSponsorship>>(
+                package,
+                OrderSponsorshipsByConfiguredSource(sponsorships, listPackageArgs));
         }
 
+        /// <summary>
+        /// Restricts the sources queried for <paramref name="package"/> to those mapped to it, or
+        /// returns every selected source when package source mapping is disabled.
+        /// </summary>
+        private static List<PackageSource> FilterSourcesByPackageSourceMapping(
+            string package,
+            ListPackageArgs listPackageArgs)
+        {
+            PackageSourceMapping sourceMapping = listPackageArgs.PackageSourceMapping;
+
+            if (sourceMapping?.IsEnabled != true)
+            {
+                return listPackageArgs.PackageSources;
+            }
+
+            IReadOnlyList<string> mappedSourceNames = sourceMapping.GetConfiguredPackageSources(package);
+
+            if (mappedSourceNames.Count == 0)
+            {
+                return new List<PackageSource>();
+            }
+
+            return listPackageArgs.PackageSources
+                .Where(source => mappedSourceNames.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        /// <summary>The sponsorship one source reports for one package, or null when it has none.</summary>
         private async Task<PackageSponsorship> GetSponsorshipFromSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
@@ -532,7 +582,8 @@ namespace NuGet.CommandLine.XPlat
 
             if (registrationResource == null)
             {
-                // The source has no registration resource, so it cannot report sponsorship.
+                // The source cannot serve registration metadata, which is reported the same way as
+                // having nothing to report.
                 return null;
             }
 
@@ -543,6 +594,8 @@ namespace NuGet.CommandLine.XPlat
                 listPackageArgs.Logger,
                 cancellationToken);
 
+            // A missing or empty sponsorshipUrls and a package the source does not carry are both
+            // successful empty results. Network and protocol failures propagate instead.
             return metadata == null || metadata.SponsorshipUrls.Count == 0
                 ? null
                 : new PackageSponsorship(packageSource.Source, metadata.SponsorshipUrls);

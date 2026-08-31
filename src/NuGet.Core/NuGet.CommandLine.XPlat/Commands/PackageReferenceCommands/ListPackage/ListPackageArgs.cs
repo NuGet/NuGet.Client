@@ -31,6 +31,14 @@ namespace NuGet.CommandLine.XPlat
         public IReadOnlyList<PackageSource> AuditSources { get; }
 
         /// <summary>
+        /// The configured package source mapping, or <see langword="null"/> when it was not resolved.
+        /// Sponsorship reporting honors it because registration requests disclose package IDs to
+        /// sources (CLI spec: "Registration requests may disclose package IDs to package sources;
+        /// therefore, sponsorship reporting will honor Package Source Mapping").
+        /// </summary>
+        public PackageSourceMapping? PackageSourceMapping { get; }
+
+        /// <summary>
         /// A constructor for the arguments of list package
         /// command. This is used to execute the runner's
         /// method
@@ -47,6 +55,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="auditSources"> A list of sources for performing vulnerability auditing</param>
         /// <param name="logger"></param>
         /// <param name="cancellationToken"></param>
+        /// <param name="packageSourceMapping">Package source mapping for sponsorship reporting.</param>
         public ListPackageArgs(
             string path,
             List<PackageSource> packageSources,
@@ -59,20 +68,23 @@ namespace NuGet.CommandLine.XPlat
             bool highestMinor,
             IReadOnlyList<PackageSource> auditSources,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            PackageSourceMapping? packageSourceMapping = null)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             ReportType = reportType;
             Renderer = renderer;
-            IncludeTransitive = includeTransitive || reportType == ReportType.Sponsor; // force transitive for sponsorships, to be updated after v1
+            // The sponsorship report always covers transitive packages.
+            IncludeTransitive = includeTransitive || reportType == ReportType.Sponsor;
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
             AuditSources = auditSources;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CancellationToken = cancellationToken;
+            PackageSourceMapping = packageSourceMapping;
             ArgumentText = GetReportParameters();
         }
 
@@ -93,14 +105,14 @@ namespace NuGet.CommandLine.XPlat
                 case ReportType.Vulnerable:
                     sb.Append(" --vulnerable");
                     break;
-                case ReportType.Sponsor: // add --sponsor flag for sponsorship report
+                case ReportType.Sponsor:
                     sb.Append(" --sponsor");
                     break;
                 default:
                     break;
             }
 
-            // Transitive is implied by --sponsor rather than user-supplied. To be updated after v1.
+            // --include-transitive is implied by --sponsor, so it is not echoed back as a user-supplied parameter.
             if (IncludeTransitive && ReportType != ReportType.Sponsor)
             {
                 sb.Append(" --include-transitive");

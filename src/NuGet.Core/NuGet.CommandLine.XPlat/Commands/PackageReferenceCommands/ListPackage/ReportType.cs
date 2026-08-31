@@ -11,6 +11,6 @@ namespace NuGet.CommandLine.XPlat
         Deprecated,
         Outdated,
         Vulnerable,
-        Sponsor // add sponsor report type
+        Sponsor
     }
 }
