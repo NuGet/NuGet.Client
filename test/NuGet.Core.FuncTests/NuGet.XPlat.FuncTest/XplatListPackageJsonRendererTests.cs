@@ -1406,11 +1406,25 @@ namespace NuGet.XPlat.FuncTest
                 var sponsorshipsForA = new[]
                 {
                     new PackageSponsorship("https://source1", new[] { "https://sponsor/a1", "https://sponsor/a2" }),
-                    new PackageSponsorship("https://source2", new[] { "https://sponsor/a3" }),
+                    new PackageSponsorship("https://source2", new[] { "https://sponsor/other" }),
+                    new PackageSponsorship("https://source3", new[] { "https://sponsor/a1", "https://sponsor/a2" }),
+                };
+                var sponsorshipsForB = new[]
+                {
+                    new PackageSponsorship("https://source1", new[] { "https://sponsor/b1", "https://sponsor/b2" }),
+                    new PackageSponsorship("https://source2", new[] { "https://sponsor/b2", "https://sponsor/b1" }),
                 };
 
                 // Act
-                string actual = RenderSponsorReport(pathContext,
+                var packageSources = new List<PackageSource>
+                {
+                    new PackageSource("https://source1"),
+                    new PackageSource("https://source2"),
+                    new PackageSource("https://source3"),
+                    new PackageSource("https://silent.test/v3/index.json"),
+                };
+
+                string actual = RenderSponsorReport(packageSources, pathContext,
                     (
                         projectAPath,
                         new List<ListPackageReportFrameworkPackage>()
@@ -1423,7 +1437,7 @@ namespace NuGet.XPlat.FuncTest
                                 },
                                 TransitivePackages = new List<ListReportPackage>()
                                 {
-                                    CreateSponsoredPackage("B", new PackageSponsorship("https://source1", new[] { "https://sponsor/b" }))
+                                    CreateSponsoredPackage("B", sponsorshipsForB)
                                 }
                             }
                         },
@@ -1446,13 +1460,15 @@ namespace NuGet.XPlat.FuncTest
                 );
 
                 // Assert
-                // Keyed by package id rather than by project, with URLs attributed to the source that returned them.
                 var expected = SettingsTestUtils.RemoveWhitespace($@"
                 {{
                   'version': 1,
                   'parameters': '--sponsor',
                   'sources': [
-                    '{pathContext.PackageSource}'
+                    'https://source1',
+                    'https://source2',
+                    'https://source3',
+                    'https://silent.test/v3/index.json'
                   ],
                   'packages': [
                     {{
@@ -1469,12 +1485,12 @@ namespace NuGet.XPlat.FuncTest
                       ],
                       'sponsorships': [
                         {{
-                          'sources': [ 'https://source1' ],
+                          'sources': [ 'https://source1', 'https://source3' ],
                           'urls': [ 'https://sponsor/a1', 'https://sponsor/a2' ]
                         }},
                         {{
                           'sources': [ 'https://source2' ],
-                          'urls': [ 'https://sponsor/a3' ]
+                          'urls': [ 'https://sponsor/other' ]
                         }}
                       ]
                     }},
@@ -1489,7 +1505,11 @@ namespace NuGet.XPlat.FuncTest
                       'sponsorships': [
                         {{
                           'sources': [ 'https://source1' ],
-                          'urls': [ 'https://sponsor/b' ]
+                          'urls': [ 'https://sponsor/b1', 'https://sponsor/b2' ]
+                        }},
+                        {{
+                          'sources': [ 'https://source2' ],
+                          'urls': [ 'https://sponsor/b2', 'https://sponsor/b1' ]
                         }}
                       ]
                     }}
@@ -1510,7 +1530,9 @@ namespace NuGet.XPlat.FuncTest
                 string framework31 = "netcoreapp3.1";
 
                 // Act
-                string actual = RenderSponsorReport(pathContext,
+                string actual = RenderSponsorReport(
+                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
+                    pathContext,
                     (
                         Path.Combine(pathContext.SolutionRoot, "projectA.csproj"),
                         new List<ListPackageReportFrameworkPackage>()
@@ -1538,6 +1560,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         private string RenderSponsorReport(
+            List<PackageSource> packageSources,
             SimpleTestPathContext pathContext,
             params (string projectPath, List<ListPackageReportFrameworkPackage> projectPackages, List<ReportProblem> projectProblems)[] projects)
         {
@@ -1549,24 +1572,28 @@ namespace NuGet.XPlat.FuncTest
                 writer.AutoFlush = true;
 
                 ListPackageJsonRenderer jsonRenderer = new ListPackageJsonRenderer(writer);
-                var packageRefArgs = new ListPackageArgs(
-                            path: pathContext.SolutionRoot,
-                            packageSources: new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                            frameworks: new List<string>() { },
-                            reportType: ReportType.Sponsor,
-                            renderer: jsonRenderer,
-                            includeTransitive: false,
-                            prerelease: false,
-                            highestPatch: false,
-                            highestMinor: false,
-                            auditSources: null,
-                            NullLogger.Instance,
-                            CancellationToken.None);
-
-                jsonRenderer.Render(CreateListReportModel(packageRefArgs, projects));
+                jsonRenderer.Render(CreateListReportModel(
+                    SponsorJsonArgs(pathContext.SolutionRoot, packageSources, jsonRenderer), projects));
             }
 
             return SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
+        }
+
+        private static ListPackageArgs SponsorJsonArgs(string path, List<PackageSource> packageSources, IReportRenderer renderer)
+        {
+            return new ListPackageArgs(
+                path: path,
+                packageSources: packageSources,
+                frameworks: new List<string>(),
+                reportType: ReportType.Sponsor,
+                renderer: renderer,
+                includeTransitive: false,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                auditSources: null,
+                NullLogger.Instance,
+                CancellationToken.None);
         }
 
         private static ListReportPackage CreateSponsoredPackage(string packageId, params PackageSponsorship[] sponsorships)

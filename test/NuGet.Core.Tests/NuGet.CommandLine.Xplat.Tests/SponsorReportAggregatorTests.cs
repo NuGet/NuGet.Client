@@ -14,56 +14,39 @@ namespace NuGet.CommandLine.Xplat.Tests
     public class SponsorReportAggregatorTests
     {
         [Fact]
-        public void CollapseFrameworks_DeduplicatesAcrossFrameworksIgnoringCaseAndOrdersById()
+        public void CollapseFrameworks_DeduplicatesIgnoringCase_OrdersById_AndPrefersTopLevel()
         {
             // Arrange
             ListPackageProjectModel project = Project(
                 "a.csproj",
-                Framework("net8.0", topLevel: new List<ListReportPackage> { Package("zeta"), Package("Beta") }),
-                Framework("net472", topLevel: new List<ListReportPackage> { Package("ZETA"), Package("alpha") }));
+                Framework("net8.0",
+                    topLevel: new List<ListReportPackage> { Package("zeta"), Package("Beta"), Package("Shared") }),
+                Framework("net472",
+                    topLevel: new List<ListReportPackage> { Package("ZETA"), Package("alpha") },
+                    transitive: new List<ListReportPackage> { Package("shared"), Package("OnlyTransitive") }));
 
             // Act
             (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
 
             // Assert
-            // "ZETA" collapses into the first-seen "zeta", and ordering ignores case: Ordinal would sort "Beta" first.
-            Assert.Equal(new[] { "alpha", "Beta", "zeta" }, topLevel.Select(p => p.PackageId));
-            Assert.Empty(transitive);
-        }
-
-        [Fact]
-        public void CollapseFrameworks_PackageTopLevelInOneFrameworkTransitiveInAnother_ReportsTopLevelOnly()
-        {
-            // Arrange
-            ListPackageProjectModel project = Project(
-                "a.csproj",
-                Framework("net8.0", topLevel: new List<ListReportPackage> { Package("Shared") }),
-                Framework("net472", transitive: new List<ListReportPackage> { Package("shared"), Package("OnlyTransitive") }));
-
-            // Act
-            (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
-
-            // Assert
-            Assert.Equal("Shared", Assert.Single(topLevel).PackageId);
+            Assert.Equal(new[] { "alpha", "Beta", "Shared", "zeta" }, topLevel.Select(p => p.PackageId));
             Assert.Equal("OnlyTransitive", Assert.Single(transitive).PackageId);
         }
 
         [Fact]
         public void CollapseFrameworks_NoPackages_ReturnsEmptyLists()
         {
-            // Arrange - the two null shapes the aggregator guards against.
-            ListPackageProjectModel nullFrameworks = Project("a.csproj", (ListPackageReportFrameworkPackage[])null);
-            ListPackageProjectModel nullPackageLists = Project("b.csproj", Framework("net8.0"));
+            foreach (ListPackageProjectModel project in new[]
+            {
+                Project("a.csproj", (ListPackageReportFrameworkPackage[])null),
+                Project("b.csproj", Framework("net8.0")),
+            })
+            {
+                (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
 
-            // Act
-            (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(nullFrameworks);
-            (List<ListReportPackage> topLevelOfEmptyFramework, List<ListReportPackage> transitiveOfEmptyFramework) = SponsorReportAggregator.CollapseFrameworks(nullPackageLists);
-
-            // Assert
-            Assert.Empty(topLevel);
-            Assert.Empty(transitive);
-            Assert.Empty(topLevelOfEmptyFramework);
-            Assert.Empty(transitiveOfEmptyFramework);
+                Assert.Empty(topLevel);
+                Assert.Empty(transitive);
+            }
         }
 
         [Fact]
@@ -88,6 +71,32 @@ namespace NuGet.CommandLine.Xplat.Tests
             SponsorReportAggregator.SponsorReportPackage shared = packages.Single(p => p.PackageId == "Shared");
             Assert.Equal(new[] { ("a.csproj", true), ("b.csproj", false) }, shared.Projects);
             Assert.Equal("https://sponsor/shared", Assert.Single(Assert.Single(shared.Sponsorships).Urls));
+        }
+
+        [Theory]
+        [InlineData("s1=a,b; s2=a,b", "s1,s2=>a,b")]
+        [InlineData("s1=a,b; s2=b,a", "s1=>a,b | s2=>b,a")]
+        [InlineData("s1=a; s2=other; s3=a", "s1,s3=>a | s2=>other")]
+        [InlineData("s1=Alpha; s2=alpha", "s1=>Alpha | s2=>alpha")]
+        public void MergeBySponsorshipUrls_MergesOnlySourcesReturningTheSameOrderedUrls(string input, string expected)
+        {
+            IReadOnlyList<PackageSponsorship> sponsorships = input
+                .Split(';')
+                .Select(entry => entry.Split('='))
+                .Select(parts => new PackageSponsorship(parts[0].Trim(), parts[1].Split(',').Select(url => url.Trim()).ToArray()))
+                .ToList();
+
+            string actual = string.Join(" | ", SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships)
+                .Select(mergedSponsorship => string.Join(",", mergedSponsorship.Sources) + "=>" + string.Join(",", mergedSponsorship.Urls)));
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void MergeBySponsorshipUrls_NullOrEmptySponsorships_ProduceNoEntries()
+        {
+            Assert.Empty(SponsorReportAggregator.MergeBySponsorshipUrls(null));
+            Assert.Empty(SponsorReportAggregator.MergeBySponsorshipUrls(new List<PackageSponsorship>()));
         }
 
         private static ListPackageProjectModel Project(string projectPath, params ListPackageReportFrameworkPackage[] frameworks)

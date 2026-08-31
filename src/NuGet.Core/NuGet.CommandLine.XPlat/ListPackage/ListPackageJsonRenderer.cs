@@ -39,12 +39,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private const string SeverityProperty = "severity";
         private const string AdvisoryUrlProperty = "advisoryurl";
         private const string VulnerabilitiesProperty = "vulnerabilities";
-        private const string SponsorshipsProperty = "sponsorships"; // add sponsorships property to the json output for sponsorship report
-        private const string UrlsProperty = "urls"; // add urls property to the json output for sponsorship report
-        private const string PackagesProperty = "packages"; // add packages property to the json output for sponsorship report
-        private const string RelationshipProperty = "relationship"; // add relationship property to the json output for sponsorship report
-        private const string TopLevelRelationship = "topLevel"; // add topLevel relationship value to the json output for sponsorship report
-        private const string TransitiveRelationship = "transitive"; // add transitive relationship value to the json output for sponsorship report
+        private const string SponsorshipsProperty = "sponsorships";
+        private const string UrlsProperty = "urls";
+        private const string PackagesProperty = "packages";
+        private const string RelationshipProperty = "relationship";
+        private const string TopLevelRelationship = "topLevel";
+        private const string TransitiveRelationship = "transitive";
         private const string LatestVersionProperty = "latestVersion";
         private const string DeprecationReasonsProperty = "deprecationReasons";
         private const string AlternativePackageProperty = "alternativePackage";
@@ -378,10 +378,15 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WriteEndArray();
         }
 
-        // Each source is emitted as its own entry
+        /// <summary>
+        /// Groups sources only when they returned the same ordered sponsorship URL list.
+        /// </summary>
         private static void WriteSponsorships(JsonWriter writer, IReadOnlyList<PackageSponsorship> sponsorships)
         {
-            if (sponsorships == null || sponsorships.Count == 0)
+            IReadOnlyList<SponsorReportAggregator.MergedSponsorship> mergedSponsorships =
+                SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships);
+
+            if (mergedSponsorships.Count == 0)
             {
                 return;
             }
@@ -389,24 +394,25 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WritePropertyName(SponsorshipsProperty);
             writer.WriteStartArray();
 
-            foreach (PackageSponsorship sponsorship in sponsorships)
+            foreach (SponsorReportAggregator.MergedSponsorship sponsorship in mergedSponsorships)
             {
                 writer.WriteStartObject();
-
-                writer.WritePropertyName(SourcesProperty);
-                writer.WriteStartArray();
-                writer.WriteValue(sponsorship.Source);
-                writer.WriteEndArray();
-
-                writer.WritePropertyName(UrlsProperty);
-                writer.WriteStartArray();
-                foreach (string url in sponsorship.Urls)
-                {
-                    writer.WriteValue(url);
-                }
-                writer.WriteEndArray();
-
+                WriteStringArray(writer, SourcesProperty, sponsorship.Sources);
+                WriteStringArray(writer, UrlsProperty, sponsorship.Urls);
                 writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        private static void WriteStringArray(JsonWriter writer, string propertyName, IEnumerable<string> values)
+        {
+            writer.WritePropertyName(propertyName);
+            writer.WriteStartArray();
+
+            foreach (string value in values)
+            {
+                writer.WriteValue(value);
             }
 
             writer.WriteEndArray();
@@ -421,7 +427,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WritePropertyName(PackagesProperty);
             writer.WriteStartArray();
 
-            foreach (var package in SponsorReportAggregator.CollapseProjects(listPackageReportModel.Projects))
+            foreach (SponsorReportAggregator.SponsorReportPackage package in SponsorReportAggregator.CollapseProjects(listPackageReportModel.Projects))
             {
                 writer.WriteStartObject();
 

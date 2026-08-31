@@ -63,13 +63,15 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
         }
 
         [Fact]
-        public void PrintSponsorships_ReturnsSourceLineFollowedByIndentedUrls()
+        public void PrintSponsorships_ListsSourcesAboveTheirIndentedUrls_MergingSourcesThatAgree()
         {
             // Arrange
             var sponsorships = new[]
             {
                 new PackageSponsorship("https://source1", new[] { "https://sponsor/a", "https://sponsor/b" }),
                 new PackageSponsorship("https://source2", new[] { "https://sponsor/c" }),
+                new PackageSponsorship("https://source3", new[] { "https://sponsor/a", "https://sponsor/b" }),
+                new PackageSponsorship("https://source4", new[] { "https://sponsor/b", "https://sponsor/a" }),
             };
 
             // Act
@@ -77,7 +79,12 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
 
             // Assert
             Assert.Equal(
-                new[] { "Source: https://source1", "  https://sponsor/a", "  https://sponsor/b", "Source: https://source2", "  https://sponsor/c" },
+                new[]
+                {
+                    "Source: https://source1", "Source: https://source3", "  https://sponsor/a", "  https://sponsor/b",
+                    "Source: https://source2", "  https://sponsor/c",
+                    "Source: https://source4", "  https://sponsor/b", "  https://sponsor/a",
+                },
                 cells.Select(c => c.Value));
             Assert.All(cells, c => Assert.Null(c.ForegroundColor));
         }
@@ -106,8 +113,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
         public void BuildPackagesTable_Sponsor_EmitsOneCellPerHeader()
         {
             // Arrange
-            // BuildTableHeaders and BuildPackagesTable each compute "isSponsor" independently. If they drift,
-            // the header row and the value selectors disagree on column count with nothing else to catch it.
+            // Every package row must contain exactly one cell per header.
             var packages = new[]
             {
                 new ListReportPackage(
@@ -129,8 +135,12 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
                 .BuildPackagesTable(packages, printingTransitive: false, SponsorReportArgs, ref autoReferenceFound)
                 .ToArray();
 
-            // Assert - the header row ends after exactly one cell per header.
-            Assert.Equal(Environment.NewLine, table[headerCount].Value);
+            // Assert
+            for (int i = 0; i < table.Length; i++)
+            {
+                bool expectNewLine = (i + 1) % (headerCount + 1) == 0;
+                Assert.Equal(expectNewLine, table[i].Value == Environment.NewLine);
+            }
         }
 
         public static IEnumerable<object[]> ReportData =>

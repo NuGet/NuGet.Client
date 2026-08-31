@@ -86,7 +86,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 vulnerabilities: reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
                 deprecationReasons: reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
                 alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null,
-                sponsorships: reportType == ReportType.Sponsor ? p.Sponsorships : null // per-source sponsorship results
+                sponsorships: reportType == ReportType.Sponsor ? p.Sponsorships : null
             ));
 
             tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
@@ -122,16 +122,14 @@ namespace NuGet.CommandLine.XPlat.Utility
                 p => new FormattedCell(p.PackageId),
                 p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged)),
             };
-            bool isSponsor = listPackageArgs.ReportType == ReportType.Sponsor;
+            (bool includeRequested, bool includeResolved) = GetVersionColumns(printingTransitive, listPackageArgs);
 
-            // "Requested" version column is not needed for sponsorship report
-            if (!printingTransitive && !isSponsor)
+            if (includeRequested)
             {
                 valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
             }
 
-            // "Resolved" version column is not needed for sponsorship report
-            if (!isSponsor)
+            if (includeResolved)
             {
                 valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
             }
@@ -195,12 +193,16 @@ namespace NuGet.CommandLine.XPlat.Utility
                 : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, foregroundColor: null));
         }
 
-        internal static IEnumerable<FormattedCell> PrintSponsorships(IReadOnlyList<PackageSponsorship> sponsorships) // print sponsorships per source, with each source's urls indented on the next line
+        internal static IEnumerable<FormattedCell> PrintSponsorships(IReadOnlyList<PackageSponsorship> sponsorships)
         {
-            return sponsorships == null || sponsorships.Count == 0
+            IReadOnlyList<SponsorReportAggregator.MergedSponsorship> mergedSponsorships =
+                SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships);
+
+            return mergedSponsorships.Count == 0
                 ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
-                : sponsorships.SelectMany(s => new[] { new FormattedCell(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_SponsorSourceLine, s.Source), foregroundColor: null) }
-                    .Concat(s.Urls.Select(url => new FormattedCell("  " + url, foregroundColor: null))));
+                : mergedSponsorships.SelectMany(sponsorship => sponsorship.Sources
+                    .Select(source => new FormattedCell(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_SponsorSourceLine, source), foregroundColor: null))
+                    .Concat(sponsorship.Urls.Select(url => new FormattedCell("  " + url, foregroundColor: null))));
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)
@@ -282,6 +284,18 @@ namespace NuGet.CommandLine.XPlat.Utility
         }
 
         /// <summary>
+        /// Which of the two version columns a report shows. The sponsorship report shows neither:
+        /// it is package-scoped rather than version-scoped.
+        /// </summary>
+        private static (bool IncludeRequested, bool IncludeResolved) GetVersionColumns(bool printingTransitive, ListPackageArgs listPackageArgs)
+        {
+            bool isSponsor = listPackageArgs.ReportType == ReportType.Sponsor;
+
+            // "Requested" only applies to top-level packages.
+            return (IncludeRequested: !printingTransitive && !isSponsor, IncludeResolved: !isSponsor);
+        }
+
+        /// <summary>
         /// Prepares the headers for the tables that will be printed
         /// </summary>
         /// <param name="printingTransitive">Whether the table is for transitive or not</param>
@@ -290,24 +304,17 @@ namespace NuGet.CommandLine.XPlat.Utility
         internal static string[] BuildTableHeaders(bool printingTransitive, ListPackageArgs listPackageArgs)
         {
             var result = new List<string>();
-            bool isSponsor = listPackageArgs.ReportType == ReportType.Sponsor;
+            (bool includeRequested, bool includeResolved) = GetVersionColumns(printingTransitive, listPackageArgs);
 
-            if (printingTransitive)
+            result.Add(printingTransitive ? Strings.ListPkg_TransitiveHeader : Strings.ListPkg_TopLevelHeader);
+            result.Add(string.Empty);
+
+            if (includeRequested)
             {
-                result.Add(Strings.ListPkg_TransitiveHeader);
-                result.Add(string.Empty);
-            }
-            else
-            {
-                result.Add(Strings.ListPkg_TopLevelHeader);
-                result.Add(string.Empty);
-                if (!isSponsor) // "Requested" version column is not needed for sponsorship report
-                {
-                    result.Add(Strings.ListPkg_Requested);
-                }
+                result.Add(Strings.ListPkg_Requested);
             }
 
-            if (!isSponsor) // "Resolved" version column is not needed for sponsorship report
+            if (includeResolved)
             {
                 result.Add(Strings.ListPkg_Resolved);
             }
