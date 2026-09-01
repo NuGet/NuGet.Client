@@ -589,7 +589,7 @@
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableWarning_Single">
         <source>You have 1 vulnerable package version installed.</source>
-        <target state="new">You have 1 vulnerable package version installed.</target>
+        <target state="translated">Güvenlik açığı bulunan 1 yüklü paket sürümünüz var.</target>
         <note />
       </trans-unit>
       <trans-unit id="Label_License">
