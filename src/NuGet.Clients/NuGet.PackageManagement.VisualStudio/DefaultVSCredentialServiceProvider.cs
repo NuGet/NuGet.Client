@@ -86,8 +86,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
             }
 
-            // VSSM_Server was removed from Visual Studio. Preserve the behavior of all remaining modes
-            // without querying the UI thread.
             var credentialService = new CredentialService(
                 new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)),
                 nonInteractive: false,
