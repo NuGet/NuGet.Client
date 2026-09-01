@@ -430,11 +430,37 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var advisory = new PackageVulnerabilityMetadataContextInfo(
                 new Uri("https://github.com/advisories/GHSA-v5pm-xwqc-g5wc"),
                 (int)PackageVulnerabilitySeverity.High);
+            var packageSourceAdvisory = new PackageVulnerabilityMetadata(
+                new Uri("https://example.test/package-source-advisory"),
+                (int)PackageVulnerabilitySeverity.Low);
 
             PackageSearchMetadataContextInfo safeMetadata = PackageSearchMetadataContextInfo.Create(
                 PackageSearchMetadataBuilder.FromIdentity(packageIdentity).Build());
             PackageSearchMetadataContextInfo vulnerableMetadata = PackageSearchMetadataContextInfo.Create(
-                PackageSearchMetadataBuilder.FromIdentity(vulnerableIdentity).Build());
+                new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata
+                {
+                    Identity = vulnerableIdentity,
+                    Vulnerabilities = new[] { packageSourceAdvisory }
+                });
+
+            VersionInfoContextInfo safeVersionInfo = await VersionInfoContextInfo.CreateAsync(
+                new VersionInfo(safeVersion)
+                {
+                    PackageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata
+                    {
+                        Identity = packageIdentity,
+                        Vulnerabilities = new[] { packageSourceAdvisory }
+                    }
+                });
+            VersionInfoContextInfo vulnerableVersionInfo = await VersionInfoContextInfo.CreateAsync(
+                new VersionInfo(vulnerableVersion)
+                {
+                    PackageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata
+                    {
+                        Identity = vulnerableIdentity,
+                        Vulnerabilities = new[] { packageSourceAdvisory }
+                    }
+                });
 
             var searchService = new Mock<INuGetSearchService>();
             searchService.Setup(service => service.GetPackageVersionsAsync(
@@ -446,8 +472,8 @@ namespace NuGet.PackageManagement.UI.Test.Models
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[]
                 {
-                    new VersionInfoContextInfo(safeVersion),
-                    new VersionInfoContextInfo(vulnerableVersion)
+                    safeVersionInfo,
+                    vulnerableVersionInfo
                 });
             searchService.Setup(service => service.GetPackageMetadataAsync(
                     packageIdentity,
@@ -457,6 +483,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 .Returns(new ValueTask<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>((safeMetadata, null)));
 
             var vulnerabilityService = new Mock<IPackageVulnerabilityService>();
+            vulnerabilityService.SetupGet(service => service.IsAuditSourceConfigured).Returns(true);
             vulnerabilityService.Setup(service => service.GetVulnerableVersionsAsync(
                     packageIdentity.Id,
                     It.IsAny<IReadOnlyCollection<NuGetVersion>>(),
@@ -515,12 +542,15 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
             DisplayVersion vulnerableDisplayVersion = model.Versions.Single(
                 version => version?.Version == vulnerableVersion && version.AdditionalInfo == null);
+            DisplayVersion safeDisplayVersion = model.Versions.Single(
+                version => version?.Version == safeVersion && version.AdditionalInfo == null);
 
             model.SelectedVersion = vulnerableDisplayVersion;
             await model.SelectedVersionChangedAsync(packageItemViewModel, vulnerableVersion, CancellationToken.None);
 
             // Assert
             Assert.True(vulnerableDisplayVersion.IsVulnerable);
+            Assert.False(safeDisplayVersion.IsVulnerable);
             Assert.Empty(packageItemViewModel.VulnerableVersions);
             Assert.False(packageItemViewModel.IsPackageVulnerable);
             Assert.Equal(vulnerableVersion, model.PackageMetadata.Version);

@@ -518,6 +518,8 @@ namespace NuGet.PackageManagement.UI
 
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => (_packageModel as IVulnerableCapable)?.Vulnerabilities ?? [];
 
+        public bool IsAuditSourceConfigured => _vulnerabilityService?.IsAuditSourceConfigured ?? false;
+
         public void UpdateTransitiveInfo(PackageSearchMetadataContextInfo metadataContextInfo)
         {
             if (metadataContextInfo.TransitiveOrigins == null)

@@ -256,14 +256,12 @@ namespace NuGet.PackageManagement.UI
                 .Select(GetVersion)
                 .ToList();
 
-            // The per-version list above only reflects vulnerabilities embedded in the package source's
-            // registration metadata. Also honor the configured audit source(s) so that versions known to be
-            // vulnerable by the audit database are flagged, matching the details-pane icon/severity/CVE display
-            // and restore-time NuGetAudit. Registration and audit results are OR'd together.
+            // When audit sources are configured, their vulnerability data is authoritative. Otherwise, use
+            // the package sources' VulnerabilityInfo data.
             if (_allPackageVersions != null && _allPackageVersions.Count > 0)
             {
                 IReadOnlyCollection<NuGetVersion> versionsToEvaluate = _allPackageVersions.Select(v => v.version).ToList();
-                IReadOnlyDictionary<NuGetVersion, int> auditVulnerableVersions =
+                IReadOnlyDictionary<NuGetVersion, int> vulnerableVersions =
                     await searchResultPackage.GetVulnerableVersionsAsync(versionsToEvaluate, cancellationToken);
 
                 if (getPackageItemViewModel() != searchResultPackage)
@@ -271,16 +269,15 @@ namespace NuGet.PackageManagement.UI
                     return;
                 }
 
-                if (auditVulnerableVersions.Count > 0)
+                for (int i = 0; i < _allPackageVersions.Count; i++)
                 {
-                    for (int i = 0; i < _allPackageVersions.Count; i++)
-                    {
-                        (NuGetVersion version, bool isDeprecated, bool isVulnerable) = _allPackageVersions[i];
-                        if (!isVulnerable && auditVulnerableVersions.ContainsKey(version))
-                        {
-                            _allPackageVersions[i] = (version, isDeprecated, true);
-                        }
-                    }
+                    (NuGetVersion version, bool isDeprecated, bool isVulnerable) = _allPackageVersions[i];
+                    bool isVulnerableFromSelectedSources = vulnerableVersions.ContainsKey(version);
+                    bool effectiveIsVulnerable = searchResultPackage.IsAuditSourceConfigured
+                        ? isVulnerableFromSelectedSources
+                        : isVulnerable || isVulnerableFromSelectedSources;
+
+                    _allPackageVersions[i] = (version, isDeprecated, effectiveIsVulnerable);
                 }
             }
 
@@ -752,6 +749,13 @@ namespace NuGet.PackageManagement.UI
         {
             IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> auditVulnerabilities =
                 await packageItemViewModel.GetVulnerabilityInfoAsync(version, cancellationToken);
+
+            if (packageItemViewModel.IsAuditSourceConfigured)
+            {
+                return auditVulnerabilities
+                    .OrderByDescending(vulnerability => vulnerability.Severity)
+                    .ToList();
+            }
 
             return (packageSearchMetadata.Vulnerabilities ?? Array.Empty<PackageVulnerabilityMetadataContextInfo>())
                 .Concat(existingVulnerabilities)
