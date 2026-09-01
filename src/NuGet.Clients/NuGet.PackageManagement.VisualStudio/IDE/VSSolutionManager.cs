@@ -263,6 +263,8 @@ namespace NuGet.PackageManagement.VisualStudio
             Func<Task<ICredentialService>> credentialServiceFactory,
             JoinableTaskFactory joinableTaskFactory)
         {
+            Assumes.Present(joinableTaskFactory);
+
             var credentialService = new Microsoft.VisualStudio.Threading.AsyncLazy<ICredentialService>(
                 credentialServiceFactory,
                 joinableTaskFactory);
