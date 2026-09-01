@@ -1142,7 +1142,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 List<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo =
-                    await vulnerabilityService.GetVulnerabilityInfoAsync(packageIdentity, VsShellUtilities.ShutdownToken);
+                    await vulnerabilityService.GetVulnerabilityInfoAsync(packageIdentity, token);
                 return vulnerabilityInfo.Count > 0;
             }
 
