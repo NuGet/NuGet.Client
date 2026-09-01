@@ -93,7 +93,7 @@ NuGet.DependencyResolver.LockFileCacheKey.TargetFramework.get -> NuGet.Framework
 NuGet.DependencyResolver.PackagingUtility
 NuGet.DependencyResolver.RemoteDependencyWalker
 NuGet.DependencyResolver.RemoteDependencyWalker.RemoteDependencyWalker(NuGet.DependencyResolver.RemoteWalkContext! context) -> void
-NuGet.DependencyResolver.RemoteDependencyWalker.WalkAsync(NuGet.LibraryModel.LibraryRange! library, NuGet.Frameworks.NuGetFramework! framework, string! runtimeIdentifier, NuGet.RuntimeModel.RuntimeGraph! runtimeGraph, bool recursive) -> System.Threading.Tasks.Task<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult!>!>!
+NuGet.DependencyResolver.RemoteDependencyWalker.WalkAsync(NuGet.LibraryModel.LibraryRange! library, NuGet.Frameworks.NuGetFramework! framework, string? runtimeIdentifier, NuGet.RuntimeModel.RuntimeGraph? runtimeGraph, bool recursive) -> System.Threading.Tasks.Task<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult!>!>!
 NuGet.DependencyResolver.RemoteMatch
 NuGet.DependencyResolver.RemoteMatch.Equals(NuGet.DependencyResolver.RemoteMatch? other) -> bool
 NuGet.DependencyResolver.RemoteMatch.Library.get -> NuGet.LibraryModel.LibraryIdentity!

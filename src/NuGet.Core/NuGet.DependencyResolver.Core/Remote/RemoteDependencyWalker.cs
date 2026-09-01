@@ -26,7 +26,7 @@ namespace NuGet.DependencyResolver
             _context = context;
         }
 
-        public async Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
+        public async Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string? runtimeIdentifier, RuntimeGraph? runtimeGraph, bool recursive)
         {
             var transitiveCentralPackageVersions = new TransitiveCentralPackageVersions();
             var rootNode = await CreateGraphNodeAsync(
@@ -69,8 +69,8 @@ namespace NuGet.DependencyResolver
         private async ValueTask<GraphNode<RemoteResolveResult>> CreateGraphNodeAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
-            string runtimeName,
-            RuntimeGraph runtimeGraph,
+            string? runtimeName,
+            RuntimeGraph? runtimeGraph,
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency? conflictingDependency)> predicate,
             GraphEdge<RemoteResolveResult>? outerEdge,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions,
@@ -84,7 +84,7 @@ namespace NuGet.DependencyResolver
 
             HashSet<LibraryDependency>? rootRuntimeDependencies = null;
 
-            if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
+            if (runtimeGraph != null && runtimeName != null && runtimeName.Length > 0)
             {
                 EvaluateRuntimeDependencies(ref libraryRange, runtimeName, runtimeGraph, ref rootRuntimeDependencies);
             }
@@ -163,7 +163,7 @@ namespace NuGet.DependencyResolver
 
                                 HashSet<LibraryDependency>? runtimeDependencies = null;
 
-                                if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
+                                if (runtimeGraph != null && runtimeName != null && runtimeName.Length > 0)
                                 {
                                     EvaluateRuntimeDependencies(ref dependencyLibraryRange, runtimeName, runtimeGraph, ref runtimeDependencies);
                                 }
@@ -279,9 +279,7 @@ namespace NuGet.DependencyResolver
                 {
                     if (libraryRange.VersionRange != null &&
                         runtimeDependency.VersionRange != null &&
-                        libraryRange.VersionRange.MinVersion is NuGetVersion nearMinVersion &&
-                        runtimeDependency.VersionRange.MinVersion is NuGetVersion runtimeMinVersion &&
-                        nearMinVersion < runtimeMinVersion)
+                        libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
                     {
                         libraryRange = libraryDependency.LibraryRange;
 
@@ -589,8 +587,8 @@ namespace NuGet.DependencyResolver
             GraphNode<RemoteResolveResult> rootNode,
             LibraryDependency centralPackageVersionDependency,
             NuGetFramework framework,
-            string runtimeIdentifier,
-            RuntimeGraph runtimeGraph,
+            string? runtimeIdentifier,
+            RuntimeGraph? runtimeGraph,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
             Debug.Assert(rootNode.Item != null);
