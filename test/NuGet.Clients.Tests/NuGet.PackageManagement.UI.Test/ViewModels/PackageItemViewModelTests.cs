@@ -690,7 +690,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public async Task UpdateVersionsVulnerabilitiesAsync_WithVulnerableVersions_AddsThemToVulnerableVersions()
+        public async Task GetVulnerableVersionsAsync_ReturnsVulnerableVersionsWithoutUpdatingPackageState()
         {
             // Arrange
             var modelIdentity = new PackageIdentity("Newtonsoft.Json", new NuGetVersion("12.0.1"));
@@ -720,14 +720,15 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
                 mockVulnService.Object);
 
             // Act
-            await viewModel.UpdateVersionsVulnerabilitiesAsync(
+            IReadOnlyDictionary<NuGetVersion, int> result = await viewModel.GetVulnerableVersionsAsync(
                 new[] { vulnerableVersion, safeVersion },
                 CancellationToken.None);
 
             // Assert
-            viewModel.VulnerableVersions.Should().ContainKey(vulnerableVersion);
-            viewModel.VulnerableVersions.Should().NotContainKey(safeVersion);
+            result.Should().ContainKey(vulnerableVersion);
+            result.Should().NotContainKey(safeVersion);
+            viewModel.VulnerableVersions.Should().BeEmpty();
+            viewModel.IsPackageVulnerable.Should().BeFalse();
         }
     }
 }
-

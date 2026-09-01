@@ -263,14 +263,14 @@ namespace NuGet.PackageManagement.UI
             if (_allPackageVersions != null && _allPackageVersions.Count > 0)
             {
                 IReadOnlyCollection<NuGetVersion> versionsToEvaluate = _allPackageVersions.Select(v => v.version).ToList();
-                await searchResultPackage.UpdateVersionsVulnerabilitiesAsync(versionsToEvaluate, cancellationToken);
+                IReadOnlyDictionary<NuGetVersion, int> auditVulnerableVersions =
+                    await searchResultPackage.GetVulnerableVersionsAsync(versionsToEvaluate, cancellationToken);
 
                 if (getPackageItemViewModel() != searchResultPackage)
                 {
                     return;
                 }
 
-                IReadOnlyDictionary<NuGetVersion, int> auditVulnerableVersions = searchResultPackage.VulnerableVersions;
                 if (auditVulnerableVersions.Count > 0)
                 {
                     for (int i = 0; i < _allPackageVersions.Count; i++)
@@ -666,7 +666,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, NuGetVersion nugetVersion, CancellationToken cancellationToken)
+        internal async ValueTask SelectedVersionChangedAsync(PackageItemViewModel packageItemViewModel, NuGetVersion nugetVersion, CancellationToken cancellationToken)
         {
             // Load the detailed metadata that we already have and check to see if this matches what is selected, we cannot use the _metadataDict here unfortunately as it won't be populated yet
             (PackageSearchMetadataContextInfo packageSearchMetadata, PackageDeprecationMetadataContextInfo packageDeprecationMetadata) =
@@ -678,12 +678,27 @@ namespace NuGet.PackageManagement.UI
                     return;
                 }
 
+                IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> vulnerabilities =
+                    await GetMergedVulnerabilitiesAsync(
+                        packageItemViewModel,
+                        packageSearchMetadata,
+                        packageItemViewModel.Vulnerabilities,
+                        nugetVersion,
+                        cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested
+                    || _searchResultPackage != packageItemViewModel
+                    || SelectedVersion?.Version != nugetVersion)
+                {
+                    return;
+                }
+
                 PackageMetadata = new DetailedPackageMetadata(
                     packageSearchMetadata,
                     packageDeprecationMetadata,
                     packageItemViewModel.KnownOwnerViewModels,
                     packageItemViewModel.DownloadCount,
-                    packageItemViewModel.Vulnerabilities);
+                    vulnerabilities);
             }
             else
             {
@@ -699,18 +714,51 @@ namespace NuGet.PackageManagement.UI
                         return;
                     }
 
+                    IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> vulnerabilities =
+                        await GetMergedVulnerabilitiesAsync(
+                            packageItemViewModel,
+                            searchMetadata,
+                            Array.Empty<PackageVulnerabilityMetadataContextInfo>(),
+                            nugetVersion,
+                            cancellationToken);
+
+                    if (cancellationToken.IsCancellationRequested
+                        || _searchResultPackage != packageItemViewModel
+                        || SelectedVersion?.Version != nugetVersion)
+                    {
+                        return;
+                    }
+
                     var detailedPackageMetadata = new DetailedPackageMetadata(
                         searchMetadata,
                         deprecationData,
                         knownOwnerViewModels: null,
                         searchMetadata.DownloadCount,
-                        PackageVulnerabilities);
+                        vulnerabilities);
 
                     _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
 
                     PackageMetadata = detailedPackageMetadata;
                 }
             }
+        }
+
+        private static async Task<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>> GetMergedVulnerabilitiesAsync(
+            PackageItemViewModel packageItemViewModel,
+            PackageSearchMetadataContextInfo packageSearchMetadata,
+            IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> existingVulnerabilities,
+            NuGetVersion version,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> auditVulnerabilities =
+                await packageItemViewModel.GetVulnerabilityInfoAsync(version, cancellationToken);
+
+            return (packageSearchMetadata.Vulnerabilities ?? Array.Empty<PackageVulnerabilityMetadataContextInfo>())
+                .Concat(existingVulnerabilities)
+                .Concat(auditVulnerabilities)
+                .Distinct()
+                .OrderByDescending(vulnerability => vulnerability.Severity)
+                .ToList();
         }
 
         // Calculate the version to select among _versions and select it

@@ -820,31 +820,33 @@ namespace NuGet.PackageManagement.UI
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(UpdatePackageMaxVulnerabilityAsync));
         }
 
-        /// <summary>
-        /// Evaluates the provided versions of this package against the audit-source vulnerability database
-        /// and records any vulnerable versions (with their max severity) in <see cref="VulnerableVersions"/>.
-        /// This is the same data source that drives the details-pane vulnerability icon, severity, and CVE links,
-        /// so the versions list stays consistent with them.
-        /// </summary>
-        public async Task UpdateVersionsVulnerabilitiesAsync(IReadOnlyCollection<NuGetVersion> versions, CancellationToken cancellationToken)
+        public async Task<IReadOnlyDictionary<NuGetVersion, int>> GetVulnerableVersionsAsync(
+            IReadOnlyCollection<NuGetVersion> versions,
+            CancellationToken cancellationToken)
         {
             if (_vulnerabilityService is null || versions is null || versions.Count == 0)
             {
-                return;
+                return new Dictionary<NuGetVersion, int>();
             }
 
-            await RunOperationAsync(async (cancellationToken) =>
-            {
-                IReadOnlyDictionary<NuGetVersion, int> vulnerableVersions =
-                    await _vulnerabilityService.GetVulnerableVersionsAsync(Id, versions, cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+            return await _vulnerabilityService.GetVulnerableVersionsAsync(Id, versions, cancellationToken);
+        }
 
-                foreach (KeyValuePair<NuGetVersion, int> vulnerableVersion in vulnerableVersions)
-                {
-                    SetVulnerabilityMaxSeverity(vulnerableVersion.Key, vulnerableVersion.Value);
-                }
-            },
-            cancellationToken);
+        public async Task<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>> GetVulnerabilityInfoAsync(
+            NuGetVersion version,
+            CancellationToken cancellationToken)
+        {
+            if (_vulnerabilityService is null)
+            {
+                return Array.Empty<PackageVulnerabilityMetadataContextInfo>();
+            }
+
+            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities =
+                await _vulnerabilityService.GetVulnerabilityInfoAsync(
+                    new PackageIdentity(Id, version),
+                    cancellationToken);
+
+            return vulnerabilities ?? (IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>)Array.Empty<PackageVulnerabilityMetadataContextInfo>();
         }
 
         public async Task UpdatePackageStatusAsync(IEnumerable<PackageCollectionItem> installedPackages, CancellationToken cancellationToken, bool clearCache = false)
