@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Test.Utility;
@@ -130,23 +129,6 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
-        public void ReadRuntimeGraph_WithFilePath_ParsesRuntimeGraph()
-        {
-            string filePath = Path.GetTempFileName();
-
-            try
-            {
-                File.WriteAllText(filePath, SimpleRuntimeGraphContent);
-
-                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(filePath));
-            }
-            finally
-            {
-                File.Delete(filePath);
-            }
-        }
-
-        [Fact]
         public void ReadRuntimeGraph_WithStream_ParsesRuntimeGraph()
         {
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
@@ -180,15 +162,6 @@ namespace NuGet.RuntimeModel.Test
             JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader);
 
             Assert.Throws<ObjectDisposedException>(() => reader.Read());
-        }
-
-        [Fact]
-        public void ReadRuntimeGraphWithSystemTextJson_WithStream_ParsesRuntimeGraph()
-        {
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
-            {
-                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
-            }
         }
 
         [Fact]
@@ -239,31 +212,6 @@ namespace NuGet.RuntimeModel.Test
             RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader);
 
             Assert.Equal("win", Assert.Single(graph.Runtimes).Key);
-        }
-
-        [Fact]
-        public void ReadRuntimeGraph_WithJToken_ParsesRuntimeGraph()
-        {
-            const string content = """
-                {
-                    "runtimes": {
-                        "win-x64": {
-                            "#import": [ "win" ],
-                            "Some.Package": {
-                                "Some.Package.win-x64": "1.0.0"
-                            }
-                        }
-                    },
-                    "supports": {
-                        "windows": {
-                            "net8.0": [ "win-x64" ]
-                        }
-                    }
-                }
-                """;
-            JToken json = JToken.Parse(content);
-
-            Assert.Equal(ParseRuntimeJsonString(content), JsonRuntimeFormat.ReadRuntimeGraph(json));
         }
 
         [Fact]

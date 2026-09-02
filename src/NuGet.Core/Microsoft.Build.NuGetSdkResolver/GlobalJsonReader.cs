@@ -13,7 +13,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
-using NuGet.Common;
 using NuGet.Shared;
 
 namespace Microsoft.Build.NuGetSdkResolver
@@ -169,7 +168,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="json">The JSON to parse as a string.</param>
         /// <returns>A <see cref="Dictionary{TKey, TValue}" /> containing MSBuild project SDK versions if any were found, otherwise <see langword="null" />.</returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static Dictionary<string, string> ParseMSBuildSdkVersionsFromJsonWithNewtonsoftJson(string json)
+        internal static Dictionary<string, string> ParseMSBuildSdkVersionsFromJson(string json)
         {
             using (var reader = new JsonTextReader(new StringReader(json)))
             {
@@ -306,21 +305,6 @@ namespace Microsoft.Build.NuGetSdkResolver
             return versionsByName;
         }
 
-        internal static bool UseSystemTextJson(IEnvironmentVariableReader environmentVariableReader = null)
-        {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return true;
-            }
-
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Fires the <see cref="FileRead" /> event for the specified file.
         /// </summary>
@@ -341,7 +325,8 @@ namespace Microsoft.Build.NuGetSdkResolver
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Dictionary<string, string> ParseMSBuildSdkVersions(string globalJsonPath, SdkResolverContext sdkResolverContext)
         {
-            bool useSystemTextJson = UseSystemTextJson();
+            bool useSystemTextJson = NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment();
             Stream jsonStream = null;
             string json = null;
 
@@ -384,7 +369,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                         return ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(jsonStream);
                     }
 
-                    return ParseMSBuildSdkVersionsFromJsonWithNewtonsoftJson(json);
+                    return ParseMSBuildSdkVersionsFromJson(json);
                 }
                 catch (Exception e)
                 {

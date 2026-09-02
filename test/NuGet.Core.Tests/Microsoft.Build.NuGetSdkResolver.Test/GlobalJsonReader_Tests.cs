@@ -12,7 +12,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Test.Utility;
-using Test.Utility;
 using Xunit;
 
 namespace Microsoft.Build.NuGetSdkResolver.Test
@@ -22,18 +21,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
     /// </summary>
     public class GlobalJsonReaderTests
     {
-        [Fact]
-        public void UseSystemTextJson_WithEnvironmentOptIn_ReturnsTrue()
-        {
-            var environmentVariableReader = new TestEnvironmentVariableReader(
-                new Dictionary<string, string>
-                {
-                    ["NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"] = "true"
-                });
-
-            Assert.True(GlobalJsonReader.UseSystemTextJson(environmentVariableReader));
-        }
-
         /// <summary>
         /// Verifies that <see cref="GlobalJsonReader.GetMSBuildSdkVersions(Framework.SdkResolverContext)" /> ignores duplicates in the msbuild-sdks section and uses the last specified version.
         /// </summary>
@@ -453,7 +440,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
   },
 }";
 
-            Dictionary<string, string> newtonsoftResult = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithNewtonsoftJson(json);
+            Dictionary<string, string> newtonsoftResult = GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(json);
             Dictionary<string, string> systemTextJsonResult;
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
             {

@@ -10,7 +10,6 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Shared;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -119,56 +118,6 @@ namespace NuGet.ProjectModel.Test
             var target = Assert.Single(lockFile.Targets);
             Assert.Equal("net8.0", target.TargetAlias);
             Assert.Equal("PackageA", Assert.Single(target.Dependencies).Id);
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_ReadMalformedJson_ReturnsInvalidLockFileAndLogs()
-        {
-            var logger = new TestLogger();
-
-            var lockFile = PackagesLockFileFormat.Parse(
-                @"{ ""version"": 1, ""dependencies"": {",
-                logger,
-                "packages.lock.json");
-
-            Assert.Equal(int.MinValue, lockFile.Version);
-            Assert.Equal("packages.lock.json", lockFile.Path);
-            Assert.Single(logger.InformationMessages);
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_ReadStream_DisposesStreamAndReadsLargeValues()
-        {
-            string contentHash = new string('a', 20_000);
-            string lockFileContent = $@"{{
-                ""version"": 1,
-                ""dependencies"": {{
-                    ""net8.0"": {{
-                        ""PackageA"": {{
-                            ""type"": ""Direct"",
-                            ""resolved"": ""1.0.0"",
-                            ""contentHash"": ""{contentHash}""
-                        }}
-                    }}
-                }}
-            }}";
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(lockFileContent));
-
-            var lockFile = PackagesLockFileFormat.Read(stream, NullLogger.Instance, "In Memory");
-
-            Assert.False(stream.CanRead);
-            Assert.Equal(contentHash, Assert.Single(Assert.Single(lockFile.Targets).Dependencies).ContentHash);
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_ReadLockFileWithSystemTextJsonStream_DisposesStream()
-        {
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(@"{ ""version"": 1, ""dependencies"": {} }"));
-
-            PackagesLockFile lockFile = PackagesLockFileFormat.ReadLockFileWithSystemTextJson(stream);
-
-            Assert.False(stream.CanRead);
-            Assert.Equal(1, lockFile.Version);
         }
 
         [Fact]
@@ -387,10 +336,9 @@ namespace NuGet.ProjectModel.Test
                 }
             }";
 
-            PackagesLockFile lockFile = PackagesLockFileFormat.Parse(nuGetLockFileContent, "In Memory");
-            string expected = JObject.Parse(nuGetLockFileContent).ToString();
-
-            string output = Render(lockFile, useSystemTextJson);
+            var lockFile = PackagesLockFileFormat.Parse(nuGetLockFileContent, "In Memory");
+            var output = Render(lockFile, useSystemTextJson);
+            var expected = JObject.Parse(nuGetLockFileContent).ToString();
 
             // Assert
             Assert.Equal(expected, output);
@@ -595,10 +543,9 @@ namespace NuGet.ProjectModel.Test
                 }
             }";
 
-            PackagesLockFile lockFile = PackagesLockFileFormat.Parse(originalContent, "In Memory");
-            string expected = JObject.Parse(originalContent).ToString();
-
-            string output = Render(lockFile, useSystemTextJson);
+            var lockFile = PackagesLockFileFormat.Parse(originalContent, "In Memory");
+            var output = Render(lockFile, useSystemTextJson);
+            var expected = JObject.Parse(originalContent).ToString();
 
             Assert.Equal(expected, output);
         }

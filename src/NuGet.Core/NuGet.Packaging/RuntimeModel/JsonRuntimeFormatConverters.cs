@@ -46,23 +46,8 @@ namespace NuGet.RuntimeModel
         }
     }
 
-    internal sealed class RuntimeDescriptionCollectionJsonConverter : JsonConverter<List<RuntimeDescription>>
+    internal static class RuntimeDescriptionCollectionJsonConverter
     {
-        public override List<RuntimeDescription> Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
-        {
-            var runtimes = new List<RuntimeDescription>();
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                return runtimes;
-            }
-
-            using JsonDocument document = JsonDocument.ParseValue(ref reader);
-            return Read(document.RootElement);
-        }
-
         internal static List<RuntimeDescription> Read(JsonElement json)
         {
             var runtimes = new List<RuntimeDescription>();
@@ -78,14 +63,6 @@ namespace NuGet.RuntimeModel
             }
 
             return runtimes;
-        }
-
-        public override void Write(
-            Utf8JsonWriter writer,
-            List<RuntimeDescription> value,
-            JsonSerializerOptions options)
-        {
-            throw new NotSupportedException();
         }
 
         private static RuntimeDescription ReadRuntimeDescription(string runtimeIdentifier, JsonElement json)
@@ -143,23 +120,8 @@ namespace NuGet.RuntimeModel
 
     }
 
-    internal sealed class CompatibilityProfileCollectionJsonConverter : JsonConverter<List<CompatibilityProfile>>
+    internal static class CompatibilityProfileCollectionJsonConverter
     {
-        public override List<CompatibilityProfile> Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
-        {
-            var profiles = new List<CompatibilityProfile>();
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                return profiles;
-            }
-
-            using JsonDocument document = JsonDocument.ParseValue(ref reader);
-            return Read(document.RootElement);
-        }
-
         internal static List<CompatibilityProfile> Read(JsonElement json)
         {
             var profiles = new List<CompatibilityProfile>();
@@ -175,14 +137,6 @@ namespace NuGet.RuntimeModel
             }
 
             return profiles;
-        }
-
-        public override void Write(
-            Utf8JsonWriter writer,
-            List<CompatibilityProfile> value,
-            JsonSerializerOptions options)
-        {
-            throw new NotSupportedException();
         }
 
         private static CompatibilityProfile ReadCompatibilityProfile(string profileName, JsonElement json)
