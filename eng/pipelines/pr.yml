@@ -62,7 +62,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2022-1es
         testType: Unit
         testTargetFramework: net472
 
@@ -79,7 +80,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2022-1es
         testType: Unit
         testTargetFramework: net8.0
 
@@ -96,7 +98,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2022-1es
         testType: Functional
         testTargetFramework: net472
         timeoutInMinutes: 60
@@ -114,7 +117,8 @@ stages:
           agentPool: NetCore-Public
           agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
         ${{ else }}:
-          agentPool: VSEng-MicroBuildVSStable
+          agentPool: VSEng-MicroBuildVSLegacy
+          agentDemands: ImageOverride -equals server2025-microbuildVS2022-1es
         testType: Functional
         testTargetFramework: net8.0
         timeoutInMinutes: 60
