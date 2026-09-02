@@ -55,7 +55,8 @@ stages:
   - job: Build
     timeoutInMinutes: 170
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEng-MicroBuildVSLegacy
+      demands: ImageOverride -equals server2025-microbuildVS2022-1es
     steps:
     - template: vs-test/build.yml
       parameters:
