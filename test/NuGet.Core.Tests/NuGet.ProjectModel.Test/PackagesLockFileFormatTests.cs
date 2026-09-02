@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -647,6 +648,16 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(2, lockFile.Version);
             Assert.Equal(1, lockFile.Targets.Count);
             Assert.Null(lockFile.Targets[0].TargetAlias);
+        }
+
+        [Fact]
+        public void ReadLockFileWithSystemTextJson_WithTextReader_DisposesReader()
+        {
+            var reader = new StringReader("""{"version":1,"dependencies":{}}""");
+
+            PackagesLockFileFormat.ReadLockFileWithSystemTextJson(reader);
+
+            Assert.Throws<ObjectDisposedException>(() => reader.Read());
         }
 
         private static PackagesLockFile ParseWithSystemTextJson(string content)

@@ -157,6 +157,7 @@ namespace NuGet.ProjectModel
 
         internal static PackagesLockFile ReadLockFileWithSystemTextJson(TextReader reader)
         {
+            using var _ = reader;
             using JsonDocument document = JsonDocument.Parse(reader.ReadToEnd(), DocumentOptions);
             return ReadLockFile(document.RootElement);
         }

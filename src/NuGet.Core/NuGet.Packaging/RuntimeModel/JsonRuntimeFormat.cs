@@ -113,6 +113,7 @@ namespace NuGet.RuntimeModel
 
         internal static RuntimeGraph ReadRuntimeGraphWithSystemTextJson(TextReader textReader)
         {
+            using var _ = textReader;
             RuntimeGraphJsonModel json = STJJsonSerializer.Deserialize(
                 textReader.ReadToEnd(),
                 JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
