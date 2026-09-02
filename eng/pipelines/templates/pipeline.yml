@@ -27,10 +27,10 @@ stages:
         displayName: Get NuGet.Client semantic version
         timeoutInMinutes: 10
         pool:
-          name: VSEngSS-MicroBuild2019-1ES
+          name: VSEng-MicroBuildVSLegacy
           os: windows
           demands:
-            - ImageOverride -equals server2022-microbuildVS2019-1es
+            - ImageOverride -equals server2025-microbuildVS2019-1es
         steps:
           - template: /eng/pipelines/templates/Initialize_Build_SemanticVersion.yml@self
 
@@ -41,10 +41,10 @@ stages:
           SemanticVersion: $[dependencies.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
           BuildRevision: $[counter(format('{0}.{1}', variables['SemanticVersion'], variables['build.definitionname']), 1)]
         pool:
-          name: VSEngSS-MicroBuild2019-1ES
+          name: VSEng-MicroBuildVSLegacy
           os: windows
           demands:
-            - ImageOverride -equals server2022-microbuildVS2019-1es
+            - ImageOverride -equals server2025-microbuildVS2019-1es
         steps:
           - template: /eng/pipelines/templates/Initialize_Build.yml@self
 
@@ -67,10 +67,10 @@ stages:
           RunSettingsDropName: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
           ProfilingInputsDropName: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(SourceBranch)/$(Build.BuildId)'
         pool:
-          name: VSEngSS-MicroBuild2019-1ES
+          name: VSEng-MicroBuildVSLegacy
           os: windows
           demands:
-            - ImageOverride -equals server2022-microbuildVS2019-1es
+            - ImageOverride -equals server2025-microbuildVS2019-1es
         templateContext:
           mb:
             localization:
@@ -211,10 +211,10 @@ stages:
           LocalizedLanguageCount: "13"
           BuildRTM: "true"
         pool:
-          name: VSEngSS-MicroBuild2019-1ES
+          name: VSEng-MicroBuildVSLegacy
           os: windows
           demands:
-            - ImageOverride -equals server2022-microbuildVS2019-1es
+            - ImageOverride -equals server2025-microbuildVS2019-1es
         templateContext:
           mb:
             localization:

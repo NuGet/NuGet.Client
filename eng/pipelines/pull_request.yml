@@ -35,9 +35,9 @@ extends:
   template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
   parameters:
     settings:
-      networkIsolationPolicy: Permissive,CFSClean
+      networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3,GitHub,AzureStorage
     sdl:
-      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
+      sourceAnalysisPool: VSEng-MicroBuildVSStable
       binskim:
         enabled: true
         scanOutputDirectoryOnly: true
@@ -46,10 +46,10 @@ extends:
       credscan:
         enabled: false
     pool:
-      name: VSEngSS-MicroBuild2019-1ES
+      name: VSEng-MicroBuildVSLegacy
       os: windows
       demands:
-        - ImageOverride -equals server2022-microbuildVS2019-1es
+        - ImageOverride -equals server2025-microbuildVS2019-1es
     featureFlags:
       enablePrepareFilesForSbom: true
     customBuildTags:
