@@ -144,7 +144,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
                 context.MockSdkLogger.LoggedMessages.First().Message.Should().Be(
-                    $"Failed to parse \"{expectedGlobalJsonPath}\". Invalid character after parsing property name. Expected ':' but got: J. Path 'msbuild-sdks.Sdk2', line 5, position 10.");
+                    $"Failed to parse \"{expectedGlobalJsonPath}\". 'i' is an invalid start of a property name. Expected a '\"'. LineNumber: 4 | BytePositionInLine: 2.");
 
                 actualGlobalJsonPath.Should().Be(expectedGlobalJsonPath);
             }
@@ -428,17 +428,15 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         [Fact]
-        public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ParsesUtf16Stream()
+        public void GetMSBuildSdkVersions_ParsesUtf16File()
         {
             const string json = @"{ ""msbuild-sdks"": { ""Sdk1"": ""1.0.0"" } }";
-            using var stream = new MemoryStream();
-            using (var writer = new StreamWriter(stream, Encoding.Unicode, bufferSize: 1024, leaveOpen: true))
-            {
-                writer.Write(json);
-            }
-            stream.Position = 0;
+            using var testDirectory = TestDirectory.Create();
+            string path = Path.Combine(testDirectory, GlobalJsonReader.GlobalJsonFileName);
+            File.WriteAllText(path, json, Encoding.Unicode);
+            var context = new MockSdkResolverContext(testDirectory);
 
-            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(stream);
+            Dictionary<string, string> result = GlobalJsonReader.Instance.GetMSBuildSdkVersions(context);
 
             result.Should().Equal(new Dictionary<string, string> { ["Sdk1"] = "1.0.0" });
         }

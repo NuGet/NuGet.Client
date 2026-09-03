@@ -5,10 +5,10 @@ Some NuGet readers and writers still use Newtonsoft.Json, which uses reflection 
 
 NuGet is migrating its JSON readers and selected writers to System.Text.Json.
 During this migration, some Newtonsoft.Json and System.Text.Json implementations coexist behind a feature switch.
-The switch selects available System.Text.Json readers in NuGet.Protocol, NuGet.Packaging, NuGet.ProjectModel, and the NuGet SDK resolver.
+The switch selects available System.Text.Json readers in NuGet.Protocol, NuGet.Packaging, and NuGet.ProjectModel.
 Readers without a System.Text.Json implementation continue to use Newtonsoft.Json.
-The `packages.lock.json` file, stream, and string APIs use System.Text.Json directly.
-Its obsolete `TextReader` and `TextWriter` APIs continue to use Newtonsoft.Json for compatibility.
+The `global.json` and runtime graph readers, and the `packages.lock.json` file, stream, and string APIs use System.Text.Json directly.
+The obsolete `packages.lock.json` `TextWriter` API continues to use Newtonsoft.Json for compatibility.
 
 ## Using NuGet in a Native AOT Application
 

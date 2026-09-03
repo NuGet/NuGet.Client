@@ -22,7 +22,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("\"b\"", "b")]
         public void ReadTokenAsString_WhenValueIsConvertibleToString_ReturnsValueAsString(
             string value,
-            string expectedResult)
+            string? expectedResult)
         {
             var json = $"{{\"a\":{value}}}";
             var encodedBytes = Encoding.UTF8.GetBytes(json);
@@ -30,7 +30,7 @@ namespace NuGet.ProjectModel.Test
             reader.Read();
             reader.Read();
             reader.Read();
-            string actualResult = reader.ReadTokenAsString();
+            string? actualResult = reader.ReadTokenAsString();
             Assert.Equal(expectedResult, actualResult);
         }
     }

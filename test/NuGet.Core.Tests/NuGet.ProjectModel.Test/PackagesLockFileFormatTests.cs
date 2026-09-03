@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
@@ -623,18 +622,6 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(2, lockFile.Version);
             Assert.Equal(1, lockFile.Targets.Count);
             Assert.Null(lockFile.Targets[0].TargetAlias);
-        }
-
-        [Fact]
-        public void Read_WithTextReader_DisposesReader()
-        {
-            var reader = new StringReader("""{"version":1,"dependencies":{}}""");
-
-#pragma warning disable CS0618 // Verify the obsolete API's ownership behavior.
-            PackagesLockFileFormat.Read(reader, NullLogger.Instance, "In memory");
-#pragma warning restore CS0618
-
-            Assert.Throws<ObjectDisposedException>(() => reader.Read());
         }
 
         private static PackagesLockFile ParseWithSystemTextJson(string content)

@@ -1750,7 +1750,6 @@ static NuGet.Packaging.ZipArchiveExtensions.SaveAsFile(this System.IO.Compressio
 static NuGet.Packaging.ZipArchiveExtensions.UpdateFileTimeFromEntry(this System.IO.Compression.ZipArchiveEntry! entry, string! fileFullPath, NuGet.Common.ILogger! logger) -> void
 static NuGet.RuntimeModel.JsonRuntimeFormat.ReadRuntimeGraph(Newtonsoft.Json.Linq.JToken! json) -> NuGet.RuntimeModel.RuntimeGraph!
 static NuGet.RuntimeModel.JsonRuntimeFormat.ReadRuntimeGraph(System.IO.Stream! stream) -> NuGet.RuntimeModel.RuntimeGraph!
-static NuGet.RuntimeModel.JsonRuntimeFormat.ReadRuntimeGraph(System.IO.TextReader! textReader) -> NuGet.RuntimeModel.RuntimeGraph!
 static NuGet.RuntimeModel.JsonRuntimeFormat.ReadRuntimeGraph(string! filePath) -> NuGet.RuntimeModel.RuntimeGraph!
 static NuGet.RuntimeModel.JsonRuntimeFormat.WriteRuntimeGraph(NuGet.RuntimeModel.IObjectWriter! writer, NuGet.RuntimeModel.RuntimeGraph! runtimeGraph) -> void
 static NuGet.RuntimeModel.JsonRuntimeFormat.WriteRuntimeGraph(string! filePath, NuGet.RuntimeModel.RuntimeGraph! runtimeGraph) -> void

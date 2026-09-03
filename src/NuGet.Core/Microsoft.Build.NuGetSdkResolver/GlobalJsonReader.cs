@@ -267,13 +267,17 @@ namespace Microsoft.Build.NuGetSdkResolver
                 {
                     jsonStream = File.OpenRead(globalJsonPath);
                     // see if the stream is utf8
-                    using var reader = new StreamReader(jsonStream, detectEncodingFromByteOrderMarks: true, leaveOpen: true);
+                    using var reader = new StreamReader(jsonStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
                     reader.Peek();
                     if (reader.CurrentEncoding is not UTF8Encoding)
                     {
                         jsonStream.Dispose();
                         var content = File.ReadAllText(globalJsonPath);
                         jsonStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+                    }
+                    else
+                    {
+                        jsonStream.Position = 0;
                     }
                 }
                 catch (Exception e)

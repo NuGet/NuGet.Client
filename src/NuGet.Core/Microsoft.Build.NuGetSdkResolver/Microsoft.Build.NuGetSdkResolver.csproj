@@ -26,6 +26,7 @@
   <ItemGroup Label="NuGet Shared">
     <Compile Include="$(SharedDirectory)\AotCompatibilityAttributes.cs" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <Compile Include="$(SharedDirectory)\NuGetFeatureFlags.cs" />
+    <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
     <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
     <Compile Include="$(SharedDirectory)\Utf8JsonReaderExtensions.cs" />
     <Compile Include="$(SharedDirectory)\Utf8JsonStreamReader.cs" />
