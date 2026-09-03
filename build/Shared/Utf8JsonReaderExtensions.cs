@@ -65,7 +65,11 @@ namespace NuGet.Shared
 
         private static string ReadNumberAsString(this ref Utf8JsonReader reader)
         {
+#if NET5_0_OR_GREATER
+            return Encoding.UTF8.GetString(reader.ValueSpan);
+#else
             return Encoding.UTF8.GetString(reader.ValueSpan.ToArray());
+#endif
         }
     }
 
