@@ -165,10 +165,14 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
-        public void ReadRuntimeGraphWithSystemTextJson_WithUtf16Stream_ParsesRuntimeGraph()
+        public void ReadRuntimeGraphWithSystemTextJson_WithUtf8Bom_ParsesRuntimeGraph()
         {
             var stream = new MemoryStream();
-            using (var writer = new StreamWriter(stream, Encoding.Unicode, bufferSize: 1024, leaveOpen: true))
+            using (var writer = new StreamWriter(
+                stream,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                bufferSize: 1024,
+                leaveOpen: true))
             {
                 writer.Write(SimpleRuntimeGraphContent);
             }
@@ -188,9 +192,9 @@ namespace NuGet.RuntimeModel.Test
                     }
                 }
                 """;
-            using var reader = new StringReader(content);
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader);
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream);
 
             RuntimeDescription runtime = Assert.Single(graph.Runtimes).Value;
             Assert.Equal("win8", Assert.Single(runtime.InheritedRuntimes));
@@ -207,9 +211,9 @@ namespace NuGet.RuntimeModel.Test
                     }
                 }
                 """;
-            using var reader = new StringReader(content);
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader);
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream);
 
             Assert.Equal("win", Assert.Single(graph.Runtimes).Key);
         }
@@ -228,9 +232,9 @@ namespace NuGet.RuntimeModel.Test
                 }
                 """;
 
-            using (var reader = new StringReader(content))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             {
-                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader));
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
             }
         }
 

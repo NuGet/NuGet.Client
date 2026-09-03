@@ -16,7 +16,7 @@ using STJJsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NuGet.RuntimeModel
 {
-    public static class JsonRuntimeFormat
+    public static partial class JsonRuntimeFormat
     {
         public static RuntimeGraph ReadRuntimeGraph(string filePath)
         {
@@ -96,18 +96,15 @@ namespace NuGet.RuntimeModel
         {
             using (stream)
             {
-                if (stream.RequiresTextReader())
+                var reader = new Utf8JsonStreamReader(stream);
+                try
                 {
-                    using var reader = new StreamReader(stream);
-                    return ReadRuntimeGraphWithSystemTextJson(reader);
+                    return ReadRuntimeGraph(ref reader);
                 }
-
-                RuntimeGraphJsonModel json = STJJsonSerializer.Deserialize(
-                    stream,
-                    JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
-                    ?? throw new STJJsonException();
-
-                return ReadRuntimeGraph(json);
+                finally
+                {
+                    reader.Dispose();
+                }
             }
         }
 
