@@ -16,9 +16,15 @@
           BeforeTargets="PrepareForILLink">
     <!-- Single warn the following assemblies (produces IL2104 and IL3053), which have known warnings, so the warnings can be suppressed. -->
     <ItemGroup>
-      <IlcArg Include="--singlewarnassembly:Newtonsoft.Json" />
-      <IlcArg Include="--singlewarnassembly:Microsoft.CSharp" />
-      <IlcArg Include="--singlewarnassembly:System.Linq.Expressions" />
+      <ManagedAssemblyToLink Condition="'%(Filename)' == 'Microsoft.CSharp'">
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+      </ManagedAssemblyToLink>
+      <ManagedAssemblyToLink Condition="'%(Filename)' == 'Newtonsoft.Json'">
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+      </ManagedAssemblyToLink>
+      <ManagedAssemblyToLink Condition="'%(Filename)' == 'System.Linq.Expressions'">
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+      </ManagedAssemblyToLink>
     </ItemGroup>
   </Target>
 
