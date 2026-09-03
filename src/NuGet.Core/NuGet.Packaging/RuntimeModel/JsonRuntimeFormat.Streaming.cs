@@ -12,6 +12,9 @@ namespace NuGet.RuntimeModel
 {
     public static partial class JsonRuntimeFormat
     {
+        /// <summary>
+        /// Reads a runtime graph from a JSON stream in a single pass.
+        /// </summary>
         private static RuntimeGraph ReadRuntimeGraph(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType == JsonTokenType.None)

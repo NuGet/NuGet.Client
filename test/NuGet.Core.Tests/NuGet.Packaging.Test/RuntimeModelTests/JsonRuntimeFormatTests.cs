@@ -1,13 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.RuntimeModel.Test
@@ -143,36 +140,18 @@ namespace NuGet.RuntimeModel.Test
             string content = new string(' ', 20_000) + SimpleRuntimeGraphContent;
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
+            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
         }
 
         [Fact]
         public void ReadRuntimeGraph_WithEnvironmentOptIn_ParsesWithSystemTextJson()
         {
-            var environmentVariableReader = new TestEnvironmentVariableReader(
-                new Dictionary<string, string>
-                {
-                    ["NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"] = "true"
-                });
-
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
             {
                 Assert.Equal(
                     CreateSimpleRuntimeGraph(),
-                    JsonRuntimeFormat.ReadRuntimeGraph(stream, environmentVariableReader));
+                    JsonRuntimeFormat.ReadRuntimeGraph(stream));
             }
-        }
-
-        [Fact]
-        public void ReadRuntimeGraph_WithTextReader_DisposesReader()
-        {
-            var reader = new StringReader(SimpleRuntimeGraphContent);
-
-#pragma warning disable CS0618 // Verify the obsolete API's ownership behavior.
-            JsonRuntimeFormat.ReadRuntimeGraph(reader);
-#pragma warning restore CS0618
-
-            Assert.Throws<ObjectDisposedException>(() => reader.Read());
         }
 
         [Fact]
@@ -189,7 +168,7 @@ namespace NuGet.RuntimeModel.Test
             }
             stream.Position = 0;
 
-            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
+            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
         }
 
         [Fact]
@@ -205,7 +184,7 @@ namespace NuGet.RuntimeModel.Test
                 """;
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream);
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
 
             RuntimeDescription runtime = Assert.Single(graph.Runtimes).Value;
             Assert.Equal("win8", Assert.Single(runtime.InheritedRuntimes));
@@ -224,7 +203,7 @@ namespace NuGet.RuntimeModel.Test
                 """;
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream);
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
 
             Assert.Equal("win", Assert.Single(graph.Runtimes).Key);
         }
@@ -245,7 +224,7 @@ namespace NuGet.RuntimeModel.Test
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
             {
-                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
             }
         }
 
@@ -254,14 +233,10 @@ namespace NuGet.RuntimeModel.Test
             return new RuntimeGraph(new[] { new RuntimeDescription("any") });
         }
 
-        private RuntimeGraph ParseRuntimeJsonString(string content)
+        private static RuntimeGraph ParseRuntimeJsonString(string content)
         {
-            using (var reader = new StringReader(content))
-            {
-#pragma warning disable CS0618 // Exercise the obsolete TextReader compatibility API.
-                return JsonRuntimeFormat.ReadRuntimeGraph(reader);
-#pragma warning restore CS0618
-            }
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            return JsonRuntimeFormat.ReadRuntimeGraph(stream);
         }
     }
 }

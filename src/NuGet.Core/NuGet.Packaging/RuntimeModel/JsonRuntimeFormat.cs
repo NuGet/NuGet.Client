@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -16,6 +15,9 @@ namespace NuGet.RuntimeModel
 {
     public static partial class JsonRuntimeFormat
     {
+        /// <summary>
+        /// Reads a runtime graph from a file. The file is expected to contain UTF8 encoded json content.
+        /// </summary>
         public static RuntimeGraph ReadRuntimeGraph(string filePath)
         {
             using (var fileStream = File.OpenRead(filePath))
@@ -24,57 +26,11 @@ namespace NuGet.RuntimeModel
             }
         }
 
+        /// <summary>
+        /// Reads a runtime graph from a stream. The stream is expected to contain UTF8 encoded json content.
+        /// The stream will be disposed at the end of reading.
+        /// </summary>
         public static RuntimeGraph ReadRuntimeGraph(Stream stream)
-        {
-            return ReadRuntimeGraph(stream, environmentVariableReader: null);
-        }
-
-        internal static RuntimeGraph ReadRuntimeGraph(
-            Stream stream,
-            IEnvironmentVariableReader? environmentVariableReader)
-        {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return ReadRuntimeGraphWithSystemTextJson(stream);
-            }
-
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
-            {
-                return ReadRuntimeGraphWithSystemTextJson(stream);
-            }
-
-            return ReadRuntimeGraphWithNewtonsoftJson(stream);
-        }
-
-        [Obsolete("Use ReadRuntimeGraph(Stream) instead.")]
-        public static RuntimeGraph ReadRuntimeGraph(TextReader textReader)
-        {
-            return ReadRuntimeGraphWithNewtonsoftJson(textReader);
-        }
-
-        private static RuntimeGraph ReadRuntimeGraphWithNewtonsoftJson(Stream stream)
-        {
-            using (var streamReader = new StreamReader(stream))
-            {
-                return ReadRuntimeGraphWithNewtonsoftJson(streamReader);
-            }
-        }
-
-        private static RuntimeGraph ReadRuntimeGraphWithNewtonsoftJson(TextReader textReader)
-        {
-            var loadSettings = new JsonLoadSettings()
-            {
-                LineInfoHandling = LineInfoHandling.Ignore,
-                CommentHandling = CommentHandling.Ignore
-            };
-
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return ReadRuntimeGraph(JToken.Load(jsonReader, loadSettings));
-            }
-        }
-
-        internal static RuntimeGraph ReadRuntimeGraphWithSystemTextJson(Stream stream)
         {
             using (stream)
             {
@@ -283,6 +239,5 @@ namespace NuGet.RuntimeModel
             return (json as IEnumerable<KeyValuePair<string, JToken>>)
                    ?? Enumerable.Empty<KeyValuePair<string, JToken>>();
         }
-
     }
 }

@@ -43,6 +43,15 @@ namespace NuGet.Shared
         private int _bufferStartLineNumber;
         private int _bufferStartBytePositionInLine;
 
+        /// <summary>
+        /// A buffered reader that reads from a stream in chunks, and uses a Utf8JsonReader to read the json content from the buffer.
+        /// The reader will advance the underlying stream, but will not dispose it.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="bufferSize"></param>
+        /// <param name="arrayPool"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
             if (stream is null)
