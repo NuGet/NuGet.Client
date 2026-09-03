@@ -29,11 +29,25 @@ namespace NuGet.Protocol
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         public RegistrationResourceV3(HttpSource client, Uri baseUrl)
-            : this(client, baseUrl, EnvironmentVariableWrapper.Instance)
+            : this(client, baseUrl, supportsPackageIdMetadata: false, EnvironmentVariableWrapper.Instance)
         {
         }
 
         internal RegistrationResourceV3(HttpSource client, Uri baseUrl, IEnvironmentVariableReader environmentVariableReader)
+            : this(client, baseUrl, supportsPackageIdMetadata: false, environmentVariableReader)
+        {
+        }
+
+        internal RegistrationResourceV3(HttpSource client, Uri baseUrl, bool supportsPackageIdMetadata)
+            : this(client, baseUrl, supportsPackageIdMetadata, EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        internal RegistrationResourceV3(
+            HttpSource client,
+            Uri baseUrl,
+            bool supportsPackageIdMetadata,
+            IEnvironmentVariableReader environmentVariableReader)
         {
             if (client == null)
             {
@@ -47,6 +61,7 @@ namespace NuGet.Protocol
 
             _client = client;
             BaseUri = baseUrl;
+            SupportsPackageIdMetadata = supportsPackageIdMetadata;
             _environmentVariableReader = environmentVariableReader ?? EnvironmentVariableWrapper.Instance;
         }
 
@@ -54,6 +69,11 @@ namespace NuGet.Protocol
         /// Gets the <see cref="Uri"/> for the source backing this resource.
         /// </summary>
         public Uri BaseUri { get; }
+
+        /// <summary>
+        /// Gets whether the source supports package ID-level metadata on the registration index.
+        /// </summary>
+        public virtual bool SupportsPackageIdMetadata { get; }
 
         /// <summary>
         /// Constructs the URI of a registration index blob
@@ -285,7 +305,7 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            return new PackageIdMetadata(index.Metadata?.SponsorshipUrls ?? index.SponsorshipUrls);
+            return new PackageIdMetadata(index.Metadata?.SponsorshipUrls);
         }
 
         private async Task<RegistrationIndex?> DeserializeRegistrationIndexAsync(Stream? stream, CancellationToken token)

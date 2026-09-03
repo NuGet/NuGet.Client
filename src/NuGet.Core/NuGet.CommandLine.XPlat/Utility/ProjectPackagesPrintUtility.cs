@@ -86,7 +86,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 vulnerabilities: reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
                 deprecationReasons: reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
                 alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null,
-                sponsorships: reportType == ReportType.Sponsor ? p.Sponsorships : null
+                sponsorships: reportType == ReportType.Sponsor ? p.Sponsorships : Array.Empty<PackageSponsorship>()
             ));
 
             tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
@@ -122,15 +122,14 @@ namespace NuGet.CommandLine.XPlat.Utility
                 p => new FormattedCell(p.PackageId),
                 p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged)),
             };
-            (bool includeRequested, bool includeResolved) = GetVersionColumns(printingTransitive, listPackageArgs);
 
-            if (includeRequested)
+            if (listPackageArgs.ReportType != ReportType.Sponsor)
             {
-                valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
-            }
+                if (!printingTransitive)
+                {
+                    valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
+                }
 
-            if (includeResolved)
-            {
                 valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
             }
 
@@ -284,18 +283,6 @@ namespace NuGet.CommandLine.XPlat.Utility
         }
 
         /// <summary>
-        /// Which of the two version columns a report shows. The sponsorship report shows neither:
-        /// it is package-scoped rather than version-scoped.
-        /// </summary>
-        private static (bool IncludeRequested, bool IncludeResolved) GetVersionColumns(bool printingTransitive, ListPackageArgs listPackageArgs)
-        {
-            bool isSponsor = listPackageArgs.ReportType == ReportType.Sponsor;
-
-            // "Requested" only applies to top-level packages.
-            return (IncludeRequested: !printingTransitive && !isSponsor, IncludeResolved: !isSponsor);
-        }
-
-        /// <summary>
         /// Prepares the headers for the tables that will be printed
         /// </summary>
         /// <param name="printingTransitive">Whether the table is for transitive or not</param>
@@ -303,21 +290,31 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <returns></returns>
         internal static string[] BuildTableHeaders(bool printingTransitive, ListPackageArgs listPackageArgs)
         {
-            var result = new List<string>();
-            (bool includeRequested, bool includeResolved) = GetVersionColumns(printingTransitive, listPackageArgs);
-
-            result.Add(printingTransitive ? Strings.ListPkg_TransitiveHeader : Strings.ListPkg_TopLevelHeader);
-            result.Add(string.Empty);
-
-            if (includeRequested)
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
             {
+                return new[]
+                {
+                    printingTransitive ? Strings.ListPkg_TransitiveHeader : Strings.ListPkg_TopLevelHeader,
+                    string.Empty,
+                    Strings.ListPkg_SponsorHeader
+                };
+            }
+
+            var result = new List<string>();
+
+            if (printingTransitive)
+            {
+                result.Add(Strings.ListPkg_TransitiveHeader);
+                result.Add(string.Empty);
+            }
+            else
+            {
+                result.Add(Strings.ListPkg_TopLevelHeader);
+                result.Add(string.Empty);
                 result.Add(Strings.ListPkg_Requested);
             }
 
-            if (includeResolved)
-            {
-                result.Add(Strings.ListPkg_Resolved);
-            }
+            result.Add(Strings.ListPkg_Resolved);
 
             switch (listPackageArgs.ReportType)
             {
@@ -331,9 +328,6 @@ namespace NuGet.CommandLine.XPlat.Utility
                 case ReportType.Vulnerable:
                     result.Add(Strings.ListPkg_VulnerabilitySeverity);
                     result.Add(Strings.ListPkg_VulnerabilityAdvisoryUrl);
-                    break;
-                case ReportType.Sponsor:
-                    result.Add(Strings.ListPkg_SponsorHeader);
                     break;
             }
 

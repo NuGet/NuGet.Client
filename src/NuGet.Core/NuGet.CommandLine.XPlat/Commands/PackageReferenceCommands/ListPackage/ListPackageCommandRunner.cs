@@ -30,11 +30,10 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
-        private const string SponsorshipRegistrationType = "RegistrationsBaseUrl/7.12.0";
         private const int GenericSuccessExitCode = 0;
         private const int GenericFailureExitCode = 1;
         private readonly MSBuildAPIUtility _msbuildUtility;
-        internal readonly Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
+        private readonly Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
 
         public ListPackageCommandRunner(MSBuildAPIUtility msbuildUtility)
         {
@@ -465,7 +464,7 @@ namespace NuGet.CommandLine.XPlat
                     ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
                     : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
 
-        private static List<string> GetPackageIds(List<FrameworkPackages> frameworks, bool includeTransitive)
+        internal static List<string> GetPackageIds(List<FrameworkPackages> frameworks, bool includeTransitive)
         {
             IEnumerable<InstalledPackageReference> packages = frameworks.SelectMany(f => f.TopLevelPackages);
             if (includeTransitive)
@@ -480,7 +479,7 @@ namespace NuGet.CommandLine.XPlat
         /// Queries sponsorship metadata and returns the capable sources queried and unsupported
         /// sources selected after package source mapping was applied.
         /// </summary>
-        internal async Task<(
+        private async Task<(
             Dictionary<string, List<PackageSponsorship>> SponsorshipsById,
             IReadOnlyList<PackageSource> QueriedSources,
             IReadOnlyList<PackageSource> UnsupportedSources)>
@@ -519,7 +518,7 @@ namespace NuGet.CommandLine.XPlat
             return (sponsorshipsById, queriedSources, unsupportedSources);
         }
 
-        private static List<PackageSponsorship> OrderSponsorshipsByConfiguredSource(
+        internal static List<PackageSponsorship> OrderSponsorshipsByConfiguredSource(
             IEnumerable<PackageSponsorship> sponsorships,
             ListPackageArgs listPackageArgs)
         {
@@ -553,11 +552,6 @@ namespace NuGet.CommandLine.XPlat
             var unsupportedSources = new List<PackageSource>();
             List<PackageSource> sources = FilterSourcesByPackageSourceMapping(package, listPackageArgs);
 
-            if (sources.Count == 0)
-            {
-                return (package, sponsorships, queriedSources, unsupportedSources);
-            }
-
             await ThrottledForEachAsync(sources,
                 async (source, innerCancellationToken) => await GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
                 continuation: result =>
@@ -590,23 +584,18 @@ namespace NuGet.CommandLine.XPlat
         /// Restricts the sources queried for <paramref name="package"/> to those mapped to it, or
         /// returns every selected source when package source mapping is disabled.
         /// </summary>
-        private static List<PackageSource> FilterSourcesByPackageSourceMapping(
+        internal static List<PackageSource> FilterSourcesByPackageSourceMapping(
             string package,
             ListPackageArgs listPackageArgs)
         {
             PackageSourceMapping sourceMapping = listPackageArgs.PackageSourceMapping;
 
-            if (sourceMapping?.IsEnabled != true)
+            if (!sourceMapping.IsEnabled)
             {
                 return listPackageArgs.PackageSources;
             }
 
             IReadOnlyList<string> mappedSourceNames = sourceMapping.GetConfiguredPackageSources(package);
-
-            if (mappedSourceNames.Count == 0)
-            {
-                return new List<PackageSource>();
-            }
 
             return listPackageArgs.PackageSources
                 .Where(source => mappedSourceNames.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
@@ -624,19 +613,11 @@ namespace NuGet.CommandLine.XPlat
             CancellationToken cancellationToken)
         {
             SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
-            ServiceIndexResourceV3 serviceIndex =
-                await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
-
-            if (serviceIndex?.GetServiceEntryUri(SponsorshipRegistrationType) == null)
-            {
-                return (packageSource, null, SupportsSponsorship: false);
-            }
-
             RegistrationResourceV3 registrationResource = await sourceRepository.GetResourceAsync<RegistrationResourceV3>(cancellationToken);
 
-            if (registrationResource == null)
+            if (registrationResource?.SupportsPackageIdMetadata != true)
             {
-                return (packageSource, null, SupportsSponsorship: true);
+                return (packageSource, null, SupportsSponsorship: false);
             }
 
             using var sourceCacheContext = new SourceCacheContext();
@@ -838,7 +819,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        internal static void UpdatePackagesWithSponsorshipMetadata(
+        private static void UpdatePackagesWithSponsorshipMetadata(
             List<FrameworkPackages> frameworks,
             Dictionary<string, List<PackageSponsorship>> sponsorshipsById)
         {

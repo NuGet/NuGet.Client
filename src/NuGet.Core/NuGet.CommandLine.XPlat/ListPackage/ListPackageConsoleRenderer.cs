@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         protected List<ReportProblem> _problems = new();
         private readonly TextWriter _consoleOut;
         private readonly TextWriter _consoleError;
+        internal bool ShowSponsorshipSourceHint { get; set; } = true;
 
         public ListPackageConsoleRenderer()
             : this(Console.Out, Console.Error)
@@ -90,7 +91,11 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
         }
 
-        private static void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
+        private void WriteProjects(
+            TextWriter consoleOut,
+            TextWriter consoleError,
+            List<ListPackageProjectModel> projects,
+            ListPackageArgs listPackageArgs)
         {
             foreach (ListPackageProjectModel project in projects)
             {
@@ -126,7 +131,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                             break;
                         case ReportType.Sponsor:
                             consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoSponsorshipForProject, project.ProjectName));
-                            PrintSponsorshipSourceDiagnostics(consoleOut, project);
                             break;
                     }
                 }
@@ -208,12 +212,26 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     }
                 }
             }
+
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                PrintSponsorshipSourceDiagnostics(consoleOut, projects, listPackageArgs);
+            }
         }
 
-        private static void PrintSponsorshipSourceDiagnostics(TextWriter consoleOut, ListPackageProjectModel project)
+        private void PrintSponsorshipSourceDiagnostics(
+            TextWriter consoleOut,
+            IEnumerable<ListPackageProjectModel> projects,
+            ListPackageArgs listPackageArgs)
         {
-            IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails = project.SponsorshipQueriedSources;
-            IReadOnlyList<PackageSource> unsupportedSources = project.SponsorshipUnsupportedSources;
+            IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails =
+                SponsorReportAggregator.GetSourcesWithoutSponsorshipDetails(
+                    projects,
+                    listPackageArgs.PackageSources);
+            IReadOnlyList<PackageSource> unsupportedSources =
+                SponsorReportAggregator.OrderSourcesByConfiguration(
+                    projects.SelectMany(project => project.SponsorshipUnsupportedSources),
+                    listPackageArgs.PackageSources);
 
             if (sourcesWithoutSponsorshipDetails.Count > 0)
             {
@@ -229,7 +247,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 consoleOut.WriteLine();
             }
 
-            if (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0)
+            if (ShowSponsorshipSourceHint &&
+                (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0))
             {
                 consoleOut.WriteLine(Strings.ListPkg_SponsorSourceHint);
             }

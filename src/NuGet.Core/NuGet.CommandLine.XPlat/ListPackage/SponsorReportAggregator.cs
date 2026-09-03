@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine.XPlat.ListPackage
 {
@@ -86,11 +87,11 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         /// Collapses sources that returned the same ordered URL list into a single entry listing
         /// all of them.
         /// </summary>
-        internal static IReadOnlyList<MergedSponsorship> MergeBySponsorshipUrls(IReadOnlyList<PackageSponsorship>? sponsorships)
+        internal static IReadOnlyList<MergedSponsorship> MergeBySponsorshipUrls(IReadOnlyList<PackageSponsorship> sponsorships)
         {
             var mergedSponsorships = new List<MergedSponsorship>();
 
-            foreach (PackageSponsorship sponsorship in sponsorships ?? Array.Empty<PackageSponsorship>())
+            foreach (PackageSponsorship sponsorship in sponsorships)
             {
                 MergedSponsorship? match = mergedSponsorships.FirstOrDefault(
                     mergedSponsorship => mergedSponsorship.Urls.SequenceEqual(sponsorship.Urls, StringComparer.Ordinal));
@@ -104,6 +105,37 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
 
             return mergedSponsorships;
+        }
+
+        internal static IReadOnlyList<PackageSource> GetSourcesWithoutSponsorshipDetails(
+            IEnumerable<ListPackageProjectModel> projects,
+            IReadOnlyList<PackageSource> configuredSources)
+        {
+            List<ListPackageProjectModel> projectList = projects.ToList();
+            var sourcesWithSponsorshipDetails = new HashSet<string>(
+                CollapseProjects(projectList)
+                    .SelectMany(package => package.Sponsorships)
+                    .Select(sponsorship => sponsorship.Source),
+                StringComparer.Ordinal);
+
+            return OrderSourcesByConfiguration(
+                projectList.SelectMany(project => project.SponsorshipQueriedSources),
+                configuredSources)
+                .Where(source => !sourcesWithSponsorshipDetails.Contains(source.Source))
+                .ToList();
+        }
+
+        internal static IReadOnlyList<PackageSource> OrderSourcesByConfiguration(
+            IEnumerable<PackageSource> sources,
+            IReadOnlyList<PackageSource> configuredSources)
+        {
+            var sourceUrls = new HashSet<string>(
+                sources.Select(source => source.Source),
+                StringComparer.Ordinal);
+
+            return configuredSources
+                .Where(source => sourceUrls.Contains(source.Source))
+                .ToList();
         }
 
         /// <summary>

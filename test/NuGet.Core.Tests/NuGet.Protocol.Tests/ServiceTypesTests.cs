@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Text.RegularExpressions;
 using FluentAssertions;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
@@ -25,11 +23,10 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void RegistrationsBaseUrls_AreOrderedAndResolveVersion7120()
+        public void RegistrationsBaseUrls_Returns_All_Versions_In_Desc_Order()
         {
             string[] expected =
             {
-                "RegistrationsBaseUrl/7.12.0",
                 "RegistrationsBaseUrl/Versioned",
                 "RegistrationsBaseUrl/3.6.0",
                 "RegistrationsBaseUrl/3.4.0",
@@ -38,22 +35,13 @@ namespace NuGet.Protocol.Tests
                 "RegistrationsBaseUrl"
             };
             ServiceTypes.RegistrationsBaseUrl.Should().ContainInOrder(expected);
+        }
 
-            var serviceIndex = new ServiceIndexResourceV3(
-                JObject.Parse(
-                    @"{
-                      ""version"": ""3.0.0"",
-                      ""resources"": [
-                        {
-                          ""@id"": ""https://unit.test/registration/"",
-                          ""@type"": ""RegistrationsBaseUrl/7.12.0""
-                        }
-                      ]
-                    }"),
-                DateTime.UtcNow);
-
-            serviceIndex.GetServiceEntryUri(ServiceTypes.RegistrationsBaseUrl)
-                .Should().Be(new Uri("https://unit.test/registration/"));
+        [Fact]
+        public void RegistrationsBaseUrls_PackageIdMetadataCapabilityIsSeparate()
+        {
+            ServiceTypes.RegistrationsBaseUrl.Should().NotContain("RegistrationsBaseUrl/7.12.0");
+            ServiceTypes.RegistrationsBaseUrl7120.Should().Equal("RegistrationsBaseUrl/7.12.0");
         }
     }
 }

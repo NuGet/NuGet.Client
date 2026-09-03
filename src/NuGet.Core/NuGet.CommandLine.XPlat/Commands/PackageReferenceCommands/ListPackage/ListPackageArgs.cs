@@ -31,10 +31,9 @@ namespace NuGet.CommandLine.XPlat
         public IReadOnlyList<PackageSource> AuditSources { get; }
 
         /// <summary>
-        /// The package source mapping used for sponsorship reporting, or <see langword="null"/>
-        /// when no mapping was resolved.
+        /// The configured package source mapping. The runner decides whether a report uses it.
         /// </summary>
-        public PackageSourceMapping? PackageSourceMapping { get; }
+        public PackageSourceMapping PackageSourceMapping { get; }
 
         /// <summary>
         /// A constructor for the arguments of list package
@@ -53,7 +52,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="auditSources"> A list of sources for performing vulnerability auditing</param>
         /// <param name="logger"></param>
         /// <param name="cancellationToken"></param>
-        /// <param name="packageSourceMapping">Package source mapping for sponsorship reporting.</param>
+        /// <param name="packageSourceMapping">The configured package source mapping.</param>
         public ListPackageArgs(
             string path,
             List<PackageSource> packageSources,
@@ -67,7 +66,7 @@ namespace NuGet.CommandLine.XPlat
             IReadOnlyList<PackageSource> auditSources,
             ILogger logger,
             CancellationToken cancellationToken,
-            PackageSourceMapping? packageSourceMapping = null)
+            PackageSourceMapping packageSourceMapping)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
@@ -82,7 +81,7 @@ namespace NuGet.CommandLine.XPlat
             AuditSources = auditSources;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CancellationToken = cancellationToken;
-            PackageSourceMapping = packageSourceMapping;
+            PackageSourceMapping = packageSourceMapping ?? throw new ArgumentNullException(nameof(packageSourceMapping));
             ArgumentText = GetReportParameters();
         }
 

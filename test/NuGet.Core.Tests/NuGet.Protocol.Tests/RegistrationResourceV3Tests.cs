@@ -58,18 +58,12 @@ namespace NuGet.Protocol.Tests
             var cases = new (string Json, string[]? Expected)[]
             {
                 (
-                    @"{ ""sponsorshipUrls"": [ ""https://b"", ""https://a"" ] }",
-                    new[] { "https://b", "https://a" }),
-                (
                     @"{ ""sponsorshipUrls"": [ ""https://flat"" ],
                         ""metadata"": { ""sponsorshipUrls"": [ ""https://b"", null, "" "", ""https://a"" ] } }",
                     new[] { "https://b", "https://a" }),
                 (
-                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ], ""metadata"": { ""sponsorshipUrls"": [] } }",
+                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ] }",
                     Array.Empty<string>()),
-                (
-                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ], ""metadata"": {} }",
-                    new[] { "https://flat" }),
                 // TestMessageHandler maps an empty response body to a 404.
                 (
                     string.Empty,

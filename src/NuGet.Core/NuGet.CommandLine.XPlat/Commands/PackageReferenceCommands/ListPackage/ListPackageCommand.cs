@@ -171,27 +171,20 @@ namespace NuGet.CommandLine.XPlat
                     isDeprecated: parseResult.GetValue(deprecatedReport),
                     isVulnerable: parseResult.GetValue(vulnerableReport),
                     isSponsor: parseResult.GetValue(sponsorReport));
+                if (reportType == ReportType.Sponsor)
+                {
+                    packageSources = packageSources.Distinct().ToList();
+                }
 
                 IReportRenderer reportRenderer = GetOutputType(consoleOut ?? Console.Out, consoleError ?? Console.Error, parseResult.GetValue(outputFormat), outputVersionOption: parseResult.GetValue(outputVersion));
+                if (reportRenderer is ListPackageConsoleRenderer consoleRenderer)
+                {
+                    consoleRenderer.ShowSponsorshipSourceHint = sourceValues.Length == 0;
+                }
                 var provider = new PackageSourceProvider(settings);
                 var frameworkValues = parseResult.GetValue(framework) ?? Array.Empty<string>();
 
-                PackageSourceMapping? packageSourceMapping = reportType == ReportType.Sponsor
-                    ? PackageSourceMapping.GetPackageSourceMapping(settings)
-                    : null;
-
-                if (packageSourceMapping?.IsEnabled == true)
-                {
-                    if (sourceValues.Length > 0)
-                    {
-                        // --source could select a source no mapping covers, so fail rather than bypass mapping.
-                        logger.LogError(Strings.ListPkg_SponsorPackageSourceMappingWithSource);
-                        return ExitCodes.Error;
-                    }
-
-                    logger.LogMinimal(Strings.ListPkg_SponsorPackageSourceMappingEnabled);
-                }
-
+                PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
                 var packageRefArgs = new ListPackageArgs(
                     pathValue,
                     packageSources,
@@ -206,6 +199,24 @@ namespace NuGet.CommandLine.XPlat
                     logger,
                     CancellationToken.None,
                     packageSourceMapping);
+
+                if (reportType == ReportType.Sponsor && packageSourceMapping.IsEnabled)
+                {
+                    if (sourceValues.Length > 0)
+                    {
+                        // --source could select a source no mapping covers, so fail rather than bypass mapping.
+                        reportRenderer.AddProblem(
+                            ProblemType.Error,
+                            Strings.ListPkg_SponsorPackageSourceMappingWithSource);
+                        reportRenderer.Render(new ListPackageReportModel(packageRefArgs));
+                        return ExitCodes.Error;
+                    }
+
+                    if (reportRenderer is ListPackageConsoleRenderer)
+                    {
+                        logger.LogInformation(Strings.ListPkg_SponsorPackageSourceMappingEnabled);
+                    }
+                }
 
                 WarnAboutIncompatibleOptions(packageRefArgs, reportRenderer);
 

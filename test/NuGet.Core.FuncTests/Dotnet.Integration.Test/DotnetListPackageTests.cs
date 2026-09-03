@@ -630,7 +630,7 @@ namespace Dotnet.Integration.Test
                     $"list {projectA.ProjectPath} package --deprecated --outdated",
                     testOutputHelper: _testOutputHelper);
 
-                Assert.Contains(string.Format(Strings.ListPkg_InvalidOptions, "--outdated", "--deprecated"), listResult.Errors);
+                Assert.Contains(string.Format(Strings.ListPkg_InvalidOptions, "--outdated", "--deprecated", "--sponsor"), listResult.Errors);
             }
         }
 

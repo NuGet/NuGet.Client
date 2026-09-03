@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Commands;
@@ -36,6 +37,8 @@ namespace NuGet.XPlat.FuncTest
     [Collection(XPlatCollection.Name)]
     public class ListPackageTests
     {
+        private static readonly PackageSourceMapping NoPackageSourceMapping =
+            new(new Dictionary<string, IReadOnlyList<string>>());
         private readonly ITestOutputHelper _testOutputHelper;
 
         public ListPackageTests(ITestOutputHelper testOutputHelper)
@@ -242,7 +245,8 @@ namespace NuGet.XPlat.FuncTest
                                         highestMinor: false,
                                         auditSources: null,
                                         logger: logger,
-                                        cancellationToken: CancellationToken.None);
+                                        cancellationToken: CancellationToken.None,
+                                        packageSourceMapping: NoPackageSourceMapping);
 
             int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
 
@@ -351,7 +355,8 @@ namespace NuGet.XPlat.FuncTest
                                         highestMinor: false,
                                         auditSources: null,
                                         logger: logger,
-                                        cancellationToken: CancellationToken.None);
+                                        cancellationToken: CancellationToken.None,
+                                        packageSourceMapping: NoPackageSourceMapping);
 
             int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
             Assert.True(result == 0, userMessage: logger.ShowMessages());
@@ -398,7 +403,8 @@ namespace NuGet.XPlat.FuncTest
                                         highestMinor: false,
                                         auditSources: null,
                                         logger: logger,
-                                        cancellationToken: CancellationToken.None);
+                                        cancellationToken: CancellationToken.None,
+                                        packageSourceMapping: NoPackageSourceMapping);
 
             int result = await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
             Assert.True(result == 0, userMessage: $"{output}\n{error}\n{logger.ShowMessages()}");
@@ -430,7 +436,8 @@ namespace NuGet.XPlat.FuncTest
                 highestMinor: false,
                 new List<PackageSource> { auditSource },
                 mockLogger.Object,
-                CancellationToken.None
+                CancellationToken.None,
+                NoPackageSourceMapping
             );
 
             var listPackageCommandRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(mockLogger.Object, virtualProjectBuilder: null));
@@ -476,7 +483,8 @@ namespace NuGet.XPlat.FuncTest
                 highestMinor: false,
                 new List<PackageSource> { auditSource },
                 mockLogger.Object,
-                CancellationToken.None
+                CancellationToken.None,
+                NoPackageSourceMapping
             );
 
             var listPackageCommandRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(mockLogger.Object, virtualProjectBuilder: null));
@@ -531,7 +539,8 @@ namespace NuGet.XPlat.FuncTest
                 highestMinor: false,
                 new List<PackageSource> { auditSource },
                 mockLogger.Object,
-                CancellationToken.None
+                CancellationToken.None,
+                NoPackageSourceMapping
             );
 
             var listPackageCommandRunner = new ListPackageCommandRunner(new MSBuildAPIUtility(mockLogger.Object, virtualProjectBuilder: null));
@@ -554,28 +563,6 @@ namespace NuGet.XPlat.FuncTest
         }
 
 
-        [Fact]
-        public void BasicListPackageParsing_Sponsor_SelectsSponsorReportType()
-        {
-            VerifyCommand(
-                (projectPath, mockCommandRunner, testApp, getLogLevel) =>
-                {
-                    // Arrange
-                    ListPackageArgs capturedArgs = null;
-                    mockCommandRunner
-                        .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
-                        .Callback<ListPackageArgs>(args => capturedArgs = args)
-                        .Returns(Task.FromResult(0));
-
-                    // Act
-                    var result = testApp.Parse(new[] { "list", projectPath, "--sponsor" }).Invoke();
-
-                    // Assert
-                    Assert.Equal(0, result);
-                    Assert.Equal(ReportType.Sponsor, capturedArgs.ReportType);
-                });
-        }
-
         [Theory]
         [InlineData("--outdated")]
         [InlineData("--deprecated")]
@@ -593,43 +580,208 @@ namespace NuGet.XPlat.FuncTest
                 });
         }
 
-        [Fact]
-        public void ConsoleRenderer_Sponsor_WithNoSponsorablePackages_WritesMessageAndSourceDiagnostics()
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public async Task SponsorReport_UsesRegistrationProviderPipeline(
+            bool sourceSupportsSponsorship,
+            bool sourceReturnsSponsorshipUrls)
         {
             // Arrange
-            var emptySource = new PackageSource("https://empty.test/v3/index.json");
+            using var pathContext = new SimpleTestPathContext();
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("task", "1.0.0"));
+            SimpleTestProjectContext project = SetupTestProject(pathContext);
+            SetupAssetsAndProps(project);
+
+            using var mockServer = new FileSystemBackedV3MockServer(
+                pathContext.PackageSource,
+                sourceSupportsSponsorship: sourceSupportsSponsorship);
+            string[] expectedSponsorshipUrls = { "https://sponsor.test/task" };
+            if (sourceReturnsSponsorshipUrls)
+            {
+                mockServer.SponsorshipUrls["task"] = expectedSponsorshipUrls;
+            }
+            mockServer.Start();
+
+            var source = new PackageSource(mockServer.ServiceIndexUri, "test")
+            {
+                AllowInsecureConnections = true
+            };
+            var logger = new TestLogger(_testOutputHelper);
+            var runner = new ListPackageCommandRunner(
+                new MSBuildAPIUtility(logger, virtualProjectBuilder: null));
+            ListPackageArgs args = CreateSponsorArgs(
+                project.ProjectPath,
+                new List<PackageSource> { source },
+                Mock.Of<IReportRenderer>(),
+                logger);
+
+            // Act
+            (int exitCode, ListPackageReportModel report) = await runner.GetReportDataAsync(args);
+
+            // Assert
+            Assert.Equal(0, exitCode);
+            ListPackageProjectModel projectReport = Assert.Single(report.Projects);
+            if (sourceSupportsSponsorship)
+            {
+                Assert.Equal(source, Assert.Single(projectReport.SponsorshipQueriedSources));
+                Assert.Empty(projectReport.SponsorshipUnsupportedSources);
+                Assert.Equal(1, mockServer.RegistrationRequestCount);
+            }
+            else
+            {
+                Assert.Empty(projectReport.SponsorshipQueriedSources);
+                Assert.Equal(source, Assert.Single(projectReport.SponsorshipUnsupportedSources));
+                Assert.Equal(0, mockServer.RegistrationRequestCount);
+            }
+
+            List<ListReportPackage> packages = projectReport.TargetFrameworkPackages
+                .SelectMany(framework =>
+                    (framework.TopLevelPackages ?? new List<ListReportPackage>())
+                        .Concat(framework.TransitivePackages ?? new List<ListReportPackage>()))
+                .ToList();
+            if (sourceReturnsSponsorshipUrls)
+            {
+                ListReportPackage package = Assert.Single(packages);
+                PackageSponsorship sponsorship = Assert.Single(package.Sponsorships);
+                Assert.Equal(source.Source, sponsorship.Source);
+                Assert.Equal(expectedSponsorshipUrls, sponsorship.Urls);
+            }
+            else
+            {
+                Assert.Empty(packages);
+            }
+        }
+
+        [Fact]
+        public async Task SponsorReport_PackageSourceMappingRequestsOnlyMappedSource()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("task", "1.0.0"));
+            SimpleTestProjectContext project = SetupTestProject(pathContext);
+            SetupAssetsAndProps(project);
+
+            using var mappedServer = new FileSystemBackedV3MockServer(
+                pathContext.PackageSource,
+                sourceSupportsSponsorship: true);
+            using var unmappedServer = new FileSystemBackedV3MockServer(
+                pathContext.PackageSource,
+                sourceSupportsSponsorship: true);
+            mappedServer.SponsorshipUrls["task"] = new[] { "https://sponsor.test/mapped" };
+            unmappedServer.SponsorshipUrls["task"] = new[] { "https://sponsor.test/unmapped" };
+            mappedServer.Start();
+            unmappedServer.Start();
+
+            var mappedSource = new PackageSource(mappedServer.ServiceIndexUri, "mapped")
+            {
+                AllowInsecureConnections = true
+            };
+            var unmappedSource = new PackageSource(unmappedServer.ServiceIndexUri, "unmapped")
+            {
+                AllowInsecureConnections = true
+            };
+            var sourceMapping = new PackageSourceMapping(
+                new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["mapped"] = new[] { "task" },
+                    ["unmapped"] = new[] { "Other.Package" },
+                });
+            var logger = new TestLogger(_testOutputHelper);
+            var runner = new ListPackageCommandRunner(
+                new MSBuildAPIUtility(logger, virtualProjectBuilder: null));
+            ListPackageArgs args = CreateSponsorArgs(
+                project.ProjectPath,
+                new List<PackageSource> { mappedSource, unmappedSource },
+                Mock.Of<IReportRenderer>(),
+                logger,
+                sourceMapping);
+
+            // Act
+            (int exitCode, ListPackageReportModel report) = await runner.GetReportDataAsync(args);
+
+            // Assert
+            Assert.Equal(0, exitCode);
+            ListPackageProjectModel projectReport = Assert.Single(report.Projects);
+            Assert.Equal(mappedSource, Assert.Single(projectReport.SponsorshipQueriedSources));
+            Assert.Empty(projectReport.SponsorshipUnsupportedSources);
+            Assert.Equal(1, mappedServer.RegistrationRequestCount);
+            Assert.Equal(0, unmappedServer.RegistrationRequestCount);
+        }
+
+        [Theory]
+        [InlineData(false, false, true)]
+        [InlineData(false, true, false)]
+        [InlineData(true, false, true)]
+        public void ConsoleRenderer_Sponsor_WritesAccurateSourceDiagnosticsAndHint(
+            bool hasSponsoredPackage,
+            bool hasExplicitSources,
+            bool shouldWriteSourceHint)
+        {
+            // Arrange
+            var successfulSource = new PackageSource("https://successful.test/v3/index.json");
+            var firstEmptySource = new PackageSource("https://empty-1.test/v3/index.json");
+            var secondEmptySource = new PackageSource("https://empty-2.test/v3/index.json");
             var unsupportedSource = new PackageSource("https://unsupported.test/v3/index.json");
             var neverQueriedSource = new PackageSource("https://never-queried.test/v3/index.json");
-            var packageSources = new List<PackageSource> { emptySource, unsupportedSource, neverQueriedSource };
+            var packageSources = new List<PackageSource>
+            {
+                successfulSource,
+                firstEmptySource,
+                secondEmptySource,
+                unsupportedSource,
+                neverQueriedSource
+            };
             var output = new StringBuilder();
             var error = new StringBuilder();
             using TextWriter consoleOut = new StringWriter(output);
             using TextWriter consoleError = new StringWriter(error);
 
-            var renderer = new ListPackageConsoleRenderer(consoleOut, consoleError);
-            var listPackageArgs = new ListPackageArgs(
-                path: string.Empty,
-                packageSources: packageSources,
-                frameworks: new List<string>(),
-                reportType: ReportType.Sponsor,
-                renderer: renderer,
-                includeTransitive: false,
-                prerelease: false,
-                highestPatch: false,
-                highestMinor: false,
-                auditSources: null,
-                logger: NullLogger.Instance,
-                cancellationToken: CancellationToken.None);
+            var renderer = new ListPackageConsoleRenderer(consoleOut, consoleError)
+            {
+                ShowSponsorshipSourceHint = !hasExplicitSources
+            };
+            ListPackageArgs listPackageArgs = CreateSponsorArgs(
+                string.Empty,
+                packageSources,
+                renderer,
+                NullLogger.Instance);
 
             var reportModel = new ListPackageReportModel(listPackageArgs);
             var projectModel = new ListPackageProjectModel("projectA.csproj", "ProjectA")
             {
-                // Every package was filtered out because no source returned sponsorship URLs.
                 TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>
                 {
                     new ListPackageReportFrameworkPackage("net8.0", "net8.0")
+                    {
+                        TopLevelPackages = hasSponsoredPackage
+                            ? new List<ListReportPackage>
+                            {
+                                new ListReportPackage(
+                                    packageId: "Sponsored.Package",
+                                    resolvedVersion: "1.0.0",
+                                    latestVersion: null,
+                                    vulnerabilities: null,
+                                    deprecationReasons: null,
+                                    alternativePackage: null,
+                                    requestedVersion: "1.0.0",
+                                    autoReference: false,
+                                    sponsorships: new[]
+                                    {
+                                        new PackageSponsorship(successfulSource.Source, new[] { "https://sponsor.test" })
+                                    })
+                            }
+                            : null
+                    }
                 },
-                SponsorshipQueriedSources = new[] { emptySource },
+                SponsorshipQueriedSources = hasSponsoredPackage
+                    ? new[] { secondEmptySource, successfulSource, firstEmptySource }
+                    : new[] { secondEmptySource, firstEmptySource },
                 SponsorshipUnsupportedSources = new[] { unsupportedSource },
             };
             reportModel.Projects.Add(projectModel);
@@ -639,35 +791,59 @@ namespace NuGet.XPlat.FuncTest
             string rendered = output.ToString();
 
             // Assert
-            Assert.Contains("Project 'ProjectA' has no sponsorable packages.", rendered);
+            if (hasSponsoredPackage)
+            {
+                Assert.DoesNotContain("Project 'ProjectA' has no sponsorable packages.", rendered);
+            }
+            else
+            {
+                Assert.Contains("Project 'ProjectA' has no sponsorable packages.", rendered);
+            }
             int noDetailsStart = rendered.IndexOf(CommandLine.XPlat.Strings.ListPkg_SponsorNoDetailsHeader, StringComparison.Ordinal);
             int unsupportedStart = rendered.IndexOf(CommandLine.XPlat.Strings.ListPkg_SponsorUnsupportedSourcesHeader, StringComparison.Ordinal);
             Assert.True(noDetailsStart >= 0);
             Assert.True(unsupportedStart > noDetailsStart);
             string noDetailsSection = rendered.Substring(noDetailsStart, unsupportedStart - noDetailsStart);
             string unsupportedSection = rendered.Substring(unsupportedStart);
-            Assert.Contains(emptySource.Source, noDetailsSection);
+            Assert.Contains(firstEmptySource.Source, noDetailsSection);
+            Assert.Contains(secondEmptySource.Source, noDetailsSection);
+            Assert.True(
+                noDetailsSection.IndexOf(firstEmptySource.Source, StringComparison.Ordinal) <
+                noDetailsSection.IndexOf(secondEmptySource.Source, StringComparison.Ordinal));
+            Assert.DoesNotContain(successfulSource.Source, noDetailsSection);
             Assert.DoesNotContain(unsupportedSource.Source, noDetailsSection);
             Assert.Contains(unsupportedSource.Source, unsupportedSection);
             Assert.DoesNotContain(neverQueriedSource.Source, unsupportedSection);
-            Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint, unsupportedSection);
+            if (shouldWriteSourceHint)
+            {
+                Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint, unsupportedSection);
+            }
+            else
+            {
+                Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint, unsupportedSection);
+            }
         }
 
         [Theory]
-        [InlineData("--sponsor", false, true, true)]
-        [InlineData("--sponsor", true, false, false)]
-        [InlineData("--outdated", true, false, true)]
-        public void ListPackage_WithPackageSourceMapping_UsesMappingOnlyForSponsorWithoutSource(
-            string reportOption,
+        [InlineData(true, false, "", true, false)]
+        [InlineData(true, false, "--verbosity minimal", true, false)]
+        [InlineData(true, false, "--verbosity normal", true, true)]
+        [InlineData(true, false, "--verbosity normal --format json", true, false)]
+        [InlineData(true, true, "", false, false)]
+        [InlineData(true, true, "--format json", false, false)]
+        [InlineData(false, true, "", true, false)]
+        public void ListPackage_SourceConfiguration_ValidatesSponsorAndLogsOnlyForConsoleInformation(
+            bool mappingEnabled,
             bool hasExplicitSource,
-            bool shouldUseMapping,
-            bool shouldRun)
+            string additionalOptions,
+            bool shouldRun,
+            bool shouldLogMappingNotice)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                ConfigurePackageSourceMapping(pathContext);
+                ConfigurePackageSource(pathContext, mappingEnabled);
 
-                VerifyCommand((projectPath, mockCommandRunner, testApp, getLogLevel, logger) =>
+                VerifyCommand((projectPath, mockCommandRunner, testApp, getLogLevel, logger, output, error) =>
                 {
                     // Arrange
                     ListPackageArgs capturedArgs = null;
@@ -676,10 +852,14 @@ namespace NuGet.XPlat.FuncTest
                         .Callback<ListPackageArgs>(args => capturedArgs = args)
                         .Returns(Task.FromResult(0));
 
-                    var argList = new List<string> { "list", projectPath, reportOption, "--config", pathContext.NuGetConfig };
+                    var argList = new List<string> { "list", projectPath, "--sponsor", "--config", pathContext.NuGetConfig };
                     if (hasExplicitSource)
                     {
-                        argList.AddRange(new[] { "--source", "https://api.nuget.org/v3/index.json" });
+                        argList.AddRange(new[] { "--source", "mapped" });
+                    }
+                    if (additionalOptions.Length > 0)
+                    {
+                        argList.AddRange(additionalOptions.Split(' '));
                     }
 
                     // Act
@@ -689,7 +869,17 @@ namespace NuGet.XPlat.FuncTest
                     if (!shouldRun)
                     {
                         Assert.NotEqual(0, result);
-                        Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingWithSource, logger.ShowErrors());
+                        if (additionalOptions.Contains("--format json", StringComparison.Ordinal))
+                        {
+                            JObject json = JObject.Parse(output.ToString());
+                            Assert.Contains(
+                                json["problems"],
+                                problem => problem["text"].Value<string>() == CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingWithSource);
+                        }
+                        else
+                        {
+                            Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingWithSource, error.ToString());
+                        }
                         Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled, logger.ShowMessages());
                         mockCommandRunner.Verify(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()), Times.Never);
                         return;
@@ -697,35 +887,52 @@ namespace NuGet.XPlat.FuncTest
 
                     Assert.Equal(0, result);
                     Assert.NotNull(capturedArgs);
-                    if (shouldUseMapping)
+                    Assert.Equal(ReportType.Sponsor, capturedArgs.ReportType);
+                    Assert.NotNull(capturedArgs.PackageSourceMapping);
+                    Assert.Equal(mappingEnabled, capturedArgs.PackageSourceMapping.IsEnabled);
+                    string[] expectedSources = hasExplicitSource
+                        ? new[] { "mapped", "source" }
+                        : new[] { "source", "mapped" };
+                    Assert.Equal(expectedSources, capturedArgs.PackageSources.Select(source => source.Name));
+                    Assert.All(
+                        capturedArgs.PackageSources.Where(source => source.Name == "mapped"),
+                        source => Assert.Equal("https://mapped.test/v3/index.json", source.Source));
+                    if (capturedArgs.Renderer is ListPackageConsoleRenderer capturedRenderer)
                     {
-                        Assert.NotNull(capturedArgs.PackageSourceMapping);
-                        Assert.True(capturedArgs.PackageSourceMapping.IsEnabled);
+                        Assert.Equal(!hasExplicitSource, capturedRenderer.ShowSponsorshipSourceHint);
+                    }
+                    if (shouldLogMappingNotice)
+                    {
                         Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled, logger.ShowMessages());
                     }
                     else
                     {
-                        Assert.Null(capturedArgs.PackageSourceMapping);
                         Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled, logger.ShowMessages());
                     }
                     mockCommandRunner.Verify(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()), Times.Once);
-                });
+                },
+                observeLogLevel: true);
             }
         }
 
-        private static void ConfigurePackageSourceMapping(SimpleTestPathContext pathContext)
+        private static void ConfigurePackageSource(SimpleTestPathContext pathContext, bool mappingEnabled)
         {
             pathContext.Settings.AddSource("mapped", "https://mapped.test/v3/index.json");
-            pathContext.Settings.AddPackageSourceMapping("mapped", "*");
+            if (mappingEnabled)
+            {
+                pathContext.Settings.AddPackageSourceMapping("mapped", "*");
+            }
         }
 
         private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, RootCommand, Func<LogLevel>> verify)
         {
-            VerifyCommand((projectPath, mockCommandRunner, testApp, getLogLevel, logger) =>
+            VerifyCommand((projectPath, mockCommandRunner, testApp, getLogLevel, logger, output, error) =>
                 verify(projectPath, mockCommandRunner, testApp, getLogLevel));
         }
 
-        private void VerifyCommand(Action<string, Mock<IListPackageCommandRunner>, RootCommand, Func<LogLevel>, TestCommandOutputLogger> verify)
+        private void VerifyCommand(
+            Action<string, Mock<IListPackageCommandRunner>, RootCommand, Func<LogLevel>, TestCommandOutputLogger, StringBuilder, StringBuilder> verify,
+            bool observeLogLevel = false)
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -734,22 +941,32 @@ namespace NuGet.XPlat.FuncTest
                 File.WriteAllText(projectPath, string.Empty);
 
                 var logLevel = LogLevel.Information;
-                var logger = new TestCommandOutputLogger(_testOutputHelper);
+                var logger = new TestCommandOutputLogger(_testOutputHelper, observeLogLevel);
                 var testApp = new RootCommand();
                 var mockCommandRunner = new Mock<IListPackageCommandRunner>();
+                var output = new StringBuilder();
+                var error = new StringBuilder();
+                using TextWriter consoleOut = new StringWriter(output);
+                using TextWriter consoleError = new StringWriter(error);
                 mockCommandRunner
                     .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
                     .Returns(Task.FromResult(0));
 
                 ListPackageCommand.Register(testApp,
                     () => logger,
-                    ll => logLevel = ll,
-                    () => mockCommandRunner.Object);
+                    ll =>
+                    {
+                        logLevel = ll;
+                        logger.VerbosityLevel = ll;
+                    },
+                    () => mockCommandRunner.Object,
+                    consoleOut,
+                    consoleError);
 
                 // Act & Assert
                 try
                 {
-                    verify(projectPath, mockCommandRunner, testApp, () => logLevel, logger);
+                    verify(projectPath, mockCommandRunner, testApp, () => logLevel, logger, output, error);
                 }
                 finally
                 {
@@ -819,6 +1036,29 @@ namespace NuGet.XPlat.FuncTest
 
             File.WriteAllText(assetsPath, assetsContent);
             File.WriteAllText(propsPath, propsContent);
+        }
+
+        private static ListPackageArgs CreateSponsorArgs(
+            string projectPath,
+            List<PackageSource> packageSources,
+            IReportRenderer renderer,
+            ILogger logger,
+            PackageSourceMapping packageSourceMapping = null)
+        {
+            return new ListPackageArgs(
+                path: projectPath,
+                packageSources: packageSources,
+                frameworks: new List<string>(),
+                reportType: ReportType.Sponsor,
+                renderer: renderer,
+                includeTransitive: false,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                auditSources: null,
+                logger: logger,
+                cancellationToken: CancellationToken.None,
+                packageSourceMapping: packageSourceMapping ?? NoPackageSourceMapping);
         }
 
         private static MockServer SetupMockServer()

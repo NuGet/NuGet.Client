@@ -89,29 +89,24 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 return;
             }
 
-            var sourcesWithSponsorshipDetails = new HashSet<string>(
-                SponsorReportAggregator.CollapseProjects(listPackageReportModel.Projects)
-                    .SelectMany(package => package.Sponsorships ?? Array.Empty<PackageSponsorship>())
-                    .Select(sponsorship => sponsorship.Source),
-                StringComparer.Ordinal);
-
-            IEnumerable<PackageSource> sourcesWithoutSponsorshipDetails = listPackageReportModel.Projects
-                .SelectMany(project => project.SponsorshipQueriedSources)
-                .Where(source => !sourcesWithSponsorshipDetails.Contains(source.Source));
+            IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails =
+                SponsorReportAggregator.GetSourcesWithoutSponsorshipDetails(
+                    listPackageReportModel.Projects,
+                    listPackageReportModel.ListPackageArgs.PackageSources);
 
             AddSourceProblems(sourcesWithoutSponsorshipDetails, Strings.ListPkg_SponsorProblemNoDetails);
 
-            IEnumerable<PackageSource> unsupportedSources = listPackageReportModel.Projects
-                .SelectMany(project => project.SponsorshipUnsupportedSources);
+            IReadOnlyList<PackageSource> unsupportedSources =
+                SponsorReportAggregator.OrderSourcesByConfiguration(
+                    listPackageReportModel.Projects.SelectMany(project => project.SponsorshipUnsupportedSources),
+                    listPackageReportModel.ListPackageArgs.PackageSources);
 
             AddSourceProblems(unsupportedSources, Strings.ListPkg_SponsorProblemUnsupportedSource);
         }
 
         private void AddSourceProblems(IEnumerable<PackageSource> packageSources, string messageFormat)
         {
-            foreach (PackageSource source in packageSources
-                .GroupBy(source => source.Source, StringComparer.Ordinal)
-                .Select(group => group.First()))
+            foreach (PackageSource source in packageSources)
             {
                 AddProblem(
                     ProblemType.Warning,

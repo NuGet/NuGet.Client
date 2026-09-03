@@ -3,3 +3,4 @@ NuGet.Protocol.PackageIdMetadata
 NuGet.Protocol.PackageIdMetadata.PackageIdMetadata(System.Collections.Generic.IReadOnlyList<string!>? sponsorshipUrls) -> void
 NuGet.Protocol.PackageIdMetadata.SponsorshipUrls.get -> System.Collections.Generic.IReadOnlyList<string!>!
 virtual NuGet.Protocol.RegistrationResourceV3.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
+virtual NuGet.Protocol.RegistrationResourceV3.SupportsPackageIdMetadata.get -> bool
