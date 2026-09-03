@@ -14,6 +14,11 @@ namespace NuGet.RuntimeModel
     {
         private static RuntimeGraph ReadRuntimeGraph(ref Utf8JsonStreamReader reader)
         {
+            if (reader.TokenType == JsonTokenType.None)
+            {
+                reader.Read();
+            }
+
             if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException();

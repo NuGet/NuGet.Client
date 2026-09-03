@@ -138,6 +138,15 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithLeadingTriviaLargerThanBuffer_ParsesRuntimeGraph()
+        {
+            string content = new string(' ', 20_000) + SimpleRuntimeGraphContent;
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(stream));
+        }
+
+        [Fact]
         public void ReadRuntimeGraph_WithEnvironmentOptIn_ParsesWithSystemTextJson()
         {
             var environmentVariableReader = new TestEnvironmentVariableReader(
@@ -159,7 +168,9 @@ namespace NuGet.RuntimeModel.Test
         {
             var reader = new StringReader(SimpleRuntimeGraphContent);
 
+#pragma warning disable CS0618 // Verify the obsolete API's ownership behavior.
             JsonRuntimeFormat.ReadRuntimeGraph(reader);
+#pragma warning restore CS0618
 
             Assert.Throws<ObjectDisposedException>(() => reader.Read());
         }
@@ -247,7 +258,9 @@ namespace NuGet.RuntimeModel.Test
         {
             using (var reader = new StringReader(content))
             {
+#pragma warning disable CS0618 // Exercise the obsolete TextReader compatibility API.
                 return JsonRuntimeFormat.ReadRuntimeGraph(reader);
+#pragma warning restore CS0618
             }
         }
     }

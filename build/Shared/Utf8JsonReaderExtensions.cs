@@ -5,8 +5,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 
 namespace NuGet.Shared
@@ -65,11 +65,7 @@ namespace NuGet.Shared
 
         private static string ReadNumberAsString(this ref Utf8JsonReader reader)
         {
-            if (reader.TryGetInt64(out long value))
-            {
-                return value.ToString(CultureInfo.InvariantCulture);
-            }
-            return reader.GetDouble().ToString("R", CultureInfo.InvariantCulture);
+            return Encoding.UTF8.GetString(reader.ValueSpan.ToArray());
         }
     }
 

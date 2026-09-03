@@ -178,7 +178,7 @@ namespace NuGet.ProjectModel
         {
             using (var writer = new StringWriter())
             {
-                Write(writer, lockFile);
+                WriteWithSystemTextJson(writer, lockFile);
                 return writer.ToString();
             }
         }
@@ -197,33 +197,16 @@ namespace NuGet.ProjectModel
 
         public static void Write(Stream stream, PackagesLockFile lockFile)
         {
-#if NET5_0_OR_GREATER
-            using (var textWriter = new StreamWriter(stream))
-#else
-            using (var textWriter = new NoAllocNewLineStreamWriter(stream))
-#endif
+            using (stream)
+            using (var jsonWriter = new Utf8JsonWriter(stream, WriterOptions))
             {
-                Write(textWriter, lockFile);
+                WriteLockFile(jsonWriter, lockFile);
             }
         }
 
+        [Obsolete("Use Write(Stream, PackagesLockFile) instead.")]
         public static void Write(TextWriter textWriter, PackagesLockFile lockFile)
         {
-            Write(textWriter, lockFile, environmentVariableReader: null);
-        }
-
-        internal static void Write(
-            TextWriter textWriter,
-            PackagesLockFile lockFile,
-            IEnvironmentVariableReader environmentVariableReader)
-        {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
-            {
-                WriteWithSystemTextJson(textWriter, lockFile);
-                return;
-            }
-
             using (var jsonWriter = new JsonTextWriter(textWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
@@ -287,8 +270,10 @@ namespace NuGet.ProjectModel
             if (lockFile.Version >= AliasedVersion)
             {
                 // V3 format: write targets at root level with framework and dependencies inside
+                var targetNames = new HashSet<string>(StringComparer.Ordinal) { VersionProperty };
                 foreach (PackagesLockFileTarget target in lockFile.Targets)
                 {
+                    ThrowIfDuplicate(targetNames, target.Name);
                     WriteTargetV3(writer, target);
                 }
             }
@@ -296,7 +281,7 @@ namespace NuGet.ProjectModel
             {
                 // V1 and V2 format: write targets under dependencies property
                 writer.WritePropertyName(DependenciesProperty);
-                WriteObject(writer, lockFile.Targets, WriteTarget);
+                WriteObject(writer, lockFile.Targets, target => target.Name, WriteTarget);
             }
 
             writer.WriteEndObject();
@@ -446,14 +431,14 @@ namespace NuGet.ProjectModel
             writer.WriteStartObject();
             writer.WriteString(FrameworkProperty, target.TargetFramework.ToString());
             writer.WritePropertyName(DependenciesProperty);
-            WriteObject(writer, target.Dependencies, WriteTargetDependency);
+            WriteObject(writer, target.Dependencies, dependency => dependency.Id, WriteTargetDependency);
             writer.WriteEndObject();
         }
 
         private static void WriteTarget(Utf8JsonWriter writer, PackagesLockFileTarget target)
         {
             writer.WritePropertyName(target.Name);
-            WriteObject(writer, target.Dependencies, WriteTargetDependency);
+            WriteObject(writer, target.Dependencies, dependency => dependency.Id, WriteTargetDependency);
         }
 
         private static void WriteTargetDependency(Utf8JsonWriter writer, LockFileDependency dependency)
@@ -486,8 +471,10 @@ namespace NuGet.ProjectModel
                 writer.WritePropertyName(DependenciesProperty);
                 writer.WriteStartObject();
 
+                var dependencyIds = new HashSet<string>(StringComparer.Ordinal);
                 foreach (PackageDependency packageDependency in orderedDependencies)
                 {
+                    ThrowIfDuplicate(dependencyIds, packageDependency.Id);
                     writer.WritePropertyName(packageDependency.Id);
                     string versionRange = dependency.Type == PackageDependencyType.Project
                         ? packageDependency.VersionRange?.ToString()
@@ -512,16 +499,27 @@ namespace NuGet.ProjectModel
         private static void WriteObject<T>(
             Utf8JsonWriter writer,
             IEnumerable<T> items,
+            Func<T, string> getPropertyName,
             Action<Utf8JsonWriter, T> writeItem)
         {
             writer.WriteStartObject();
 
+            var propertyNames = new HashSet<string>(StringComparer.Ordinal);
             foreach (T item in items)
             {
+                ThrowIfDuplicate(propertyNames, getPropertyName(item));
                 writeItem(writer, item);
             }
 
             writer.WriteEndObject();
+        }
+
+        private static void ThrowIfDuplicate(HashSet<string> propertyNames, string propertyName)
+        {
+            if (!propertyNames.Add(propertyName))
+            {
+                throw new ArgumentException();
+            }
         }
 
     }

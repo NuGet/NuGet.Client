@@ -18,6 +18,7 @@ namespace NuGet.ProjectModel.Test
         [InlineData("-2", "-2")]
         [InlineData("9223372036854775807", "9223372036854775807")]
         [InlineData("3.14", "3.14")]
+        [InlineData("1.10", "1.10")]
         [InlineData("\"b\"", "b")]
         public void ReadTokenAsString_WhenValueIsConvertibleToString_ReturnsValueAsString(
             string value,

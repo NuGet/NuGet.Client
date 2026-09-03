@@ -14,8 +14,15 @@ namespace NuGet.ProjectModel
 {
     public static partial class PackagesLockFileFormat
     {
+        private static readonly char[] PathSplitChars = ['/'];
+
         private static PackagesLockFile ReadLockFile(ref Utf8JsonStreamReader reader)
         {
+            if (reader.TokenType == JsonTokenType.None)
+            {
+                reader.Read();
+            }
+
             if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException();
@@ -192,12 +199,12 @@ namespace NuGet.ProjectModel
                 return TargetReadResult.Invalid;
             }
 
-            if (string.IsNullOrEmpty(framework))
+            if (framework is null || framework.Length == 0)
             {
                 return TargetReadResult.Ignored;
             }
 
-            string[] parts = targetName.Split(JsonUtility.PathSplitChars);
+            string[] parts = targetName.Split(PathSplitChars);
             return new TargetReadResult(new PackagesLockFileTarget
             {
                 TargetFramework = NuGetFramework.Parse(framework),
@@ -211,7 +218,7 @@ namespace NuGet.ProjectModel
             string targetName,
             IList<LockFileDependency> dependencies)
         {
-            string[] parts = targetName.Split(JsonUtility.PathSplitChars);
+            string[] parts = targetName.Split(PathSplitChars);
             return new TargetReadResult(new PackagesLockFileTarget
             {
                 TargetFramework = NuGetFramework.Parse(parts[0]),
@@ -339,7 +346,7 @@ namespace NuGet.ProjectModel
                 dependency.ResolvedVersion = resolvedVersion;
             }
 
-            if (!string.IsNullOrEmpty(requested))
+            if (requested is not null && requested.Length > 0)
             {
                 if (!VersionRange.TryParse(requested, out VersionRange? requestedVersion))
                 {
