@@ -155,11 +155,11 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
-        public void ReadRuntimeGraphWithSystemTextJson_WithTextReader_DisposesReader()
+        public void ReadRuntimeGraph_WithTextReader_DisposesReader()
         {
             var reader = new StringReader(SimpleRuntimeGraphContent);
 
-            JsonRuntimeFormat.ReadRuntimeGraphWithSystemTextJson(reader);
+            JsonRuntimeFormat.ReadRuntimeGraph(reader);
 
             Assert.Throws<ObjectDisposedException>(() => reader.Read());
         }

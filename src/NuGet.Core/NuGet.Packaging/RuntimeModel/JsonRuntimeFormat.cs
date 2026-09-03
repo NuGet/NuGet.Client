@@ -11,8 +11,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Shared;
 using NuGet.Versioning;
-using STJJsonException = System.Text.Json.JsonException;
-using STJJsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NuGet.RuntimeModel
 {
@@ -48,25 +46,9 @@ namespace NuGet.RuntimeModel
             return ReadRuntimeGraphWithNewtonsoftJson(stream);
         }
 
+        [Obsolete("Use ReadRuntimeGraph(Stream) instead.")]
         public static RuntimeGraph ReadRuntimeGraph(TextReader textReader)
         {
-            return ReadRuntimeGraph(textReader, environmentVariableReader: null);
-        }
-
-        internal static RuntimeGraph ReadRuntimeGraph(
-            TextReader textReader,
-            IEnvironmentVariableReader? environmentVariableReader)
-        {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return ReadRuntimeGraphWithSystemTextJson(textReader);
-            }
-
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
-            {
-                return ReadRuntimeGraphWithSystemTextJson(textReader);
-            }
-
             return ReadRuntimeGraphWithNewtonsoftJson(textReader);
         }
 
@@ -106,17 +88,6 @@ namespace NuGet.RuntimeModel
                     reader.Dispose();
                 }
             }
-        }
-
-        internal static RuntimeGraph ReadRuntimeGraphWithSystemTextJson(TextReader textReader)
-        {
-            using var _ = textReader;
-            RuntimeGraphJsonModel json = STJJsonSerializer.Deserialize(
-                textReader.ReadToEnd(),
-                JsonRuntimeFormatContext.Default.RuntimeGraphJsonModel)
-                ?? throw new STJJsonException();
-
-            return ReadRuntimeGraph(json);
         }
 
         public static void WriteRuntimeGraph(string filePath, RuntimeGraph runtimeGraph)
@@ -313,11 +284,5 @@ namespace NuGet.RuntimeModel
                    ?? Enumerable.Empty<KeyValuePair<string, JToken>>();
         }
 
-        private static RuntimeGraph ReadRuntimeGraph(RuntimeGraphJsonModel json)
-        {
-            return new RuntimeGraph(
-                json.Runtimes ?? Enumerable.Empty<RuntimeDescription>(),
-                json.Supports ?? Enumerable.Empty<CompatibilityProfile>());
-        }
     }
 }
