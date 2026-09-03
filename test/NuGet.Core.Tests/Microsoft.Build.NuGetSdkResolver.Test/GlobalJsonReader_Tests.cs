@@ -428,29 +428,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         [Fact]
-        public void ParseMSBuildSdkVersionsFromJson_ParsersReturnEquivalentResults()
-        {
-            const string json = @"{
-  // This is a comment
-  ""unrelated-section"": { ""property"": ""value"" },
-  ""msbuild-sdks"": {
-    ""Sdk1"": ""1.0.0"",
-    ""Sdk2"": true,
-    ""Sdk1"": ""2.0.0"",
-  },
-}";
-
-            Dictionary<string, string> newtonsoftResult = GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(json);
-            Dictionary<string, string> systemTextJsonResult;
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
-            {
-                systemTextJsonResult = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream);
-            }
-
-            systemTextJsonResult.Should().Equal(newtonsoftResult);
-        }
-
-        [Fact]
         public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ParsesUtf16Stream()
         {
             const string json = @"{ ""msbuild-sdks"": { ""Sdk1"": ""1.0.0"" } }";
@@ -461,7 +438,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             }
             stream.Position = 0;
 
-            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream);
+            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(stream);
 
             result.Should().Equal(new Dictionary<string, string> { ["Sdk1"] = "1.0.0" });
         }
@@ -473,7 +450,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             string json = $@"{{ ""msbuild-sdks"": {{ ""Sdk1"": ""{version}"" }} }}";
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
-            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream);
+            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(stream);
 
             result.Should().Equal(new Dictionary<string, string> { ["Sdk1"] = version });
         }
@@ -492,7 +469,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
             {
                 exception = Assert.ThrowsAny<JsonException>(
-                    () => GlobalJsonReader.ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(stream));
+                    () => GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(stream));
             }
 
             exception.LineNumber.Should().NotBeNull();

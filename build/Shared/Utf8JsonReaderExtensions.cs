@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.Json;
 
@@ -13,37 +10,7 @@ namespace NuGet.Shared
 {
     internal static class Utf8JsonReaderExtensions
     {
-        internal static bool RequiresTextReader(this Stream stream)
-        {
-            if (!stream.CanSeek)
-            {
-                // A non-seekable stream cannot be inspected without consuming input.
-                // A TextReader detects its encoding while it reads.
-                return true;
-            }
-
-            long position = stream.Position;
-
-            try
-            {
-                // System.Text.Json stream APIs require UTF-8. Detect UTF-16 and UTF-32 byte order marks.
-                int first = stream.ReadByte();
-                int second = stream.ReadByte();
-
-                return (first == 0xFF && second == 0xFE)
-                    || (first == 0xFE && second == 0xFF)
-                    || (first == 0x00
-                        && second == 0x00
-                        && stream.ReadByte() == 0xFE
-                        && stream.ReadByte() == 0xFF);
-            }
-            finally
-            {
-                stream.Position = position;
-            }
-        }
-
-        internal static string ReadTokenAsString(this ref Utf8JsonReader reader)
+        internal static string? ReadTokenAsString(this ref Utf8JsonReader reader)
         {
             switch (reader.TokenType)
             {

@@ -16,7 +16,7 @@ using System.Text.Json;
 namespace NuGet.Shared
 {
     /// <summary>
-    /// This struct is used to read over a memeory stream in parts, in order to avoid reading the entire stream into memory.
+    /// This struct is used to read over a memory stream in parts, in order to avoid reading the entire stream into memory.
     /// It functions as a wrapper around <see cref="Utf8JsonStreamReader"/>, while maintaining a stream and a buffer to read from.
     /// </summary>
     internal ref struct Utf8JsonStreamReader
