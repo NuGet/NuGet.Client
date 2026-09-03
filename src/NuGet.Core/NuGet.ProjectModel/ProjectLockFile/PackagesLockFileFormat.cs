@@ -14,10 +14,8 @@ using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
-using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -74,7 +72,7 @@ namespace NuGet.ProjectModel
         {
             try
             {
-                PackagesLockFile lockFile = ReadLockFileWithSystemTextJson(stream);
+                PackagesLockFile lockFile = ReadLockFile(stream);
                 lockFile.Path = path;
                 return lockFile;
             }
@@ -93,36 +91,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        [Obsolete("Use Read(Stream, ILogger, string) instead.")]
-        public static PackagesLockFile Read(TextReader reader, ILogger log, string path)
-        {
-            try
-            {
-                var lockFile = ReadLockFile(reader);
-                lockFile.Path = path;
-                return lockFile;
-            }
-            catch (Exception ex)
-            {
-                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Log_ErrorReadingLockFile,
-                    path, ex.Message));
-
-                // Ran into parsing errors, mark it as unlocked and out-of-date
-                return new PackagesLockFile
-                {
-                    Version = int.MinValue,
-                    Path = path
-                };
-            }
-        }
-
-        private static PackagesLockFile ReadLockFile(TextReader reader)
-        {
-            return ReadLockFile(JsonUtility.LoadJson(reader));
-        }
-
-        internal static PackagesLockFile ReadLockFileWithSystemTextJson(Stream stream)
+        internal static PackagesLockFile ReadLockFile(Stream stream)
         {
             using (stream)
             {
@@ -136,42 +105,6 @@ namespace NuGet.ProjectModel
                     reader.Dispose();
                 }
             }
-        }
-
-        private static PackagesLockFile ReadLockFile(JObject cursor)
-        {
-            int version = JsonUtility.ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
-            IList<PackagesLockFileTarget> targets;
-
-            if (version >= AliasedVersion)
-            {
-                // V3 format: read from root level (alias/rid keys with framework and dependencies inside)
-                targets = new List<PackagesLockFileTarget>();
-                foreach (var property in cursor.Properties())
-                {
-                    if (property.Name != VersionProperty)
-                    {
-                        var target = ReadTargetV3(property.Name, property.Value);
-                        if (target != null)
-                        {
-                            targets.Add(target);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // V1 and V2 format: read from dependencies property
-                targets = JsonUtility.ReadObject(cursor[DependenciesProperty] as JObject, ReadDependencyV2);
-            }
-
-            var lockFile = new PackagesLockFile()
-            {
-                Version = version,
-                Targets = targets,
-            };
-
-            return lockFile;
         }
 
         public static string Render(PackagesLockFile lockFile)
@@ -285,88 +218,6 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteEndObject();
-        }
-
-        private static PackagesLockFileTarget ReadDependencyV2(string property, JToken json)
-        {
-            var parts = property.Split(JsonUtility.PathSplitChars);
-
-            var target = new PackagesLockFileTarget
-            {
-                TargetFramework = NuGetFramework.Parse(parts[0]),
-                Dependencies = JsonUtility.ReadObject(json as JObject, ReadTargetDependency)
-            };
-
-            if (parts.Length == 2)
-            {
-                target.RuntimeIdentifier = parts[1];
-            }
-
-            return target;
-        }
-
-        private static PackagesLockFileTarget ReadTargetV3(string property, JToken json)
-        {
-            var jObject = json as JObject;
-            if (jObject == null)
-            {
-                return null;
-            }
-
-            var frameworkString = JsonUtility.ReadProperty<string>(jObject, FrameworkProperty);
-            if (string.IsNullOrEmpty(frameworkString))
-            {
-                return null;
-            }
-
-            var parts = property.Split(JsonUtility.PathSplitChars);
-
-            var target = new PackagesLockFileTarget
-            {
-                TargetFramework = NuGetFramework.Parse(frameworkString),
-                RuntimeIdentifier = parts.Length == 2 ? parts[1] : null,
-                TargetAlias = parts[0],
-                Dependencies = JsonUtility.ReadObject(jObject[DependenciesProperty] as JObject, ReadTargetDependency)
-            };
-
-            return target;
-        }
-
-        private static LockFileDependency ReadTargetDependency(string property, JToken json)
-        {
-            var dependency = new LockFileDependency
-            {
-                Id = property,
-                Dependencies = JsonUtility.ReadObject(json[DependenciesProperty] as JObject, JsonUtility.ReadPackageDependency)
-            };
-
-            var jObject = json as JObject;
-
-            var typeString = JsonUtility.ReadProperty<string>(jObject, TypeProperty);
-
-            if (!string.IsNullOrEmpty(typeString)
-                && Enum.TryParse<PackageDependencyType>(typeString, ignoreCase: true, result: out var installationType))
-            {
-                dependency.Type = installationType;
-            }
-
-            var resolvedString = JsonUtility.ReadProperty<string>(jObject, ResolvedProperty);
-
-            if (!string.IsNullOrEmpty(resolvedString))
-            {
-                dependency.ResolvedVersion = NuGetVersion.Parse(resolvedString);
-            }
-
-            var requestedString = JsonUtility.ReadProperty<string>(jObject, RequestedProperty);
-
-            if (!string.IsNullOrEmpty(requestedString))
-            {
-                dependency.RequestedVersion = VersionRange.Parse(requestedString);
-            }
-
-            dependency.ContentHash = JsonUtility.ReadProperty<string>(jObject, ContentHashProperty);
-
-            return dependency;
         }
 
         private static JProperty WriteTargetV3(PackagesLockFileTarget target)

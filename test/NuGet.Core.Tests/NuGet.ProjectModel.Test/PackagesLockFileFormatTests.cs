@@ -131,7 +131,7 @@ namespace NuGet.ProjectModel.Test
             }
             stream.Position = 0;
 
-            PackagesLockFile lockFile = PackagesLockFileFormat.ReadLockFileWithSystemTextJson(stream);
+            PackagesLockFile lockFile = PackagesLockFileFormat.ReadLockFile(stream);
 
             Assert.False(stream.CanRead);
             Assert.Equal(1, lockFile.Version);
@@ -640,7 +640,7 @@ namespace NuGet.ProjectModel.Test
         private static PackagesLockFile ParseWithSystemTextJson(string content)
         {
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            return PackagesLockFileFormat.ReadLockFileWithSystemTextJson(stream);
+            return PackagesLockFileFormat.ReadLockFile(stream);
         }
 
     }
