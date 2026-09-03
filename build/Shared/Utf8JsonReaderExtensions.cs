@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 
@@ -66,9 +67,9 @@ namespace NuGet.Shared
         {
             if (reader.TryGetInt64(out long value))
             {
-                return value.ToString();
+                return value.ToString(CultureInfo.InvariantCulture);
             }
-            return reader.GetDouble().ToString();
+            return reader.GetDouble().ToString("R", CultureInfo.InvariantCulture);
         }
     }
 

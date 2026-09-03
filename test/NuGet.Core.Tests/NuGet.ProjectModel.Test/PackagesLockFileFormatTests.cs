@@ -121,10 +121,14 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void PackagesLockFileFormat_ReadLockFileWithSystemTextJsonUtf16Stream_ParsesLockFile()
+        public void PackagesLockFileFormat_ReadLockFileWithSystemTextJsonUtf8Bom_ParsesLockFile()
         {
             var stream = new MemoryStream();
-            using (var writer = new StreamWriter(stream, Encoding.Unicode, bufferSize: 1024, leaveOpen: true))
+            using (var writer = new StreamWriter(
+                stream,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                bufferSize: 1024,
+                leaveOpen: true))
             {
                 writer.Write(@"{ ""version"": 1, ""dependencies"": {} }");
             }
@@ -609,14 +613,8 @@ namespace NuGet.ProjectModel.Test
 
         private static PackagesLockFile ParseWithSystemTextJson(string content)
         {
-            var environmentVariableReader = new TestEnvironmentVariableReader(
-                new Dictionary<string, string>
-                {
-                    ["NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION"] = "true"
-                });
-
-            using var reader = new StringReader(content);
-            return PackagesLockFileFormat.ReadLockFile(reader, environmentVariableReader);
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            return PackagesLockFileFormat.ReadLockFileWithSystemTextJson(stream);
         }
 
         private static string Render(PackagesLockFile lockFile, bool useSystemTextJson)

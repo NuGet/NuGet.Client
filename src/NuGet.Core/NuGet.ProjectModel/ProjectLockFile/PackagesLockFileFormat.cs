@@ -22,7 +22,7 @@ using JsonException = System.Text.Json.JsonException;
 
 namespace NuGet.ProjectModel
 {
-    public static class PackagesLockFileFormat
+    public static partial class PackagesLockFileFormat
     {
         public static readonly int Version = 1;
         internal static readonly int AliasedVersion = 3;
@@ -57,9 +57,9 @@ namespace NuGet.ProjectModel
 
         public static PackagesLockFile Parse(string lockFileContent, ILogger log, string path)
         {
-            using (var reader = new StringReader(lockFileContent))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(lockFileContent), writable: false))
             {
-                return Read(reader, log, path);
+                return Read(stream, log, path);
             }
         }
 
@@ -78,33 +78,24 @@ namespace NuGet.ProjectModel
 
         public static PackagesLockFile Read(Stream stream, ILogger log, string path)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment())
+            try
             {
-                try
-                {
-                    PackagesLockFile lockFile = ReadLockFileWithSystemTextJson(stream);
-                    lockFile.Path = path;
-                    return lockFile;
-                }
-                catch (Exception ex)
-                {
-                    log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Log_ErrorReadingLockFile,
-                        path, ex.Message));
-
-                    // Ran into parsing errors, mark it as unlocked and out-of-date
-                    return new PackagesLockFile
-                    {
-                        Version = int.MinValue,
-                        Path = path
-                    };
-                }
+                PackagesLockFile lockFile = ReadLockFileWithSystemTextJson(stream);
+                lockFile.Path = path;
+                return lockFile;
             }
-
-            using (var textReader = new StreamReader(stream))
+            catch (Exception ex)
             {
-                return Read(textReader, log, path);
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingLockFile,
+                    path, ex.Message));
+
+                // Ran into parsing errors, mark it as unlocked and out-of-date
+                return new PackagesLockFile
+                {
+                    Version = int.MinValue,
+                    Path = path
+                };
             }
         }
 
@@ -160,14 +151,15 @@ namespace NuGet.ProjectModel
         {
             using (stream)
             {
-                if (stream.RequiresTextReader())
+                var reader = new Utf8JsonStreamReader(stream);
+                try
                 {
-                    using var reader = new StreamReader(stream);
-                    return ReadLockFileWithSystemTextJson(reader);
+                    return ReadLockFile(ref reader);
                 }
-
-                using JsonDocument document = JsonDocument.Parse(stream, DocumentOptions);
-                return ReadLockFile(document.RootElement);
+                finally
+                {
+                    reader.Dispose();
+                }
             }
         }
 

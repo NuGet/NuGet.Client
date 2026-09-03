@@ -114,6 +114,8 @@ namespace NuGet.Shared
 
         internal int GetInt32() => _reader.GetInt32();
 
+        internal string ReadTokenAsString() => _reader.ReadTokenAsString();
+
         internal int CurrentDepth => _reader.CurrentDepth;
 
         internal bool Read()
