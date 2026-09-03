@@ -325,8 +325,9 @@ namespace Microsoft.Build.NuGetSdkResolver
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Dictionary<string, string> ParseMSBuildSdkVersions(string globalJsonPath, SdkResolverContext sdkResolverContext)
         {
-            bool useSystemTextJson = NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment();
+            bool useSystemTextJsonFromEnvironment =
+                !NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                && NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment();
             Stream jsonStream = null;
             string json = null;
 
@@ -336,7 +337,11 @@ namespace Microsoft.Build.NuGetSdkResolver
             {
                 try
                 {
-                    if (useSystemTextJson)
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+                    {
+                        jsonStream = File.OpenRead(globalJsonPath);
+                    }
+                    else if (useSystemTextJsonFromEnvironment)
                     {
                         jsonStream = File.OpenRead(globalJsonPath);
                     }
@@ -357,14 +362,21 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 // Look ahead in the contents to see if there is an msbuild-sdks section.  Deserializing the file requires us to load
                 // Newtonsoft.Json which is 500 KB while a global.json is usually ~100 bytes of text.
-                if (!useSystemTextJson && json.IndexOf(MSBuildSdksPropertyName, StringComparison.Ordinal) == -1)
+                if (!NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
+                    && !useSystemTextJsonFromEnvironment
+                    && json.IndexOf(MSBuildSdksPropertyName, StringComparison.Ordinal) == -1)
                 {
                     return null;
                 }
 
                 try
                 {
-                    if (useSystemTextJson)
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+                    {
+                        return ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(jsonStream);
+                    }
+
+                    if (useSystemTextJsonFromEnvironment)
                     {
                         return ParseMSBuildSdkVersionsFromJsonWithSystemTextJson(jsonStream);
                     }

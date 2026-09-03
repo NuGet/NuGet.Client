@@ -35,8 +35,12 @@ namespace NuGet.RuntimeModel
             Stream stream,
             IEnvironmentVariableReader? environmentVariableReader)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return ReadRuntimeGraphWithSystemTextJson(stream);
+            }
+
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
             {
                 return ReadRuntimeGraphWithSystemTextJson(stream);
             }
@@ -53,8 +57,12 @@ namespace NuGet.RuntimeModel
             TextReader textReader,
             IEnvironmentVariableReader? environmentVariableReader)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return ReadRuntimeGraphWithSystemTextJson(textReader);
+            }
+
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
             {
                 return ReadRuntimeGraphWithSystemTextJson(textReader);
             }
