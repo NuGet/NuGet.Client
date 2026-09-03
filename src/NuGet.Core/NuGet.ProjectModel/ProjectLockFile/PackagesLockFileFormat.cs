@@ -18,7 +18,6 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Shared;
 using NuGet.Versioning;
-using JsonException = System.Text.Json.JsonException;
 
 namespace NuGet.ProjectModel
 {
@@ -39,11 +38,6 @@ namespace NuGet.ProjectModel
         private const string DependenciesProperty = "dependencies";
         private const string TypeProperty = "type";
         private const string FrameworkProperty = "framework";
-        private static readonly JsonDocumentOptions DocumentOptions = new()
-        {
-            AllowTrailingCommas = true,
-            CommentHandling = JsonCommentHandling.Skip
-        };
         private static readonly JsonWriterOptions WriterOptions = new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -99,6 +93,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete("Use Read(Stream, ILogger, string) instead.")]
         public static PackagesLockFile Read(TextReader reader, ILogger log, string path)
         {
             try
@@ -124,27 +119,7 @@ namespace NuGet.ProjectModel
 
         private static PackagesLockFile ReadLockFile(TextReader reader)
         {
-            return ReadLockFile(reader, environmentVariableReader: null);
-        }
-
-        internal static PackagesLockFile ReadLockFile(
-            TextReader reader,
-            IEnvironmentVariableReader environmentVariableReader)
-        {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
-            {
-                return ReadLockFileWithSystemTextJson(reader);
-            }
-
             return ReadLockFile(JsonUtility.LoadJson(reader));
-        }
-
-        internal static PackagesLockFile ReadLockFileWithSystemTextJson(TextReader reader)
-        {
-            using var _ = reader;
-            using JsonDocument document = JsonDocument.Parse(reader.ReadToEnd(), DocumentOptions);
-            return ReadLockFile(document.RootElement);
         }
 
         internal static PackagesLockFile ReadLockFileWithSystemTextJson(Stream stream)
@@ -197,106 +172,6 @@ namespace NuGet.ProjectModel
             };
 
             return lockFile;
-        }
-
-        private static PackagesLockFile ReadLockFile(JsonElement cursor)
-        {
-            int version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
-            IList<PackagesLockFileTarget> targets;
-
-            if (version >= AliasedVersion)
-            {
-                // V3 format: read from root level (alias/rid keys with framework and dependencies inside)
-                targets = new List<PackagesLockFileTarget>();
-
-                foreach (JsonProperty property in cursor.GetUniqueProperties())
-                {
-                    if (property.Name != VersionProperty)
-                    {
-                        var target = ReadTargetV3(property.Name, property.Value);
-                        if (target != null)
-                        {
-                            targets.Add(target);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // V1 and V2 format: read from dependencies property
-                targets = cursor.TryGetProperty(DependenciesProperty, out JsonElement dependencies)
-                    ? ReadObject(dependencies, ReadDependencyV2)
-                    : new List<PackagesLockFileTarget>(0);
-            }
-
-            var lockFile = new PackagesLockFile()
-            {
-                Version = version,
-                Targets = targets,
-            };
-
-            return lockFile;
-        }
-
-        private static int ReadInt(JsonElement json, string propertyName, int defaultValue)
-        {
-            if (!json.TryGetProperty(propertyName, out JsonElement value))
-            {
-                return defaultValue;
-            }
-
-            if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out int number))
-            {
-                return number;
-            }
-
-            if (value.ValueKind == JsonValueKind.String
-                && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
-            {
-                return number;
-            }
-
-            return defaultValue;
-        }
-
-        private static IList<T> ReadObject<T>(JsonElement json, Func<string, JsonElement, T> readItem)
-        {
-            if (json.ValueKind != JsonValueKind.Object)
-            {
-                return new List<T>(0);
-            }
-
-            List<JsonProperty> properties = json.GetUniqueProperties();
-            var items = new List<T>(properties.Count);
-            foreach (JsonProperty property in properties)
-            {
-                items.Add(readItem(property.Name, property.Value));
-            }
-
-            return items;
-        }
-
-        private static string ReadString(JsonElement json, string propertyName)
-        {
-            if (!json.TryGetProperty(propertyName, out JsonElement value))
-            {
-                return null;
-            }
-
-            return ReadValueAsString(value);
-        }
-
-        private static string ReadValueAsString(JsonElement value)
-        {
-            return value.ValueKind switch
-            {
-                JsonValueKind.String => value.GetString(),
-                JsonValueKind.Number => value.GetRawText(),
-                JsonValueKind.True => bool.TrueString,
-                JsonValueKind.False => bool.FalseString,
-                JsonValueKind.Null => null,
-                _ => throw new JsonException()
-            };
         }
 
         public static string Render(PackagesLockFile lockFile)
@@ -563,103 +438,6 @@ namespace NuGet.ProjectModel
             }
 
             return new JProperty(dependency.Id, json);
-        }
-
-        private static PackagesLockFileTarget ReadDependencyV2(string property, JsonElement json)
-        {
-            var parts = property.Split(JsonUtility.PathSplitChars);
-
-            var target = new PackagesLockFileTarget
-            {
-                TargetFramework = NuGetFramework.Parse(parts[0]),
-                Dependencies = ReadObject(json, ReadTargetDependency)
-            };
-
-            if (parts.Length == 2)
-            {
-                target.RuntimeIdentifier = parts[1];
-            }
-
-            return target;
-        }
-
-        private static PackagesLockFileTarget ReadTargetV3(string property, JsonElement json)
-        {
-            if (json.ValueKind != JsonValueKind.Object)
-            {
-                return null;
-            }
-
-            string frameworkString = ReadString(json, FrameworkProperty);
-            if (string.IsNullOrEmpty(frameworkString))
-            {
-                return null;
-            }
-
-            var parts = property.Split(JsonUtility.PathSplitChars);
-
-            var target = new PackagesLockFileTarget
-            {
-                TargetFramework = NuGetFramework.Parse(frameworkString),
-                RuntimeIdentifier = parts.Length == 2 ? parts[1] : null,
-                TargetAlias = parts[0],
-                Dependencies = json.TryGetProperty(DependenciesProperty, out JsonElement dependencies)
-                    ? ReadObject(dependencies, ReadTargetDependency)
-                    : new List<LockFileDependency>(0)
-            };
-
-            return target;
-        }
-
-        private static LockFileDependency ReadTargetDependency(string property, JsonElement json)
-        {
-            if (json.ValueKind != JsonValueKind.Object)
-            {
-                throw new JsonException();
-            }
-
-            var dependency = new LockFileDependency
-            {
-                Id = property,
-                Dependencies = json.TryGetProperty(DependenciesProperty, out JsonElement dependencies)
-                    ? ReadObject(dependencies, ReadPackageDependency)
-                    : new List<PackageDependency>(0)
-            };
-
-            string typeString = ReadString(json, TypeProperty);
-
-            if (!string.IsNullOrEmpty(typeString)
-                && Enum.TryParse<PackageDependencyType>(typeString, ignoreCase: true, result: out var installationType))
-            {
-                dependency.Type = installationType;
-            }
-
-            string resolvedString = ReadString(json, ResolvedProperty);
-
-            if (!string.IsNullOrEmpty(resolvedString))
-            {
-                dependency.ResolvedVersion = NuGetVersion.Parse(resolvedString);
-            }
-
-            string requestedString = ReadString(json, RequestedProperty);
-
-            if (!string.IsNullOrEmpty(requestedString))
-            {
-                dependency.RequestedVersion = VersionRange.Parse(requestedString);
-            }
-
-            dependency.ContentHash = ReadString(json, ContentHashProperty);
-
-            return dependency;
-        }
-
-        private static PackageDependency ReadPackageDependency(string property, JsonElement json)
-        {
-            string versionRange = ReadValueAsString(json);
-
-            return new PackageDependency(
-                property,
-                versionRange == null ? null : VersionRange.Parse(versionRange));
         }
 
         private static void WriteTargetV3(Utf8JsonWriter writer, PackagesLockFileTarget target)

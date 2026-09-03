@@ -602,11 +602,11 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void ReadLockFileWithSystemTextJson_WithTextReader_DisposesReader()
+        public void Read_WithTextReader_DisposesReader()
         {
             var reader = new StringReader("""{"version":1,"dependencies":{}}""");
 
-            PackagesLockFileFormat.ReadLockFileWithSystemTextJson(reader);
+            PackagesLockFileFormat.Read(reader, NullLogger.Instance, "In memory");
 
             Assert.Throws<ObjectDisposedException>(() => reader.Read());
         }
