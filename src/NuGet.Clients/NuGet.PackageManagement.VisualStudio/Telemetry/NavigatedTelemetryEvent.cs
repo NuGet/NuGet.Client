@@ -96,6 +96,18 @@ namespace NuGet.PackageManagement.Telemetry
         }
 
         /// <summary>
+        /// Navigating to resolve supply chain security with GitHub Copilot from a specific origin.
+        /// </summary>
+        public static NavigatedTelemetryEvent CreateWithResolveSupplyChainSecurity(
+            NavigationOrigin navigationOrigin,
+            CopilotToolSessionError errorType)
+        {
+            NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, navigationOrigin);
+            navigatedTelemetryEvent[ErrorTypePropertyName] = errorType;
+            return navigatedTelemetryEvent;
+        }
+
+        /// <summary>
         /// Navigating an External hyperlink from VS.
         /// </summary>
         /// <param name="hyperlinkType">Hyperlink origin</param>

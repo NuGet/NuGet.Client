@@ -146,6 +146,9 @@ namespace NuGetVSExtension
         private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
         [Import]
+        private Lazy<IResolveSupplyChainSecurityService> ResolveSupplyChainSecurityService { get; set; }
+
+        [Import]
         private Lazy<INuGetExperimentationService> NuGetExperimentationService { get; set; }
 
         [Import]
@@ -225,6 +228,9 @@ namespace NuGetVSExtension
 
             ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);
             clearNuGetLocalResourcesCommand.Initialize();
+
+            PackageSourceMapperCommand packageSourceMapperCommand = new(_mcs, ResolveSupplyChainSecurityService, SolutionManager);
+            packageSourceMapperCommand.Initialize();
         }
 
         /// <summary>
@@ -607,6 +613,7 @@ namespace NuGetVSExtension
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
                     WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
+                    await control.SetWindowFrameAsync(windowFrame);
                 }
             }
             finally
@@ -688,11 +695,14 @@ namespace NuGetVSExtension
             }
 
             Project project = VsMonitorSelection.GetActiveProject();
+            NuGetProject nuGetProject = null;
+            if (project != null)
+            {
+                string uniqueName = await project.GetCustomUniqueNameAsync();
+                nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+            }
 
-            string uniqueName = await project.GetCustomUniqueNameAsync();
-            NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-
-            if (nuGetProject is not ProjectJsonNuGetProject)
+            if (project == null || nuGetProject is not ProjectJsonNuGetProject)
             {
                 MessageHelper.ShowWarningMessage(Resources.ProjectJsonMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
                 return;
@@ -1001,6 +1011,7 @@ namespace NuGetVSExtension
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
                     WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
+                    await control.SetWindowFrameAsync(windowFrame);
                 }
             }
             finally
@@ -1205,8 +1216,10 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                string uniqueName = VsMonitorSelection.GetActiveProject().GetUniqueName();
-                NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+                Project project = VsMonitorSelection.GetActiveProject();
+                NuGetProject nuGetProject = project == null
+                    ? null
+                    : await SolutionManager.Value.GetNuGetProjectAsync(project.GetUniqueName());
 
                 command.Visible = GetIsSolutionOpen() && nuGetProject != null && nuGetProject is ProjectJsonNuGetProject;
 
@@ -1244,6 +1257,11 @@ namespace NuGetVSExtension
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dteProject = VsMonitorSelection.GetActiveProject();
+
+            if (dteProject == null)
+            {
+                return false;
+            }
 
             var uniqueName = dteProject.GetUniqueName();
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);

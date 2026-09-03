@@ -87,6 +87,11 @@
         <target state="translated">Technologia Service Broker jest niedostępna. Upewnij się, że program Visual Studio działa poprawnie.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_SupplyChainSecurityToolNotAvailable">
+        <source>The Review Supply Chain Security tool is unavailable. Enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
+        <target state="translated">Narzędzie Przeglądanie zabezpieczeń łańcucha dostaw jest niedostępne. Włącz serwer NuGet MCP w oknie czatu funkcji GitHub Copilot i spróbuj ponownie.</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
       <trans-unit id="NoProjectSelected">
         <source>No project is selected for this operation.</source>
         <target state="translated">Nie wybrano projektu dla tej operacji.</target>
@@ -160,6 +165,11 @@
       <trans-unit id="Prompt_FixNuGetPackageVulnerabilities">
         <source>Fix my NuGet package vulnerabilities</source>
         <target state="translated">Napraw luki w zabezpieczeniach pakietu NuGet</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Prompt_ReviewPackageSourceMapping">
+        <source>Review this repository's package source mappings.</source>
+        <target state="translated">Przejrzyj mapowania źródeł pakietów tego repozytorium.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
@@ -271,6 +281,16 @@
         <source>Fix Vulnerabilities with GitHub Copilot</source>
         <target state="translated">Napraw luki w zabezpieczeniach z usługą GitHub Copilot</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Title_ResolveSupplyChainSecurityWithCopilot">
+        <source>Resolve Supply Chain Security with GitHub Copilot</source>
+        <target state="translated">Rozwiązywanie problemów z zabezpieczeniami łańcucha dostaw za pomocą funkcji GitHub Copilot</target>
+        <note>Do not translate "GitHub Copilot"</note>
+      </trans-unit>
+      <trans-unit id="VSOptions_Button_PackageSourceMappingReview">
+        <source>Review with GitHub Copilot</source>
+        <target state="translated">Przejrzyj za pomocą funkcji GitHub Copilot</target>
+        <note>Do not translate "GitHub Copilot"</note>
       </trans-unit>
       <trans-unit id="clearLocalResources">
         <source>Clear NuGet local resources</source>

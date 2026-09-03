@@ -156,6 +156,79 @@ namespace NuGet.PackageManagement.Test.Telemetry
         }
 
         [Fact]
+        public void CreateWithResolveSupplyChainSecurity_WithValidProperties_CreatedWithoutPiiData()
+        {
+            // Arrange
+            var nuGetTelemetryService = SetupTelemetryListener();
+
+            var navigationType = NavigationType.Button;
+            var navigationOrigin = NavigationOrigin.Options_PackageSourceMapping_Review;
+
+            var evt = NavigatedTelemetryEvent.CreateWithResolveSupplyChainSecurity(navigationOrigin, CopilotToolSessionError.None);
+
+            // Act
+            nuGetTelemetryService.EmitTelemetryEvent(evt);
+
+            // Assert
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(navigationType, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(navigationOrigin, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
+            Assert.Null(_lastTelemetryEvent[NavigatedTelemetryEvent.HyperLinkTypePropertyName]);
+            Assert.Null(_lastTelemetryEvent[NavigatedTelemetryEvent.CurrentTabPropertyName]);
+            Assert.Null(_lastTelemetryEvent[NavigatedTelemetryEvent.IsSolutionViewPropertyName]);
+            Assert.Empty(_lastTelemetryEvent.GetPiiData());
+        }
+
+        public static IEnumerable<object[]> CopilotToolSessionErrorTypes()
+        {
+            foreach (CopilotToolSessionError errorType in Enum.GetValues(typeof(CopilotToolSessionError)).Cast<CopilotToolSessionError>())
+            {
+                yield return new object[] { errorType };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CopilotToolSessionErrorTypes))]
+        public void CreateWithResolveSupplyChainSecurity_WithAllErrorTypes_CreatesEventWithCorrectProperties(CopilotToolSessionError errorType)
+        {
+            // Arrange
+            var nuGetTelemetryService = SetupTelemetryListener();
+
+            // Act
+            var evt = NavigatedTelemetryEvent.CreateWithResolveSupplyChainSecurity(NavigationOrigin.Options_PackageSourceMapping_Review, errorType);
+            nuGetTelemetryService.EmitTelemetryEvent(evt);
+
+            // Assert
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(3, _lastTelemetryEvent.Count);
+            Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(NavigationOrigin.Options_PackageSourceMapping_Review, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
+            Assert.Equal(errorType, _lastTelemetryEvent[NavigatedTelemetryEvent.ErrorTypePropertyName]);
+        }
+
+        [Theory]
+        [InlineData(NavigationOrigin.Options_PackageSourceMapping_Review)]
+        [InlineData(NavigationOrigin.ErrorList_ResolveSupplyChainSecurity)]
+        public void CreateWithResolveSupplyChainSecurity_WithOrigin_CreatesEventWithCorrectProperties(NavigationOrigin navigationOrigin)
+        {
+            // Arrange
+            var nuGetTelemetryService = SetupTelemetryListener();
+
+            // Act
+            var evt = NavigatedTelemetryEvent.CreateWithResolveSupplyChainSecurity(
+                navigationOrigin,
+                CopilotToolSessionError.None);
+            nuGetTelemetryService.EmitTelemetryEvent(evt);
+
+            // Assert
+            Assert.NotNull(_lastTelemetryEvent);
+            Assert.Equal(3, _lastTelemetryEvent.Count);
+            Assert.Equal(NavigationType.Button, _lastTelemetryEvent[NavigatedTelemetryEvent.NavigationTypePropertyName]);
+            Assert.Equal(navigationOrigin, _lastTelemetryEvent[NavigatedTelemetryEvent.OriginPropertyName]);
+            Assert.Equal(CopilotToolSessionError.None, _lastTelemetryEvent[NavigatedTelemetryEvent.ErrorTypePropertyName]);
+        }
+
+        [Fact]
         public void CreateWithAddPackageSourceMapping_WithValidProperties_CreatedWithoutPiiData()
         {
             // Arrange
@@ -342,4 +415,3 @@ namespace NuGet.PackageManagement.Test.Telemetry
         }
     }
 }
-

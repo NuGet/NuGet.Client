@@ -133,20 +133,20 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet MCP Server is not active. Enable the NuGet MCP Server in the GitHub Copilot chat window and try again..
-        /// </summary>
-        internal static string Error_McpServerNotActive {
-            get {
-                return ResourceManager.GetString("Error_McpServerNotActive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to determine the status of the NuGet MCP Server. Ensure GitHub Copilot is installed and signed in..
         /// </summary>
         internal static string Error_McpServerInfoServiceNotAvailable {
             get {
                 return ResourceManager.GetString("Error_McpServerInfoServiceNotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet MCP Server is not active. Enable the NuGet MCP Server in the GitHub Copilot chat window and try again..
+        /// </summary>
+        internal static string Error_McpServerNotActive {
+            get {
+                return ResourceManager.GetString("Error_McpServerNotActive", resourceCulture);
             }
         }
         
@@ -213,6 +213,15 @@ namespace NuGetVSExtension {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to The Review Supply Chain Security tool is unavailable. Enable the NuGet MCP Server in the GitHub Copilot chat window and try again..
+        /// </summary>
+        internal static string Error_SupplyChainSecurityToolNotAvailable {
+            get {
+                return ResourceManager.GetString("Error_SupplyChainSecurityToolNotAvailable", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Service Broker is not available. Ensure Visual Studio is running correctly..
         /// </summary>
@@ -372,6 +381,15 @@ namespace NuGetVSExtension {
         internal static string Prompt_FixNuGetPackageVulnerabilities {
             get {
                 return ResourceManager.GetString("Prompt_FixNuGetPackageVulnerabilities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Review this repository&apos;s package source mappings..
+        /// </summary>
+        internal static string Prompt_ReviewPackageSourceMapping {
+            get {
+                return ResourceManager.GetString("Prompt_ReviewPackageSourceMapping", resourceCulture);
             }
         }
         
@@ -588,6 +606,24 @@ namespace NuGetVSExtension {
         internal static string Title_FixVulnerabilitiesWithCopilot {
             get {
                 return ResourceManager.GetString("Title_FixVulnerabilitiesWithCopilot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolve Supply Chain Security with GitHub Copilot.
+        /// </summary>
+        internal static string Title_ResolveSupplyChainSecurityWithCopilot {
+            get {
+                return ResourceManager.GetString("Title_ResolveSupplyChainSecurityWithCopilot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Review with GitHub Copilot.
+        /// </summary>
+        internal static string VSOptions_Button_PackageSourceMappingReview {
+            get {
+                return ResourceManager.GetString("VSOptions_Button_PackageSourceMappingReview", resourceCulture);
             }
         }
     }

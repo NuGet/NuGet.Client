@@ -87,6 +87,11 @@
         <target state="translated">Hizmet Aracısı kullanılamıyor. Visual Studio’nun düzgün çalıştığından emin olun.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_SupplyChainSecurityToolNotAvailable">
+        <source>The Review Supply Chain Security tool is unavailable. Enable the NuGet MCP Server in the GitHub Copilot chat window and try again.</source>
+        <target state="translated">Tedarik Zinciri Güvenliğini İnceleme aracı kullanılamıyor. GitHub Copilot sohbet penceresinde NuGet MCP Sunucusu’nu etkinleştirin ve yeniden deneyin.</target>
+        <note>Do not translate GitHub or Copilot</note>
+      </trans-unit>
       <trans-unit id="NoProjectSelected">
         <source>No project is selected for this operation.</source>
         <target state="translated">Bu işlem için proje seçilmedi.</target>
@@ -160,6 +165,11 @@
       <trans-unit id="Prompt_FixNuGetPackageVulnerabilities">
         <source>Fix my NuGet package vulnerabilities</source>
         <target state="translated">NuGet paketimdeki güvenlik açıklarını düzelt</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Prompt_ReviewPackageSourceMapping">
+        <source>Review this repository's package source mappings.</source>
+        <target state="translated">Bu deponun paket kaynak eşlemelerini gözden geçirin.</target>
         <note />
       </trans-unit>
       <trans-unit id="SettingsStoredInNuGetConfiguration">
@@ -271,6 +281,16 @@
         <source>Fix Vulnerabilities with GitHub Copilot</source>
         <target state="translated">GitHub Copilot ile güvenlik açıklarını düzelt</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Title_ResolveSupplyChainSecurityWithCopilot">
+        <source>Resolve Supply Chain Security with GitHub Copilot</source>
+        <target state="translated">GitHub Copilot ile Tedarik Zinciri Güvenliğini Çözün</target>
+        <note>Do not translate "GitHub Copilot"</note>
+      </trans-unit>
+      <trans-unit id="VSOptions_Button_PackageSourceMappingReview">
+        <source>Review with GitHub Copilot</source>
+        <target state="translated">GitHub Copilot ile gözden geçirme</target>
+        <note>Do not translate "GitHub Copilot"</note>
       </trans-unit>
       <trans-unit id="clearLocalResources">
         <source>Clear NuGet local resources</source>
