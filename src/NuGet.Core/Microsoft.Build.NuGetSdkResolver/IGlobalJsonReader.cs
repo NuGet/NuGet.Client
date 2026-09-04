@@ -17,6 +17,6 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="context">An <see cref="SdkResolverContext" /> to use when locating the file.</param>
         /// <param name="fileName">An optional file name to search for, the default is global.json.</param>
         /// <returns>A <see cref="Dictionary{String,String}" /> of MSBuild SDK versions from a global.json if found, otherwise <c>null</c>.</returns>
-        Dictionary<string, string> GetMSBuildSdkVersions(SdkResolverContext context, string fileName = GlobalJsonReader.GlobalJsonFileName);
+        Dictionary<string, string>? GetMSBuildSdkVersions(SdkResolverContext context, string fileName = GlobalJsonReader.GlobalJsonFileName);
     }
 }

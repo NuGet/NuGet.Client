@@ -8,12 +8,16 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.RuntimeModel
 {
-    public static class JsonRuntimeFormat
+    public static partial class JsonRuntimeFormat
     {
+        /// <summary>
+        /// Reads a runtime graph from a file. The file is expected to contain UTF8 encoded json content.
+        /// </summary>
         public static RuntimeGraph ReadRuntimeGraph(string filePath)
         {
             using (var fileStream = File.OpenRead(filePath))
@@ -22,25 +26,23 @@ namespace NuGet.RuntimeModel
             }
         }
 
+        /// <summary>
+        /// Reads a runtime graph from a stream. The stream is expected to contain UTF8 encoded json content.
+        /// The stream will be disposed at the end of reading.
+        /// </summary>
         public static RuntimeGraph ReadRuntimeGraph(Stream stream)
         {
-            using (var streamReader = new StreamReader(stream))
+            using (stream)
             {
-                return ReadRuntimeGraph(streamReader);
-            }
-        }
-
-        public static RuntimeGraph ReadRuntimeGraph(TextReader textReader)
-        {
-            var loadSettings = new JsonLoadSettings()
-            {
-                LineInfoHandling = LineInfoHandling.Ignore,
-                CommentHandling = CommentHandling.Ignore
-            };
-
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return ReadRuntimeGraph(JToken.Load(jsonReader, loadSettings));
+                var reader = new Utf8JsonStreamReader(stream);
+                try
+                {
+                    return ReadRuntimeGraph(ref reader);
+                }
+                finally
+                {
+                    reader.Dispose();
+                }
             }
         }
 

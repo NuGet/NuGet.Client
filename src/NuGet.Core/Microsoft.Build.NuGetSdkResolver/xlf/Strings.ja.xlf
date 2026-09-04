@@ -37,6 +37,11 @@
         <target state="translated">ファイル "{0}" を読み取れませんでした: {1}</target>
         <note>{0} is the path to the global.json file that was attempted to be read and {1} is the exception message that occurred.</note>
       </trans-unit>
+      <trans-unit id="InvalidJsonWithLocation">
+        <source>Invalid JSON at line {0}, byte position {1}.</source>
+        <target state="new">Invalid JSON at line {0}, byte position {1}.</target>
+        <note>{0} is the one-based line number and {1} is the one-based byte position within the line.</note>
+      </trans-unit>
       <trans-unit id="PackageWasNotInstalled">
         <source>Failed to resolve SDK '{0}'. Package restore was successful but a package with the ID of "{1}" was not installed.</source>
         <target state="translated">SDK '{0}' を解決できませんでした。パッケージの復元は成功しましたが、ID が "{1}" のパッケージはインストールされませんでした。</target>

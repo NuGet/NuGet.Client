@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Test.Utility;
@@ -142,7 +144,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
                 context.MockSdkLogger.LoggedMessages.First().Message.Should().Be(
-                    $"Failed to parse \"{expectedGlobalJsonPath}\". Invalid character after parsing property name. Expected ':' but got: J. Path 'msbuild-sdks.Sdk2', line 5, position 10.");
+                    $"Failed to parse \"{expectedGlobalJsonPath}\". Invalid JSON at line 5, byte position 3.");
 
                 actualGlobalJsonPath.Should().Be(expectedGlobalJsonPath);
             }
@@ -423,6 +425,53 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 wasGlobalJsonRead.Should().BeTrue();
             }
+        }
+
+        [Fact]
+        public void GetMSBuildSdkVersions_ParsesUtf16File()
+        {
+            const string json = @"{ ""msbuild-sdks"": { ""Sdk1"": ""1.0.0"" } }";
+            using var testDirectory = TestDirectory.Create();
+            string path = Path.Combine(testDirectory, GlobalJsonReader.GlobalJsonFileName);
+            File.WriteAllText(path, json, Encoding.Unicode);
+            var context = new MockSdkResolverContext(testDirectory);
+
+            Dictionary<string, string> result = GlobalJsonReader.Instance.GetMSBuildSdkVersions(context);
+
+            result.Should().Equal(new Dictionary<string, string> { ["Sdk1"] = "1.0.0" });
+        }
+
+        [Fact]
+        public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ParsesLargeValue()
+        {
+            string version = new string('1', 20_000);
+            string json = $@"{{ ""msbuild-sdks"": {{ ""Sdk1"": ""{version}"" }} }}";
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+
+            Dictionary<string, string> result = GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(stream);
+
+            result.Should().Equal(new Dictionary<string, string> { ["Sdk1"] = version });
+        }
+
+        [Fact]
+        public void ParseMSBuildSdkVersionsFromJsonWithSystemTextJson_ReportsLocation_WhenJsonIsInvalid()
+        {
+            const string json = @"{
+  ""msbuild-sdks"": {
+    ""Sdk1"": ""1.0.0"",
+    invalid
+  }
+}";
+
+            JsonException exception;
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            {
+                exception = Assert.ThrowsAny<JsonException>(
+                    () => GlobalJsonReader.ParseMSBuildSdkVersionsFromJson(stream));
+            }
+
+            exception.LineNumber.Should().NotBeNull();
+            exception.BytePositionInLine.Should().NotBeNull();
         }
 
         /// <summary>

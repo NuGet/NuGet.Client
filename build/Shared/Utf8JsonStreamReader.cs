@@ -16,7 +16,7 @@ using System.Text.Json;
 namespace NuGet.Shared
 {
     /// <summary>
-    /// This struct is used to read over a memeory stream in parts, in order to avoid reading the entire stream into memory.
+    /// This struct is used to read over a memory stream in parts, in order to avoid reading the entire stream into memory.
     /// It functions as a wrapper around <see cref="Utf8JsonStreamReader"/>, while maintaining a stream and a buffer to read from.
     /// </summary>
     internal ref struct Utf8JsonStreamReader
@@ -40,7 +40,18 @@ namespace NuGet.Shared
         private bool _disposed;
         private ArrayPool<byte> _bufferPool;
         private int _bufferUsed = 0;
+        private int _bufferStartLineNumber;
+        private int _bufferStartBytePositionInLine;
 
+        /// <summary>
+        /// A buffered reader that reads from a stream in chunks, and uses a Utf8JsonReader to read the json content from the buffer.
+        /// The reader will advance the underlying stream, but will not dispose it.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="bufferSize"></param>
+        /// <param name="arrayPool"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
             if (stream is null)
@@ -57,6 +68,8 @@ namespace NuGet.Shared
             _buffer = _bufferPool.Rent(bufferSize);
             _disposed = false;
             _stream = stream;
+            _bufferStartLineNumber = 0;
+            _bufferStartBytePositionInLine = 0;
 
             if (_stream.Read(_buffer, offset: 0, count: 1) == 1 &&
                 _stream.Read(_buffer, offset: ++_bufferUsed, count: 1) == 1 &&
@@ -82,6 +95,24 @@ namespace NuGet.Shared
 
         internal JsonTokenType TokenType => _reader.TokenType;
 
+        internal int LineNumber
+        {
+            get
+            {
+                GetTokenStartPosition(out int lineNumber, out _);
+                return lineNumber + 1;
+            }
+        }
+
+        internal int ColumnNumber
+        {
+            get
+            {
+                GetTokenStartPosition(out _, out int bytePositionInLine);
+                return bytePositionInLine + 1;
+            }
+        }
+
         internal bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
 
         internal bool TryGetInt32(out int value) => _reader.TryGetInt32(out value);
@@ -91,6 +122,8 @@ namespace NuGet.Shared
         internal bool GetBoolean() => _reader.GetBoolean();
 
         internal int GetInt32() => _reader.GetInt32();
+
+        internal string ReadTokenAsString() => _reader.ReadTokenAsString();
 
         internal int CurrentDepth => _reader.CurrentDepth;
 
@@ -334,11 +367,17 @@ namespace NuGet.Shared
         // This function is called when Read() returns false and we're not already in the final block
         private void GetMoreBytesFromStream()
         {
-            if (_reader.BytesConsumed < _bufferUsed)
+            int bytesConsumed = checked((int)_reader.BytesConsumed);
+            AdvancePosition(
+                _buffer.AsSpan(start: 0, length: bytesConsumed),
+                ref _bufferStartLineNumber,
+                ref _bufferStartBytePositionInLine);
+
+            if (bytesConsumed < _bufferUsed)
             {
                 // If the number of bytes consumed by the reader is less than the amount set in the buffer then we have leftover bytes
                 var oldBuffer = _buffer;
-                ReadOnlySpan<byte> leftover = oldBuffer.AsSpan((int)_reader.BytesConsumed);
+                ReadOnlySpan<byte> leftover = oldBuffer.AsSpan(bytesConsumed);
                 _bufferUsed = leftover.Length;
 
                 // If the leftover bytes are the same as the buffer size then we are at capacity and need to double the buffer size
@@ -359,6 +398,33 @@ namespace NuGet.Shared
             }
 
             ReadStreamIntoBuffer(_reader.CurrentState);
+        }
+
+        private void GetTokenStartPosition(out int lineNumber, out int bytePositionInLine)
+        {
+            lineNumber = _bufferStartLineNumber;
+            bytePositionInLine = _bufferStartBytePositionInLine;
+
+            AdvancePosition(
+                _buffer.AsSpan(start: 0, length: checked((int)_reader.TokenStartIndex)),
+                ref lineNumber,
+                ref bytePositionInLine);
+        }
+
+        private static void AdvancePosition(
+            ReadOnlySpan<byte> bytes,
+            ref int lineNumber,
+            ref int bytePositionInLine)
+        {
+            int newlineIndex;
+            while ((newlineIndex = bytes.IndexOf((byte)'\n')) >= 0)
+            {
+                lineNumber++;
+                bytePositionInLine = 0;
+                bytes = bytes.Slice(newlineIndex + 1);
+            }
+
+            bytePositionInLine += bytes.Length;
         }
 
         /// <summary>

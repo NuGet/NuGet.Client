@@ -124,6 +124,15 @@ namespace Microsoft.Build.NuGetSdkResolver {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid JSON at line {0}, byte position {1}..
+        /// </summary>
+        internal static string InvalidJsonWithLocation {
+            get {
+                return ResourceManager.GetString("InvalidJsonWithLocation", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Failed to resolve SDK &apos;{0}&apos;. Package restore was successful but a package with the ID of &quot;{1}&quot; was not installed..
         /// </summary>
         internal static string PackageWasNotInstalled {

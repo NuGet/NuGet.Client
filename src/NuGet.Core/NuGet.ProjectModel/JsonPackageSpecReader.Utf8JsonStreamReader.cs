@@ -151,7 +151,11 @@ namespace NuGet.ProjectModel
                             }
                             catch (Exception ex)
                             {
-                                throw FileFormatException.Create(ex, version, packageSpec.FilePath);
+                                throw FileFormatException.Create(
+                                    ex,
+                                    jsonReader.LineNumber,
+                                    jsonReader.ColumnNumber,
+                                    packageSpec.FilePath);
                             }
                         }
                     }
