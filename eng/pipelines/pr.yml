@@ -337,10 +337,6 @@ stages:
             filePath: configure.ps1
         - script: SET | SORT
           displayName: Log Environment Variables
-        - script: dotnet publish test\NuGet.AotCompatibility.TestApp\NuGet.AotCompatibility.TestApp.csproj --configuration Release --output artifacts\AotCompatibility
-          displayName: Publish AOT compatibility test app
-        - script: artifacts\AotCompatibility\NuGet.AotCompatibility.TestApp.exe
-          displayName: Run AOT compatibility test app
         - script: dotnet format whitespace --verify-no-changes NuGet.sln
           displayName: Run dotnet format whitespace
           condition: succeededOrFailed()
@@ -367,6 +363,13 @@ stages:
                 Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
                 exit 1
               }
+
+        - script: dotnet publish test\NuGet.AotCompatibility.TestApp\NuGet.AotCompatibility.TestApp.csproj --configuration Release --output artifacts\AotCompatibility
+          displayName: Publish AOT compatibility test app
+          condition: succeededOrFailed()
+        - script: artifacts\AotCompatibility\NuGet.AotCompatibility.TestApp.exe
+          displayName: Run AOT compatibility test app
+          condition: succeededOrFailed()
 
         - task: MSBuild@1
           displayName: Restore and Build
