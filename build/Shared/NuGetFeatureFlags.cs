@@ -25,10 +25,7 @@ namespace NuGet.Shared
             _isSystemTextJsonDeserializationEnabledByEnvironment =
                 new Lazy<bool>(() => IsSystemTextJsonDeserializationEnabledByEnvironment(EnvironmentVariableWrapper.Instance));
 
-        /// <summary>
-        /// Selects System.Text.Json deserialization and <c>packages.lock.json</c> serialization.
-        /// Defaults to <see langword="false"/> (Newtonsoft.Json is the default).
-        /// </summary>
+        /// <summary>Feature switch for System.Text.Json deserialization. Defaults to <see langword="false"/> (Newtonsoft is the default).</summary>
         [FeatureSwitchDefinition(UseSystemTextJsonDeserializationSwitchName)]
         internal static bool UseSystemTextJsonDeserializationFeatureSwitch { get; } =
             AppContext.TryGetSwitch(UseSystemTextJsonDeserializationSwitchName, out bool value) && value;
