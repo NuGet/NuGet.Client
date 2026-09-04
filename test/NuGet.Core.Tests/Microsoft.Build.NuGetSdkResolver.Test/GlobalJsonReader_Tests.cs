@@ -144,7 +144,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
                 context.MockSdkLogger.LoggedMessages.First().Message.Should().Be(
-                    $"Failed to parse \"{expectedGlobalJsonPath}\". 'i' is an invalid start of a property name. Expected a '\"'. LineNumber: 4 | BytePositionInLine: 2.");
+                    $"Failed to parse \"{expectedGlobalJsonPath}\". Invalid JSON at line 5, byte position 3.");
 
                 actualGlobalJsonPath.Should().Be(expectedGlobalJsonPath);
             }

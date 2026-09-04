@@ -129,6 +129,10 @@
     <value>Failed to parse "{0}". {1}</value>
     <comment>{0} is the path to the global.json file that was attempted to be parsed and {1} is the exception message that occurred.</comment>
   </data>
+  <data name="InvalidJsonWithLocation" xml:space="preserve">
+    <value>Invalid JSON at line {0}, byte position {1}.</value>
+    <comment>{0} is the one-based line number and {1} is the one-based byte position within the line.</comment>
+  </data>
   <data name="FailedToReadGlobalJson" xml:space="preserve">
     <value>Failed to read file "{0}". {1}</value>
     <comment>{0} is the path to the global.json file that was attempted to be read and {1} is the exception message that occurred.</comment>

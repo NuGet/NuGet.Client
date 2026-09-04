@@ -66,21 +66,23 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void PackagesLockFileFormat_ReadWithCommentsAndVersionAfterDependencies()
         {
-            var lockFileContent = @"{
-                // The version property is not required to be first.
-                ""dependencies"": {
-                    ""net8.0"": {
-                        ""PackageA"": {
-                            ""type"": ""Direct"",
-                            ""resolved"": ""1.0.0"",
-                            ""dependencies"": {
-                                ""PackageB"": null,
+            var lockFileContent = """
+                {
+                    // The version property is not required to be first.
+                    "dependencies": {
+                        "net8.0": {
+                            "PackageA": {
+                                "type": "Direct",
+                                "resolved": "1.0.0",
+                                "dependencies": {
+                                    "PackageB": null,
+                                },
                             },
                         },
                     },
-                },
-                ""version"": 1,
-            }";
+                    "version": 1,
+                }
+                """;
 
             PackagesLockFile lockFile = ParseWithSystemTextJson(lockFileContent);
 
@@ -95,18 +97,20 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void PackagesLockFileFormat_ReadVersion3WithVersionAfterTargets()
         {
-            var lockFileContent = @"{
-                ""net8.0"": {
-                    ""framework"": ""net8.0"",
-                    ""dependencies"": {
-                        ""PackageA"": {
-                            ""type"": ""Direct"",
-                            ""resolved"": ""1.0.0""
+            var lockFileContent = """
+                {
+                    "net8.0": {
+                        "framework": "net8.0",
+                        "dependencies": {
+                            "PackageA": {
+                                "type": "Direct",
+                                "resolved": "1.0.0"
+                            }
                         }
-                    }
-                },
-                ""version"": 3
-            }";
+                    },
+                    "version": 3
+                }
+                """;
 
             PackagesLockFile lockFile = ParseWithSystemTextJson(lockFileContent);
 

@@ -11,7 +11,7 @@ namespace NuGet.RuntimeModel.Test
 {
     public class JsonRuntimeFormatTests
     {
-        private const string SimpleRuntimeGraphContent = "{\"runtimes\":{\"any\":{}}}";
+        private const string SimpleRuntimeGraphContent = """{"runtimes":{"any":{}}}""";
 
         [Theory]
         [InlineData("{}")]

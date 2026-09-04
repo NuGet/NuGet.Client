@@ -298,7 +298,11 @@ namespace Microsoft.Build.NuGetSdkResolver
                 catch (Exception e)
                 {
                     // Failed to parse "{0}". {1}
-                    sdkResolverContext.Logger.LogMessage(string.Format(CultureInfo.CurrentCulture, Strings.FailedToParseGlobalJson, globalJsonPath, e.Message));
+                    sdkResolverContext.Logger.LogMessage(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.FailedToParseGlobalJson,
+                        globalJsonPath,
+                        GetUserFacingExceptionMessage(e)));
 
                     return null;
                 }
@@ -309,6 +313,22 @@ namespace Microsoft.Build.NuGetSdkResolver
 
                 if (SdkResolverEventSource.Instance.IsEnabled()) SdkResolverEventSource.Instance.GlobalJsonReadStop(globalJsonPath, sdkResolverContext.ProjectFilePath, sdkResolverContext.SolutionFilePath);
             }
+        }
+
+        private static string GetUserFacingExceptionMessage(Exception exception)
+        {
+            if (exception is not JsonException jsonException
+                || jsonException.LineNumber is not long lineNumber
+                || jsonException.BytePositionInLine is not long bytePositionInLine)
+            {
+                return exception.Message;
+            }
+
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.InvalidJsonWithLocation,
+                lineNumber + 1,
+                bytePositionInLine + 1);
         }
     }
 }

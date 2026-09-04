@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
@@ -37,45 +36,6 @@ namespace NuGet.Shared
 #else
             return Encoding.UTF8.GetString(reader.ValueSpan.ToArray());
 #endif
-        }
-    }
-
-    internal static class JsonElementExtensions
-    {
-        internal static string GetRequiredString(this JsonElement json)
-        {
-            if (json.ValueKind != JsonValueKind.String)
-            {
-                throw new JsonException();
-            }
-
-            return json.GetString() ?? throw new JsonException();
-        }
-
-        internal static List<JsonProperty> GetUniqueProperties(this JsonElement json)
-        {
-            if (json.ValueKind != JsonValueKind.Object)
-            {
-                throw new JsonException();
-            }
-
-            var properties = new List<JsonProperty>();
-            var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
-
-            foreach (JsonProperty property in json.EnumerateObject())
-            {
-                if (indexes.TryGetValue(property.Name, out int index))
-                {
-                    properties[index] = property;
-                }
-                else
-                {
-                    indexes.Add(property.Name, properties.Count);
-                    properties.Add(property);
-                }
-            }
-
-            return properties;
         }
     }
 }

@@ -177,7 +177,11 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void Read_WhenReadingMultilineJson_TracksTokenPosition()
         {
-            var json = Encoding.UTF8.GetBytes("{\n  \"a\": \"value\"\n}");
+            var json = Encoding.UTF8.GetBytes("""
+                {
+                  "a": "value"
+                }
+                """);
 
             using var stream = new MemoryStream(json);
             using var reader = new Utf8JsonStreamReader(stream);
@@ -199,7 +203,12 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void Read_WhenTokenIsAfterBufferBoundary_TracksTokenPosition()
         {
-            string json = "{\n  \"padding\": \"" + new string('a', 1000) + "\",\n  \"target\": \"value\"\n}";
+            string json = $$"""
+                {
+                  "padding": "{{new string('a', 1000)}}",
+                  "target": "value"
+                }
+                """;
 
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
             using var reader = new Utf8JsonStreamReader(stream, 1024);
