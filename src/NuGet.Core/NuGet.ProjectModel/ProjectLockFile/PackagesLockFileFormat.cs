@@ -39,7 +39,11 @@ namespace NuGet.ProjectModel
         private static readonly JsonWriterOptions WriterOptions = new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            Indented = true
+            Indented = true,
+#if NET9_0_OR_GREATER
+            // Match Newtonsoft.Json's platform-specific newline behavior.
+            NewLine = Environment.NewLine
+#endif
         };
 
         public static PackagesLockFile Parse(string lockFileContent, string path)
@@ -109,10 +113,11 @@ namespace NuGet.ProjectModel
 
         public static string Render(PackagesLockFile lockFile)
         {
-            using (var writer = new StringWriter())
+            using (var stream = new MemoryStream())
             {
-                WriteWithSystemTextJson(writer, lockFile);
-                return writer.ToString();
+                WriteToStream(stream, lockFile);
+
+                return Encoding.UTF8.GetString(stream.GetBuffer(), 0, checked((int)stream.Length));
             }
         }
 
@@ -131,9 +136,8 @@ namespace NuGet.ProjectModel
         public static void Write(Stream stream, PackagesLockFile lockFile)
         {
             using (stream)
-            using (var jsonWriter = new Utf8JsonWriter(stream, WriterOptions))
             {
-                WriteLockFile(jsonWriter, lockFile);
+                WriteToStream(stream, lockFile);
             }
         }
 
@@ -151,22 +155,11 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void WriteWithSystemTextJson(TextWriter textWriter, PackagesLockFile lockFile)
+        private static void WriteToStream(Stream stream, PackagesLockFile lockFile)
         {
-            using (var stream = new MemoryStream())
+            using (var jsonWriter = new Utf8JsonWriter(stream, WriterOptions))
             {
-                using (var jsonWriter = new Utf8JsonWriter(stream, WriterOptions))
-                {
-                    WriteLockFile(jsonWriter, lockFile);
-                }
-
-                string json = Encoding.UTF8.GetString(stream.ToArray()).Replace("\r\n", "\n");
-                if (textWriter.NewLine != "\n")
-                {
-                    json = json.Replace("\n", textWriter.NewLine);
-                }
-
-                textWriter.Write(json);
+                WriteLockFile(jsonWriter, lockFile);
             }
         }
 
