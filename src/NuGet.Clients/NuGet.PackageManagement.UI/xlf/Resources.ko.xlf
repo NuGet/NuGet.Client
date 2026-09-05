@@ -1288,7 +1288,7 @@ Error: {1}</source>
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptMessage">
         <source>Once started, this action cannot be cancelled. Select OK to continue.</source>
-        <target state="needs-review-translation">일단 시작하면 이 작업은 취소할 수 없습니다.</target>
+        <target state="new">Once started, this action cannot be cancelled. Select OK to continue.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSOptions_Text_ClearLocalsPromptTitle">
