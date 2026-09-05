@@ -587,8 +587,8 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <note>0 - alias, 1 - project path, {Locked="TargetFramework"}</note>
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOptions">
-        <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
-        <target state="translated">옵션 '--outdated', '--deprecated' 및 '--vulnerable'는 결합할 수 없습니다.</target>
+        <source>Options '--outdated', '--deprecated', '--vulnerable', and '--sponsor' cannot be combined.</source>
+        <target state="needs-review-translation">옵션 '--outdated', '--deprecated' 및 '--vulnerable'는 결합할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_InvalidOutputFormat">
@@ -624,6 +624,11 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
       <trans-unit id="ListPkg_NoPackagesFoundForFrameworks">
         <source>No packages were found for the project `{0}` given the specified frameworks.</source>
         <target state="translated">지정된 프레임워크를 고려해 볼 때 '{0}' 프로젝트에 대한 패키지를 찾을 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_NoSponsorshipForProject">
+        <source>Project '{0}' has no sponsorable packages.</source>
+        <target state="new">Project '{0}' has no sponsorable packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -691,6 +696,11 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <target state="translated">'{0}' 프로젝트에 다음 패키지 참조가 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
+        <source>Project '{0}' has the following sponsorable packages</source>
+        <target state="new">Project '{0}' has the following sponsorable packages</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">
         <source>Project `{0}` has the following updates to its packages</source>
         <target state="translated">'{0}' 프로젝트에 패키지에 대한 다음 업데이트가 있습니다.</target>
@@ -719,6 +729,56 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
       <trans-unit id="ListPkg_SourcesUsedDescription">
         <source>The following sources were used:</source>
         <target state="translated">다음 소스가 사용되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorDescription">
+        <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
+        <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorHeader">
+        <source>Sponsor</source>
+        <target state="new">Sponsor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorNoDetailsHeader">
+        <source>The following package sources did not return sponsorship details:</source>
+        <target state="new">The following package sources did not return sponsorship details:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorPackageSourceMappingEnabled">
+        <source>Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages.</source>
+        <target state="new">Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorPackageSourceMappingWithSource">
+        <source>Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting.</source>
+        <target state="new">Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorProblemNoDetails">
+        <source>Package source '{0}' did not return sponsorship details.</source>
+        <target state="new">Package source '{0}' did not return sponsorship details.</target>
+        <note>0 - Package source</note>
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorProblemUnsupportedSource">
+        <source>Package source '{0}' does not support sponsorship reporting.</source>
+        <target state="new">Package source '{0}' does not support sponsorship reporting.</target>
+        <note>0 - Package source</note>
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorSourceHint">
+        <source>Consider configuring an additional package source that provides sponsorship metadata, such as https://api.nuget.org/v3/index.json.</source>
+        <target state="new">Consider configuring an additional package source that provides sponsorship metadata, such as https://api.nuget.org/v3/index.json.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorSourceLine">
+        <source>Source: {0}</source>
+        <target state="new">Source: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListPkg_SponsorUnsupportedSourcesHeader">
+        <source>The following package sources do not support sponsorship reporting:</source>
+        <target state="new">The following package sources do not support sponsorship reporting:</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_TopLevelHeader">

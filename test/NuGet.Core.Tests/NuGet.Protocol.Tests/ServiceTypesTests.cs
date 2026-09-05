@@ -36,5 +36,12 @@ namespace NuGet.Protocol.Tests
             };
             ServiceTypes.RegistrationsBaseUrl.Should().ContainInOrder(expected);
         }
+
+        [Fact]
+        public void RegistrationsBaseUrls_PackageIdMetadataCapabilityIsSeparate()
+        {
+            ServiceTypes.RegistrationsBaseUrl.Should().NotContain("RegistrationsBaseUrl/7.12.0");
+            ServiceTypes.RegistrationsBaseUrl7120.Should().Equal("RegistrationsBaseUrl/7.12.0");
+        }
     }
 }

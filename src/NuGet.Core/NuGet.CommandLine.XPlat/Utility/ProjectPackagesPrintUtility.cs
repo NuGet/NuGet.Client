@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Protocol;
@@ -84,7 +85,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                 latestVersion: reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
                 vulnerabilities: reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
                 deprecationReasons: reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
-                alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null
+                alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null,
+                sponsorships: reportType == ReportType.Sponsor ? p.Sponsorships : Array.Empty<PackageSponsorship>()
             ));
 
             tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
@@ -121,14 +123,15 @@ namespace NuGet.CommandLine.XPlat.Utility
                 p => new FormattedCell(GetAutoReferenceMarker(p, printingTransitive, ref autoReferenceFlagged)),
             };
 
-            // Include "Requested" version column for top level package list
-            if (!printingTransitive)
+            if (listPackageArgs.ReportType != ReportType.Sponsor)
             {
-                valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
-            }
+                if (!printingTransitive)
+                {
+                    valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
+                }
 
-            // "Resolved" version
-            valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
+                valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
+            }
 
             switch (listPackageArgs.ReportType)
             {
@@ -145,6 +148,9 @@ namespace NuGet.CommandLine.XPlat.Utility
                 case ReportType.Vulnerable:
                     valueSelectors.Add(p => PrintVulnerabilitiesSeverities(p.Vulnerabilities));
                     valueSelectors.Add(p => PrintVulnerabilitiesAdvisoryUrls(p.Vulnerabilities));
+                    break;
+                case ReportType.Sponsor:
+                    valueSelectors.Add(p => PrintSponsorships(p.Sponsorships));
                     break;
             }
 
@@ -184,6 +190,18 @@ namespace NuGet.CommandLine.XPlat.Utility
             return vulnerabilityMetadata == null || !vulnerabilityMetadata.Any()
                 ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
                 : vulnerabilityMetadata.Select(v => new FormattedCell(v.AdvisoryUrl?.ToString() ?? string.Empty, foregroundColor: null));
+        }
+
+        internal static IEnumerable<FormattedCell> PrintSponsorships(IReadOnlyList<PackageSponsorship> sponsorships)
+        {
+            IReadOnlyList<SponsorReportAggregator.MergedSponsorship> mergedSponsorships =
+                SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships);
+
+            return mergedSponsorships.Count == 0
+                ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
+                : mergedSponsorships.SelectMany(sponsorship => sponsorship.Sources
+                    .Select(source => new FormattedCell(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_SponsorSourceLine, source), foregroundColor: null))
+                    .Concat(sponsorship.Urls.Select(url => new FormattedCell("  " + url, foregroundColor: null))));
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)
@@ -272,6 +290,16 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <returns></returns>
         internal static string[] BuildTableHeaders(bool printingTransitive, ListPackageArgs listPackageArgs)
         {
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                return new[]
+                {
+                    printingTransitive ? Strings.ListPkg_TransitiveHeader : Strings.ListPkg_TopLevelHeader,
+                    string.Empty,
+                    Strings.ListPkg_SponsorHeader
+                };
+            }
+
             var result = new List<string>();
 
             if (printingTransitive)

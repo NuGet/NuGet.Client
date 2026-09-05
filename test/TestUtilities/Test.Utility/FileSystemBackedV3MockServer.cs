@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -25,23 +26,33 @@ namespace Test.Utility
         /// <summary>Does the source support the VulnerabilityInfo resource</summary>
         /// <remarks>Sources can provide vulnerability info on registration pages without supporting the vulnerability info resource.</remarks>
         private readonly bool _sourceReportsVulnerabilities;
+        private readonly bool _sourceSupportsSponsorship;
+        private int _registrationRequestCount;
 
-        public FileSystemBackedV3MockServer(string packageDirectory, bool isPrivateFeed = false, bool sourceReportsVulnerabilities = false)
+        public FileSystemBackedV3MockServer(
+            string packageDirectory,
+            bool isPrivateFeed = false,
+            bool sourceReportsVulnerabilities = false,
+            bool sourceSupportsSponsorship = false)
         {
             _packageDirectory = packageDirectory;
             _builder = new MockResponseBuilder(Uri.TrimEnd(new[] { '/' }));
             _isPrivateFeed = isPrivateFeed;
             InitializeServer();
             _sourceReportsVulnerabilities = sourceReportsVulnerabilities;
+            _sourceSupportsSponsorship = sourceSupportsSponsorship;
         }
 
         public ISet<PackageIdentity> UnlistedPackages { get; } = new HashSet<PackageIdentity>();
 
         public Dictionary<string, List<(Uri, PackageVulnerabilitySeverity, VersionRange)>> Vulnerabilities = new(StringComparer.OrdinalIgnoreCase);
 
+        public Dictionary<string, IReadOnlyList<string>> SponsorshipUrls { get; } = new(StringComparer.OrdinalIgnoreCase);
+
         public ISet<PackageIdentity> DeprecatedPackages { get; } = new HashSet<PackageIdentity>();
 
         public string ServiceIndexUri => _builder.GetV3Source();
+        public int RegistrationRequestCount => _registrationRequestCount;
 
         private void InitializeServer()
         {
@@ -51,9 +62,11 @@ namespace Test.Utility
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        var mockResponse = _sourceReportsVulnerabilities ?
-                        _builder.BuildV3IndexResponseWithVulnerabilities(Uri) :
-                        _builder.BuildV3IndexResponse(Uri);
+                        MockResponse mockResponse = _sourceSupportsSponsorship
+                            ? _builder.BuildV3IndexResponseWithSponsorship(Uri, _sourceReportsVulnerabilities)
+                            : _sourceReportsVulnerabilities
+                                ? _builder.BuildV3IndexResponseWithVulnerabilities(Uri)
+                                : _builder.BuildV3IndexResponse(Uri);
 
                         response.ContentType = mockResponse.ContentType;
                         SetResponseContent(response, mockResponse.Content);
@@ -142,6 +155,7 @@ namespace Test.Utility
             }
             else if (path.StartsWith("/reg/") && path.EndsWith("/index.json"))
             {
+                Interlocked.Increment(ref _registrationRequestCount);
                 var id = parts[parts.Length - 2];
                 var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, NullLogger.Instance);
 
@@ -151,7 +165,12 @@ namespace Test.Utility
                     {
                         response.ContentType = "text/javascript";
                         var packageToListedMapping = packages.Select(e => new KeyValuePair<PackageIdentity, bool>(e.Identity, !UnlistedPackages.Contains(e.Identity))).ToArray();
-                        MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(Uri, packageToListedMapping, DeprecatedPackages, Vulnerabilities);
+                        MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(
+                            Uri,
+                            packageToListedMapping,
+                            DeprecatedPackages,
+                            Vulnerabilities,
+                            SponsorshipUrls);
                         SetResponseContent(response, mockResponse.Content);
                     });
                 }

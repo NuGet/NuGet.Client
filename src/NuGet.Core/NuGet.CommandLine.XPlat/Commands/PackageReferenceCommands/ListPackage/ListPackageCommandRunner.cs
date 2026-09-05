@@ -158,6 +158,18 @@ namespace NuGet.CommandLine.XPlat
                         await GetVulnerabilitiesFromAuditSourcesAsync(listPackageArgs, listPackageReportModel, projectModel, frameworks);
                         vulnerabilitiesCheckedFromAuditSources = true;
                     }
+                    else if (listPackageArgs.ReportType == ReportType.Sponsor)
+                    {
+                        (
+                            Dictionary<string, List<PackageSponsorship>> sponsorships,
+                            IReadOnlyList<PackageSource> sponsorshipQueriedSources,
+                            IReadOnlyList<PackageSource> sponsorshipUnsupportedSources) =
+                            await GetSponsorshipMetadataAndSourceDiagnosticsAsync(frameworks, listPackageArgs);
+
+                        projectModel.SponsorshipQueriedSources = sponsorshipQueriedSources;
+                        projectModel.SponsorshipUnsupportedSources = sponsorshipUnsupportedSources;
+                        UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorships);
+                    }
                     else
                     {
                         var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
@@ -372,6 +384,12 @@ namespace NuGet.CommandLine.XPlat
                         ListPackageHelper.PackagesFilterForVulnerable,
                         ListPackageHelper.PackagesFilterForVulnerable);
                     break;
+                case ReportType.Sponsor:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.PackagesFilterForSponsorship,
+                        ListPackageHelper.PackagesFilterForSponsorship);
+                    break;
             }
 
             return packages.Any(p => p.TopLevelPackages.Any() ||
@@ -425,33 +443,197 @@ namespace NuGet.CommandLine.XPlat
             List<FrameworkPackages> targetFrameworks,
             ListPackageArgs listPackageArgs)
         {
-            List<string> allPackages = GetAllPackageIdentifiers(targetFrameworks, listPackageArgs.IncludeTransitive);
-            var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count);
+            List<string> packageIds = GetPackageIds(
+                targetFrameworks,
+                listPackageArgs.IncludeTransitive);
+            var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: packageIds.Count);
 
-            int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
+            await ThrottledForEachAsync(packageIds,
+                async (packageId, cancellationToken) => await GetPackageMetadataAsync(packageId, listPackageArgs, cancellationToken),
+                packageMetadata => packageMetadataById[packageMetadata.Key] = packageMetadata.Value,
+                GetMaxParallel(listPackageArgs),
+                listPackageArgs.CancellationToken);
+
+            return packageMetadataById;
+        }
+
+        private static int GetMaxParallel(ListPackageArgs listPackageArgs) =>
+            listPackageArgs.PackageSources.Any(s => s.IsHttp)
                 ? 8 // Try to be nice to HTTP package sources
                 : listPackageArgs.PackageSources.Count == 0
                     ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
                     : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
 
-            await ThrottledForEachAsync(allPackages,
-                async (packageId, cancellationToken) => await GetPackageMetadataAsync(packageId, listPackageArgs, cancellationToken),
-                packageMetadata => packageMetadataById[packageMetadata.Key] = packageMetadata.Value,
-                maxParallel,
+        internal static List<string> GetPackageIds(List<FrameworkPackages> frameworks, bool includeTransitive)
+        {
+            IEnumerable<InstalledPackageReference> packages = frameworks.SelectMany(f => f.TopLevelPackages);
+            if (includeTransitive)
+            {
+                packages = packages.Concat(frameworks.SelectMany(f => f.TransitivePackages));
+            }
+
+            return packages.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        /// <summary>
+        /// Queries sponsorship metadata and returns the capable sources queried and unsupported
+        /// sources selected after package source mapping was applied.
+        /// </summary>
+        private async Task<(
+            Dictionary<string, List<PackageSponsorship>> SponsorshipsById,
+            IReadOnlyList<PackageSource> QueriedSources,
+            IReadOnlyList<PackageSource> UnsupportedSources)>
+            GetSponsorshipMetadataAndSourceDiagnosticsAsync(
+                List<FrameworkPackages> targetFrameworks,
+                ListPackageArgs listPackageArgs)
+        {
+            List<string> packageIds = GetPackageIds(
+                targetFrameworks,
+                includeTransitive: true);
+
+            var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(
+                capacity: packageIds.Count,
+                comparer: StringComparer.OrdinalIgnoreCase);
+            var queriedSourceSet = new HashSet<PackageSource>();
+            var unsupportedSourceSet = new HashSet<PackageSource>();
+
+            await ThrottledForEachAsync(packageIds,
+                async (packageId, cancellationToken) => await GetSponsorshipsForPackageAsync(packageId, listPackageArgs, cancellationToken),
+                result =>
+                {
+                    sponsorshipsById[result.PackageId] = result.Sponsorships;
+                    queriedSourceSet.UnionWith(result.QueriedSources);
+                    unsupportedSourceSet.UnionWith(result.UnsupportedSources);
+                },
+                GetMaxParallel(listPackageArgs),
                 listPackageArgs.CancellationToken);
 
-            return packageMetadataById;
+            IReadOnlyList<PackageSource> queriedSources = listPackageArgs.PackageSources
+                .Where(queriedSourceSet.Contains)
+                .ToList();
+            IReadOnlyList<PackageSource> unsupportedSources = listPackageArgs.PackageSources
+                .Where(unsupportedSourceSet.Contains)
+                .ToList();
 
-            static List<string> GetAllPackageIdentifiers(List<FrameworkPackages> frameworks, bool includeTransitive)
-            {
-                IEnumerable<InstalledPackageReference> intermediateEnumerable = frameworks.SelectMany(f => f.TopLevelPackages);
-                if (includeTransitive)
+            return (sponsorshipsById, queriedSources, unsupportedSources);
+        }
+
+        internal static List<PackageSponsorship> OrderSponsorshipsByConfiguredSource(
+            IEnumerable<PackageSponsorship> sponsorships,
+            ListPackageArgs listPackageArgs)
+        {
+            List<PackageSource> configuredSources = listPackageArgs.PackageSources;
+
+            return sponsorships
+                .OrderBy(sponsorship =>
                 {
-                    intermediateEnumerable = intermediateEnumerable.Concat(frameworks.SelectMany(f => f.TransitivePackages));
-                }
-                List<string> allPackages = intermediateEnumerable.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-                return allPackages;
+                    int index = configuredSources.FindIndex(
+                        source => string.Equals(
+                            source.Source,
+                            sponsorship.Source,
+                            StringComparison.Ordinal));
+                    return index < 0 ? int.MaxValue : index;
+                })
+                .ToList();
+        }
+
+        private async Task<(
+            string PackageId,
+            List<PackageSponsorship> Sponsorships,
+            IReadOnlyList<PackageSource> QueriedSources,
+            IReadOnlyList<PackageSource> UnsupportedSources)>
+            GetSponsorshipsForPackageAsync(
+                string package,
+                ListPackageArgs listPackageArgs,
+                CancellationToken cancellationToken)
+        {
+            var sponsorships = new List<PackageSponsorship>();
+            var queriedSources = new List<PackageSource>();
+            var unsupportedSources = new List<PackageSource>();
+            List<PackageSource> sources = FilterSourcesByPackageSourceMapping(package, listPackageArgs);
+
+            await ThrottledForEachAsync(sources,
+                async (source, innerCancellationToken) => await GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
+                continuation: result =>
+                {
+                    if (!result.SupportsSponsorship)
+                    {
+                        unsupportedSources.Add(result.Source);
+                    }
+                    else
+                    {
+                        queriedSources.Add(result.Source);
+
+                        if (result.Sponsorship != null)
+                        {
+                            sponsorships.Add(result.Sponsorship);
+                        }
+                    }
+                },
+                maxParallel: sources.Count,
+                cancellationToken);
+
+            return (
+                package,
+                OrderSponsorshipsByConfiguredSource(sponsorships, listPackageArgs),
+                queriedSources,
+                unsupportedSources);
+        }
+
+        /// <summary>
+        /// Restricts the sources queried for <paramref name="package"/> to those mapped to it, or
+        /// returns every selected source when package source mapping is disabled.
+        /// </summary>
+        internal static List<PackageSource> FilterSourcesByPackageSourceMapping(
+            string package,
+            ListPackageArgs listPackageArgs)
+        {
+            PackageSourceMapping sourceMapping = listPackageArgs.PackageSourceMapping;
+
+            if (!sourceMapping.IsEnabled)
+            {
+                return listPackageArgs.PackageSources;
             }
+
+            IReadOnlyList<string> mappedSourceNames = sourceMapping.GetConfiguredPackageSources(package);
+
+            return listPackageArgs.PackageSources
+                .Where(source => mappedSourceNames.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        private async Task<(
+            PackageSource Source,
+            PackageSponsorship Sponsorship,
+            bool SupportsSponsorship)>
+            GetSponsorshipFromSourceAsync(
+            PackageSource packageSource,
+            ListPackageArgs listPackageArgs,
+            string package,
+            CancellationToken cancellationToken)
+        {
+            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
+            RegistrationResourceV3 registrationResource = await sourceRepository.GetResourceAsync<RegistrationResourceV3>(cancellationToken);
+
+            if (registrationResource?.SupportsPackageIdMetadata != true)
+            {
+                return (packageSource, null, SupportsSponsorship: false);
+            }
+
+            using var sourceCacheContext = new SourceCacheContext();
+            PackageIdMetadata metadata = await registrationResource.GetPackageIdMetadataAsync(
+                package,
+                sourceCacheContext,
+                listPackageArgs.Logger,
+                cancellationToken);
+
+            // A missing or empty sponsorshipUrls and a package the source does not carry are both
+            // successful empty results. Network and protocol failures propagate instead.
+            PackageSponsorship sponsorship = metadata == null || metadata.SponsorshipUrls.Count == 0
+                ? null
+                : new PackageSponsorship(packageSource.Source, metadata.SponsorshipUrls);
+
+            return (packageSource, sponsorship, SupportsSponsorship: true);
         }
 
         /// <summary>Run a throttled iteration of a list that performs async work, with a "single threaded" collection of results.</summary>
@@ -633,6 +815,19 @@ namespace NuGet.CommandLine.XPlat
                             transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
                         }
                     }
+                }
+            }
+        }
+
+        private static void UpdatePackagesWithSponsorshipMetadata(
+            List<FrameworkPackages> frameworks,
+            Dictionary<string, List<PackageSponsorship>> sponsorshipsById)
+        {
+            foreach (InstalledPackageReference package in frameworks.SelectMany(f => f.TopLevelPackages.Concat(f.TransitivePackages)))
+            {
+                if (sponsorshipsById.TryGetValue(package.Name, out List<PackageSponsorship> sponsorships))
+                {
+                    package.Sponsorships = sponsorships;
                 }
             }
         }

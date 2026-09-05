@@ -53,6 +53,18 @@ namespace Test.Utility
             array.Add(resource);
         }
 
+        public static void AddSponsorshipRegistrationResource(JObject index, string serverUri)
+        {
+            var resource = new JObject
+            {
+                { "@id", $"{serverUri}reg" },
+                { "@type", "RegistrationsBaseUrl/7.12.0" }
+            };
+
+            var array = index["resources"] as JArray;
+            array.Add(resource);
+        }
+
         public static void AddLegacyGalleryResource(JObject index, string serverUri, string relativeUri = null)
         {
             var resourceUri = new Uri(serverUri);
@@ -103,7 +115,8 @@ namespace Test.Utility
             string id,
             IEnumerable<KeyValuePair<string, bool>> versionToListedMap,
             ISet<PackageIdentity> deprecatedPackages,
-            List<(Uri, PackageVulnerabilitySeverity, VersionRange)> vulnerabilities)
+            List<(Uri, PackageVulnerabilitySeverity, VersionRange)> vulnerabilities,
+            IReadOnlyList<string> sponsorshipUrls = null)
         {
             var indexUrl = string.Format(CultureInfo.InvariantCulture,
                                     "{0}reg/{1}/index.json", serverUri, id);
@@ -120,6 +133,16 @@ namespace Test.Utility
             regBlob.Add(new JProperty("commitId", Guid.NewGuid()));
             regBlob.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
             regBlob.Add(new JProperty("count", "1"));
+
+            if (sponsorshipUrls != null)
+            {
+                regBlob.Add(new JProperty(
+                    "metadata",
+                    new JObject
+                    {
+                        { "sponsorshipUrls", new JArray(sponsorshipUrls) }
+                    }));
+            }
 
             var pages = new JArray();
             regBlob.Add(new JProperty("items", pages));

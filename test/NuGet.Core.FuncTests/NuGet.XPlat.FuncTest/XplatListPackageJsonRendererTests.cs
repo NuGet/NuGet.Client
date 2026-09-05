@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using FluentAssertions;
+using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Common;
@@ -24,6 +25,9 @@ namespace NuGet.XPlat.FuncTest
     [Collection(XPlatCollection.Name)]
     public class XplatListPackageJsonRendererTests
     {
+        private static readonly PackageSourceMapping NoPackageSourceMapping =
+            new(new Dictionary<string, IReadOnlyList<string>>());
+
         [Fact]
         public void JsonRenderer_ListPackage_SucceedsAsync()
         {
@@ -55,7 +59,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -202,7 +207,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -301,7 +307,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -391,7 +398,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -495,7 +503,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -607,7 +616,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -688,7 +698,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -859,7 +870,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -990,7 +1002,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1133,7 +1146,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1235,7 +1249,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1333,7 +1348,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1392,6 +1408,110 @@ namespace NuGet.XPlat.FuncTest
                 var actual = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(consoleOutputFileName));
                 actual.Should().Be(PathUtility.GetPathWithForwardSlashes(expected));
             }
+        }
+
+        [Fact]
+        public void JsonRenderer_ListPackage_Sponsor_WritesPackagesAndSourceDiagnostics()
+        {
+            // Arrange
+            var output = new StringWriter();
+            var renderer = new ListPackageJsonRenderer(output);
+            var source1 = new PackageSource("https://source1");
+            var source2 = new PackageSource("https://source2");
+            var noDetailsSource = new PackageSource("https://no-details");
+            var unsupportedSource = new PackageSource("https://unsupported");
+            var sponsorships = new[]
+            {
+                new PackageSponsorship(source1.Source, new[] { "https://sponsor/a" }),
+                new PackageSponsorship(source2.Source, new[] { "https://sponsor/a" }),
+            };
+            ListPackageReportModel report = CreateListReportModel(
+                SponsorJsonArgs(
+                    "solution.sln",
+                    new List<PackageSource> { source1, source2, noDetailsSource, unsupportedSource },
+                    renderer),
+                (
+                    "a.csproj",
+                    new List<ListPackageReportFrameworkPackage>
+                    {
+                        new("net8.0", "net8.0")
+                        {
+                            TopLevelPackages = new List<ListReportPackage>
+                            {
+                                CreateSponsoredPackage("A", sponsorships)
+                            }
+                        }
+                    },
+                    projectProblems: null),
+                (
+                    "b.csproj",
+                    new List<ListPackageReportFrameworkPackage>
+                    {
+                        new("net8.0", "net8.0")
+                        {
+                            TransitivePackages = new List<ListReportPackage>
+                            {
+                                CreateSponsoredPackage("A", sponsorships)
+                            }
+                        }
+                    },
+                    projectProblems: null));
+            report.Projects[0].SponsorshipQueriedSources = new[] { source1, source2, noDetailsSource };
+            report.Projects[0].SponsorshipUnsupportedSources = new[] { unsupportedSource };
+
+            // Act
+            renderer.Render(report);
+            JObject json = JObject.Parse(output.ToString());
+
+            // Assert
+            JObject package = (JObject)Assert.Single((JArray)json["packages"]);
+            package["id"].Value<string>().Should().Be("A");
+            JArray projects = (JArray)package["projects"];
+            projects.Select(project => project["path"].Value<string>())
+                .Should().Equal("a.csproj", "b.csproj");
+            projects.Select(project => project["relationship"].Value<string>())
+                .Should().Equal("topLevel", "transitive");
+
+            JObject sponsorship = (JObject)Assert.Single((JArray)package["sponsorships"]);
+            sponsorship["sources"].Values<string>().Should().Equal(source1.Source, source2.Source);
+            sponsorship["urls"].Values<string>().Should().Equal("https://sponsor/a");
+
+            json["problems"].Select(problem => problem["text"].Value<string>())
+                .Should().Equal(
+                    string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemNoDetails, noDetailsSource.Source),
+                    string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemUnsupportedSource, unsupportedSource.Source));
+        }
+
+        private static ListPackageArgs SponsorJsonArgs(string path, List<PackageSource> packageSources, IReportRenderer renderer)
+        {
+            return new ListPackageArgs(
+                path: path,
+                packageSources: packageSources,
+                frameworks: new List<string>(),
+                reportType: ReportType.Sponsor,
+                renderer: renderer,
+                includeTransitive: false,
+                prerelease: false,
+                highestPatch: false,
+                highestMinor: false,
+                auditSources: null,
+                NullLogger.Instance,
+                CancellationToken.None,
+                NoPackageSourceMapping);
+        }
+
+        private static ListReportPackage CreateSponsoredPackage(string packageId, params PackageSponsorship[] sponsorships)
+        {
+            return new ListReportPackage(
+                packageId: packageId,
+                resolvedVersion: "1.0.0",
+                latestVersion: null,
+                vulnerabilities: null,
+                deprecationReasons: null,
+                alternativePackage: null,
+                requestedVersion: "1.0.0",
+                autoReference: false,
+                sponsorships: sponsorships);
         }
 
         internal ListPackageReportModel CreateListReportModel(ListPackageArgs packageRefArgs,
