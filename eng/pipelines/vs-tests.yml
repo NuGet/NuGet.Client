@@ -85,6 +85,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd
     stageDisplayName: On Windows
+    condition: "ne(variables['RunEndToEndTests'], 'false')"
     #condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Build
