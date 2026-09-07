@@ -90,9 +90,9 @@ stages:
     - Build
     variables:
     - name: VsBootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+      value: https://vsdrop.microsoft.com/file/v1/Tests/DevDiv/NuGet.Client-VS/dev/15231493;bootstrapper/15231493/34933b80-6ff6-43dc-afad-7ff477de707f/vs_enterprise.exe #$[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
     - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
+      value: RunSettings/DevDiv/NuGet.Client-VS/dev/15231493 #$[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
     bootstrapperUrl: $(VsBootstrapperUrl)
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
