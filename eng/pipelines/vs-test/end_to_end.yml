@@ -79,7 +79,7 @@ stages:
     - operation: executePowerShellScript
       displayName: "Download Build artifacts"
       scriptPath: ${{parameters.dartLabInstallationPath}}\Scripts\AzureDevOps\Pipelines\Install-Artifact.ps1
-      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildID) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet\E2ETests' -ArtifactName 'E2ETests'
+      scriptParameters: -PipelineID $(System.DefinitionID) -RunID 15231493 -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet\E2ETests' -ArtifactName 'E2ETests'
       timeout: 0:0:10:0
     - operation: executePowerShellInline
       displayName: "Extract EndToEnd.zip"
@@ -95,7 +95,7 @@ stages:
     - operation: executePowerShellScript
       displayName: "Download scripts"
       scriptPath: ${{parameters.dartLabInstallationPath}}\Scripts\AzureDevOps\Pipelines\Install-Artifact.ps1
-      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildID) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet\scripts' -ArtifactName 'scripts'
+      scriptParameters: -PipelineID $(System.DefinitionID) -RunID 15231493 -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet\scripts' -ArtifactName 'scripts'
       timeout: 0:0:10:0
     - operation: executePowerShellScript
       displayName: "SetupFunctionalTests.ps1"
