@@ -87,8 +87,8 @@ stages:
     stageDisplayName: On Windows
     condition: "ne(variables['RunEndToEndTests'], 'false')"
     #condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn:
-    - Build
+    # dependsOn:
+    # - Build
     variables:
     - name: VsBootstrapperUrl
       value: https://vsdrop.microsoft.com/file/v1/Tests/DevDiv/NuGet.Client-VS/dev/15231493;bootstrapper/15231493/34933b80-6ff6-43dc-afad-7ff477de707f/vs_enterprise.exe #$[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
