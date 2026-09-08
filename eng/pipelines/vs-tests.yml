@@ -67,53 +67,54 @@ variables:
   SourceBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
 
 stages:
-- stage: Build
-  displayName: Build NuGet and tests
-  jobs:
-  - job: Build
-    timeoutInMinutes: 170
-    pool:
-      name: VSEng-MicroBuildVSStable
-    steps:
-    - template: vs-test/build.yml
-      parameters:
-        enableApexBlameHangDumpCollector: ${{parameters.EnableApexBlameHangDumpCollector}}
+# - stage: Build
+#   displayName: Build NuGet and tests
+#   jobs:
+#   - job: Build
+#     timeoutInMinutes: 170
+#     pool:
+#       name: VSEng-MicroBuildVSStable
+#     steps:
+#     - template: vs-test/build.yml
+#       parameters:
+#         enableApexBlameHangDumpCollector: ${{parameters.EnableApexBlameHangDumpCollector}}
 
 - template: vs-test/end_to_end.yml
   parameters:
     stageName: VS_EndToEnd
     stageDisplayName: On Windows
-    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn:
-    - Build
+    condition: "ne(variables['RunEndToEndTests'], 'false')"
+    #condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
+    dependsOn: []
+    # - Build
     variables:
     - name: VsBootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+      value: https://vsdrop.microsoft.com/file/v1/Tests/DevDiv/NuGet.Client-VS/dev/15231493;bootstrapper/15231493/34933b80-6ff6-43dc-afad-7ff477de707f/vs_enterprise.exe #$[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
     - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
+      value: RunSettings/DevDiv/NuGet.Client-VS/dev/15231493 #$[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
     bootstrapperUrl: $(VsBootstrapperUrl)
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
+    runSettingsURI: https://vsdrop.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
     testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}
 
 # Dartlab's template defines this in its own stage
-- template: vs-test/apex.yml
-  parameters:
-    condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
-    dependsOn:
-    - Build
-    variables:
-    - name: bootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
-    - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    - name: VsBootstrapperBranch
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
-    bootstrapperUrl: $(bootstrapperUrl)
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
-    testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
-    testMachineTotalCount: '2'
-    testCaseDistributionBatchingStrategy: OptimizeDurationForPerformance
-    testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
-    VsBootstrapperBranch: $(VsBootstrapperBranch)
+# - template: vs-test/apex.yml
+#   parameters:
+#     condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
+#     dependsOn:
+#     - Build
+#     variables:
+#     - name: bootstrapperUrl
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+#     - name: RunSettingsDrop
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
+#     - name: VsBootstrapperBranch
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
+#     bootstrapperUrl: $(bootstrapperUrl)
+#     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
+#     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
+#     testMachineTotalCount: '2'
+#     testCaseDistributionBatchingStrategy: OptimizeDurationForPerformance
+#     testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
+#     VsBootstrapperBranch: $(VsBootstrapperBranch)
