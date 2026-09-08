@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
@@ -10,6 +11,8 @@ namespace NuGet.RuntimeModel.Test
 {
     public class JsonRuntimeFormatTests
     {
+        private const string SimpleRuntimeGraphContent = """{"runtimes":{"any":{}}}""";
+
         [Theory]
         [InlineData("{}")]
         [InlineData("{\"runtimes\":{}}")]
@@ -122,12 +125,118 @@ namespace NuGet.RuntimeModel.Test
                     }), ParseRuntimeJsonString(content));
         }
 
-        private RuntimeGraph ParseRuntimeJsonString(string content)
+        [Fact]
+        public void ReadRuntimeGraph_WithStream_ParsesRuntimeGraph()
         {
-            using (var reader = new StringReader(content))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
             {
-                return JsonRuntimeFormat.ReadRuntimeGraph(reader);
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
             }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithLeadingTriviaLargerThanBuffer_ParsesRuntimeGraph()
+        {
+            string content = new string(' ', 20_000) + SimpleRuntimeGraphContent;
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
+        }
+
+        [Fact]
+        public void ReadRuntimeGraph_WithEnvironmentOptIn_ParsesWithSystemTextJson()
+        {
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(SimpleRuntimeGraphContent)))
+            {
+                Assert.Equal(
+                    CreateSimpleRuntimeGraph(),
+                    JsonRuntimeFormat.ReadRuntimeGraph(stream));
+            }
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithUtf8Bom_ParsesRuntimeGraph()
+        {
+            var stream = new MemoryStream();
+            using (var writer = new StreamWriter(
+                stream,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
+                bufferSize: 1024,
+                leaveOpen: true))
+            {
+                writer.Write(SimpleRuntimeGraphContent);
+            }
+            stream.Position = 0;
+
+            Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithDuplicateProperties_UsesLastValue()
+        {
+            const string content = """
+                {
+                    "runtimes": {
+                        "win": null,
+                        "win": { "#import": [ "win8" ] }
+                    }
+                }
+                """;
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
+
+            RuntimeDescription runtime = Assert.Single(graph.Runtimes).Value;
+            Assert.Equal("win8", Assert.Single(runtime.InheritedRuntimes));
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithDuplicateRootProperties_UsesLastValue()
+        {
+            const string content = """
+                {
+                    "runtimes": "invalid",
+                    "runtimes": {
+                        "win": { "#import": [ "win8" ] }
+                    }
+                }
+                """;
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
+
+            Assert.Equal("win", Assert.Single(graph.Runtimes).Key);
+        }
+
+        [Fact]
+        public void ReadRuntimeGraph_WithCommentsAndTrailingCommas_ParsesRuntimeGraph()
+        {
+            const string content = """
+                {
+                    // Runtime identifiers
+                    "runtimes": {
+                        "any": {
+                            "#import": [],
+                        },
+                    },
+                }
+                """;
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(content)))
+            {
+                Assert.Equal(CreateSimpleRuntimeGraph(), JsonRuntimeFormat.ReadRuntimeGraph(stream));
+            }
+        }
+
+        private static RuntimeGraph CreateSimpleRuntimeGraph()
+        {
+            return new RuntimeGraph(new[] { new RuntimeDescription("any") });
+        }
+
+        private static RuntimeGraph ParseRuntimeJsonString(string content)
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            return JsonRuntimeFormat.ReadRuntimeGraph(stream);
         }
     }
 }
