@@ -752,15 +752,23 @@ namespace NuGet.PackageManagement.UI
 
             if (packageItemViewModel.IsAuditSourceConfigured)
             {
-                return auditVulnerabilities
-                    .OrderByDescending(vulnerability => vulnerability.Severity)
-                    .ToList();
+                return NormalizeVulnerabilities(auditVulnerabilities);
             }
 
-            return (packageSearchMetadata.Vulnerabilities ?? Array.Empty<PackageVulnerabilityMetadataContextInfo>())
-                .Concat(existingVulnerabilities)
-                .Concat(auditVulnerabilities)
-                .Distinct()
+            return NormalizeVulnerabilities(
+                (packageSearchMetadata.Vulnerabilities ?? Array.Empty<PackageVulnerabilityMetadataContextInfo>())
+                    .Concat(existingVulnerabilities)
+                    .Concat(auditVulnerabilities));
+        }
+
+        internal static IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> NormalizeVulnerabilities(
+            IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilities)
+        {
+            return vulnerabilities
+                .GroupBy(vulnerability => vulnerability.AdvisoryUrl)
+                .Select(group => new PackageVulnerabilityMetadataContextInfo(
+                    group.Key,
+                    group.Max(vulnerability => vulnerability.Severity)))
                 .OrderByDescending(vulnerability => vulnerability.Severity)
                 .ToList();
         }

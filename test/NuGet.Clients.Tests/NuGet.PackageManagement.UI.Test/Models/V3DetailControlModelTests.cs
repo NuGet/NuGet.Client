@@ -312,6 +312,44 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
+        public void NormalizeVulnerabilities_WhenAdvisorySeveritiesConflict_KeepsHighestSeverity()
+        {
+            // Arrange
+            var duplicateAdvisoryUrl = new Uri("https://example.test/duplicate-advisory");
+            var otherAdvisoryUrl = new Uri("https://example.test/other-advisory");
+            var vulnerabilities = new[]
+            {
+                new PackageVulnerabilityMetadataContextInfo(
+                    duplicateAdvisoryUrl,
+                    (int)PackageVulnerabilitySeverity.Low),
+                new PackageVulnerabilityMetadataContextInfo(
+                    otherAdvisoryUrl,
+                    (int)PackageVulnerabilitySeverity.Moderate),
+                new PackageVulnerabilityMetadataContextInfo(
+                    duplicateAdvisoryUrl,
+                    (int)PackageVulnerabilitySeverity.High)
+            };
+
+            // Act
+            IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> normalizedVulnerabilities =
+                DetailControlModel.NormalizeVulnerabilities(vulnerabilities);
+
+            // Assert
+            Assert.Collection(
+                normalizedVulnerabilities,
+                vulnerability =>
+                {
+                    Assert.Equal(duplicateAdvisoryUrl, vulnerability.AdvisoryUrl);
+                    Assert.Equal((int)PackageVulnerabilitySeverity.High, vulnerability.Severity);
+                },
+                vulnerability =>
+                {
+                    Assert.Equal(otherAdvisoryUrl, vulnerability.AdvisoryUrl);
+                    Assert.Equal((int)PackageVulnerabilitySeverity.Moderate, vulnerability.Severity);
+                });
+        }
+
+        [Fact]
         public async Task SetCurrentPackageAsync_SortsVersions_ByNuGetVersionDesc()
         {
             // Arrange
