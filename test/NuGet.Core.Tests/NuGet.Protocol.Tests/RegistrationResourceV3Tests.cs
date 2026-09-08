@@ -26,7 +26,8 @@ namespace NuGet.Protocol.Tests
         private static RegistrationResourceV3 CreateResource(string indexJson, string useStj)
         {
             var responses = new Dictionary<string, string> { { IndexUrl, indexJson } };
-            var httpSource = new TestHttpSource(new Configuration.PackageSource(BaseUrl), responses);
+            var source = new Configuration.PackageSource(BaseUrl);
+            var httpSource = new TestHttpSource(source, responses);
 
             var envReader = new Mock<IEnvironmentVariableReader>();
             envReader
@@ -34,8 +35,8 @@ namespace NuGet.Protocol.Tests
                     NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
                 .Returns(useStj);
 
-            return new RegistrationResourceV3(
-                httpSource, new Uri(BaseUrl), supportsPackageIdMetadata: true, envReader.Object);
+            var baseUrl = new Uri(BaseUrl);
+            return new RegistrationResourceV3(httpSource, baseUrl, supportsPackageIdMetadata: true, envReader.Object);
         }
 
         [Theory]
@@ -92,9 +93,10 @@ namespace NuGet.Protocol.Tests
         {
             RegistrationResourceV3 resource = CreateResource(MetadataJson, useStj);
             using var cacheContext = new SourceCacheContext { NoCache = true };
+            var token = new CancellationToken(canceled: true);
 
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => resource.GetPackageIdMetadataAsync(
-                "contoso.tools", cacheContext, NullLogger.Instance, new CancellationToken(canceled: true)));
+                "contoso.tools", cacheContext, NullLogger.Instance, token));
         }
 
         [Theory]

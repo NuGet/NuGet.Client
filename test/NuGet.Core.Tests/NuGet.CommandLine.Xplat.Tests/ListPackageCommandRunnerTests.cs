@@ -432,7 +432,8 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             List<string> result = ListPackageCommandRunner.GetPackageIds(frameworks, includeTransitive: true);
 
-            Assert.Equal(new[] { "PackageA", "PackageB" }, result.OrderBy(id => id, StringComparer.OrdinalIgnoreCase));
+            IEnumerable<string> actual = result.OrderBy(id => id, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(new[] { "PackageA", "PackageB" }, actual);
         }
 
         [Fact]
@@ -441,12 +442,14 @@ namespace NuGet.CommandLine.Xplat.Tests
             List<PackageSource> packageSources = [new("https://first"), new("https://second")];
             var sponsorships = packageSources.AsEnumerable().Reverse()
                 .Select(source => new PackageSponsorship(source.Source, []));
-            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs(
-                "", packageSources, new ListPackageConsoleRenderer());
+            var renderer = new ListPackageConsoleRenderer();
+            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs("", packageSources, renderer);
 
             List<PackageSponsorship> result = ListPackageCommandRunner.OrderSponsorshipsByConfiguredSource(sponsorships, args);
 
-            Assert.Equal(packageSources.Select(source => source.Source), result.Select(sponsorship => sponsorship.Source));
+            IEnumerable<string> expected = packageSources.Select(source => source.Source);
+            IEnumerable<string> actual = result.Select(sponsorship => sponsorship.Source);
+            Assert.Equal(expected, actual);
         }
 
         [Theory]
@@ -462,22 +465,26 @@ namespace NuGet.CommandLine.Xplat.Tests
                 new PackageSource("https://mapped.test/v3/index.json", name: "mapped"),
                 new PackageSource("https://unmapped.test/v3/index.json", name: "unmapped"),
             };
-            PackageSourceMapping sourceMapping = mappedPattern.Length == 0
-                ? NoPackageSourceMapping
-                : new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+            PackageSourceMapping sourceMapping = NoPackageSourceMapping;
+            if (mappedPattern.Length != 0)
+            {
+                var patterns = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["mapped"] = new[] { mappedPattern },
                     ["unmapped"] = new[] { "Some.Other.Package" },
-                });
+                };
+                sourceMapping = new PackageSourceMapping(patterns);
+            }
 
-            List<PackageSource> result =
-                ListPackageCommandRunner.FilterSourcesByPackageSourceMapping(
-                    "Newtonsoft.Json",
-                    ListPackageTestHelper.CreateSponsorArgs(
-                        "", packageSources, new ListPackageConsoleRenderer(), packageSourceMapping: sourceMapping));
+            var renderer = new ListPackageConsoleRenderer();
+            ListPackageArgs listPackageArgs = ListPackageTestHelper.CreateSponsorArgs(
+                "", packageSources, renderer, packageSourceMapping: sourceMapping);
+            List<PackageSource> result = ListPackageCommandRunner.FilterSourcesByPackageSourceMapping(
+                "Newtonsoft.Json", listPackageArgs);
 
-            Assert.Equal(expectedSourceNames, string.Join(",", result.Select(source => source.Name)));
+            IEnumerable<string> values = result.Select(source => source.Name);
+            string actual = string.Join(",", values);
+            Assert.Equal(expectedSourceNames, actual);
         }
-
     }
 }

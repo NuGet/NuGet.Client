@@ -210,13 +210,7 @@ namespace Test.Utility
             IReadOnlyList<string> sponsorshipUrls = null;
             allSponsorshipUrls?.TryGetValue(id, out sponsorshipUrls);
 
-            var registrationIndex = FeedUtilities.CreatePackageRegistrationBlob(
-                serverUri,
-                id,
-                versions,
-                deprecatedPackages,
-                packageVulnerabilities,
-                sponsorshipUrls);
+            var registrationIndex = FeedUtilities.CreatePackageRegistrationBlob(serverUri, id, versions, deprecatedPackages, packageVulnerabilities, sponsorshipUrls);
 
             return new MockResponse
             {

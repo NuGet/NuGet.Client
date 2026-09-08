@@ -35,10 +35,7 @@ namespace NuGet.Protocol
                         ?? throw new InvalidOperationException($"The source '{source.PackageSource.Source}' does not provide {nameof(HttpSourceResource)}.");
 
                     // construct a new resource
-                    regResource = new RegistrationResourceV3(
-                        httpSourceResource.HttpSource,
-                        baseUrl,
-                        supportsPackageIdMetadata);
+                    regResource = new RegistrationResourceV3(httpSourceResource.HttpSource, baseUrl, supportsPackageIdMetadata);
                 }
             }
 

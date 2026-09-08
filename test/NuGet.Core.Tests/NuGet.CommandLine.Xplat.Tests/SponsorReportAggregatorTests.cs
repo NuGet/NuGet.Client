@@ -22,11 +22,17 @@ namespace NuGet.CommandLine.Xplat.Tests
             IReadOnlyList<PackageSponsorship> sponsorships = input
                 .Split(';')
                 .Select(entry => entry.Split('='))
-                .Select(parts => new PackageSponsorship(parts[0].Trim(), parts[1].Split(',').Select(url => url.Trim()).ToArray()))
+                .Select(parts =>
+                {
+                    string source = parts[0].Trim();
+                    string[] urls = parts[1].Split(',').Select(url => url.Trim()).ToArray();
+                    return new PackageSponsorship(source, urls);
+                })
                 .ToList();
 
-            string actual = string.Join(" | ", SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships)
-                .Select(mergedSponsorship => string.Join(",", mergedSponsorship.Sources) + "=>" + string.Join(",", mergedSponsorship.Urls)));
+            IEnumerable<string> values = SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships)
+                .Select(mergedSponsorship => string.Join(",", mergedSponsorship.Sources) + "=>" + string.Join(",", mergedSponsorship.Urls));
+            string actual = string.Join(" | ", values);
 
             Assert.Equal(expected, actual);
         }

@@ -77,17 +77,28 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             frameworkPackages = frameworkPackages.OrderBy(p => p.Name);
 
-            var packages = frameworkPackages.Select(p => new ListReportPackage(
-                packageId: p.Name,
-                requestedVersion: printingTransitive ? string.Empty : p.OriginalRequestedVersion,
-                autoReference: printingTransitive ? false : p.AutoReference,
-                resolvedVersion: GetPackageVersion(p),
-                latestVersion: reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null,
-                vulnerabilities: reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null,
-                deprecationReasons: reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null,
-                alternativePackage: reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null,
-                sponsorships: reportType == ReportType.Sponsor ? p.Sponsorships : Array.Empty<PackageSponsorship>()
-            ));
+            var packages = frameworkPackages.Select(p =>
+            {
+                string packageId = p.Name;
+                string requestedVersion = printingTransitive ? string.Empty : p.OriginalRequestedVersion;
+                bool autoReference = printingTransitive ? false : p.AutoReference;
+                string resolvedVersion = GetPackageVersion(p);
+                string latestVersion = reportType == ReportType.Outdated ? GetPackageVersion(p, useLatest: true) : null;
+                List<PackageVulnerabilityMetadata> vulnerabilities = reportType == ReportType.Vulnerable ? p.ResolvedPackageMetadata.Vulnerabilities?.ToList() : null;
+                PackageDeprecationMetadata deprecationReasons = reportType == ReportType.Deprecated ? p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result : null;
+                AlternatePackageMetadata alternativePackage = reportType == ReportType.Deprecated ? (p.ResolvedPackageMetadata.GetDeprecationMetadataAsync().Result)?.AlternatePackage : null;
+                IReadOnlyList<PackageSponsorship> sponsorships = reportType == ReportType.Sponsor ? p.Sponsorships : Array.Empty<PackageSponsorship>();
+                return new ListReportPackage(
+                    packageId: packageId,
+                    requestedVersion: requestedVersion,
+                    autoReference: autoReference,
+                    resolvedVersion: resolvedVersion,
+                    latestVersion: latestVersion,
+                    vulnerabilities: vulnerabilities,
+                    deprecationReasons: deprecationReasons,
+                    alternativePackage: alternativePackage,
+                    sponsorships: sponsorships);
+            });
 
             tableHasAutoReference = frameworkPackages.Any(p => p.AutoReference);
 
@@ -125,11 +136,13 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             if (listPackageArgs.ReportType != ReportType.Sponsor)
             {
+                // Include "Requested" version column for top level package list
                 if (!printingTransitive)
                 {
                     valueSelectors.Add(p => new FormattedCell(p?.RequestedVersion));
                 }
 
+                // "Resolved" version
                 valueSelectors.Add(p => new FormattedCell(p.ResolvedVersion));
             }
 
@@ -199,9 +212,20 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             return mergedSponsorships.Count == 0
                 ? new List<FormattedCell> { new FormattedCell(string.Empty, foregroundColor: null) }
-                : mergedSponsorships.SelectMany(sponsorship => sponsorship.Sources
-                    .Select(source => new FormattedCell(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_SponsorSourceLine, source), foregroundColor: null))
-                    .Concat(sponsorship.Urls.Select(url => new FormattedCell("  " + url, foregroundColor: null))));
+                : mergedSponsorships.SelectMany(sponsorship =>
+                {
+                    IEnumerable<FormattedCell> first = sponsorship.Sources.Select(source =>
+                    {
+                        string value = string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_SponsorSourceLine, source);
+                        return new FormattedCell(value, foregroundColor: null);
+                    });
+                    IEnumerable<FormattedCell> second = sponsorship.Urls.Select(url =>
+                    {
+                        string value = "  " + url;
+                        return new FormattedCell(value, foregroundColor: null);
+                    });
+                    return first.Concat(second);
+                });
         }
 
         private static FormattedCell VulnerabilityToSeverityFormattedCell(PackageVulnerabilityMetadata vulnerability)

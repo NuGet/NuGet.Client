@@ -29,11 +29,7 @@ namespace Test.Utility
         private readonly bool _sourceSupportsSponsorship;
         private int _registrationRequestCount;
 
-        public FileSystemBackedV3MockServer(
-            string packageDirectory,
-            bool isPrivateFeed = false,
-            bool sourceReportsVulnerabilities = false,
-            bool sourceSupportsSponsorship = false)
+        public FileSystemBackedV3MockServer(string packageDirectory, bool isPrivateFeed = false, bool sourceReportsVulnerabilities = false, bool sourceSupportsSponsorship = false)
         {
             _packageDirectory = packageDirectory;
             _builder = new MockResponseBuilder(Uri.TrimEnd(new[] { '/' }));
@@ -62,7 +58,7 @@ namespace Test.Utility
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        MockResponse mockResponse = _builder.BuildV3IndexResponse(
+                        var mockResponse = _builder.BuildV3IndexResponse(
                             Uri, _sourceReportsVulnerabilities, _sourceSupportsSponsorship);
 
                         response.ContentType = mockResponse.ContentType;
@@ -162,12 +158,7 @@ namespace Test.Utility
                     {
                         response.ContentType = "text/javascript";
                         var packageToListedMapping = packages.Select(e => new KeyValuePair<PackageIdentity, bool>(e.Identity, !UnlistedPackages.Contains(e.Identity))).ToArray();
-                        MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(
-                            Uri,
-                            packageToListedMapping,
-                            DeprecatedPackages,
-                            Vulnerabilities,
-                            SponsorshipUrls);
+                        MockResponse mockResponse = _builder.BuildRegistrationIndexResponse(Uri, packageToListedMapping, DeprecatedPackages, Vulnerabilities, SponsorshipUrls);
                         SetResponseContent(response, mockResponse.Content);
                     });
                 }

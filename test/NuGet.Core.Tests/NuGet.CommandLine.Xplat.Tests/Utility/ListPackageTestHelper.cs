@@ -28,11 +28,17 @@ namespace NuGet.CommandLine.Xplat.Tests
             PackageSourceMapping packageSourceMapping = null,
             IReadOnlyList<PackageSource> auditSources = null)
         {
+            var frameworks = new List<string>();
+            logger ??= NullLogger.Instance;
+            if (packageSourceMapping == null)
+            {
+                var patterns = new Dictionary<string, IReadOnlyList<string>>();
+                packageSourceMapping = new PackageSourceMapping(patterns);
+            }
             return new ListPackageArgs(
-                projectPath, packageSources, new List<string>(), ReportType.Sponsor, renderer,
+                projectPath, packageSources, frameworks, ReportType.Sponsor, renderer,
                 includeTransitive: false, prerelease: false, highestPatch: false, highestMinor: false,
-                auditSources, logger ?? NullLogger.Instance, CancellationToken.None,
-                packageSourceMapping ?? new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>()));
+                auditSources, logger, CancellationToken.None, packageSourceMapping);
         }
 
         internal static ListReportPackage CreateSponsoredPackage(string packageId, params PackageSponsorship[] sponsorships)

@@ -100,9 +100,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         {
             foreach (PackageSource source in packageSources)
             {
-                AddProblem(
-                    ProblemType.Warning,
-                    string.Format(CultureInfo.CurrentCulture, messageFormat, source.Source));
+                string text = string.Format(CultureInfo.CurrentCulture, messageFormat, source.Source);
+                AddProblem(ProblemType.Warning, text);
             }
         }
 
@@ -459,9 +458,11 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName(PathProperty);
-                    writer.WriteValue(PathUtility.GetPathWithForwardSlashes(projectPath));
+                    string path = PathUtility.GetPathWithForwardSlashes(projectPath);
+                    writer.WriteValue(path);
                     writer.WritePropertyName(IsTransitiveProperty);
-                    writer.WriteValue(!isTopLevel);
+                    bool isTransitive = !isTopLevel;
+                    writer.WriteValue(isTransitive);
                     writer.WriteEndObject();
                 }
                 writer.WriteEndArray();

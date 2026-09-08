@@ -164,13 +164,13 @@ namespace NuGet.CommandLine.XPlat
                 var settings = ProcessConfigFile(configValue, pathValue);
                 var sourceValues = parseResult.GetValue(source) ?? Array.Empty<string>();
 
-                var reportType = GetReportType(
-                    isOutdated: parseResult.GetValue(outdatedReport),
-                    isDeprecated: parseResult.GetValue(deprecatedReport),
-                    isVulnerable: parseResult.GetValue(vulnerableReport),
-                    isSponsor: parseResult.GetValue(sponsorReport));
-                var packageSources = GetPackageSources(
-                    settings, sourceValues, includeConfiguredSources: hasConfig && reportType != ReportType.Sponsor);
+                bool isOutdated = parseResult.GetValue(outdatedReport);
+                bool isDeprecated = parseResult.GetValue(deprecatedReport);
+                bool isVulnerable = parseResult.GetValue(vulnerableReport);
+                bool isSponsor = parseResult.GetValue(sponsorReport);
+                var reportType = GetReportType(isDeprecated, isOutdated, isVulnerable, isSponsor);
+                bool includeConfiguredSources = hasConfig && reportType != ReportType.Sponsor;
+                var packageSources = GetPackageSources(settings, sourceValues, includeConfiguredSources);
                 if (reportType == ReportType.Sponsor)
                 {
                     packageSources = packageSources.Distinct().ToList();
@@ -189,17 +189,23 @@ namespace NuGet.CommandLine.XPlat
                         !provider.LoadPackageSources().Any(source => UriUtility.IsNuGetOrg(source.Source));
                 }
 
+                List<string> frameworks = frameworkValues.ToList();
+                bool includeTransitiveValue = parseResult.GetValue(includeTransitive);
+                bool prereleaseValue = parseResult.GetValue(prerelease);
+                bool highestPatchValue = parseResult.GetValue(highestPatch);
+                bool highestMinorValue = parseResult.GetValue(highestMinor);
+                IReadOnlyList<PackageSource> auditSources = provider.LoadAuditSources();
                 var packageRefArgs = new ListPackageArgs(
                     pathValue,
                     packageSources,
-                    frameworkValues.ToList(),
+                    frameworks,
                     reportType,
                     reportRenderer,
-                    parseResult.GetValue(includeTransitive),
-                    parseResult.GetValue(prerelease),
-                    parseResult.GetValue(highestPatch),
-                    parseResult.GetValue(highestMinor),
-                    provider.LoadAuditSources(),
+                    includeTransitiveValue,
+                    prereleaseValue,
+                    highestPatchValue,
+                    highestMinorValue,
+                    auditSources,
                     logger,
                     CancellationToken.None,
                     packageSourceMapping);
@@ -212,7 +218,8 @@ namespace NuGet.CommandLine.XPlat
                         reportRenderer.AddProblem(
                             ProblemType.Error,
                             Strings.ListPkg_SponsorPackageSourceMappingWithSource);
-                        reportRenderer.Render(new ListPackageReportModel(packageRefArgs));
+                        var listPackageReportModel = new ListPackageReportModel(packageRefArgs);
+                        reportRenderer.Render(listPackageReportModel);
                         return ExitCodes.Error;
                     }
 

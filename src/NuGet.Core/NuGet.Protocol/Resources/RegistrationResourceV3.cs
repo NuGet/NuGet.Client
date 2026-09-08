@@ -277,14 +277,13 @@ namespace NuGet.Protocol
             string packageIdLowerCase = packageId.ToLowerInvariant();
             HttpSourceCacheContext httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retryCount: 0);
 
+            string cacheKey = $"list_{packageIdLowerCase}_index";
+            var request = new HttpSourceCachedRequest(registrationUri.OriginalString, cacheKey, httpSourceCacheContext)
+            {
+                IgnoreNotFounds = true,
+            };
             RegistrationIndexWithMetadata? index = await _client.GetAsync(
-                new HttpSourceCachedRequest(
-                    registrationUri.OriginalString,
-                    $"list_{packageIdLowerCase}_index",
-                    httpSourceCacheContext)
-                {
-                    IgnoreNotFounds = true,
-                },
+                request,
                 httpSourceResult => DeserializeRegistrationIndexAsync(httpSourceResult.Stream, token),
                 log,
                 token);
@@ -294,7 +293,8 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            return new PackageIdMetadata(index.Metadata?.SponsorshipUrls);
+            IReadOnlyList<string>? sponsorshipUrls = index.Metadata?.SponsorshipUrls;
+            return new PackageIdMetadata(sponsorshipUrls);
         }
 
         private async Task<RegistrationIndexWithMetadata?> DeserializeRegistrationIndexAsync(Stream? stream, CancellationToken token)

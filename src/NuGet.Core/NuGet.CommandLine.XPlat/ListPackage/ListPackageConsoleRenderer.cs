@@ -91,11 +91,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
         }
 
-        private void WriteProjects(
-            TextWriter consoleOut,
-            TextWriter consoleError,
-            List<ListPackageProjectModel> projects,
-            ListPackageArgs listPackageArgs)
+        private void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
         {
             foreach (ListPackageProjectModel project in projects)
             {
@@ -135,7 +131,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                                 : project.HasPackages == false
                                     ? Strings.ListPkg_NoPackagesFoundForFrameworks
                                     : Strings.ListPkg_NoSponsorshipForProject;
-                            consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, message, project.ProjectName));
+                            string value = string.Format(CultureInfo.CurrentCulture, message, project.ProjectName);
+                            consoleOut.WriteLine(value);
                             break;
                     }
                 }
@@ -214,10 +211,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
         }
 
-        private void PrintSponsorshipSourceDiagnostics(
-            TextWriter consoleOut,
-            List<ListPackageProjectModel> projects,
-            ListPackageArgs listPackageArgs)
+        private void PrintSponsorshipSourceDiagnostics(TextWriter consoleOut, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
         {
             (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
                 IReadOnlyList<PackageSource> unsupportedSources,
@@ -296,13 +290,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             return string.Format(Strings.ListPkg_ProjectHeaderLog, projectName);
         }
 
-        private static void PrintPackages(
-            List<ListReportPackage> packages,
-            bool printingTransitive,
-            ListPackageArgs listPackageArgs)
+        private static void PrintPackages(List<ListReportPackage> packages, bool printingTransitive, ListPackageArgs listPackageArgs)
         {
-            bool tableHasAutoReference = false;
-            IEnumerable<FormattedCell> tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
+            var tableHasAutoReference = false;
+            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
                 packages, printingTransitive, listPackageArgs, ref tableHasAutoReference);
 
             if (tableToPrint != null)

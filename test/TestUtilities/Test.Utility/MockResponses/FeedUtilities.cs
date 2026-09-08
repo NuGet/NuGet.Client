@@ -136,12 +136,12 @@ namespace Test.Utility
 
             if (sponsorshipUrls != null)
             {
-                regBlob.Add(new JProperty(
-                    "metadata",
-                    new JObject
-                    {
-                        { "sponsorshipUrls", new JArray(sponsorshipUrls) }
-                    }));
+                var value = new JObject
+                {
+                    { "sponsorshipUrls", new JArray(sponsorshipUrls) }
+                };
+                var content = new JProperty("metadata", value);
+                regBlob.Add(content);
             }
 
             var pages = new JArray();

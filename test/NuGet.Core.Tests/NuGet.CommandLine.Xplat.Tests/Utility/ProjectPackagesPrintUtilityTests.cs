@@ -71,13 +71,14 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
         public void BuildPackagesTable_Sponsor_OmitsVersionColumnsAndAlignsCells(bool printingTransitive, string expectedFirstHeader)
         {
             // Arrange
+            var sponsorship = new PackageSponsorship("https://source", new[] { "https://sponsor/a" });
             var packages = new[]
             {
-                ListPackageTestHelper.CreateSponsoredPackage(
-                    "Package.Sponsored", new PackageSponsorship("https://source", new[] { "https://sponsor/a" }))
+                ListPackageTestHelper.CreateSponsoredPackage("Package.Sponsored", sponsorship)
             };
-            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs(
-                "", new List<PackageSource>(), new ListPackageConsoleRenderer());
+            var packageSources = new List<PackageSource>();
+            var renderer = new ListPackageConsoleRenderer();
+            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs("", packageSources, renderer);
             string[] headers = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive, args);
             bool autoReferenceFound = false;
 
@@ -93,7 +94,8 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             for (int i = 0; i < table.Length; i++)
             {
                 bool expectNewLine = (i + 1) % (headers.Length + 1) == 0;
-                Assert.Equal(expectNewLine, table[i].Value == Environment.NewLine);
+                bool actual = table[i].Value == Environment.NewLine;
+                Assert.Equal(expectNewLine, actual);
             }
         }
 

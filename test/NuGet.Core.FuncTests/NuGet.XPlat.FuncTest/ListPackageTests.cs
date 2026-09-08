@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Build.Evaluation;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -570,7 +571,11 @@ namespace NuGet.XPlat.FuncTest
         public void BasicListPackageParsing_SponsorCombinedWithAnotherReport_ReturnsNonZero(string otherReportOption)
         {
             VerifyCommand((projectPath, _, testApp, _) =>
-                Assert.NotEqual(0, testApp.Parse(new[] { "list", projectPath, "--sponsor", otherReportOption }).Invoke()));
+            {
+                string[] args = ["list", projectPath, "--sponsor", otherReportOption];
+                int actual = testApp.Parse(args).Invoke();
+                Assert.NotEqual(0, actual);
+            });
         }
 
         [Theory]
@@ -579,34 +584,54 @@ namespace NuGet.XPlat.FuncTest
         [InlineData(true, false, false)]
         [InlineData(false, true, false)]
         [InlineData(true, true, true, true)]
+        [InlineData(true, true, false, false, 2, false)]
         public async Task SponsorReport_UsesRegistrationProviderPipeline(
             bool hasPackages,
             bool sourceSupportsSponsorship,
             bool sourceReturnsSponsorshipUrls,
-            bool mappingEnabled = false)
+            bool mappingEnabled = false,
+            int projectCount = 1,
+            bool sourceHasPackage = true)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                pathContext.PackageSource,
-                new SimpleTestPackageContext("task", "0.0.9"));
-            SimpleTestProjectContext project = SetupTestProject(pathContext);
-            if (!hasPackages)
+            var packageContext = new SimpleTestPackageContext("task", "0.0.9");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageContext);
+            SimpleTestSolutionContext solution = SetupTestSolution(pathContext);
+            if (projectCount == 2)
             {
-                project.CleanPackagesFromAllFrameworks();
+                NuGetFramework framework = NuGetFramework.Parse("net8.0");
+                var project = SimpleTestProjectContext.CreateNETCore("ProjectB", pathContext.SolutionRoot, framework);
+                project.Type = ProjectStyle.PackageReference;
+                project.SingleTargetFramework = true;
+                var package = new SimpleTestPackageContext("task", "0.0.9");
+                project.AddPackageToAllFrameworks(package);
+                solution.Projects.Add(project);
             }
-            project.Properties["ProjectAssetsFile"] = project.AssetsFileOutputPath;
-            project.Save();
+            solution.Save();
             var logger = new TestLogger(_testOutputHelper);
-            PackageSpec packageSpec = project.PackageSpec.WithSettingsBasedRestoreMetadata(
-                Settings.LoadDefaultSettings(pathContext.SolutionRoot));
-            var restoreCommand = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec));
-            RestoreResult restoreResult = await restoreCommand.ExecuteAsync(CancellationToken.None);
-            await restoreResult.CommitAsync(logger, CancellationToken.None);
-            Assert.True(restoreResult.Success, logger.ShowMessages());
+            foreach (SimpleTestProjectContext project in solution.Projects)
+            {
+                if (!hasPackages)
+                {
+                    project.CleanPackagesFromAllFrameworks();
+                }
+                project.Properties["ProjectAssetsFile"] = project.AssetsFileOutputPath;
+                project.Save();
+                ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+                PackageSpec packageSpec = project.PackageSpec.WithSettingsBasedRestoreMetadata(settings);
+                RestoreRequest request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+                var restoreCommand = new RestoreCommand(request);
+                RestoreResult restoreResult = await restoreCommand.ExecuteAsync(CancellationToken.None);
+                await restoreResult.CommitAsync(logger, CancellationToken.None);
+                string userMessage = logger.ShowMessages();
+                Assert.True(restoreResult.Success, userMessage);
+            }
 
+            using var emptySource = TestDirectory.Create();
+            string packageDirectory = sourceHasPackage ? pathContext.PackageSource : emptySource.Path;
             using var mockServer = new FileSystemBackedV3MockServer(
-                pathContext.PackageSource,
+                packageDirectory,
                 sourceSupportsSponsorship: sourceSupportsSponsorship);
             string[] expectedSponsorshipUrls = { "https://sponsor.test/task" };
             if (sourceReturnsSponsorshipUrls)
@@ -623,19 +648,24 @@ namespace NuGet.XPlat.FuncTest
                 AllowInsecureConnections = hasPackages
             };
             var unmappedSource = new PackageSource(unmappedServer.ServiceIndexUri, "unmapped");
-            PackageSourceMapping mapping = mappingEnabled
-                ? new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>
+            PackageSourceMapping mapping = NoPackageSourceMapping;
+            if (mappingEnabled)
+            {
+                var patterns = new Dictionary<string, IReadOnlyList<string>>
                 {
                     ["test"] = ["task"],
                     ["unmapped"] = ["Other.Package"],
-                })
-                : NoPackageSourceMapping;
+                };
+                mapping = new PackageSourceMapping(patterns);
+            }
             using var consoleOut = new StringWriter();
             var renderer = new ListPackageConsoleRenderer(consoleOut, TextWriter.Null);
-            var runner = new ListPackageCommandRunner(
-                new MSBuildAPIUtility(logger, virtualProjectBuilder: null));
+            var msbuildUtility = new MSBuildAPIUtility(logger, virtualProjectBuilder: null);
+            var runner = new ListPackageCommandRunner(msbuildUtility);
+            string path = projectCount == 1 ? solution.Projects[0].ProjectPath : solution.SolutionPath;
+            List<PackageSource> packageSources = mappingEnabled ? [source, unmappedSource] : [source];
             var args = new ListPackageArgs(
-                project.ProjectPath, mappingEnabled ? [source, unmappedSource] : [source], [],
+                path, packageSources, [],
                 ReportType.Sponsor, renderer, includeTransitive: false, prerelease: false,
                 highestPatch: false, highestMinor: false, auditSources: [unmappedSource],
                 logger, CancellationToken.None, mapping);
@@ -648,37 +678,70 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(0, exitCode);
             Assert.True(args.IncludeTransitive);
             Assert.Equal("--sponsor", args.ArgumentText);
-            ListPackageProjectModel projectReport = Assert.Single(report.Projects);
-            Assert.Equal(hasPackages, projectReport.HasPackages);
-            Assert.Equal(
-                hasPackages && sourceSupportsSponsorship ? new[] { source } : Array.Empty<PackageSource>(),
-                projectReport.SponsorshipQueriedSources);
-            Assert.Equal(
-                hasPackages && !sourceSupportsSponsorship ? new[] { source } : Array.Empty<PackageSource>(),
-                projectReport.SponsorshipUnsupportedSources);
-            Assert.Equal(hasPackages && sourceSupportsSponsorship ? 1 : 0, mockServer.RegistrationRequestCount);
+            PackageSource[] expectedQueriedSources = hasPackages && sourceSupportsSponsorship ? [source] : [];
+            PackageSource[] expectedUnsupportedSources = hasPackages && !sourceSupportsSponsorship ? [source] : [];
+            int expectedRegistrationRequestCount = hasPackages && sourceSupportsSponsorship ? 1 : 0;
+            AssertReport(report);
+            Assert.Equal(expectedRegistrationRequestCount, mockServer.RegistrationRequestCount);
             Assert.Equal(0, unmappedServer.RegistrationRequestCount);
 
-            List<ListReportPackage> packages = projectReport.TargetFrameworkPackages
-                .SelectMany(framework => (framework.TopLevelPackages ?? []).Concat(framework.TransitivePackages ?? []))
-                .ToList();
-            if (sourceReturnsSponsorshipUrls)
+            if (!sourceHasPackage)
             {
-                ListReportPackage package = Assert.Single(packages);
-                PackageSponsorship sponsorship = Assert.Single(package.Sponsorships);
-                Assert.Equal(source.Source, sponsorship.Source);
-                Assert.Equal(expectedSponsorshipUrls, sponsorship.Urls);
+                // MSBuild rejects reloading the same project; release only this fixture's evaluated projects.
+                foreach (SimpleTestProjectContext project in solution.Projects)
+                {
+                    ICollection<Project> collection = ProjectCollection.GlobalProjectCollection.GetLoadedProjects(project.ProjectPath);
+                    Project loadedProject = Assert.Single(collection);
+                    ProjectCollection.GlobalProjectCollection.UnloadProject(loadedProject);
+                }
+                (int secondExitCode, ListPackageReportModel secondReport) = await runner.GetReportDataAsync(args);
+                Assert.Equal(0, secondExitCode);
+                AssertReport(secondReport);
+                int expected = 2 * expectedRegistrationRequestCount;
+                Assert.Equal(expected, mockServer.RegistrationRequestCount);
+                Assert.Equal(0, unmappedServer.RegistrationRequestCount);
             }
-            else
+            if (!sourceReturnsSponsorshipUrls)
             {
-                Assert.Empty(packages);
-                Assert.Contains(
-                    hasPackages ? "Project 'ProjectA' has no sponsorable packages." : "Project 'ProjectA' has no package references.",
-                    consoleOut.ToString());
+                string expectedSubstring = hasPackages
+                    ? "Project 'ProjectA' has no sponsorable packages."
+                    : "Project 'ProjectA' has no package references.";
+                string actualString = consoleOut.ToString();
+                Assert.Contains(expectedSubstring, actualString);
             }
             if (!hasPackages)
             {
-                Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint, consoleOut.ToString());
+                string actualString = consoleOut.ToString();
+                Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint, actualString);
+            }
+
+            void AssertReport(ListPackageReportModel actualReport)
+            {
+                Assert.Equal(projectCount, actualReport.Projects.Count);
+                IEnumerable<string> expected = solution.Projects.Select(project => project.ProjectPath);
+                IEnumerable<string> actual = actualReport.Projects.Select(project => project.ProjectPath);
+                Assert.Equal(expected, actual);
+                foreach (ListPackageProjectModel projectReport in actualReport.Projects)
+                {
+                    Assert.Equal(hasPackages, projectReport.HasPackages);
+                    Assert.Empty(projectReport.ProjectProblems);
+                    Assert.Equal(expectedQueriedSources, projectReport.SponsorshipQueriedSources);
+                    Assert.Equal(expectedUnsupportedSources, projectReport.SponsorshipUnsupportedSources);
+                    List<ListReportPackage> packages = projectReport.TargetFrameworkPackages
+                        .SelectMany(framework => (framework.TopLevelPackages ?? []).Concat(framework.TransitivePackages ?? []))
+                        .ToList();
+                    if (sourceReturnsSponsorshipUrls)
+                    {
+                        ListReportPackage package = Assert.Single(packages);
+                        PackageSponsorship sponsorship = Assert.Single(package.Sponsorships);
+                        Assert.Equal(source.Source, sponsorship.Source);
+                        Assert.Equal(expectedSponsorshipUrls, sponsorship.Urls);
+                    }
+                    else
+                    {
+                        Assert.Empty(packages);
+                    }
+                }
             }
         }
 
@@ -702,11 +765,12 @@ namespace NuGet.XPlat.FuncTest
             IReportRenderer renderer = jsonOutput
                 ? new ListPackageJsonRenderer(output)
                 : new ListPackageConsoleRenderer(output, TextWriter.Null) { ShowSponsorshipSourceHint = showSourceHint };
-            var report = new ListPackageReportModel(new ListPackageArgs(
+            var listPackageArgs = new ListPackageArgs(
                 "solution.sln", [source1, source2, empty1, empty2, unsupported, neverQueried], [],
                 ReportType.Sponsor, renderer, includeTransitive: false, prerelease: false,
                 highestPatch: false, highestMinor: false, auditSources: null,
-                NullLogger.Instance, CancellationToken.None, NoPackageSourceMapping));
+                NullLogger.Instance, CancellationToken.None, NoPackageSourceMapping);
+            var report = new ListPackageReportModel(listPackageArgs);
             PackageSponsorship[] sponsorships =
             [
                 new(source1.Source, ["https://sponsor/a"]),
@@ -718,7 +782,7 @@ namespace NuGet.XPlat.FuncTest
                 autoReference: false, sponsorships);
             List<ListReportPackage> topLevel = hasSponsoredPackage ? [CreatePackage("A")] : [];
             List<ListReportPackage> transitive = hasSponsoredPackage ? [CreatePackage("a")] : [];
-            report.Projects.Add(new ListPackageProjectModel("a.csproj", "A")
+            var projectA = new ListPackageProjectModel("a.csproj", "A")
             {
                 TargetFrameworkPackages =
                 [
@@ -728,17 +792,20 @@ namespace NuGet.XPlat.FuncTest
                 SponsorshipQueriedSources = hasSponsoredPackage
                     ? [empty2, source2, source1, empty1] : [empty2, empty1],
                 SponsorshipUnsupportedSources = [unsupported],
-            });
-            report.Projects.Add(new ListPackageProjectModel("b.csproj", "B")
+            };
+            report.Projects.Add(projectA);
+            var projectB = new ListPackageProjectModel("b.csproj", "B")
             {
                 TargetFrameworkPackages = [new("net8.0", "net8.0") { TransitivePackages = transitive }],
-            });
+            };
+            report.Projects.Add(projectB);
 
             renderer.Render(report);
 
             if (jsonOutput)
             {
-                JObject json = JObject.Parse(output.ToString());
+                string outputJson = output.ToString();
+                JObject json = JObject.Parse(outputJson);
                 JArray expectedPackages = JArray.Parse("""
                     [{
                       "id": "A",
@@ -746,28 +813,34 @@ namespace NuGet.XPlat.FuncTest
                       "sponsorships": [{"sources":["https://source1","https://source2"],"urls":["https://sponsor/a"]}]
                     }]
                     """);
-                Assert.True(JToken.DeepEquals(expectedPackages, json["packages"]), json.ToString());
-                Assert.Equal(
-                    new[]
-                    {
-                        string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemNoDetails, empty1.Source),
-                        string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemNoDetails, empty2.Source),
-                        string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemUnsupportedSource, unsupported.Source),
-                    },
-                    json["problems"].Select(problem => problem["text"].Value<string>()));
+                bool condition = JToken.DeepEquals(expectedPackages, json["packages"]);
+                string userMessage = json.ToString();
+                Assert.True(condition, userMessage);
+                string[] expected =
+                [
+                    string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemNoDetails, empty1.Source),
+                    string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemNoDetails, empty2.Source),
+                    string.Format(CommandLine.XPlat.Strings.ListPkg_SponsorProblemUnsupportedSource, unsupported.Source),
+                ];
+                IEnumerable<string> actual = json["problems"].Select(problem => problem["text"].Value<string>());
+                Assert.Equal(expected, actual);
             }
             else
             {
-                string diagnostics = string.Join(Environment.NewLine,
+                string[] values =
+                [
                     CommandLine.XPlat.Strings.ListPkg_SponsorNoDetailsHeader,
                     $"   {empty1.Source}", $"   {empty2.Source}", string.Empty,
                     CommandLine.XPlat.Strings.ListPkg_SponsorUnsupportedSourcesHeader,
                     $"   {unsupported.Source}", string.Empty,
                     showSourceHint && !hasSponsoredPackage
-                        ? CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint + Environment.NewLine : string.Empty);
+                        ? CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint + Environment.NewLine : string.Empty,
+                ];
+                string diagnostics = string.Join(Environment.NewLine, values);
                 output.ToString().Should().EndWith(diagnostics);
-                Assert.Equal(!hasSponsoredPackage,
-                    output.ToString().Contains("Project 'A' has no sponsorable packages.", StringComparison.Ordinal));
+                bool expected = !hasSponsoredPackage;
+                bool actual = output.ToString().Contains("Project 'A' has no sponsorable packages.", StringComparison.Ordinal);
+                Assert.Equal(expected, actual);
             }
         }
 
@@ -802,30 +875,42 @@ namespace NuGet.XPlat.FuncTest
                 {
                     // Arrange
                     ListPackageArgs capturedArgs = null;
+                    Task<int> value = Task.FromResult(0);
                     mockCommandRunner
                         .Setup(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()))
                         .Callback<ListPackageArgs>(args => capturedArgs = args)
-                        .Returns(Task.FromResult(0));
+                        .Returns(value);
 
                     var argList = new List<string> { "list", projectPath, "--sponsor", "--config", pathContext.NuGetConfig };
                     if (hasExplicitSource)
                     {
                         argList.AddRange(new[] { "--source", "mapped" });
                     }
-                    argList.AddRange(additionalOptions.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                    string[] collection = additionalOptions.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    argList.AddRange(collection);
+                    string[] commandArgs = argList.ToArray();
 
                     // Act
-                    var result = testApp.Parse(argList.ToArray()).Invoke();
+                    var result = testApp.Parse(commandArgs).Invoke();
 
                     // Assert
-                    Assert.Equal(shouldLogMappingNotice,
-                        logger.ShowMessages().Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled));
+                    bool actual = logger.ShowMessages().Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingEnabled);
+                    Assert.Equal(shouldLogMappingNotice, actual);
                     if (!shouldRun)
                     {
                         Assert.NotEqual(0, result);
-                        string message = additionalOptions.Contains("--format json", StringComparison.Ordinal)
-                            ? Assert.Single(JObject.Parse(output.ToString())["problems"])["text"].Value<string>()
-                            : error.ToString();
+                        string message;
+                        if (additionalOptions.Contains("--format json", StringComparison.Ordinal))
+                        {
+                            string json = output.ToString();
+                            JObject report = JObject.Parse(json);
+                            JToken problem = Assert.Single(report["problems"]);
+                            message = problem["text"].Value<string>();
+                        }
+                        else
+                        {
+                            message = error.ToString();
+                        }
                         Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorPackageSourceMappingWithSource, message);
                         mockCommandRunner.Verify(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()), Times.Never);
                         return;
@@ -838,15 +923,16 @@ namespace NuGet.XPlat.FuncTest
                     string[] expectedSources = hasExplicitSource
                         ? new[] { "mapped" }
                         : new[] { "source", "mapped" };
-                    Assert.Equal(expectedSources, capturedArgs.PackageSources.Select(source => source.Name));
+                    IEnumerable<string> actualSources = capturedArgs.PackageSources.Select(source => source.Name);
+                    Assert.Equal(expectedSources, actualSources);
+                    IEnumerable<PackageSource> mappedSources = capturedArgs.PackageSources.Where(source => source.Name == "mapped");
                     Assert.All(
-                        capturedArgs.PackageSources.Where(source => source.Name == "mapped"),
+                        mappedSources,
                         source => Assert.Equal(sourceUrl, source.Source));
                     if (capturedArgs.Renderer is ListPackageConsoleRenderer capturedRenderer)
                     {
-                        Assert.Equal(
-                            !hasExplicitSource && !mappingEnabled && !nugetOrgConfigured,
-                            capturedRenderer.ShowSponsorshipSourceHint);
+                        bool expected = !hasExplicitSource && !mappingEnabled && !nugetOrgConfigured;
+                        Assert.Equal(expected, capturedRenderer.ShowSponsorshipSourceHint);
                     }
                     mockCommandRunner.Verify(m => m.ExecuteCommandAsync(It.IsAny<ListPackageArgs>()), Times.Once);
                 },
@@ -910,10 +996,7 @@ namespace NuGet.XPlat.FuncTest
         {
             Type listPackageArgsType = typeof(ListPackageArgs);
             FieldInfo[] fields = listPackageArgsType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-            fields.Length.Should().Be(
-                14,
-                because: "Number of fields are changed in ListPackageArgs.cs. " +
-                    "Please make sure this change is accounted for GetReportParameters method in that file.");
+            fields.Length.Should().Be(14, because: "Number of fields are changed in ListPackageArgs.cs. Please make sure this change is accounted for GetReportParameters method in that file.");
         }
 
         private static SimpleTestSolutionContext SetupTestSolution(SimpleTestPathContext pathContext)

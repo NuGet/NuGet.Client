@@ -17,9 +17,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 project.TargetFrameworkPackages ?? Enumerable.Empty<ListPackageReportFrameworkPackage>();
 
             List<ListReportPackage> topLevel = DistinctById(frameworks, framework => framework.TopLevelPackages);
-            var topLevelPackageIds = new HashSet<string>(
-                topLevel.Select(package => package.PackageId),
-                StringComparer.OrdinalIgnoreCase);
+            IEnumerable<string> collection = topLevel.Select(package => package.PackageId);
+            var topLevelPackageIds = new HashSet<string>(collection, StringComparer.OrdinalIgnoreCase);
 
             List<ListReportPackage> transitive = DistinctById(frameworks, framework => framework.TransitivePackages)
                 .Where(package => !topLevelPackageIds.Contains(package.PackageId))
@@ -36,10 +35,11 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             {
                 (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = CollapseFrameworks(project);
 
-                IEnumerable<(ListReportPackage Package, bool IsTopLevel)> packagesWithRelationships =
-                    topLevel
-                        .Select(package => (Package: package, IsTopLevel: true))
-                        .Concat(transitive.Select(package => (Package: package, IsTopLevel: false)));
+                IEnumerable<(ListReportPackage Package, bool IsTopLevel)> first =
+                    topLevel.Select(package => (Package: package, IsTopLevel: true));
+                IEnumerable<(ListReportPackage Package, bool IsTopLevel)> second =
+                    transitive.Select(package => (Package: package, IsTopLevel: false));
+                IEnumerable<(ListReportPackage Package, bool IsTopLevel)> packagesWithRelationships = first.Concat(second);
 
                 foreach ((ListReportPackage package, bool isTopLevel) in packagesWithRelationships)
                 {
@@ -80,7 +80,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
                 if (match is null)
                 {
-                    mergedSponsorships.Add(match = new MergedSponsorship(sponsorship.Urls));
+                    match = new MergedSponsorship(sponsorship.Urls);
+                    mergedSponsorships.Add(match);
                 }
 
                 match.Sources.Add(sponsorship.Source);
@@ -96,20 +97,18 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 IReadOnlyList<ListPackageProjectModel> projects,
                 IReadOnlyList<PackageSource> configuredSources)
         {
-            var sourcesWithSponsorshipDetails = new HashSet<string>(
-                CollapseProjects(projects)
-                    .SelectMany(package => package.Sponsorships)
-                    .Select(sponsorship => sponsorship.Source),
-                StringComparer.Ordinal);
+            IEnumerable<string> collection = CollapseProjects(projects)
+                .SelectMany(package => package.Sponsorships)
+                .Select(sponsorship => sponsorship.Source);
+            var sourcesWithSponsorshipDetails = new HashSet<string>(collection, StringComparer.Ordinal);
 
-            List<PackageSource> withoutDetails = OrderSourcesByConfiguration(
-                projects.SelectMany(project => project.SponsorshipQueriedSources),
-                configuredSources)
+            IEnumerable<PackageSource> sources = projects.SelectMany(project => project.SponsorshipQueriedSources);
+            List<PackageSource> withoutDetails = OrderSourcesByConfiguration(sources, configuredSources)
                 .Where(source => !sourcesWithSponsorshipDetails.Contains(source.Source))
                 .ToList();
 
-            IReadOnlyList<PackageSource> unsupported = OrderSourcesByConfiguration(
-                projects.SelectMany(project => project.SponsorshipUnsupportedSources), configuredSources);
+            sources = projects.SelectMany(project => project.SponsorshipUnsupportedSources);
+            IReadOnlyList<PackageSource> unsupported = OrderSourcesByConfiguration(sources, configuredSources);
 
             return (withoutDetails, unsupported, sourcesWithSponsorshipDetails.Count > 0);
         }
@@ -118,9 +117,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             IEnumerable<PackageSource> sources,
             IReadOnlyList<PackageSource> configuredSources)
         {
-            var sourceUrls = new HashSet<string>(
-                sources.Select(source => source.Source),
-                StringComparer.Ordinal);
+            IEnumerable<string> collection = sources.Select(source => source.Source);
+            var sourceUrls = new HashSet<string>(collection, StringComparer.Ordinal);
 
             return configuredSources
                 .Where(source => sourceUrls.Contains(source.Source))
