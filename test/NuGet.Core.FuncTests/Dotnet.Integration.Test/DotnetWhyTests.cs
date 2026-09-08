@@ -5,8 +5,8 @@
 
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.XPlat;
@@ -19,6 +19,7 @@ using Xunit.Abstractions;
 
 namespace Dotnet.Integration.Test
 {
+    [UseCulture("en-US")] // We are asserting exception messages in English
     [Collection(DotnetIntegrationCollection.Name)]
     public class DotnetWhyTests
     {
@@ -92,9 +93,8 @@ namespace Dotnet.Integration.Test
 
             // Run "why" command.
             var result = _testFixture.RunDotnetExpectSuccess(fbaDir, "nuget why app.cs PackageB", testOutputHelper: _testOutputHelper);
-
-            Assert.Contains("packageA (v1.0.0)", result.AllOutput);
-            Assert.Contains("packageB (v1.0.1)", result.AllOutput);
+            result.AllOutput.Should().Contain("packageA@1.0.0 (>= 1.0.0)");
+            result.AllOutput.Should().Contain("packageB@1.0.1 (>= 1.0.1)");
         }
 
         [Fact]
@@ -204,7 +204,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
-            Assert.Contains($"Required argument missing for command: 'why'.", result.Errors);
+            Assert.Contains("Required argument 'PACKAGE' missing for command: 'why'", result.Errors);
         }
 
         [Fact]
@@ -221,7 +221,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
-            Assert.Contains($"Required argument missing for command: 'why'.", result.Errors);
+            Assert.Contains($"Required argument 'PACKAGE' missing for command: 'why'.", result.Errors);
         }
 
         [Fact]
@@ -345,7 +345,7 @@ namespace Dotnet.Integration.Test
                 $"  [{TestConstants.ProjectTargetFramework}]                                                                     ",
                 "  └── ProjectB                                                                  ",
                 "      └── ProjectA                                                              ",
-                "          └── PackageX (v1.0.0)                                                 ",
+                "          └── PackageX@1.0.0 (>= 1.0.0)                                         ",
                 "",
                 "",
                 ""

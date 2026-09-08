@@ -43,8 +43,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PluginWarning_PluginIsBeingDeprecated">
-        <source>The credential plugin model used by '{0}' is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
-        <target state="translated">'{0}' tarafından kullanılan kimlik bilgisi eklenti modeli kullanım dışı. Lütfen başka bir model için eklentinin sağlayıcısına başvurun. Önerilen eklenti modeli hakkında daha fazla bilgiyi '{1}' bölümünde bulabilirsiniz.</target>
+        <source>The credential plugin model used by '{0}' is deprecated. Contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
+        <target state="translated">'{0}' tarafından kullanılan kimlik bilgisi eklenti modeli kullanım dışı. Bir alternatif için eklentinin sağlayıcısına başvurun. Önerilen eklenti modeli hakkında daha fazla bilgiyi '{1}' bölümünde bulabilirsiniz.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProviderException_InvalidCredentialResponse">
@@ -56,6 +56,11 @@
         <source>Credential provider gave an invalid response.</source>
         <target state="translated">Kimlik bilgisi sağlayıcısı, geçersiz bir yanıt verdi.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SecurePluginException_ConnectionClosed">
+        <source>The connection to credential plugin '{0}' was closed before it answered the credential request. The plugin process may have exited or been shut down while the request was in flight.</source>
+        <target state="translated">'{0}' kimlik bilgisi eklentisinin bağlantısı, kimlik bilgisi isteğine yanıt vermeden önce kapatıldı. İstek iletildiği sırada eklenti işleminden çıkılmış veya bu işlem kapatılmış olabilir.</target>
+        <note>{0} - plugin path</note>
       </trans-unit>
       <trans-unit id="SecurePluginNotice_UsingPluginAsProvider">
         <source>Using {0} as a credential provider plugin.</source>

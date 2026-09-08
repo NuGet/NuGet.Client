@@ -187,7 +187,7 @@
 1- attributes count</comment>
   </data>
   <data name="NoWritteableConfig" xml:space="preserve">
-    <value>There is no NuGet.Config that could be used for writing settings. Please create one at the desired location and restart the client.</value>
+    <value>There is no NuGet.Config that could be used for writing settings. Create one at the desired location and restart the client.</value>
   </data>
   <data name="OwnersItemMustHaveAtLeastOneOwner" xml:space="preserve">
     <value>Owners item must have at least one owner.</value>
@@ -219,6 +219,14 @@
     <comment>0 - NU log code
 1 - package source value
 2 - original exception message</comment>
+  </data>
+  <data name="PackageSource_MinPublishAgeCannotBeNegative" xml:space="preserve">
+    <value>The minimum publish age cannot be negative. Value: '{0}'.</value>
+    <comment>0 - minimum publish age</comment>
+  </data>
+  <data name="PackageSource_MinPublishAgeMustBeWholeHours" xml:space="preserve">
+    <value>The minimum publish age must be specified in whole hours. Value: '{0}'.</value>
+    <comment>0 - minimum publish age</comment>
   </data>
   <data name="ShowError_ConfigInvalidOperation" xml:space="preserve">
     <value>NuGet.Config is malformed. Path: '{0}'.</value>
@@ -298,6 +306,10 @@
   </data>
   <data name="Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly" xml:space="preserve">
     <value>Argument cannot be null, empty, or whitespace only.</value>
+  </data>
+  <data name="Error_InvalidMinPublishAgeExceptionPattern" xml:space="preserve">
+    <value>Minimum publish age exception pattern '{0}' is invalid.</value>
+    <comment>0 - invalid package ID pattern</comment>
   </data>
   <data name="Error_DuplicatePackageSource" xml:space="preserve">
     <value>PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}</value>

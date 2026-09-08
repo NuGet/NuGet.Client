@@ -198,7 +198,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet Package restore failed for project {0}: {1}. Please see Error List window for detailed warnings and errors..
+        ///   Looks up a localized string similar to NuGet Package restore failed for project {0}: {1}. See the Error List window for detailed warnings and errors..
         /// </summary>
         internal static string PackageRestoreFailedForProject {
             get {
@@ -225,7 +225,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet package restore failed. Please see Error List window for detailed warnings and errors..
+        ///   Looks up a localized string similar to NuGet package restore failed. See the Error List window for detailed warnings and errors..
         /// </summary>
         internal static string PackageRestoreFinishedWithError {
             get {
@@ -244,6 +244,15 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Resolve {0} by reviewing my NuGet supply chain security configuration..
+        /// </summary>
+        internal static string Prompt_ResolveSupplyChainSecurityNUCode {
+            get {
+                return ResourceManager.GetString("Prompt_ResolveSupplyChainSecurityNUCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}.
         /// </summary>
         internal static string PropertyDoesNotHaveSingleValue {
@@ -253,7 +262,7 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; from nuget.config file or the environment variable is &apos;{0}&apos;, a relative path and the solution is not saved. Please save your solution or configure a &apos;globalPackagesFolder&apos; which is a full path..
+        ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; from nuget.config file or the environment variable is &apos;{0}&apos;, a relative path and the solution is not saved. Save your solution or configure a &apos;globalPackagesFolder&apos; which is a full path..
         /// </summary>
         internal static string RelativeGlobalPackagesFolder {
             get {
@@ -280,11 +289,29 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
+        ///   Looks up a localized string similar to Solution is not saved. Save your solution before managing NuGet packages..
         /// </summary>
         internal static string SolutionIsNotSaved {
             get {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ask Copilot for a fix.
+        /// </summary>
+        internal static string Title_AskCopilotForFix {
+            get {
+                return ResourceManager.GetString("Title_AskCopilotForFix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ask Copilot to fix NuGet package vulnerabilities.
+        /// </summary>
+        internal static string Title_FixVulnerabilitiesWithCopilot {
+            get {
+                return ResourceManager.GetString("Title_FixVulnerabilitiesWithCopilot", resourceCulture);
             }
         }
     }

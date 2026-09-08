@@ -22,9 +22,9 @@ namespace NuGet.Protocol.Plugins.Tests
         public void Constructor_ThrowsForNullServiceIndexWhenResponseCodeIsSuccess()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new GetServiceIndexResponse(MessageResponseCode.Success, serviceIndex: (string?)null!));
+                () => new GetServiceIndexResponse(MessageResponseCode.Success, serviceIndexJson: (string?)null!));
 
-            Assert.Equal("serviceIndex", exception.ParamName);
+            Assert.Equal("serviceIndexJson", exception.ParamName);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void JsonDeserialization_ReturnsCorrectObjectForSuccess()
         {
             var json = "{\"ResponseCode\":\"Success\",\"ServiceIndex\":{\"a\":\"b\"}}";
-            var response = JsonSerializationUtilities.Deserialize<GetServiceIndexResponse>(json);
+            var response = JsonSerializationUtilities.Deserialize<GetServiceIndexResponse>(json)!;
 
             Assert.Equal(MessageResponseCode.Success, response.ResponseCode);
             Assert.Equal("{\"a\":\"b\"}", response.ServiceIndexJson);
@@ -61,7 +61,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void JsonDeserialization_ReturnsCorrectObjectForNotFound()
         {
             var json = "{\"ResponseCode\":\"NotFound\"}";
-            var response = JsonSerializationUtilities.Deserialize<GetServiceIndexResponse>(json);
+            var response = JsonSerializationUtilities.Deserialize<GetServiceIndexResponse>(json)!;
 
             Assert.Equal(MessageResponseCode.NotFound, response.ResponseCode);
             Assert.Null(response.ServiceIndexJson);
@@ -89,7 +89,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             if (exception is ArgumentNullException)
             {
-                Assert.Equal("serviceIndex", ((ArgumentNullException)exception).ParamName);
+                Assert.Equal("serviceIndexJson", ((ArgumentNullException)exception).ParamName);
             }
         }
     }

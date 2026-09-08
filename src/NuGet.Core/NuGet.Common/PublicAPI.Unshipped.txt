@@ -1,2 +1,4 @@
 #nullable enable
-NuGet.Common.NuGetLogCode.NU5502 = 5502 -> NuGet.Common.NuGetLogCode
+NuGet.Common.StaticState
+static NuGet.Common.StaticState.BuildEnded -> System.Action?
+static NuGet.Common.StaticState.RaiseBuildEnded() -> void

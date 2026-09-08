@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex
@@ -118,6 +118,62 @@ namespace NuGet.Tests.Apex
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion1, Logger);
                 CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion2, Logger);
             }
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackagesFromPMCUsingPackagesConfigAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName1 = "TestPackage1";
+            var packageName2 = "TestPackage2";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion);
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion);
+
+            var inputDirectory = Path.Combine(testContext.SolutionRoot, "Input");
+            Directory.CreateDirectory(inputDirectory);
+            var packagesConfigPath = Path.Combine(inputDirectory, "packages.config");
+            File.WriteAllText(
+                packagesConfigPath,
+                $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""{packageName1}"" version=""{packageVersion}"" targetFramework=""net48"" userInstalled=""true"" />
+  <package id=""{packageName2}"" version=""{packageVersion}"" targetFramework=""net48"" userInstalled=""true"" />
+</packages>");
+
+            var nugetConsole = GetConsole(testContext.Project);
+            var escapedPackagesConfigPath = packagesConfigPath.Replace("'", "''");
+
+            nugetConsole.Execute($"Install-Package '{escapedPackagesConfigPath}'");
+
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName1, packageVersion, Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName2, packageVersion, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCPipelineInputAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "PipelineInputTestPackage";
+            var packageVersion = "1.0.0";
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+
+            nugetConsole.Execute(
+                $"Get-Package -ListAvailable -Filter '{packageName}' -Source '{escapedSource}' | Install-Package");
+
+            CommonUtility.AssertPackageInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                packageVersion,
+                Logger);
         }
 
         [DataTestMethod]
@@ -668,7 +724,7 @@ namespace NuGet.Tests.Apex
             nugetConsole.Execute("Update-Package -Reinstall");
 
             // Assert
-            var expectedMessage = $"The -Reinstall parameter does not apply to PackageReference based projects `{Path.GetFileNameWithoutExtension(testContext.Project.UniqueName)}`.";
+            var expectedMessage = $"The `-Reinstall` parameter does not apply to PackageReference based projects `{Path.GetFileNameWithoutExtension(testContext.Project.UniqueName)}'.";
             nugetConsole.IsMessageFoundInPMC(expectedMessage).Should().Be(warns, because: nugetConsole.GetText());
             VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
             VisualStudio.HasNoErrorsInOutputWindows().Should().BeTrue();
@@ -943,7 +999,7 @@ namespace NuGet.Tests.Apex
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var source = "d:package";
-            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+            var expectedMessage = $"Unsupported type of source '{source}'. Provide an HTTP or local source.";
 
             var nugetConsole = GetConsole(testContext.Project);
 
@@ -952,6 +1008,35 @@ namespace NuGet.Tests.Apex
             Assert.IsTrue(
                 nugetConsole.IsMessageFoundInPMC(expectedMessage),
                 $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCWhenMinClientVersionIsNotSatisfied_FailsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
+
+            var packageName = "PackageA";
+            var packageVersion = "1.0.0";
+            var minClientVersion = "100.0.0";
+            var package = CommonUtility.CreatePackage(packageName, packageVersion);
+            package.MinClientVersion = minClientVersion;
+            await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, package);
+
+            var currentVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
+            var expectedMessage =
+                $"The '{packageName} {packageVersion}' package requires NuGet client version '{minClientVersion}' or above, " +
+                $"but the current NuGet version is '{currentVersion}'. To upgrade NuGet, " +
+                "go to https://docs.nuget.org/consume/installing-nuget";
+            var nugetConsole = GetConsole(testContext.Project);
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+
+            nugetConsole.Execute($"Install-Package {packageName} -Source '{escapedSource}'");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, Logger);
         }
 
         [TestMethod]
@@ -979,7 +1064,7 @@ namespace NuGet.Tests.Apex
 
             var packageName = "Rules";
             var source = "ftp://Rules";
-            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+            var expectedMessage = $"Unsupported type of source '{source}'. Provide an HTTP or local source.";
 
             var nugetConsole = GetConsole(testContext.Project);
 
@@ -1028,12 +1113,62 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWhenMinClientVersionIsNotSatisfied_FailsAsync()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
+
+            var packageName = "PackageA";
+            var installedVersion = "1.0.0";
+            var updateVersion = "2.0.0";
+            var minClientVersion = "100.0.0.1";
+            var installedPackage = CommonUtility.CreatePackage(packageName, installedVersion);
+            var updatePackage = CommonUtility.CreatePackage(packageName, updateVersion);
+            updatePackage.MinClientVersion = minClientVersion;
+            await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, installedPackage);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+            var escapedProjectName = testContext.Project.Name.Replace("'", "''");
+            nugetConsole.Execute(
+                $"Install-Package {packageName} -ProjectName '{escapedProjectName}' " +
+                $"-Version {installedVersion} -Source '{escapedSource}'");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, updatePackage);
+
+            var currentVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
+            var expectedMessage =
+                $"The '{packageName} {updateVersion}' package requires NuGet client version '{minClientVersion}' or above, " +
+                $"but the current NuGet version is '{currentVersion}'. To upgrade NuGet, " +
+                "go to https://docs.nuget.org/consume/installing-nuget";
+
+            nugetConsole.Execute(
+                $"Update-Package {packageName} -ProjectName '{escapedProjectName}' -Source '{escapedSource}'");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(expectedMessage),
+                $"Expected error message was not found in PMC output. Actual output: {nugetConsole.GetText()}");
+            CommonUtility.AssertPackageNotInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                updateVersion,
+                Logger);
+            CommonUtility.AssertPackageInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                installedVersion,
+                Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public void GetPackageFromPMCWithInvalidSource_Fails()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
 
             var source = "d:package";
-            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+            var expectedMessage = $"Unsupported type of source '{source}'. Provide an HTTP or local source.";
 
             var nugetConsole = GetConsole(testContext.Project);
 
@@ -1119,7 +1254,7 @@ namespace NuGet.Tests.Apex
             nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
 
             var source = "d:package";
-            var expectedMessage = $"Unsupported type of source '{source}'. Please provide an HTTP or local source.";
+            var expectedMessage = $"Unsupported type of source '{source}'. Provide an HTTP or local source.";
 
             nugetConsole.Execute($"Update-Package {packageName} -Source {source}");
 
@@ -1189,111 +1324,6 @@ namespace NuGet.Tests.Apex
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task GetPackageFromPMC_ListsInstalledPackagesAsync()
-        {
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
-
-            var packageName1 = "TestPackageA";
-            var packageVersion1 = "1.0.0";
-            var packageName2 = "TestPackageB";
-            var packageVersion2 = "2.0.0";
-            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName1, packageVersion1);
-            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName2, packageVersion2);
-
-            var nugetConsole = GetConsole(testContext.Project);
-
-            // Assert no packages are installed initially
-            nugetConsole.Clear();
-            nugetConsole.Execute("Get-Package");
-            string emptyText = nugetConsole.GetText();
-            ParseGetPackageTableOutput(emptyText).Should().BeEmpty(because: emptyText);
-
-            nugetConsole.InstallPackageFromPMC(packageName1, packageVersion1);
-            nugetConsole.InstallPackageFromPMC(packageName2, packageVersion2);
-
-            nugetConsole.Clear();
-            nugetConsole.Execute("Get-Package");
-
-            string pmcText = nugetConsole.GetText();
-            var packages = ParseGetPackageTableOutput(pmcText);
-            packages.Select(p => p.Id).Should().Contain(packageName1, because: pmcText);
-            packages.Select(p => p.Id).Should().Contain(packageName2, because: pmcText);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task GetPackageFromPMCForProject_ReturnsCorrectPackagesAsync()
-        {
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
-
-            var packageName = "TestPackage";
-            var packageVersion = "1.5.0";
-            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-
-            var nugetConsole = GetConsole(testContext.Project);
-
-            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-
-            nugetConsole.Clear();
-            nugetConsole.Execute($"Get-Package -ProjectName {testContext.Project.Name}");
-
-            string pmcText = nugetConsole.GetText();
-            var packages = ParseGetPackageTableOutput(pmcText);
-            packages.Select(p => p.Id).Should().Contain(packageName, because: pmcText);
-            packages.Select(p => p.Versions).Should().Contain(v => v.Contains(packageVersion), because: pmcText);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task GetPackageFromPMCForProject_ReturnsEmptyForOtherProjectAsync()
-        {
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
-
-            var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, CommonUtility.DefaultTargetFramework, "TestProject2");
-            testContext.SolutionService.SaveAll();
-
-            var packageName = "TestPackage";
-            var packageVersion = "1.0.0";
-            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-
-            var nugetConsole = GetConsole(testContext.Project);
-
-            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-
-            // Get-Package for the other project which has no packages should return empty
-            nugetConsole.Clear();
-            nugetConsole.Execute($"Get-Package -ProjectName {project2.Name}");
-
-            string pmcText = nugetConsole.GetText();
-            var packages = ParseGetPackageTableOutput(pmcText);
-            packages.Should().BeEmpty(because: pmcText);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task GetPackageFromPMCWithFilter_ReturnsMatchingPackageAsync()
-        {
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
-
-            var packageName = "TestFilterPackage";
-            var packageVersion = "1.0.0";
-            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-
-            var nugetConsole = GetConsole(testContext.Project);
-
-            nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-
-            nugetConsole.Clear();
-            nugetConsole.Execute("Get-Package 'TestFilter'");
-
-            string pmcText = nugetConsole.GetText();
-            var packages = ParseGetPackageTableOutput(pmcText);
-            packages.Should().ContainSingle(because: pmcText)
-                .Which.Id.Should().Be(packageName, because: pmcText);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromPMCWithWhatIf_DoesNotUpdateAsync()
         {
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger);
@@ -1358,38 +1388,73 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project2, packageName, packageVersion, Logger);
         }
 
-        [TestMethod]
+        [DataTestMethod]
+        [DataRow("HighestPatch", "", "1.0.1")]
+        [DataRow("HighestMinor", "", "1.2.1")]
+        [DataRow("Highest", "", "2.0.1")]
+        [DataRow("Lowest", "", "1.0.0")]
+        [DataRow("", "", "1.0.0")]
+        [DataRow("", "HighestPatch", "1.0.1")]
         [Timeout(DefaultTimeout)]
-        public async Task GetPackageFromPMCWithListAvailable_ReturnsAvailablePackagesAsync()
+        public async Task InstallPackageFromPMCWithDependencyVersion_SelectsExpectedDependencyAsync(
+            string dependencyVersion,
+            string configuredDependencyVersion,
+            string expectedDependencyVersion)
         {
-            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger);
-
-            var packages = new[]
+            using var simpleTestPathContext = new SimpleTestPathContext();
+            simpleTestPathContext.Settings.SetPackageFormatToPackagesConfig();
+            if (!string.IsNullOrEmpty(configuredDependencyVersion))
             {
-                ("TestPackageA", "1.0.0"),
-                ("TestPackageB", "1.0.0"),
-                ("TestPackageC", "1.0.0"),
-                ("TestPackageD", "1.0.0"),
-                ("TestPackageE", "1.0.0"),
-            };
-
-            foreach (var (name, version) in packages)
-            {
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, name, version);
+                simpleTestPathContext.Settings.SetDependencyVersion(configuredDependencyVersion);
             }
+
+            using var testContext = new ApexTestContext(
+                VisualStudio,
+                ProjectTemplate.ClassLibrary,
+                Logger,
+                simpleTestPathContext: simpleTestPathContext);
+
+            var packageName = "DependencyVersion.A";
+            var packageVersion = "1.0.0";
+            var dependencyName = "DependencyVersion.B";
+            var package = CommonUtility.CreatePackage(packageName, packageVersion);
+            package.Dependencies.Add(CommonUtility.CreatePackage(dependencyName, "[1.0.0,)"));
+
+            await SimpleTestPackageUtility.CreatePackagesWithoutDependenciesAsync(testContext.PackageSource, package);
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                testContext.PackageSource,
+                CommonUtility.CreatePackage(dependencyName, "1.0.0"),
+                CommonUtility.CreatePackage(dependencyName, "1.0.1"),
+                CommonUtility.CreatePackage(dependencyName, "1.2.0"),
+                CommonUtility.CreatePackage(dependencyName, "1.2.1"),
+                CommonUtility.CreatePackage(dependencyName, "2.0.0"),
+                CommonUtility.CreatePackage(dependencyName, "2.0.1"));
 
             var nugetConsole = GetConsole(testContext.Project);
-            nugetConsole.Clear();
+            var escapedSource = testContext.PackageSource.Replace("'", "''");
+            var dependencyVersionArgument = string.IsNullOrEmpty(dependencyVersion)
+                ? string.Empty
+                : $" -DependencyVersion {dependencyVersion}";
 
-            nugetConsole.Execute($"Get-Package -ListAvailable -Source {testContext.PackageSource}");
+            nugetConsole.Execute(
+                $"Install-Package {packageName} -Source '{escapedSource}'{dependencyVersionArgument}");
 
-            string pmcText = nugetConsole.GetText();
-            var availablePackages = ParseGetPackageTableOutput(pmcText);
-            availablePackages.Should().HaveCount(packages.Length, because: pmcText);
-            foreach (var (name, _) in packages)
-            {
-                availablePackages.Select(p => p.Id).Should().Contain(name, because: pmcText);
-            }
+            var consoleText = nugetConsole.GetText();
+            consoleText.Should().NotContain("FullyQualifiedErrorId", because: consoleText);
+            CommonUtility.AssertPackageInPackagesConfig(
+                VisualStudio,
+                testContext.Project,
+                packageName,
+                packageVersion,
+                Logger);
+
+            testContext.NuGetApexTestService
+                .IsPackageInstalledIncludingTransitive(
+                    testContext.Project.UniqueName,
+                    dependencyName,
+                    expectedDependencyVersion)
+                .Should()
+                .BeTrue(because: consoleText);
         }
 
         [TestMethod]
@@ -1405,6 +1470,66 @@ namespace NuGet.Tests.Apex
 
             string pmcText = nugetConsole.GetText();
             pmcText.Should().Contain(testContext.Project.Name, because: pmcText);
+            pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void GetProjectFromPMCWithAmbiguousProjectNames_UsesStartupProjectAfterSolutionReload()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
+
+            var nugetTestService = GetNuGetTestService();
+            var nestedProjectUniqueName = nugetTestService.CreateProjectsWithAmbiguousNames("foo", "A");
+            solutionService.SaveAll();
+
+            var nestedProject = solutionService.GetProjectExtension<ProjectTestExtension>(nestedProjectUniqueName);
+            var nugetConsole = GetConsole(nestedProject);
+            nugetConsole.Clear();
+            nugetConsole.Execute("(Get-Project).UniqueName");
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(nestedProjectUniqueName),
+                $"Expected '{nestedProjectUniqueName}' to be the default project. Actual output: {nugetConsole.GetText()}");
+
+            nugetTestService.SetStartupProject(nestedProjectUniqueName);
+            var solutionPath = solutionService.FilePath!;
+            solutionService.Close();
+            solutionService.WaitForFullyLoadedOnOpen = true;
+            solutionService.Open(solutionPath);
+            solutionService.Verify.HasProject();
+
+            var reloadedNestedProject = solutionService.GetProjectExtension<ProjectTestExtension>(nestedProjectUniqueName);
+            nugetConsole = GetConsole(reloadedNestedProject);
+            nugetConsole.Clear();
+            nugetConsole.Execute("(Get-Project).UniqueName");
+
+            Assert.IsTrue(
+                nugetConsole.IsMessageFoundInPMC(nestedProjectUniqueName),
+                $"Expected '{nestedProjectUniqueName}' to be the default project after reopening the solution. " +
+                $"Actual output: {nugetConsole.GetText()}");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void Console_WhenBackspacingSupplementaryCharacter_PreservesRemainingText()
+        {
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.NetCoreConsoleApp, Logger);
+
+            var nugetConsole = GetConsole(testContext.Project);
+            nugetConsole.Clear();
+
+            string supplementaryCharacter = char.ConvertFromUtf32(0x20000);
+            string input = "A" + supplementaryCharacter;
+
+            nugetConsole.ExecuteWithInputAndBackspace(
+                "$value = Read-Host; Write-Host \"Result=[$value]\"",
+                input);
+
+            string pmcText = nugetConsole.GetText();
+            pmcText.Should().Contain("Result=[A]", because: pmcText);
+            pmcText.Should().NotContain(supplementaryCharacter[0].ToString(), because: pmcText);
             pmcText.Should().NotContain("FullyQualifiedErrorId", because: pmcText);
         }
 
@@ -1428,126 +1553,5 @@ namespace NuGet.Tests.Apex
             yield return new object[] { ProjectTemplate.MauiClassLibrary };
         }
 
-        /// <summary>
-        /// Holds a single row from the Get-Package PMC table output.
-        /// </summary>
-        private sealed class PmcPackageEntry
-        {
-            public string Id { get; }
-            public string Versions { get; }
-            public string ProjectName { get; }
-
-            public PmcPackageEntry(string id, string versions, string projectName)
-            {
-                Id = id;
-                Versions = versions;
-                ProjectName = projectName;
-            }
-        }
-
-        /// <summary>
-        /// Parses the tabular output of a Get-Package PMC command into a list of package entries.
-        /// The expected output format is a fixed-width table with a separator row of dashes:
-        /// <code>
-        /// Id                 Versions    ProjectName
-        /// --                 --------    -----------
-        /// TestPackageA       {1.0.0}     MyProject
-        /// TestPackageB       {2.0.0}     MyProject
-        /// </code>
-        /// Parsing begins after the separator row and stops at the first empty line.
-        /// Column boundaries are inferred from the positions of the dash groups in the separator row.
-        /// </summary>
-        private static List<PmcPackageEntry> ParseGetPackageTableOutput(string pmcText)
-        {
-            var entries = new List<PmcPackageEntry>();
-            bool pastSeparator = false;
-            int[]? columnStarts = null;
-
-            foreach (string rawLine in pmcText.Split('\n'))
-            {
-                string line = rawLine.TrimEnd('\r');
-
-                if (!pastSeparator)
-                {
-                    // The separator row contains only dashes and spaces (e.g. "--  --------  -----------")
-                    string stripped = line.Replace("-", "").Replace(" ", "");
-                    if (stripped.Length == 0 && line.Contains("--"))
-                    {
-                        columnStarts = FindColumnStarts(line);
-                        pastSeparator = true;
-                    }
-                    continue;
-                }
-
-                if (line.Trim().Length == 0)
-                {
-                    break; // End of table
-                }
-
-                if (columnStarts != null)
-                {
-                    string id = ExtractColumn(line, columnStarts, 0).Trim();
-                    string versions = columnStarts.Length >= 2 ? ExtractColumn(line, columnStarts, 1).Trim() : string.Empty;
-                    string projectName = columnStarts.Length >= 3 ? ExtractColumn(line, columnStarts, 2).Trim() : string.Empty;
-
-                    if (id.Length > 0)
-                    {
-                        entries.Add(new PmcPackageEntry(id, versions, projectName));
-                    }
-                }
-            }
-
-            return entries;
-        }
-
-        /// <summary>
-        /// Returns the start index of each group of dashes in the separator row,
-        /// giving the column start positions for the fixed-width table.
-        /// </summary>
-        private static int[] FindColumnStarts(string separatorLine)
-        {
-            var starts = new List<int>();
-            bool inDashes = false;
-
-            for (int i = 0; i < separatorLine.Length; i++)
-            {
-                if (separatorLine[i] == '-' && !inDashes)
-                {
-                    starts.Add(i);
-                    inDashes = true;
-                }
-                else if (separatorLine[i] != '-')
-                {
-                    inDashes = false;
-                }
-            }
-
-            return starts.ToArray();
-        }
-
-        /// <summary>
-        /// Extracts the text for a specific column from a data row, using the column-start
-        /// positions obtained from the separator row.
-        /// </summary>
-        private static string ExtractColumn(string line, int[] columnStarts, int columnIndex)
-        {
-            int start = columnStarts[columnIndex];
-            if (start >= line.Length)
-            {
-                return string.Empty;
-            }
-
-            if (columnIndex + 1 < columnStarts.Length)
-            {
-                int end = columnStarts[columnIndex + 1];
-                if (end > line.Length)
-                {
-                    end = line.Length;
-                }
-                return line.Substring(start, end - start);
-            }
-
-            return line.Substring(start);
-        }
     }
 }

@@ -259,29 +259,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Consider migrating this project&apos;s NuGet package management format from &apos;packages.config&apos; to &apos;PackageReference&apos;..
-        /// </summary>
-        public static string AskForPRMigrator {
-            get {
-                return ResourceManager.GetString("AskForPRMigrator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Some NuGet packages are missing from this solution. Click to restore from your online package sources..
         /// </summary>
         public static string AskForRestoreMessage {
             get {
                 return ResourceManager.GetString("AskForRestoreMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A new version of NuGet Package Manager is available..
-        /// </summary>
-        public static string AskForUpdateMessage {
-            get {
-                return ResourceManager.GetString("AskForUpdateMessage", resourceCulture);
             }
         }
         
@@ -889,20 +871,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignore for now.
-        /// </summary>
-        public static string IgnoreUpgrade {
-            get {
-                return ResourceManager.GetString("IgnoreUpgrade", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Help icon.
         /// </summary>
         public static string ImageCaption_HelpIcon {
             get {
                 return ResourceManager.GetString("ImageCaption_HelpIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fix with GitHub Copilot.
+        /// </summary>
+        public static string InfoBar_FixVulnerabilitiesWithCopilot {
+            get {
+                return ResourceManager.GetString("InfoBar_FixVulnerabilitiesWithCopilot", resourceCulture);
             }
         }
         
@@ -1101,6 +1083,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Installed_VulnerableWarning {
             get {
                 return ResourceManager.GetString("Label_Installed_VulnerableWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have 1 vulnerable package version installed..
+        /// </summary>
+        public static string Label_Installed_VulnerableWarning_Single {
+            get {
+                return ResourceManager.GetString("Label_Installed_VulnerableWarning_Single", resourceCulture);
             }
         }
         
@@ -1420,15 +1411,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Don&apos;t show again.
-        /// </summary>
-        public static string Link_DoNotShowAgain {
-            get {
-                return ResourceManager.GetString("Link_DoNotShowAgain", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Learn about Install Options.
         /// </summary>
         public static string Link_LearnAboutInstallOptions {
@@ -1443,24 +1425,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Link_LearnAboutUninstallOptions {
             get {
                 return ResourceManager.GetString("Link_LearnAboutUninstallOptions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Why should I migrate?.
-        /// </summary>
-        public static string Link_MigratorHelp {
-            get {
-                return ResourceManager.GetString("Link_MigratorHelp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Migrate Now.
-        /// </summary>
-        public static string Link_UpgradeOption {
-            get {
-                return ResourceManager.GetString("Link_UpgradeOption", resourceCulture);
             }
         }
         
@@ -1672,15 +1636,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Details.
-        /// </summary>
-        public static string ShowDetails {
-            get {
-                return ResourceManager.GetString("ShowDetails", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to NuGet storage clear failed at {0}. 
         ///Error: {1}.
         /// </summary>
@@ -1727,7 +1682,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Please provide a unique name..
+        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Provide a unique name..
         /// </summary>
         public static string ShowWarning_UniqueName {
             get {
@@ -1736,7 +1691,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Please provide a unique source..
+        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Provide a unique source..
         /// </summary>
         public static string ShowWarning_UniqueSource {
             get {
@@ -1934,7 +1889,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There is no README available for the selected package version. For more information please visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)..
+        ///   Looks up a localized string similar to There is no README available for the selected package version. For more information visit [aka.ms/nuget/noreadme](https://aka.ms/nuget/noreadme)..
         /// </summary>
         public static string Text_NoReadme {
             get {
@@ -2348,7 +2303,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please follow simple instructions from {0} to go back to previous state..
+        ///   Looks up a localized string similar to Follow the instructions at {0} to return to the previous state..
         /// </summary>
         public static string Upgrade_RevertSteps {
             get {
@@ -2456,7 +2411,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Once started, this action cannot be cancelled..
+        ///   Looks up a localized string similar to Once started, this action cannot be cancelled. Select OK to continue..
         /// </summary>
         public static string VSOptions_Text_ClearLocalsPromptMessage {
             get {

@@ -23,6 +23,8 @@ namespace Dotnet.Integration.Test
 {
     public class DotnetIntegrationTestFixture : IDisposable
     {
+        private const string PreferredSdkMajorVersionMetadataKey = "PreferredSdkMajorVersion";
+
         /// <summary>
         /// A value indicating if the test is running on a hosted agent with diagnostics enabled.
         /// </summary>
@@ -43,8 +45,8 @@ namespace Dotnet.Integration.Test
 
         public DotnetIntegrationTestFixture()
         {
-            string testAssemblyPath = Path.GetFullPath(Assembly.GetExecutingAssembly().Location);
-            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(testAssemblyPath);
+            int preferredMajorVersion = GetPreferredSdkMajorVersion();
+            _cliDirectory = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(preferredMajorVersion);
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
@@ -66,6 +68,23 @@ namespace Dotnet.Integration.Test
 
             // This is for pre-release packages.
             AddPackageSource("dotnet", Constants.DotNetPackageSource.AbsoluteUri);
+        }
+
+        private static int GetPreferredSdkMajorVersion()
+        {
+            string preferredSdkMajorVersion = Assembly.GetExecutingAssembly()
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Where(attribute => StringComparer.Ordinal.Equals(attribute.Key, PreferredSdkMajorVersionMetadataKey))
+                .Select(attribute => attribute.Value)
+                .SingleOrDefault();
+
+            if (!int.TryParse(preferredSdkMajorVersion, out int preferredMajorVersion))
+            {
+                throw new InvalidOperationException(
+                    $"Could not determine {PreferredSdkMajorVersionMetadataKey} from assembly metadata.");
+            }
+
+            return preferredMajorVersion;
         }
 
         private void AddPackageSource(string name, string source)
@@ -175,7 +194,6 @@ namespace Dotnet.Integration.Test
             Dictionary<string, string> finalEnvironmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["MSBuildSDKsPath"] = MsBuildSdksPath,
-                ["DOTNET_MULTILEVEL_LOOKUP"] = "0",
                 ["DOTNET_ROOT"] = _cliDirectory,
                 // We need to force-override this because otherwise the MSBuildExtensionsPath
                 // set from the _outer_ dotnet cli call (which could be any version) will override
@@ -183,7 +201,8 @@ namespace Dotnet.Integration.Test
                 // We need to ensure that this points to the correct SDK directory because this value
                 // is used to locate many Tasks - especially those located by relative path or name.
                 ["MSBuildExtensionsPath"] = SdkDirectory.FullName,
-                ["PATH"] = $"{_cliDirectory}{Path.PathSeparator}{Environment.GetEnvironmentVariable("PATH")}"
+                ["PATH"] = $"{_cliDirectory}{Path.PathSeparator}{Environment.GetEnvironmentVariable("PATH")}",
+                ["DOTNET_CLI_ENABLEAOT"] = "false"
             };
 
             if (enableDiagnostics)

@@ -43,8 +43,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PluginWarning_PluginIsBeingDeprecated">
-        <source>The credential plugin model used by '{0}' is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
-        <target state="translated">Il modello di plug-in delle credenziali usato da '{0}' è deprecato. Per un'alternativa, contattare il provider del plug-in. Per altre informazioni sul modello di plug-in consigliato, vedere '{1}'.</target>
+        <source>The credential plugin model used by '{0}' is deprecated. Contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
+        <target state="translated">Il modello di plug-in delle credenziali usato da ''{0}'' è deprecato. Per un'alternativa, contattare il provider del plug-in. Per altre informazioni sul modello di plug-in consigliato, vedere ''{1}''.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProviderException_InvalidCredentialResponse">
@@ -56,6 +56,11 @@
         <source>Credential provider gave an invalid response.</source>
         <target state="translated">Il provider di credenziali ha restituito una risposta non valida.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SecurePluginException_ConnectionClosed">
+        <source>The connection to credential plugin '{0}' was closed before it answered the credential request. The plugin process may have exited or been shut down while the request was in flight.</source>
+        <target state="translated">La connessione al plug-in delle credenziali ''{0}'' è stata chiusa prima che rispondesse alla richiesta di credenziali. Il processo del plug-in potrebbe essere stato chiuso o arrestato mentre la richiesta era in esecuzione.</target>
+        <note>{0} - plugin path</note>
       </trans-unit>
       <trans-unit id="SecurePluginNotice_UsingPluginAsProvider">
         <source>Using {0} as a credential provider plugin.</source>

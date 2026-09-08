@@ -43,8 +43,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PluginWarning_PluginIsBeingDeprecated">
-        <source>The credential plugin model used by '{0}' is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
-        <target state="translated">Le modèle de plug-in d'informations d'identification utilisé par '{0}' est déprécié. Contactez le fournisseur du plug-in pour trouver une solution. Vous trouverez plus d'informations sur le modèle de plug-in recommandé sur '{1}'.</target>
+        <source>The credential plugin model used by '{0}' is deprecated. Contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
+        <target state="translated">Le modèle de plug-in d’informations d’identification utilisé par « {0} » est déprécié. Contactez le fournisseur du plug-in pour trouver une solution. Vous trouverez plus d’informations sur le modèle de plug-in recommandé sur « {1} ».</target>
         <note />
       </trans-unit>
       <trans-unit id="ProviderException_InvalidCredentialResponse">
@@ -56,6 +56,11 @@
         <source>Credential provider gave an invalid response.</source>
         <target state="translated">Le fournisseur d'informations d'identification a donné une réponse non valide.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SecurePluginException_ConnectionClosed">
+        <source>The connection to credential plugin '{0}' was closed before it answered the credential request. The plugin process may have exited or been shut down while the request was in flight.</source>
+        <target state="translated">La connexion au plug-in d’informations d’identification « {0} » a été fermée avant qu’il ne réponde à la demande d’informations d’identification. Le processus du plug-in a peut-être quitté ou a été arrêté pendant que la demande était en cours.</target>
+        <note>{0} - plugin path</note>
       </trans-unit>
       <trans-unit id="SecurePluginNotice_UsingPluginAsProvider">
         <source>Using {0} as a credential provider plugin.</source>

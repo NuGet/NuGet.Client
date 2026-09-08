@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
+#if NET5_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -31,7 +32,7 @@ namespace NuGet.Protocol
         private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
-        private readonly IEnvironmentVariableReader _environmentVariableReader;
+        private readonly IEnvironmentVariableReader? _environmentVariableReader;
 
         /// <summary>
         /// Maximum amount of time to store index.json
@@ -40,7 +41,7 @@ namespace NuGet.Protocol
 
         public ServiceIndexResourceV3Provider() : this(environmentVariableReader: null) { }
 
-        internal ServiceIndexResourceV3Provider(IEnvironmentVariableReader environmentVariableReader)
+        internal ServiceIndexResourceV3Provider(IEnvironmentVariableReader? environmentVariableReader)
             : base(typeof(ServiceIndexResourceV3),
                   nameof(ServiceIndexResourceV3Provider),
                   NuGetResourceProviderPositions.Last)
@@ -51,10 +52,10 @@ namespace NuGet.Protocol
             _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader ?? EnvironmentVariableWrapper.Instance);
         }
 
-        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource?>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            ServiceIndexResourceV3 index = null;
-            ServiceIndexCacheInfo cacheInfo = null;
+            ServiceIndexResourceV3? index = null;
+            ServiceIndexCacheInfo? cacheInfo = null;
             var url = source.PackageSource.Source;
 
             // the file type can easily rule out if we need to request the url
@@ -102,7 +103,7 @@ namespace NuGet.Protocol
                 index = cacheInfo.Index;
             }
 
-            return new Tuple<bool, INuGetResource>(index != null, index);
+            return new Tuple<bool, INuGetResource?>(index != null, index);
         }
 
         /// <summary>
@@ -116,14 +117,15 @@ namespace NuGet.Protocol
         /// <exception cref="OperationCanceledException">Logged to any provided <paramref name="log"/> as LogMinimal prior to throwing.</exception>
         /// <exception cref="FatalProtocolException">Encapsulates all other exceptions.</exception>
         /// <returns></returns>
-        private async Task<ServiceIndexResourceV3> GetServiceIndexResourceV3(
+        private async Task<ServiceIndexResourceV3?> GetServiceIndexResourceV3(
             SourceRepository source,
             DateTime utcNow,
             ILogger log,
             CancellationToken token)
         {
             var url = source.PackageSource.Source;
-            var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+            var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token)
+                ?? throw new InvalidOperationException($"The source '{source.PackageSource.Source}' does not provide {nameof(HttpSourceResource)}.");
             var client = httpSourceResource.HttpSource;
 
             int maxRetries = _enhancedHttpRetryHelper.RetryCountOrDefault;
@@ -142,14 +144,14 @@ namespace NuGet.Protocol
                                 "service_index",
                                 cacheContext)
                             {
-                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream),
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream, _environmentVariableReader),
                                 MaxTries = 1,
                                 IsRetry = retry > 1,
                                 IsLastAttempt = retry == maxRetries
                             },
                             async httpSourceResult =>
                             {
-                                var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream, utcNow, source.PackageSource, token);
+                                var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream!, utcNow, source.PackageSource, token);
 
                                 return result;
                             },
@@ -195,20 +197,25 @@ namespace NuGet.Protocol
 
         private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return await ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token);
+            }
+            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
                 return await ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token);
             }
             else
             {
+#pragma warning disable IL2026, IL3050 // The source analyzer cannot see the app's trim-time feature switch; Native AOT removes this branch when the switch is true.
                 return await ConsumeServiceIndexStreamNsjAsync(stream, utcNow, source, token);
+#pragma warning restore IL2026, IL3050
             }
         }
 
         private static async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamStjAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
         {
-            ServiceIndexModel index;
+            ServiceIndexModel? index;
             try
             {
                 index = await JsonSerializer.DeserializeAsync(stream, JsonContext.Default.ServiceIndexModel, token);
@@ -230,7 +237,7 @@ namespace NuGet.Protocol
             }
 
             // Use SemVer instead of NuGetVersion; the service index should always be in strict SemVer format.
-            if (!SemanticVersion.TryParse(index.Version, out SemanticVersion version) || version.Major != 3)
+            if (!SemanticVersion.TryParse(index.Version, out SemanticVersion? version) || version.Major != 3)
             {
                 throw new InvalidDataException(string.Format(
                     CultureInfo.CurrentCulture,
@@ -241,19 +248,23 @@ namespace NuGet.Protocol
             return new ServiceIndexResourceV3(index, utcNow, source);
         }
 
+#if NET5_0_OR_GREATER
+        [RequiresUnreferencedCode("Uses Newtonsoft.Json reflection-based deserialization.")]
+        [RequiresDynamicCode("Uses Newtonsoft.Json reflection-based deserialization.")]
+#endif
         private static async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamNsjAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
         {
             // Parse the JSON
-            JObject json = await stream.AsJObjectAsync(token);
+            JObject json = (await stream.AsJObjectAsync(token))!;
 
             // Use SemVer instead of NuGetVersion, the service index should always be
             // in strict SemVer format
-            JToken versionToken;
+            JToken? versionToken;
             if (json.TryGetValue("version", out versionToken) &&
                 versionToken.Type == JTokenType.String)
             {
-                SemanticVersion version;
-                if (SemanticVersion.TryParse((string)versionToken, out version) &&
+                SemanticVersion? version;
+                if (SemanticVersion.TryParse((string)versionToken!, out version) &&
                     version.Major == 3)
                 {
                     return new ServiceIndexResourceV3(json, utcNow, source);
@@ -263,7 +274,7 @@ namespace NuGet.Protocol
                     string errorMessage = string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Protocol_UnsupportedVersion,
-                        (string)versionToken);
+                        (string?)versionToken);
                     throw new InvalidDataException(errorMessage);
                 }
             }
@@ -275,7 +286,7 @@ namespace NuGet.Protocol
 
         protected class ServiceIndexCacheInfo
         {
-            public ServiceIndexResourceV3 Index { get; set; }
+            public ServiceIndexResourceV3? Index { get; set; }
 
             public DateTime CachedTime { get; set; }
         }

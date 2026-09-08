@@ -43,8 +43,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PluginWarning_PluginIsBeingDeprecated">
-        <source>The credential plugin model used by '{0}' is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
-        <target state="translated">已淘汰 '{0}' 使用的認證外掛程式模型。請連絡外掛程式的提供者以取得替代模型。如需建議外掛程式模型的詳細資訊，請參閱 '{1}'。</target>
+        <source>The credential plugin model used by '{0}' is deprecated. Contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
+        <target state="translated">已淘汰 '{0}' 使用的認證外掛程式模型。連絡外掛程式的提供者以取得替代模型。如需建議外掛程式模型的詳細資訊，請參閱 '{1}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProviderException_InvalidCredentialResponse">
@@ -56,6 +56,11 @@
         <source>Credential provider gave an invalid response.</source>
         <target state="translated">認證提供者給予無效的回應。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SecurePluginException_ConnectionClosed">
+        <source>The connection to credential plugin '{0}' was closed before it answered the credential request. The plugin process may have exited or been shut down while the request was in flight.</source>
+        <target state="translated">在認證外掛程式 '{0}' 回應認證要求之前，其連線已關閉。要求進行中時，外掛程式處理可能已結束或已關閉。</target>
+        <note>{0} - plugin path</note>
       </trans-unit>
       <trans-unit id="SecurePluginNotice_UsingPluginAsProvider">
         <source>Using {0} as a credential provider plugin.</source>

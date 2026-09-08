@@ -43,7 +43,7 @@
         <note />
       </trans-unit>
       <trans-unit id="PluginWarning_PluginIsBeingDeprecated">
-        <source>The credential plugin model used by '{0}' is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
+        <source>The credential plugin model used by '{0}' is deprecated. Contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
         <target state="translated">'{0}' で使用されている資格情報プラグイン モデルは非推奨です。代替手段については、プラグインのプロバイダーにお問い合わせください。推奨されるプラグイン モデルの詳細については、'{1}' を参照してください。</target>
         <note />
       </trans-unit>
@@ -56,6 +56,11 @@
         <source>Credential provider gave an invalid response.</source>
         <target state="translated">資格情報プロバイダーの応答が正しくありません。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SecurePluginException_ConnectionClosed">
+        <source>The connection to credential plugin '{0}' was closed before it answered the credential request. The plugin process may have exited or been shut down while the request was in flight.</source>
+        <target state="translated">資格情報プラグイン '{0}' への接続は、資格情報の要求に応答する前に閉じられました。プラグイン プロセスは、この要求の処理中に終了したか、シャットダウンされた可能性があります。</target>
+        <note>{0} - plugin path</note>
       </trans-unit>
       <trans-unit id="SecurePluginNotice_UsingPluginAsProvider">
         <source>Using {0} as a credential provider plugin.</source>

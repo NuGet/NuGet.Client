@@ -83,8 +83,8 @@ Chybějící balíčky: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFailedForProject">
-        <source>NuGet Package restore failed for project {0}: {1}. Please see Error List window for detailed warnings and errors.</source>
-        <target state="translated">Pro projekt {0} se nepovedlo obnovit balíček NuGet: {1}. Podrobná upozornění a chyby najdete v okně Seznam chyb.</target>
+        <source>NuGet Package restore failed for project {0}: {1}. See the Error List window for detailed warnings and errors.</source>
+        <target state="translated">Pro projekt {0} se nepovedlo obnovit balíček NuGet: {1}. Další podrobnosti o upozorněních a chybách najdete v okně Seznam chyb.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFinished">
@@ -98,8 +98,8 @@ Chybějící balíčky: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFinishedWithError">
-        <source>NuGet package restore failed. Please see Error List window for detailed warnings and errors.</source>
-        <target state="translated">Nepovedlo se obnovit balíček NuGet. Podrobná upozornění a chyby najdete v okně Seznam chyb.</target>
+        <source>NuGet package restore failed. See the Error List window for detailed warnings and errors.</source>
+        <target state="translated">Nepovedlo se obnovit balíček NuGet. Další podrobnosti o upozorněních a chybách najdete v okně Seznam chyb.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreOptOutMessage">
@@ -109,14 +109,19 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
 Když nechcete, aby aplikace NuGet obnovovala balíčky během vytváření sestavení, otevřete dialogové okno Možnosti aplikace Visual Studio, klikněte na uzel Správce balíčků NuGet a zrušte zaškrtnutí políčka Umožnit správci balíčků NuGet stáhnout chybějící balíčky během vytváření sestavení.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Prompt_ResolveSupplyChainSecurityNUCode">
+        <source>Resolve {0} by reviewing my NuGet supply chain security configuration.</source>
+        <target state="translated">Vyřešte {0} kontrolou konfigurace zabezpečení dodavatelského řetězce NuGet.</target>
+        <note>Do not translate NuGet</note>
+      </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
         <target state="translated">Očekávalo se, že vlastnost {0} bude mít jednu hodnotu ve všech cílových architekturách, ale místo toho bude mít následující hodnoty: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RelativeGlobalPackagesFolder">
-        <source>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Please save your solution or configure a 'globalPackagesFolder' which is a full path.</source>
-        <target state="translated">globalPackagesFolder ze souboru nuget.config nebo proměnná prostředí je {0}, to je relativní cesta a řešení se neuloží. Uložte si prosím řešení nebo nakonfigurujte globalPackagesFolder, což je úplná cesta.</target>
+        <source>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Save your solution or configure a 'globalPackagesFolder' which is a full path.</source>
+        <target state="translated">globalPackagesFolder ze souboru nuget.config nebo proměnná prostředí je {0}, to je relativní cesta a řešení se neuloží. Uložte si řešení nebo nakonfigurujte globalPackagesFolder, což je úplná cesta.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoredPackage">
@@ -130,9 +135,19 @@ Když nechcete, aby aplikace NuGet obnovovala balíčky během vytváření sest
         <note />
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
-        <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
+        <source>Solution is not saved. Save your solution before managing NuGet packages.</source>
         <target state="translated">Řešení není uložené. Než začnete spravovat balíčky NuGet, řešení uložte.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Title_AskCopilotForFix">
+        <source>Ask Copilot for a fix</source>
+        <target state="translated">Požádat Copilota o opravu</target>
+        <note>Do not translate Copilot</note>
+      </trans-unit>
+      <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
+        <source>Ask Copilot to fix NuGet package vulnerabilities</source>
+        <target state="translated">Požádejte Copilota o opravu ohrožení zabezpečení balíčku NuGet.</target>
+        <note>Do not translate Copilot or NuGet</note>
       </trans-unit>
     </body>
   </file>
