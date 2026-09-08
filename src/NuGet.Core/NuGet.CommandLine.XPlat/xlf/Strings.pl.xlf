@@ -616,6 +616,11 @@ Menedżer NuGet wymaga źródeł HTTPS. Aby użyć źródeł HTTP, musisz wyraź
         <target state="translated">Brak przestarzałych pakietów dla tej platformy.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_NoPackageReferencesForProject">
+        <source>Project '{0}' has no package references.</source>
+        <target state="new">Project '{0}' has no package references.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">Nie znaleziono żadnych pakietów dla tej platformy.</target>

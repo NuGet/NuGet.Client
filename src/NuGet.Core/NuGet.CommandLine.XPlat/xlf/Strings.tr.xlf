@@ -616,6 +616,11 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
         <target state="translated">Bu çerçeve için kullanım dışı paket yok.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_NoPackageReferencesForProject">
+        <source>Project '{0}' has no package references.</source>
+        <target state="new">Project '{0}' has no package references.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">Bu çerçeve için paket bulunamadı.</target>

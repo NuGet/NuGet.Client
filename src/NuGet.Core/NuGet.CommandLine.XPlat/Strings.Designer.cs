@@ -1133,6 +1133,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; has no package references..
+        /// </summary>
+        internal static string ListPkg_NoPackageReferencesForProject {
+            get {
+                return ResourceManager.GetString("ListPkg_NoPackageReferencesForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No packages were found for this framework..
         /// </summary>
         internal static string ListPkg_NoPackagesForFramework {

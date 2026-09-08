@@ -616,6 +616,11 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <target state="translated">이 프레임워크에 대해 사용되지 않는 패키지가 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_NoPackageReferencesForProject">
+        <source>Project '{0}' has no package references.</source>
+        <target state="new">Project '{0}' has no package references.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">이 프레임워크에 대한 패키지를 찾을 수 없습니다.</target>

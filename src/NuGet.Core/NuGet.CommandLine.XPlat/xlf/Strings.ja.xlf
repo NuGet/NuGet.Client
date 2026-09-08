@@ -616,6 +616,11 @@ NuGet には HTTPS ソースが必要です。HTTP ソースを使用するに�
         <target state="translated">このフレームワークの非推奨パッケージはありません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_NoPackageReferencesForProject">
+        <source>Project '{0}' has no package references.</source>
+        <target state="new">Project '{0}' has no package references.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">このフレームワークのパッケージが見つかりませんでした。</target>

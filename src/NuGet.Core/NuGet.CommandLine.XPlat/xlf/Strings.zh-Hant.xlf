@@ -616,6 +616,11 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <target state="translated">找不到任何此架構的已淘汰套件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_NoPackageReferencesForProject">
+        <source>Project '{0}' has no package references.</source>
+        <target state="new">Project '{0}' has no package references.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">找不到任何此 Framework 的套件。</target>

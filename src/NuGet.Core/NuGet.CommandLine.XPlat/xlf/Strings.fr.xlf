@@ -616,6 +616,11 @@ NuGet nécessite des sources HTTPS. Pour utiliser des sources HTTP, vous devez d
         <target state="translated">Aucun package déprécié pour ce framework.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_NoPackageReferencesForProject">
+        <source>Project '{0}' has no package references.</source>
+        <target state="new">Project '{0}' has no package references.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">Packages introuvables pour ce framework.</target>

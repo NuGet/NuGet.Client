@@ -160,6 +160,9 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else if (listPackageArgs.ReportType == ReportType.Sponsor)
                     {
+                        projectModel.HasPackages = frameworks.Any(
+                            framework => framework.TopLevelPackages.Any() || framework.TransitivePackages.Any());
+
                         (
                             Dictionary<string, List<PackageSponsorship>> sponsorships,
                             IReadOnlyList<PackageSource> sponsorshipQueriedSources,

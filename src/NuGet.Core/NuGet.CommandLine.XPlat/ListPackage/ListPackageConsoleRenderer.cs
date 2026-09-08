@@ -130,7 +130,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                             consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, project.ProjectName));
                             break;
                         case ReportType.Sponsor:
-                            consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoSponsorshipForProject, project.ProjectName));
+                            string message = project.HasPackages == false && !listPackageArgs.Frameworks.Any()
+                                ? Strings.ListPkg_NoPackageReferencesForProject
+                                : project.HasPackages == false
+                                    ? Strings.ListPkg_NoPackagesFoundForFrameworks
+                                    : Strings.ListPkg_NoSponsorshipForProject;
+                            consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, message, project.ProjectName));
                             break;
                     }
                 }

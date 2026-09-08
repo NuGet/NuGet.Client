@@ -20,6 +20,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         internal List<ListPackageReportFrameworkPackage> TargetFrameworkPackages { get; set; }
         internal string ProjectName { get; private set; }
         internal bool AutoReferenceFound { get; set; }
+        internal bool? HasPackages { get; set; }
         internal IReadOnlyList<PackageSource> SponsorshipQueriedSources { get; set; } = Array.Empty<PackageSource>();
         internal IReadOnlyList<PackageSource> SponsorshipUnsupportedSources { get; set; } = Array.Empty<PackageSource>();
 

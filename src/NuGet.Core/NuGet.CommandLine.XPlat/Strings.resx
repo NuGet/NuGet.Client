@@ -1212,4 +1212,7 @@ Do not translate "PackageVersion"</comment>
     <value>Package source '{0}' does not support sponsorship reporting.</value>
     <comment>0 - Package source</comment>
   </data>
+  <data name="ListPkg_NoPackageReferencesForProject" xml:space="preserve">
+    <value>Project '{0}' has no package references.</value>
+  </data>
 </root>

@@ -581,10 +581,12 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, false)]
+        [InlineData(true, true, true)]
+        [InlineData(true, true, false)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, false)]
         public async Task SponsorReport_UsesRegistrationProviderPipeline(
+            bool hasPackages,
             bool sourceSupportsSponsorship,
             bool sourceReturnsSponsorshipUrls)
         {
@@ -592,9 +594,21 @@ namespace NuGet.XPlat.FuncTest
             using var pathContext = new SimpleTestPathContext();
             await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
-                new SimpleTestPackageContext("task", "1.0.0"));
+                new SimpleTestPackageContext("task", "0.0.9"));
             SimpleTestProjectContext project = SetupTestProject(pathContext);
-            SetupAssetsAndProps(project);
+            if (!hasPackages)
+            {
+                project.CleanPackagesFromAllFrameworks();
+            }
+            project.Properties["ProjectAssetsFile"] = project.AssetsFileOutputPath;
+            project.Save();
+            var logger = new TestLogger(_testOutputHelper);
+            PackageSpec packageSpec = project.PackageSpec.WithSettingsBasedRestoreMetadata(
+                Settings.LoadDefaultSettings(pathContext.SolutionRoot));
+            var restoreCommand = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec));
+            RestoreResult restoreResult = await restoreCommand.ExecuteAsync(CancellationToken.None);
+            await restoreResult.CommitAsync(logger, CancellationToken.None);
+            Assert.True(restoreResult.Success, logger.ShowMessages());
 
             using var mockServer = new FileSystemBackedV3MockServer(
                 pathContext.PackageSource,
@@ -610,33 +624,31 @@ namespace NuGet.XPlat.FuncTest
             {
                 AllowInsecureConnections = true
             };
-            var logger = new TestLogger(_testOutputHelper);
+            using var consoleOut = new StringWriter();
+            var renderer = new ListPackageConsoleRenderer(consoleOut, TextWriter.Null);
             var runner = new ListPackageCommandRunner(
                 new MSBuildAPIUtility(logger, virtualProjectBuilder: null));
             ListPackageArgs args = CreateSponsorArgs(
                 project.ProjectPath,
                 new List<PackageSource> { source },
-                Mock.Of<IReportRenderer>(),
+                renderer,
                 logger);
 
             // Act
             (int exitCode, ListPackageReportModel report) = await runner.GetReportDataAsync(args);
+            renderer.Render(report);
 
             // Assert
             Assert.Equal(0, exitCode);
             ListPackageProjectModel projectReport = Assert.Single(report.Projects);
-            if (sourceSupportsSponsorship)
-            {
-                Assert.Equal(source, Assert.Single(projectReport.SponsorshipQueriedSources));
-                Assert.Empty(projectReport.SponsorshipUnsupportedSources);
-                Assert.Equal(1, mockServer.RegistrationRequestCount);
-            }
-            else
-            {
-                Assert.Empty(projectReport.SponsorshipQueriedSources);
-                Assert.Equal(source, Assert.Single(projectReport.SponsorshipUnsupportedSources));
-                Assert.Equal(0, mockServer.RegistrationRequestCount);
-            }
+            Assert.Equal(hasPackages, projectReport.HasPackages);
+            Assert.Equal(
+                hasPackages && sourceSupportsSponsorship ? new[] { source } : Array.Empty<PackageSource>(),
+                projectReport.SponsorshipQueriedSources);
+            Assert.Equal(
+                hasPackages && !sourceSupportsSponsorship ? new[] { source } : Array.Empty<PackageSource>(),
+                projectReport.SponsorshipUnsupportedSources);
+            Assert.Equal(hasPackages && sourceSupportsSponsorship ? 1 : 0, mockServer.RegistrationRequestCount);
 
             List<ListReportPackage> packages = projectReport.TargetFrameworkPackages
                 .SelectMany(framework =>
@@ -653,6 +665,13 @@ namespace NuGet.XPlat.FuncTest
             else
             {
                 Assert.Empty(packages);
+                Assert.Contains(
+                    hasPackages ? "Project 'ProjectA' has no sponsorable packages." : "Project 'ProjectA' has no package references.",
+                    consoleOut.ToString());
+            }
+            if (!hasPackages)
+            {
+                Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_SponsorSourceHint, consoleOut.ToString());
             }
         }
 
