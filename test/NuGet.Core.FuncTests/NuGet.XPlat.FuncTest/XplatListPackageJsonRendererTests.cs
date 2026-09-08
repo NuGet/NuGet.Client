@@ -1469,8 +1469,13 @@ namespace NuGet.XPlat.FuncTest
             JArray projects = (JArray)package["projects"];
             projects.Select(project => project["path"].Value<string>())
                 .Should().Equal("a.csproj", "b.csproj");
-            projects.Select(project => project["relationship"].Value<string>())
-                .Should().Equal("topLevel", "transitive");
+            Assert.All(projects, project =>
+            {
+                project["isTransitive"].Should().NotBeNull();
+                project["isTransitive"].Type.Should().Be(JTokenType.Boolean);
+            });
+            projects.Select(project => project["isTransitive"].Value<bool>())
+                .Should().Equal(false, true);
 
             JObject sponsorship = (JObject)Assert.Single((JArray)package["sponsorships"]);
             sponsorship["sources"].Values<string>().Should().Equal(source1.Source, source2.Source);

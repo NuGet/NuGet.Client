@@ -43,9 +43,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private const string SponsorshipsProperty = "sponsorships";
         private const string UrlsProperty = "urls";
         private const string PackagesProperty = "packages";
-        private const string RelationshipProperty = "relationship";
-        private const string TopLevelRelationship = "topLevel";
-        private const string TransitiveRelationship = "transitive";
+        private const string IsTransitiveProperty = "isTransitive";
         private const string LatestVersionProperty = "latestVersion";
         private const string DeprecationReasonsProperty = "deprecationReasons";
         private const string AlternativePackageProperty = "alternativePackage";
@@ -475,8 +473,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     writer.WriteStartObject();
                     writer.WritePropertyName(PathProperty);
                     writer.WriteValue(PathUtility.GetPathWithForwardSlashes(projectPath));
-                    writer.WritePropertyName(RelationshipProperty);
-                    writer.WriteValue(isTopLevel ? TopLevelRelationship : TransitiveRelationship);
+                    writer.WritePropertyName(IsTransitiveProperty);
+                    writer.WriteValue(!isTopLevel);
                     writer.WriteEndObject();
                 }
                 writer.WriteEndArray();
