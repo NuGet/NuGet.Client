@@ -622,7 +622,7 @@ namespace NuGet.XPlat.FuncTest
 
             var source = new PackageSource(mockServer.ServiceIndexUri, "test")
             {
-                AllowInsecureConnections = true
+                AllowInsecureConnections = hasPackages
             };
             using var consoleOut = new StringWriter();
             var renderer = new ListPackageConsoleRenderer(consoleOut, TextWriter.Null);
@@ -703,7 +703,7 @@ namespace NuGet.XPlat.FuncTest
             };
             var unmappedSource = new PackageSource(unmappedServer.ServiceIndexUri, "unmapped")
             {
-                AllowInsecureConnections = true
+                AllowInsecureConnections = false
             };
             var sourceMapping = new PackageSourceMapping(
                 new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
@@ -719,7 +719,8 @@ namespace NuGet.XPlat.FuncTest
                 new List<PackageSource> { mappedSource, unmappedSource },
                 Mock.Of<IReportRenderer>(),
                 logger,
-                sourceMapping);
+                sourceMapping,
+                auditSources: new[] { unmappedSource });
 
             // Act
             (int exitCode, ListPackageReportModel report) = await runner.GetReportDataAsync(args);
@@ -736,7 +737,7 @@ namespace NuGet.XPlat.FuncTest
         [Theory]
         [InlineData(false, false, true)]
         [InlineData(false, true, false)]
-        [InlineData(true, false, true)]
+        [InlineData(true, false, false)]
         public void ConsoleRenderer_Sponsor_WritesAccurateSourceDiagnosticsAndHint(
             bool hasSponsoredPackage,
             bool hasExplicitSources,
@@ -851,16 +852,19 @@ namespace NuGet.XPlat.FuncTest
         [InlineData(true, true, "", false, false)]
         [InlineData(true, true, "--format json", false, false)]
         [InlineData(false, true, "", true, false)]
+        [InlineData(false, false, "", true, false)]
+        [InlineData(false, false, "", true, false, true)]
         public void ListPackage_SourceConfiguration_ValidatesSponsorAndLogsOnlyForConsoleInformation(
             bool mappingEnabled,
             bool hasExplicitSource,
             string additionalOptions,
             bool shouldRun,
-            bool shouldLogMappingNotice)
+            bool shouldLogMappingNotice,
+            bool nugetOrgConfigured = false)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                ConfigurePackageSource(pathContext, mappingEnabled);
+                ConfigurePackageSource(pathContext, mappingEnabled, nugetOrgConfigured);
 
                 VerifyCommand((projectPath, mockCommandRunner, testApp, getLogLevel, logger, output, error) =>
                 {
@@ -910,15 +914,17 @@ namespace NuGet.XPlat.FuncTest
                     Assert.NotNull(capturedArgs.PackageSourceMapping);
                     Assert.Equal(mappingEnabled, capturedArgs.PackageSourceMapping.IsEnabled);
                     string[] expectedSources = hasExplicitSource
-                        ? new[] { "mapped", "source" }
+                        ? new[] { "mapped" }
                         : new[] { "source", "mapped" };
                     Assert.Equal(expectedSources, capturedArgs.PackageSources.Select(source => source.Name));
                     Assert.All(
                         capturedArgs.PackageSources.Where(source => source.Name == "mapped"),
-                        source => Assert.Equal("https://mapped.test/v3/index.json", source.Source));
+                        source => Assert.Equal(nugetOrgConfigured ? NuGetConstants.V3FeedUrl : "https://mapped.test/v3/index.json", source.Source));
                     if (capturedArgs.Renderer is ListPackageConsoleRenderer capturedRenderer)
                     {
-                        Assert.Equal(!hasExplicitSource, capturedRenderer.ShowSponsorshipSourceHint);
+                        Assert.Equal(
+                            !hasExplicitSource && !mappingEnabled && !nugetOrgConfigured,
+                            capturedRenderer.ShowSponsorshipSourceHint);
                     }
                     if (shouldLogMappingNotice)
                     {
@@ -934,9 +940,9 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        private static void ConfigurePackageSource(SimpleTestPathContext pathContext, bool mappingEnabled)
+        private static void ConfigurePackageSource(SimpleTestPathContext pathContext, bool mappingEnabled, bool nugetOrgConfigured = false)
         {
-            pathContext.Settings.AddSource("mapped", "https://mapped.test/v3/index.json");
+            pathContext.Settings.AddSource("mapped", nugetOrgConfigured ? NuGetConstants.V3FeedUrl : "https://mapped.test/v3/index.json");
             if (mappingEnabled)
             {
                 pathContext.Settings.AddPackageSourceMapping("mapped", "*");
@@ -1062,7 +1068,8 @@ namespace NuGet.XPlat.FuncTest
             List<PackageSource> packageSources,
             IReportRenderer renderer,
             ILogger logger,
-            PackageSourceMapping packageSourceMapping = null)
+            PackageSourceMapping packageSourceMapping = null,
+            IReadOnlyList<PackageSource> auditSources = null)
         {
             return new ListPackageArgs(
                 path: projectPath,
@@ -1074,7 +1081,7 @@ namespace NuGet.XPlat.FuncTest
                 prerelease: false,
                 highestPatch: false,
                 highestMinor: false,
-                auditSources: null,
+                auditSources: auditSources,
                 logger: logger,
                 cancellationToken: CancellationToken.None,
                 packageSourceMapping: packageSourceMapping ?? NoPackageSourceMapping);

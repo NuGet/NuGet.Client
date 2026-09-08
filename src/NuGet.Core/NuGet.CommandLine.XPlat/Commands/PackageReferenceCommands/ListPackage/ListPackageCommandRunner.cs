@@ -144,8 +144,21 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    List<PackageSource> httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
-                    httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
+                    List<PackageSource> httpSources;
+                    if (listPackageArgs.ReportType == ReportType.Sponsor)
+                    {
+                        // Validate only sources eligible for this project's packages, before any requests.
+                        var sponsorshipSources = new HashSet<PackageSource>(
+                            GetPackageIds(frameworks, includeTransitive: true)
+                                .SelectMany(packageId => FilterSourcesByPackageSourceMapping(packageId, listPackageArgs)));
+                        httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(
+                            listPackageArgs.PackageSources.Where(sponsorshipSources.Contains).ToList());
+                    }
+                    else
+                    {
+                        httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
+                        httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
+                    }
 
                     if (httpSources.Count > 0)
                     {

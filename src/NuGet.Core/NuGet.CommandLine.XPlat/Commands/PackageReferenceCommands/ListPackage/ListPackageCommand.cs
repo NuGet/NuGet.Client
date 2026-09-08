@@ -164,27 +164,31 @@ namespace NuGet.CommandLine.XPlat
                 var settings = ProcessConfigFile(configValue, pathValue);
                 var sourceValues = parseResult.GetValue(source) ?? Array.Empty<string>();
 
-                var packageSources = GetPackageSources(settings, sourceValues, hasConfig);
-
                 var reportType = GetReportType(
                     isOutdated: parseResult.GetValue(outdatedReport),
                     isDeprecated: parseResult.GetValue(deprecatedReport),
                     isVulnerable: parseResult.GetValue(vulnerableReport),
                     isSponsor: parseResult.GetValue(sponsorReport));
+                var packageSources = GetPackageSources(
+                    settings, sourceValues, includeConfiguredSources: hasConfig && reportType != ReportType.Sponsor);
                 if (reportType == ReportType.Sponsor)
                 {
                     packageSources = packageSources.Distinct().ToList();
                 }
 
                 IReportRenderer reportRenderer = GetOutputType(consoleOut ?? Console.Out, consoleError ?? Console.Error, parseResult.GetValue(outputFormat), outputVersionOption: parseResult.GetValue(outputVersion));
-                if (reportRenderer is ListPackageConsoleRenderer consoleRenderer)
-                {
-                    consoleRenderer.ShowSponsorshipSourceHint = sourceValues.Length == 0;
-                }
                 var provider = new PackageSourceProvider(settings);
                 var frameworkValues = parseResult.GetValue(framework) ?? Array.Empty<string>();
 
                 PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+                if (reportRenderer is ListPackageConsoleRenderer consoleRenderer)
+                {
+                    consoleRenderer.ShowSponsorshipSourceHint =
+                        sourceValues.Length == 0 &&
+                        !packageSourceMapping.IsEnabled &&
+                        !provider.LoadPackageSources().Any(source => UriUtility.IsNuGetOrg(source.Source));
+                }
+
                 var packageRefArgs = new ListPackageArgs(
                     pathValue,
                     packageSources,
@@ -307,7 +311,7 @@ namespace NuGet.CommandLine.XPlat
                 machineWideSettings: new XPlatMachineWideSetting());
         }
 
-        private static List<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, bool hasConfig)
+        private static List<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, bool includeConfiguredSources)
         {
             var availableSources = PackageSourceProvider.LoadPackageSources(settings).Where(source => source.IsEnabled);
             var uniqueSources = new HashSet<string>();
@@ -322,7 +326,7 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            if (packageSources.Count == 0 || hasConfig)
+            if (packageSources.Count == 0 || includeConfiguredSources)
             {
                 packageSources.AddRange(availableSources);
             }

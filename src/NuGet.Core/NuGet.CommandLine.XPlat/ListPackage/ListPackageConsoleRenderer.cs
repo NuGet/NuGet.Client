@@ -253,7 +253,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
 
             if (ShowSponsorshipSourceHint &&
-                (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0))
+                (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0) &&
+                !SponsorReportAggregator.CollapseProjects(projects).Any(package => package.Sponsorships.Count > 0))
             {
                 consoleOut.WriteLine(Strings.ListPkg_SponsorSourceHint);
             }
