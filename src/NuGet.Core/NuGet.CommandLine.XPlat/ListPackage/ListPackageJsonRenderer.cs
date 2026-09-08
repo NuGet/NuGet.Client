@@ -87,18 +87,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 return;
             }
 
-            IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails =
-                SponsorReportAggregator.GetSourcesWithoutSponsorshipDetails(
-                    listPackageReportModel.Projects,
-                    listPackageReportModel.ListPackageArgs.PackageSources);
+            (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
+                IReadOnlyList<PackageSource> unsupportedSources,
+                _) = SponsorReportAggregator.GetSourceDiagnostics(
+                    listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs.PackageSources);
 
             AddSourceProblems(sourcesWithoutSponsorshipDetails, Strings.ListPkg_SponsorProblemNoDetails);
-
-            IReadOnlyList<PackageSource> unsupportedSources =
-                SponsorReportAggregator.OrderSourcesByConfiguration(
-                    listPackageReportModel.Projects.SelectMany(project => project.SponsorshipUnsupportedSources),
-                    listPackageReportModel.ListPackageArgs.PackageSources);
-
             AddSourceProblems(unsupportedSources, Strings.ListPkg_SponsorProblemUnsupportedSource);
         }
 
@@ -144,7 +138,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
             WriteSources(writer, listPackageReportModel);
 
-            if (listPackageArgs.ReportType == ReportType.Sponsor) // sponsorship report is not framework-specific, so collapse all frameworks into one table
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
             {
                 WriteSponsorPackages(writer, listPackageReportModel);
             }
@@ -410,9 +404,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WriteEndArray();
         }
 
-        /// <summary>
-        /// Groups sources only when they returned the same ordered sponsorship URL list.
-        /// </summary>
         private static void WriteSponsorships(JsonWriter writer, IReadOnlyList<PackageSponsorship> sponsorships)
         {
             IReadOnlyList<SponsorReportAggregator.MergedSponsorship> mergedSponsorships =
@@ -450,10 +441,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             writer.WriteEndArray();
         }
 
-        /// <summary>
-        /// Writes the sponsorship report as a package-keyed <c>packages</c> array: each package ID
-        /// appears once, listing every project that uses it and that project's relationship to it.
-        /// </summary>
         private static void WriteSponsorPackages(JsonWriter writer, ListPackageReportModel listPackageReportModel)
         {
             writer.WritePropertyName(PackagesProperty);

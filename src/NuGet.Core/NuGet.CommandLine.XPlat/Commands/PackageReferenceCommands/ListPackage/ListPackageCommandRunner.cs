@@ -145,12 +145,14 @@ namespace NuGet.CommandLine.XPlat
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
                     List<PackageSource> httpSources;
+                    Dictionary<string, List<PackageSource>> sponsorshipSourcesById = null;
                     if (listPackageArgs.ReportType == ReportType.Sponsor)
                     {
                         // Validate only sources eligible for this project's packages, before any requests.
-                        var sponsorshipSources = new HashSet<PackageSource>(
-                            GetPackageIds(frameworks, includeTransitive: true)
-                                .SelectMany(packageId => FilterSourcesByPackageSourceMapping(packageId, listPackageArgs)));
+                        sponsorshipSourcesById = GetPackageIds(frameworks, includeTransitive: true)
+                            .ToDictionary(id => id, id => FilterSourcesByPackageSourceMapping(id, listPackageArgs),
+                                StringComparer.OrdinalIgnoreCase);
+                        var sponsorshipSources = sponsorshipSourcesById.Values.SelectMany(sources => sources).ToHashSet();
                         httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(
                             listPackageArgs.PackageSources.Where(sponsorshipSources.Contains).ToList());
                     }
@@ -173,17 +175,9 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else if (listPackageArgs.ReportType == ReportType.Sponsor)
                     {
-                        projectModel.HasPackages = frameworks.Any(
-                            framework => framework.TopLevelPackages.Any() || framework.TransitivePackages.Any());
-
-                        (
-                            Dictionary<string, List<PackageSponsorship>> sponsorships,
-                            IReadOnlyList<PackageSource> sponsorshipQueriedSources,
-                            IReadOnlyList<PackageSource> sponsorshipUnsupportedSources) =
-                            await GetSponsorshipMetadataAndSourceDiagnosticsAsync(frameworks, listPackageArgs);
-
-                        projectModel.SponsorshipQueriedSources = sponsorshipQueriedSources;
-                        projectModel.SponsorshipUnsupportedSources = sponsorshipUnsupportedSources;
+                        projectModel.HasPackages = sponsorshipSourcesById.Count > 0;
+                        Dictionary<string, List<PackageSponsorship>> sponsorships =
+                            await GetSponsorshipMetadataAsync(sponsorshipSourcesById, listPackageArgs, projectModel);
                         UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorships);
                     }
                     else
@@ -491,21 +485,12 @@ namespace NuGet.CommandLine.XPlat
             return packages.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        /// <summary>
-        /// Queries sponsorship metadata and returns the capable sources queried and unsupported
-        /// sources selected after package source mapping was applied.
-        /// </summary>
-        private async Task<(
-            Dictionary<string, List<PackageSponsorship>> SponsorshipsById,
-            IReadOnlyList<PackageSource> QueriedSources,
-            IReadOnlyList<PackageSource> UnsupportedSources)>
-            GetSponsorshipMetadataAndSourceDiagnosticsAsync(
-                List<FrameworkPackages> targetFrameworks,
-                ListPackageArgs listPackageArgs)
+        private async Task<Dictionary<string, List<PackageSponsorship>>> GetSponsorshipMetadataAsync(
+            Dictionary<string, List<PackageSource>> sourcesById,
+            ListPackageArgs listPackageArgs,
+            ListPackageProjectModel projectModel)
         {
-            List<string> packageIds = GetPackageIds(
-                targetFrameworks,
-                includeTransitive: true);
+            List<string> packageIds = sourcesById.Keys.ToList();
 
             var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(
                 capacity: packageIds.Count,
@@ -514,7 +499,8 @@ namespace NuGet.CommandLine.XPlat
             var unsupportedSourceSet = new HashSet<PackageSource>();
 
             await ThrottledForEachAsync(packageIds,
-                async (packageId, cancellationToken) => await GetSponsorshipsForPackageAsync(packageId, listPackageArgs, cancellationToken),
+                (packageId, cancellationToken) => GetSponsorshipsForPackageAsync(
+                    packageId, sourcesById[packageId], listPackageArgs, cancellationToken),
                 result =>
                 {
                     sponsorshipsById[result.PackageId] = result.Sponsorships;
@@ -524,14 +510,14 @@ namespace NuGet.CommandLine.XPlat
                 GetMaxParallel(listPackageArgs),
                 listPackageArgs.CancellationToken);
 
-            IReadOnlyList<PackageSource> queriedSources = listPackageArgs.PackageSources
+            projectModel.SponsorshipQueriedSources = listPackageArgs.PackageSources
                 .Where(queriedSourceSet.Contains)
                 .ToList();
-            IReadOnlyList<PackageSource> unsupportedSources = listPackageArgs.PackageSources
+            projectModel.SponsorshipUnsupportedSources = listPackageArgs.PackageSources
                 .Where(unsupportedSourceSet.Contains)
                 .ToList();
 
-            return (sponsorshipsById, queriedSources, unsupportedSources);
+            return sponsorshipsById;
         }
 
         internal static List<PackageSponsorship> OrderSponsorshipsByConfiguredSource(
@@ -560,16 +546,15 @@ namespace NuGet.CommandLine.XPlat
             IReadOnlyList<PackageSource> UnsupportedSources)>
             GetSponsorshipsForPackageAsync(
                 string package,
+                List<PackageSource> sources,
                 ListPackageArgs listPackageArgs,
                 CancellationToken cancellationToken)
         {
             var sponsorships = new List<PackageSponsorship>();
             var queriedSources = new List<PackageSource>();
             var unsupportedSources = new List<PackageSource>();
-            List<PackageSource> sources = FilterSourcesByPackageSourceMapping(package, listPackageArgs);
-
             await ThrottledForEachAsync(sources,
-                async (source, innerCancellationToken) => await GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
+                (source, innerCancellationToken) => GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
                 continuation: result =>
                 {
                     if (!result.SupportsSponsorship)
@@ -596,10 +581,6 @@ namespace NuGet.CommandLine.XPlat
                 unsupportedSources);
         }
 
-        /// <summary>
-        /// Restricts the sources queried for <paramref name="package"/> to those mapped to it, or
-        /// returns every selected source when package source mapping is disabled.
-        /// </summary>
         internal static List<PackageSource> FilterSourcesByPackageSourceMapping(
             string package,
             ListPackageArgs listPackageArgs)

@@ -244,37 +244,28 @@ namespace Test.Utility
 
         public MockResponse BuildV3IndexResponseWithVulnerabilities(string serverUri)
         {
-            JObject indexJson = CreateMinimalIndexJson(serverUri);
-            FeedUtilities.AddVulnerabilitiesResource(indexJson, serverUri);
-
-            return new MockResponse
-            {
-                ContentType = "text/javascript",
-                Content = Encoding.UTF8.GetBytes(indexJson.ToString())
-            };
-        }
-
-        public MockResponse BuildV3IndexResponseWithSponsorship(
-            string serverUri,
-            bool sourceReportsVulnerabilities)
-        {
-            JObject indexJson = CreateMinimalIndexJson(serverUri);
-            FeedUtilities.AddSponsorshipRegistrationResource(indexJson, serverUri);
-            if (sourceReportsVulnerabilities)
-            {
-                FeedUtilities.AddVulnerabilitiesResource(indexJson, serverUri);
-            }
-
-            return new MockResponse
-            {
-                ContentType = "text/javascript",
-                Content = Encoding.UTF8.GetBytes(indexJson.ToString())
-            };
+            return BuildV3IndexResponse(serverUri, sourceReportsVulnerabilities: true, sourceSupportsSponsorship: false);
         }
 
         public MockResponse BuildV3IndexResponse(string serverUri)
         {
+            return BuildV3IndexResponse(serverUri, sourceReportsVulnerabilities: false, sourceSupportsSponsorship: false);
+        }
+
+        internal MockResponse BuildV3IndexResponse(
+            string serverUri,
+            bool sourceReportsVulnerabilities,
+            bool sourceSupportsSponsorship)
+        {
             JObject indexJson = CreateMinimalIndexJson(serverUri);
+            if (sourceSupportsSponsorship)
+            {
+                FeedUtilities.AddSponsorshipRegistrationResource(indexJson, serverUri);
+            }
+            if (sourceReportsVulnerabilities)
+            {
+                FeedUtilities.AddVulnerabilitiesResource(indexJson, serverUri);
+            }
 
             return new MockResponse
             {

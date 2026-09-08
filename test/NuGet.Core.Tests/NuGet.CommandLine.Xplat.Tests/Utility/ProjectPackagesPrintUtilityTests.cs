@@ -73,23 +73,17 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             // Arrange
             var packages = new[]
             {
-                new ListReportPackage(
-                    packageId: "Package.Sponsored",
-                    resolvedVersion: "1.0.0",
-                    latestVersion: null,
-                    vulnerabilities: null,
-                    deprecationReasons: null,
-                    alternativePackage: null,
-                    requestedVersion: "1.0.0",
-                    autoReference: false,
-                    sponsorships: new[] { new PackageSponsorship("https://source", new[] { "https://sponsor/a" }) })
+                ListPackageTestHelper.CreateSponsoredPackage(
+                    "Package.Sponsored", new PackageSponsorship("https://source", new[] { "https://sponsor/a" }))
             };
-            string[] headers = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive, SponsorReportArgs);
+            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs(
+                "", new List<PackageSource>(), new ListPackageConsoleRenderer());
+            string[] headers = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive, args);
             bool autoReferenceFound = false;
 
             // Act
             FormattedCell[] table = ProjectPackagesPrintUtility
-                .BuildPackagesTable(packages, printingTransitive, SponsorReportArgs, ref autoReferenceFound)
+                .BuildPackagesTable(packages, printingTransitive, args, ref autoReferenceFound)
                 .ToArray();
 
             // Assert
@@ -225,14 +219,6 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             new ListPackageArgs(
                         path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
                         ReportType.Vulnerable, new ListPackageConsoleRenderer(), includeTransitive: false,
-                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None,
-                        packageSourceMapping: NoPackageSourceMapping));
-
-        private static ListPackageArgs SponsorReportArgsCache;
-        private static ListPackageArgs SponsorReportArgs => SponsorReportArgsCache ?? (SponsorReportArgsCache =
-            new ListPackageArgs(
-                        path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
-                        ReportType.Sponsor, new ListPackageConsoleRenderer(), includeTransitive: false,
                         prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None,
                         packageSourceMapping: NoPackageSourceMapping));
 

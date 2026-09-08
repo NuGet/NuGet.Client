@@ -148,9 +148,11 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
                 consoleOut.WriteLine(GetProjectHeader(project.ProjectName, listPackageArgs));
 
-                if (listPackageArgs.ReportType == ReportType.Sponsor) // sponsorship report is not framework-specific, so collapse all frameworks into one table
+                if (listPackageArgs.ReportType == ReportType.Sponsor)
                 {
-                    PrintSponsorPackages(project, listPackageArgs);
+                    (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
+                    PrintPackages(topLevel, printingTransitive: false, listPackageArgs);
+                    PrintPackages(transitive, printingTransitive: true, listPackageArgs);
                     continue;
                 }
 
@@ -194,25 +196,13 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                         // Print top-level packages
                         if (frameworkTopLevelPackages?.Any() == true)
                         {
-                            var tableHasAutoReference = false;
-                            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
-                            if (tableToPrint != null)
-                            {
-                                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
-                            }
+                            PrintPackages(frameworkTopLevelPackages, printingTransitive: false, listPackageArgs);
                         }
 
                         // Print transitive packages
                         if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages?.Any() == true)
                         {
-                            var tableHasAutoReference = false;
-                            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
-                            if (tableToPrint != null)
-                            {
-                                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
-                            }
+                            PrintPackages(frameworkTransitivePackages, printingTransitive: true, listPackageArgs);
                         }
                     }
                 }
@@ -226,17 +216,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
         private void PrintSponsorshipSourceDiagnostics(
             TextWriter consoleOut,
-            IEnumerable<ListPackageProjectModel> projects,
+            List<ListPackageProjectModel> projects,
             ListPackageArgs listPackageArgs)
         {
-            IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails =
-                SponsorReportAggregator.GetSourcesWithoutSponsorshipDetails(
-                    projects,
-                    listPackageArgs.PackageSources);
-            IReadOnlyList<PackageSource> unsupportedSources =
-                SponsorReportAggregator.OrderSourcesByConfiguration(
-                    projects.SelectMany(project => project.SponsorshipUnsupportedSources),
-                    listPackageArgs.PackageSources);
+            (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
+                IReadOnlyList<PackageSource> unsupportedSources,
+                bool hasSponsorships) = SponsorReportAggregator.GetSourceDiagnostics(projects, listPackageArgs.PackageSources);
 
             if (sourcesWithoutSponsorshipDetails.Count > 0)
             {
@@ -254,7 +239,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
             if (ShowSponsorshipSourceHint &&
                 (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0) &&
-                !SponsorReportAggregator.CollapseProjects(projects).Any(package => package.Sponsorships.Count > 0))
+                !hasSponsorships)
             {
                 consoleOut.WriteLine(Strings.ListPkg_SponsorSourceHint);
             }
@@ -311,28 +296,18 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             return string.Format(Strings.ListPkg_ProjectHeaderLog, projectName);
         }
 
-        private static void PrintSponsorPackages(ListPackageProjectModel project, ListPackageArgs listPackageArgs)
+        private static void PrintPackages(
+            List<ListReportPackage> packages,
+            bool printingTransitive,
+            ListPackageArgs listPackageArgs)
         {
-            (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
+            bool tableHasAutoReference = false;
+            IEnumerable<FormattedCell> tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
+                packages, printingTransitive, listPackageArgs, ref tableHasAutoReference);
 
-            PrintTable(topLevel, printingTransitive: false);
-            PrintTable(transitive, printingTransitive: true);
-
-            void PrintTable(List<ListReportPackage> packages, bool printingTransitive)
+            if (tableToPrint != null)
             {
-                if (packages.Count == 0)
-                {
-                    return;
-                }
-
-                bool tableHasAutoReference = false;
-                IEnumerable<FormattedCell> tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                    packages, printingTransitive, listPackageArgs, ref tableHasAutoReference);
-
-                if (tableToPrint != null)
-                {
-                    ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
-                }
+                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
             }
         }
     }

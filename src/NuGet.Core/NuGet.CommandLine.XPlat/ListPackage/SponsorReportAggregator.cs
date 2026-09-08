@@ -8,15 +8,9 @@ using NuGet.Configuration;
 
 namespace NuGet.CommandLine.XPlat.ListPackage
 {
-    /// <summary>
-    /// Reshapes the package-list report model for the sponsorship report.
-    /// </summary>
     internal static class SponsorReportAggregator
     {
-        /// <summary>
-        /// Collapses one project's per-framework package lists into a single list per relationship.
-        /// A package that is top-level in any framework is reported as top-level only.
-        /// </summary>
+        // A package that is top-level in any framework is reported as top-level only.
         internal static (List<ListReportPackage> TopLevel, List<ListReportPackage> Transitive) CollapseFrameworks(ListPackageProjectModel project)
         {
             IEnumerable<ListPackageReportFrameworkPackage> frameworks =
@@ -34,10 +28,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             return (topLevel, transitive);
         }
 
-        /// <summary>
-        /// Reshapes the report by package rather than by project: each package ID appears once,
-        /// listing every project that uses it and that project's relationship to it.
-        /// </summary>
         internal static List<SponsorReportPackage> CollapseProjects(IEnumerable<ListPackageProjectModel> projects)
         {
             var packagesById = new Dictionary<string, SponsorReportPackage>(StringComparer.OrdinalIgnoreCase);
@@ -55,7 +45,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 {
                     if (!packagesById.TryGetValue(package.PackageId, out SponsorReportPackage? reportPackage))
                     {
-                        // Sponsorship is package-scoped, so any instance carries the same URLs.
                         packagesById[package.PackageId] = reportPackage =
                             new SponsorReportPackage(package.PackageId, package.Sponsorships);
                     }
@@ -69,10 +58,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 .ToList();
         }
 
-        /// <summary>
-        /// Flattens one package list across every framework, keeping the first instance of each
-        /// package ID and ordering by ID. Both the framework list and either package list can be null.
-        /// </summary>
         private static List<ListReportPackage> DistinctById(
             IEnumerable<ListPackageReportFrameworkPackage> frameworks,
             Func<ListPackageReportFrameworkPackage, List<ListReportPackage>?> packageSelector) =>
@@ -83,10 +68,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-        /// <summary>
-        /// Collapses sources that returned the same ordered URL list into a single entry listing
-        /// all of them.
-        /// </summary>
+        // URL order is significant when grouping sources.
         internal static IReadOnlyList<MergedSponsorship> MergeBySponsorshipUrls(IReadOnlyList<PackageSponsorship> sponsorships)
         {
             var mergedSponsorships = new List<MergedSponsorship>();
@@ -107,25 +89,32 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             return mergedSponsorships;
         }
 
-        internal static IReadOnlyList<PackageSource> GetSourcesWithoutSponsorshipDetails(
-            IEnumerable<ListPackageProjectModel> projects,
-            IReadOnlyList<PackageSource> configuredSources)
+        internal static (
+            IReadOnlyList<PackageSource> WithoutDetails,
+            IReadOnlyList<PackageSource> Unsupported,
+            bool HasSponsorships) GetSourceDiagnostics(
+                IReadOnlyList<ListPackageProjectModel> projects,
+                IReadOnlyList<PackageSource> configuredSources)
         {
-            List<ListPackageProjectModel> projectList = projects.ToList();
             var sourcesWithSponsorshipDetails = new HashSet<string>(
-                CollapseProjects(projectList)
+                CollapseProjects(projects)
                     .SelectMany(package => package.Sponsorships)
                     .Select(sponsorship => sponsorship.Source),
                 StringComparer.Ordinal);
 
-            return OrderSourcesByConfiguration(
-                projectList.SelectMany(project => project.SponsorshipQueriedSources),
+            List<PackageSource> withoutDetails = OrderSourcesByConfiguration(
+                projects.SelectMany(project => project.SponsorshipQueriedSources),
                 configuredSources)
                 .Where(source => !sourcesWithSponsorshipDetails.Contains(source.Source))
                 .ToList();
+
+            IReadOnlyList<PackageSource> unsupported = OrderSourcesByConfiguration(
+                projects.SelectMany(project => project.SponsorshipUnsupportedSources), configuredSources);
+
+            return (withoutDetails, unsupported, sourcesWithSponsorshipDetails.Count > 0);
         }
 
-        internal static IReadOnlyList<PackageSource> OrderSourcesByConfiguration(
+        private static IReadOnlyList<PackageSource> OrderSourcesByConfiguration(
             IEnumerable<PackageSource> sources,
             IReadOnlyList<PackageSource> configuredSources)
         {
@@ -138,9 +127,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 .ToList();
         }
 
-        /// <summary>
-        /// One set of sponsorship URLs and every source that returned exactly that list.
-        /// </summary>
         internal sealed class MergedSponsorship
         {
             internal List<string> Sources { get; } = new();

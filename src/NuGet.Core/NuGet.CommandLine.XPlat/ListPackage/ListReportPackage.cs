@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         internal AlternatePackageMetadata AlternativePackage { get; private set; }
         internal string RequestedVersion { get; private set; } // not needed for transitive package
         internal bool AutoReference { get; private set; } // not needed for transitive package
-        internal IReadOnlyList<PackageSponsorship> Sponsorships { get; private set; } // sponsorship details for the package, grouped by the source
+        internal IReadOnlyList<PackageSponsorship> Sponsorships { get; private set; }
 
         public ListReportPackage(string packageId, string resolvedVersion, string latestVersion, List<PackageVulnerabilityMetadata> vulnerabilities, PackageDeprecationMetadata deprecationReasons, AlternatePackageMetadata alternativePackage, string requestedVersion, bool autoReference, IReadOnlyList<PackageSponsorship> sponsorships)
         {
@@ -50,27 +50,18 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         public ListReportPackage(string packageId, string requestedVersion, string resolvedVersion)
             : this(
                   packageId: packageId,
-                  resolvedVersion: resolvedVersion,
-                  latestVersion: null,
-                  vulnerabilities: null,
-                  deprecationReasons: null,
-                  alternativePackage: null,
                   requestedVersion: requestedVersion,
-                  autoReference: false,
-                  sponsorships: Array.Empty<PackageSponsorship>())
+                  resolvedVersion: resolvedVersion,
+                  autoReference: false)
         { }
 
         public ListReportPackage(string packageId, string requestedVersion, string resolvedVersion, bool autoReference)
             : this(
                   packageId: packageId,
+                  requestedVersion: requestedVersion,
                   resolvedVersion: resolvedVersion,
                   latestVersion: null,
-                  vulnerabilities: null,
-                  deprecationReasons: null,
-                  alternativePackage: null,
-                  requestedVersion: requestedVersion,
-                  autoReference: autoReference,
-                  sponsorships: Array.Empty<PackageSponsorship>())
+                  autoReference: autoReference)
         { }
 
         public ListReportPackage(string packageId, string requestedVersion, string resolvedVersion, string latestVersion, bool autoReference)
@@ -115,14 +106,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         public ListReportPackage(string packageId, string requestedVersion, string resolvedVersion, List<PackageVulnerabilityMetadata> vulnerabilities)
             : this(
                   packageId: packageId,
+                  requestedVersion: requestedVersion,
                   resolvedVersion: resolvedVersion,
                   latestVersion: null,
-                  vulnerabilities: vulnerabilities.Count == 0 ? null : vulnerabilities,
-                  deprecationReasons: null,
-                  alternativePackage: null,
-                  requestedVersion: requestedVersion,
-                  autoReference: false,
-                  sponsorships: Array.Empty<PackageSponsorship>())
+                  vulnerabilities: vulnerabilities.Count == 0 ? null : vulnerabilities)
         { }
     }
 }

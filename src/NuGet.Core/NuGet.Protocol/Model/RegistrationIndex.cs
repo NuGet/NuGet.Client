@@ -15,9 +15,5 @@ namespace NuGet.Protocol.Model
         [JsonProperty("items")]
         [JsonPropertyName("items")]
         public List<RegistrationPage>? Items { get; set; }
-
-        [JsonProperty("metadata")]
-        [JsonPropertyName("metadata")]
-        public RegistrationIndexMetadata? Metadata { get; set; }
     }
 }

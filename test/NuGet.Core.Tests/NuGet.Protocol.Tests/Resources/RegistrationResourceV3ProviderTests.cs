@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -18,35 +19,26 @@ namespace NuGet.Protocol.Tests.Resources
     public class RegistrationResourceV3ProviderTests
     {
         [Theory]
-        [InlineData(false, false)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [InlineData(new string[0], false, false)]
+        [InlineData(new[] { "7.0.0" }, false, false)]
+        [InlineData(new[] { "7.12.0" }, false, false)]
+        [InlineData(new[] { "3.6.0" }, false, true)]
+        [InlineData(new[] { "3.6.0", "7.12.0" }, true, true)]
         public async Task TryCreate_ReportsPackageIdMetadataCapability(
-            bool supportsRegistration,
-            bool supportsPackageIdMetadata)
+            string[] registrationVersions,
+            bool supportsPackageIdMetadata,
+            bool supportsRegistration)
         {
             // Arrange
             var packageSource = new PackageSource("https://unit.test/v3/index.json");
-            var entries = new List<ServiceIndexEntry>();
-            if (supportsRegistration)
-            {
-                entries.Add(new ServiceIndexEntry(
-                    new Uri("https://unit.test/registration/"),
-                    "RegistrationsBaseUrl/3.6.0",
-                    new NuGetVersion(3, 0, 0)));
-            }
-            if (supportsPackageIdMetadata)
-            {
-                entries.Add(new ServiceIndexEntry(
-                    entries[0].Uri,
-                    "RegistrationsBaseUrl/7.12.0",
-                    new NuGetVersion(3, 0, 0)));
-            }
+            var registrationUri = new Uri("https://unit.test/registration/");
+            ServiceIndexEntry[] entries = registrationVersions.Select(version => new ServiceIndexEntry(
+                registrationUri, "RegistrationsBaseUrl/" + version, new NuGetVersion(3, 0, 0))).ToArray();
             var sourceRepository = new SourceRepository(
                 packageSource,
                 new INuGetResourceProvider[]
                 {
-                    MockServiceIndexResourceV3Provider.Create(entries.ToArray()),
+                    MockServiceIndexResourceV3Provider.Create(entries),
                     StaticHttpSource.CreateHttpSource(new Dictionary<string, string>()),
                 });
 
@@ -65,9 +57,8 @@ namespace NuGet.Protocol.Tests.Resources
             }
 
             RegistrationResourceV3 resource = actual.Item2.Should().BeOfType<RegistrationResourceV3>().Subject;
-            resource.BaseUri.Should().Be(new Uri("https://unit.test/registration/"));
+            resource.BaseUri.Should().Be(registrationUri);
             resource.SupportsPackageIdMetadata.Should().Be(supportsPackageIdMetadata);
         }
-
     }
 }

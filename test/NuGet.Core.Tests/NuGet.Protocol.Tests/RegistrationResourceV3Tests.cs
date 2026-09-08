@@ -18,12 +18,15 @@ namespace NuGet.Protocol.Tests
     {
         private const string BaseUrl = "https://contoso/registration";
         private const string IndexUrl = BaseUrl + "/contoso.tools/index.json";
+        private const string MetadataJson = """
+            { "sponsorshipUrls": [ "https://flat" ],
+              "metadata": { "sponsorshipUrls": [ "https://b", null, " ", "https://a", "https://b" ] } }
+            """;
 
         private static RegistrationResourceV3 CreateResource(string indexJson, string useStj)
         {
-            var messageHandler = new TestMessageHandler(
-                new Dictionary<string, string> { { IndexUrl, indexJson } },
-                string.Empty);
+            var responses = new Dictionary<string, string> { { IndexUrl, indexJson } };
+            var httpSource = new TestHttpSource(new Configuration.PackageSource(BaseUrl), responses);
 
             var envReader = new Mock<IEnvironmentVariableReader>();
             envReader
@@ -31,59 +34,67 @@ namespace NuGet.Protocol.Tests
                     NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
                 .Returns(useStj);
 
-            var httpSource = new HttpSource(
-                new Configuration.PackageSource(BaseUrl),
-                () => Task.FromResult((HttpHandlerResource)new TestHttpHandler(messageHandler)),
-                new Mock<IThrottle>().Object);
-
-            return new RegistrationResourceV3(httpSource, new Uri(BaseUrl), envReader.Object);
+            return new RegistrationResourceV3(
+                httpSource, new Uri(BaseUrl), supportsPackageIdMetadata: true, envReader.Object);
         }
 
-        private static async Task<PackageIdMetadata?> GetMetadataAsync(
+        [Theory]
+        [InlineData("true", MetadataJson, new[] { "https://b", "https://a", "https://b" })]
+        [InlineData("false", MetadataJson, new[] { "https://b", "https://a", "https://b" })]
+        [InlineData("true", """{ "sponsorshipUrls": [ "https://flat" ] }""", new string[0])]
+        [InlineData("false", """{ "sponsorshipUrls": [ "https://flat" ] }""", new string[0])]
+        [InlineData("true", """{ "metadata": null }""", new string[0])]
+        [InlineData("false", """{ "metadata": null }""", new string[0])]
+        [InlineData("true", """{ "metadata": { "sponsorshipUrls": null } }""", new string[0])]
+        [InlineData("false", """{ "metadata": { "sponsorshipUrls": null } }""", new string[0])]
+        [InlineData("true", """{ "metadata": { "sponsorshipUrls": [] } }""", new string[0])]
+        [InlineData("false", """{ "metadata": { "sponsorshipUrls": [] } }""", new string[0])]
+        // TestMessageHandler maps an empty response body to a 404.
+        [InlineData("true", "", null)]
+        [InlineData("false", "", null)]
+        public async Task GetPackageIdMetadataAsync_ReturnsExpectedMetadata(
+            string useStj,
             string indexJson,
-            string useStj)
+            string[]? expected)
         {
             RegistrationResourceV3 resource = CreateResource(indexJson, useStj);
-
             using var cacheContext = new SourceCacheContext { NoCache = true };
-            return await resource.GetPackageIdMetadataAsync(
+
+            PackageIdMetadata? result = await resource.GetPackageIdMetadataAsync(
                 "contoso.tools", cacheContext, NullLogger.Instance, CancellationToken.None);
+
+            if (expected is null)
+            {
+                result.Should().BeNull();
+            }
+            else
+            {
+                result.Should().BeOfType<PackageIdMetadata>().Subject.SponsorshipUrls.Should().Equal(expected);
+            }
+        }
+
+        [Theory]
+        [InlineData("true", typeof(System.Text.Json.JsonException))]
+        [InlineData("false", typeof(Newtonsoft.Json.JsonSerializationException))]
+        public async Task GetPackageIdMetadataAsync_WithInvalidMetadata_Throws(string useStj, Type exceptionType)
+        {
+            RegistrationResourceV3 resource = CreateResource("""{ "metadata": [] }""", useStj);
+            using var cacheContext = new SourceCacheContext { NoCache = true };
+
+            await Assert.ThrowsAsync(exceptionType, () => resource.GetPackageIdMetadataAsync(
+                "contoso.tools", cacheContext, NullLogger.Instance, CancellationToken.None));
         }
 
         [Theory]
         [InlineData("true")]
         [InlineData("false")]
-        public async Task GetPackageIdMetadataAsync_ReturnsExpectedMetadata(string useStj)
+        public async Task GetPackageIdMetadataAsync_WithCanceledToken_Throws(string useStj)
         {
-            var cases = new (string Json, string[]? Expected)[]
-            {
-                (
-                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ],
-                        ""metadata"": { ""sponsorshipUrls"": [ ""https://b"", null, "" "", ""https://a"" ] } }",
-                    new[] { "https://b", "https://a" }),
-                (
-                    @"{ ""sponsorshipUrls"": [ ""https://flat"" ] }",
-                    Array.Empty<string>()),
-                // TestMessageHandler maps an empty response body to a 404.
-                (
-                    string.Empty,
-                    null),
-            };
+            RegistrationResourceV3 resource = CreateResource(MetadataJson, useStj);
+            using var cacheContext = new SourceCacheContext { NoCache = true };
 
-            foreach ((string json, string[]? expected) in cases)
-            {
-                PackageIdMetadata? result = await GetMetadataAsync(json, useStj);
-
-                if (expected is null)
-                {
-                    result.Should().BeNull();
-                }
-                else
-                {
-                    result.Should().NotBeNull();
-                    result!.SponsorshipUrls.Should().Equal(expected);
-                }
-            }
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => resource.GetPackageIdMetadataAsync(
+                "contoso.tools", cacheContext, NullLogger.Instance, new CancellationToken(canceled: true)));
         }
 
         [Theory]

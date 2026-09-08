@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -29,17 +28,7 @@ namespace NuGet.Protocol
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         public RegistrationResourceV3(HttpSource client, Uri baseUrl)
-            : this(client, baseUrl, supportsPackageIdMetadata: false, EnvironmentVariableWrapper.Instance)
-        {
-        }
-
-        internal RegistrationResourceV3(HttpSource client, Uri baseUrl, IEnvironmentVariableReader environmentVariableReader)
-            : this(client, baseUrl, supportsPackageIdMetadata: false, environmentVariableReader)
-        {
-        }
-
-        internal RegistrationResourceV3(HttpSource client, Uri baseUrl, bool supportsPackageIdMetadata)
-            : this(client, baseUrl, supportsPackageIdMetadata, EnvironmentVariableWrapper.Instance)
+            : this(client, baseUrl, supportsPackageIdMetadata: false)
         {
         }
 
@@ -47,7 +36,7 @@ namespace NuGet.Protocol
             HttpSource client,
             Uri baseUrl,
             bool supportsPackageIdMetadata,
-            IEnvironmentVariableReader environmentVariableReader)
+            IEnvironmentVariableReader? environmentVariableReader = null)
         {
             if (client == null)
             {
@@ -288,7 +277,7 @@ namespace NuGet.Protocol
             string packageIdLowerCase = packageId.ToLowerInvariant();
             HttpSourceCacheContext httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retryCount: 0);
 
-            RegistrationIndex? index = await _client.GetAsync(
+            RegistrationIndexWithMetadata? index = await _client.GetAsync(
                 new HttpSourceCachedRequest(
                     registrationUri.OriginalString,
                     $"list_{packageIdLowerCase}_index",
@@ -308,7 +297,7 @@ namespace NuGet.Protocol
             return new PackageIdMetadata(index.Metadata?.SponsorshipUrls);
         }
 
-        private async Task<RegistrationIndex?> DeserializeRegistrationIndexAsync(Stream? stream, CancellationToken token)
+        private async Task<RegistrationIndexWithMetadata?> DeserializeRegistrationIndexAsync(Stream? stream, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -320,13 +309,13 @@ namespace NuGet.Protocol
             if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
                 || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
             {
-                var typeInfo = (JsonTypeInfo<RegistrationIndex>)PackageSearchJsonContext.Default.GetTypeInfo(typeof(RegistrationIndex))!;
-                return await System.Text.Json.JsonSerializer.DeserializeAsync(stream, typeInfo, token);
+                return await System.Text.Json.JsonSerializer.DeserializeAsync(
+                    stream, PackageSearchJsonContext.Default.RegistrationIndexWithMetadata, token);
             }
 
             using var streamReader = new StreamReader(stream);
             using var jsonReader = new Newtonsoft.Json.JsonTextReader(streamReader);
-            return JsonExtensions.JsonObjectSerializer.Deserialize<RegistrationIndex>(jsonReader);
+            return JsonExtensions.JsonObjectSerializer.Deserialize<RegistrationIndexWithMetadata>(jsonReader);
         }
     }
 }

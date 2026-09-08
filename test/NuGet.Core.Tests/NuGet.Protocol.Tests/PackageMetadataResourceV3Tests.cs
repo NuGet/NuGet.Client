@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -36,12 +37,19 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData("true")]
         [InlineData("false")]
-        public async Task PackageMetadataResourceV3_GetMetadataAsync(string useStj)
+        [InlineData("true", true)]
+        [InlineData("false", true)]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync(string useStj, bool invalidSponsorshipMetadata = false)
         {
             // Arrange
+            var registrationIndex = JObject.Parse(JsonData.DeepEqualRegistationIndex);
+            if (invalidSponsorshipMetadata)
+            {
+                registrationIndex["metadata"] = new JArray();
+            }
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
-            responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", JsonData.DeepEqualRegistationIndex);
+            responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", registrationIndex.ToString());
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", CreateProvidersWithEnvReader(useStj), responses);
 
@@ -51,7 +59,7 @@ namespace NuGet.Protocol.Tests
             var package = new PackageIdentity("deepequal", NuGetVersion.Parse("0.9.0"));
 
             // Act
-            using (var sourceCacheContext = new SourceCacheContext())
+            using (var sourceCacheContext = new SourceCacheContext { NoCache = true })
             {
                 var result = (PackageSearchMetadataRegistration)(await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None)
                     ?? throw new Xunit.Sdk.XunitException("Expected package metadata."));

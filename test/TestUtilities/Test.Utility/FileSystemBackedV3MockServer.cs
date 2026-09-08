@@ -62,11 +62,8 @@ namespace Test.Utility
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        MockResponse mockResponse = _sourceSupportsSponsorship
-                            ? _builder.BuildV3IndexResponseWithSponsorship(Uri, _sourceReportsVulnerabilities)
-                            : _sourceReportsVulnerabilities
-                                ? _builder.BuildV3IndexResponseWithVulnerabilities(Uri)
-                                : _builder.BuildV3IndexResponse(Uri);
+                        MockResponse mockResponse = _builder.BuildV3IndexResponse(
+                            Uri, _sourceReportsVulnerabilities, _sourceSupportsSponsorship);
 
                         response.ContentType = mockResponse.ContentType;
                         SetResponseContent(response, mockResponse.Content);

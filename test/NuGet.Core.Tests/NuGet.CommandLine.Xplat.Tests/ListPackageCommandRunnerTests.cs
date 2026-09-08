@@ -424,50 +424,29 @@ namespace NuGet.CommandLine.Xplat.Tests
         [Fact]
         public void GetPackageIds_UnionsTopLevelAndTransitivePackageIdsIgnoringCase()
         {
-            var frameworks = new List<FrameworkPackages>
-            {
-                new FrameworkPackages("net8.0", "net8.0",
-                    new List<InstalledPackageReference> { ListPackageTestHelper.CreateInstalledPackageReference("Newtonsoft.Json") },
-                    new List<InstalledPackageReference> { ListPackageTestHelper.CreateInstalledPackageReference("Serilog") }),
-                new FrameworkPackages("net472", "net472",
-                    new List<InstalledPackageReference> { ListPackageTestHelper.CreateInstalledPackageReference("newtonsoft.json") },
-                    new List<InstalledPackageReference>()),
-            };
+            List<FrameworkPackages> frameworks =
+            [
+                new("net8.0", "net8.0", [new("PackageA")], [new("PackageB")]),
+                new("net472", "net472", [new("packagea")], []),
+            ];
 
             List<string> result = ListPackageCommandRunner.GetPackageIds(frameworks, includeTransitive: true);
 
-            Assert.Equal(new[] { "Newtonsoft.Json", "Serilog" }, result.OrderBy(id => id, StringComparer.OrdinalIgnoreCase));
+            Assert.Equal(new[] { "PackageA", "PackageB" }, result.OrderBy(id => id, StringComparer.OrdinalIgnoreCase));
         }
 
         [Fact]
         public void SponsorshipOrder_FollowsConfiguredSourceOrder()
         {
-            var packageSources = new List<PackageSource>
-            {
-                new PackageSource("https://first.test/v3/index.json"),
-                new PackageSource("https://second.test/v3/index.json"),
-            };
-            string[] urls = { "https://sponsor/a", "https://sponsor/b" };
-            var sponsorships = new[]
-            {
-                new PackageSponsorship(packageSources[1].Source, urls),
-                new PackageSponsorship("https://unconfigured.test/v3/index.json", urls),
-                new PackageSponsorship(packageSources[0].Source, urls),
-            };
+            List<PackageSource> packageSources = [new("https://first"), new("https://second")];
+            var sponsorships = packageSources.AsEnumerable().Reverse()
+                .Select(source => new PackageSponsorship(source.Source, []));
+            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs(
+                "", packageSources, new ListPackageConsoleRenderer());
 
-            List<PackageSponsorship> result =
-                ListPackageCommandRunner.OrderSponsorshipsByConfiguredSource(
-                    sponsorships,
-                    SponsorArgs(packageSources));
+            List<PackageSponsorship> result = ListPackageCommandRunner.OrderSponsorshipsByConfiguredSource(sponsorships, args);
 
-            Assert.Equal(
-                new[]
-                {
-                    packageSources[0].Source,
-                    packageSources[1].Source,
-                    "https://unconfigured.test/v3/index.json",
-                },
-                result.Select(sponsorship => sponsorship.Source));
+            Assert.Equal(packageSources.Select(source => source.Source), result.Select(sponsorship => sponsorship.Source));
         }
 
         [Theory]
@@ -484,50 +463,20 @@ namespace NuGet.CommandLine.Xplat.Tests
                 new PackageSource("https://unmapped.test/v3/index.json", name: "unmapped"),
             };
             PackageSourceMapping sourceMapping = mappedPattern.Length == 0
-                ? CreatePackageSourceMapping()
-                : CreatePackageSourceMapping(
-                    ("mapped", mappedPattern),
-                    ("unmapped", "Some.Other.Package"));
+                ? NoPackageSourceMapping
+                : new PackageSourceMapping(new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["mapped"] = new[] { mappedPattern },
+                    ["unmapped"] = new[] { "Some.Other.Package" },
+                });
 
             List<PackageSource> result =
                 ListPackageCommandRunner.FilterSourcesByPackageSourceMapping(
                     "Newtonsoft.Json",
-                    SponsorArgs(packageSources, sourceMapping));
+                    ListPackageTestHelper.CreateSponsorArgs(
+                        "", packageSources, new ListPackageConsoleRenderer(), packageSourceMapping: sourceMapping));
 
-            string[] expected = expectedSourceNames.Length == 0
-                ? Array.Empty<string>()
-                : expectedSourceNames.Split(',');
-            Assert.Equal(expected, result.Select(source => source.Name));
-        }
-
-        private static PackageSourceMapping CreatePackageSourceMapping(
-            params (string sourceName, string pattern)[] mappings)
-        {
-            return new PackageSourceMapping(
-                mappings.ToDictionary(
-                    mapping => mapping.sourceName,
-                    mapping => (IReadOnlyList<string>)new List<string> { mapping.pattern },
-                    StringComparer.OrdinalIgnoreCase));
-        }
-
-        private static ListPackageArgs SponsorArgs(
-            List<PackageSource> sources,
-            PackageSourceMapping sourceMapping = null)
-        {
-            return new ListPackageArgs(
-                path: "",
-                packageSources: sources,
-                frameworks: new List<string>(),
-                reportType: ReportType.Sponsor,
-                renderer: new ListPackageConsoleRenderer(),
-                includeTransitive: false,
-                prerelease: false,
-                highestPatch: false,
-                highestMinor: false,
-                auditSources: null,
-                logger: new Mock<ILogger>().Object,
-                cancellationToken: CancellationToken.None,
-                packageSourceMapping: sourceMapping ?? NoPackageSourceMapping);
+            Assert.Equal(expectedSourceNames, string.Join(",", result.Select(source => source.Name)));
         }
 
     }
