@@ -150,7 +150,6 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
                 {
-                    List<PackageSource> httpSources;
                     Dictionary<string, List<PackageSource>> sponsorshipSourcesById = null;
                     if (listPackageArgs.ReportType == ReportType.Sponsor)
                     {
@@ -158,19 +157,10 @@ namespace NuGet.CommandLine.XPlat
                         sponsorshipSourcesById = GetPackageIds(frameworks, includeTransitive: true)
                             .ToDictionary(id => id, id => FilterSourcesByPackageSourceMapping(id, listPackageArgs),
                                 StringComparer.OrdinalIgnoreCase);
-                        var sponsorshipSources = sponsorshipSourcesById.Values.SelectMany(sources => sources).ToHashSet();
-                        List<PackageSource> packageSources = listPackageArgs.PackageSources.Where(sponsorshipSources.Contains).ToList();
-                        httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(packageSources);
-                    }
-                    else
-                    {
-                        httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
-                        httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
                     }
 
-                    if (httpSources.Count > 0)
+                    if (DetectAndReportInsecureSources(listPackageArgs, projectModel, sponsorshipSourcesById))
                     {
-                        projectModel.AddProjectInformation(ProblemType.Error, HttpSourcesUtility.BuildHttpSourceErrorMessage(httpSources, "list package"));
                         return;
                     }
 
@@ -203,6 +193,33 @@ namespace NuGet.CommandLine.XPlat
                     }
                 }
             }
+        }
+
+        private static bool DetectAndReportInsecureSources(
+            ListPackageArgs listPackageArgs,
+            ListPackageProjectModel projectModel,
+            Dictionary<string, List<PackageSource>> sponsorshipSourcesById)
+        {
+            List<PackageSource> httpSources;
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                var sponsorshipSources = sponsorshipSourcesById.Values.SelectMany(sources => sources).ToHashSet();
+                List<PackageSource> packageSources = listPackageArgs.PackageSources.Where(sponsorshipSources.Contains).ToList();
+                httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(packageSources);
+            }
+            else
+            {
+                httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
+                httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
+            }
+
+            if (httpSources.Count > 0)
+            {
+                projectModel.AddProjectInformation(ProblemType.Error, HttpSourcesUtility.BuildHttpSourceErrorMessage(httpSources, "list package"));
+                return true;
+            }
+
+            return false;
         }
 
         private static async Task GetVulnerabilitiesFromAuditSourcesAsync(
