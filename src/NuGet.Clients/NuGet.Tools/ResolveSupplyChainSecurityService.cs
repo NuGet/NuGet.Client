@@ -81,13 +81,20 @@ namespace NuGetVSExtension
 
             await using CopilotToolSession session = result.Session!;
 
-            string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
-            CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
+            Assumes.Present(SolutionManager);
+            string solutionContext = await CopilotSolutionContext.CreateAsync(SolutionManager, cancellationToken);
+            CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionContext);
             CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(session.Functions).WithContext(context);
+            CopilotUserMessage harnessRequest = new()
+            {
+                DisplayPrompt = prompt,
+                Prompt = prompt,
+                Agent = NuGetSdkAgent.AgentName,
+            };
 
             try
             {
-                _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
+                await session.SendRequestAsync(requestWithFunctionsAndContext, harnessRequest, cancellationToken);
                 TelemetryActivity.EmitTelemetryEvent(
                     NavigatedTelemetryEvent.CreateWithResolveSupplyChainSecurity(source.NavigationOrigin, CopilotToolSessionError.None));
             }
@@ -101,7 +108,5 @@ namespace NuGetVSExtension
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_ResolveSupplyChainSecurityWithCopilot);
             }
         }
-
-        private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
     }
 }
