@@ -80,8 +80,9 @@ namespace NuGetVSExtension
             await using CopilotToolSession session = result.Session!;
 
             // Attach solution context and available functions to the request
-            string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
-            CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
+            Assumes.Present(SolutionManager);
+            string solutionContext = await CopilotSolutionContext.CreateAsync(SolutionManager, cancellationToken);
+            CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionContext);
             CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(session.Functions).WithContext(context);
             CopilotUserMessage harnessRequest = new()
             {
@@ -92,8 +93,8 @@ namespace NuGetVSExtension
                 [
                     new CopilotTextAttachment
                     {
-                        Content = solutionPathContext,
-                        Label = "#solution",
+                        Content = solutionContext,
+                        Label = "#nuget-solution-context",
                     },
                 ],
             };
@@ -133,7 +134,5 @@ namespace NuGetVSExtension
                 _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
             };
         }
-
-        private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
     }
 }
