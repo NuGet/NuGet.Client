@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
+using Microsoft.VisualStudio.Copilot.Internal.Mcp;
 using Microsoft.VisualStudio.Copilot.Sdk;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using NuGet.PackageManagement.VisualStudio;
@@ -25,26 +26,6 @@ namespace NuGetVSExtension
     internal sealed class NuGetSdkAgent : ICopilotSdkAgent
     {
         internal const string AgentName = "nuget";
-
-        private static readonly IReadOnlyList<CopilotFunctionDescriptor> BuiltInTools =
-        [
-            KnownCopilotFunctions.ReadFile,
-            KnownCopilotFunctions.FindFiles,
-            KnownCopilotFunctions.GetErrors,
-            KnownCopilotFunctions.GetFilesInProject,
-            KnownCopilotFunctions.GetProjectsInSolution,
-            KnownCopilotFunctions.RemoveFile,
-            KnownCopilotFunctions.CreateFile,
-            KnownCopilotFunctions.RunBuild,
-            KnownCopilotFunctions.GetTests,
-            KnownCopilotFunctions.RunTests,
-            KnownCopilotFunctions.RunCommandInTerminal,
-            KnownCopilotFunctions.GetBackgroundTerminalOutput,
-            KnownCopilotFunctions.GetOutputWindowLogs,
-            KnownCopilotFunctions.EditFiles,
-            KnownCopilotFunctions.Plan,
-            KnownCopilotFunctions.AskQuestion,
-        ];
 
         [Import(typeof(SVsFullAccessServiceBroker), AllowDefault = true)]
         public IServiceBroker? ServiceBroker { get; set; }
@@ -65,54 +46,73 @@ namespace NuGetVSExtension
             IServiceBroker serviceBroker = ServiceBroker
                 ?? throw new InvalidOperationException("The Visual Studio service broker is unavailable.");
 
-            ICopilotFunctionProvider? functionProvider = await serviceBroker.GetProxyAsync<ICopilotFunctionProvider>(
-                CopilotDescriptors.McpToolService,
+            IMcpServerInfoService? mcpServerInfoService = await serviceBroker.GetProxyAsync<IMcpServerInfoService>(
+                McpServiceIdentities.ServerInfoService.Descriptor,
                 cancellationToken);
 
-            using (functionProvider as IDisposable)
+            using (mcpServerInfoService as IDisposable)
             {
-                if (functionProvider is null)
+                if (mcpServerInfoService is null)
                 {
-                    throw new InvalidOperationException("The Copilot MCP tool service is unavailable.");
+                    throw new InvalidOperationException("The MCP server information service is unavailable.");
                 }
 
-                IReadOnlyList<CopilotFunctionDescriptor>? functions = await functionProvider.GetFunctionsAsync(
-                    CopilotCorrelationId.New(),
+                ICopilotFunctionProvider? functionProvider = await serviceBroker.GetProxyAsync<ICopilotFunctionProvider>(
+                    CopilotDescriptors.McpToolService,
                     cancellationToken);
 
-                IReadOnlyList<CopilotMcpFunctionDescriptor> nuGetMcpTools = SelectPreferredNuGetMcpTools(functions);
-                return BuiltInTools.Concat(nuGetMcpTools).ToList();
+                using (functionProvider as IDisposable)
+                {
+                    if (functionProvider is null)
+                    {
+                        throw new InvalidOperationException("The Copilot MCP tool service is unavailable.");
+                    }
+
+                    IReadOnlyList<CopilotFunctionDescriptor>? functions = await functionProvider.GetFunctionsAsync(
+                        CopilotCorrelationId.New(),
+                        cancellationToken);
+
+                    return await SelectPreferredNuGetMcpToolsAsync(
+                        mcpServerInfoService,
+                        functions,
+                        cancellationToken);
+                }
             }
         }
 
-        internal static IReadOnlyList<CopilotMcpFunctionDescriptor> SelectPreferredNuGetMcpTools(
-            IReadOnlyList<CopilotFunctionDescriptor>? functions)
+        internal static async Task<IReadOnlyList<CopilotMcpFunctionDescriptor>> SelectPreferredNuGetMcpToolsAsync(
+            IMcpServerInfoService mcpServerInfoService,
+            IReadOnlyList<CopilotFunctionDescriptor>? functions,
+            CancellationToken cancellationToken)
         {
             if (functions is null)
             {
                 return [];
             }
 
-            IReadOnlyList<CopilotMcpFunctionDescriptor> inBoxTools = functions
-                .OfType<CopilotMcpFunctionDescriptor>()
-                .Where(function => string.Equals(
-                    function.Group,
-                    McpServerConstants.NuGetMcpServerName,
-                    StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (inBoxTools.Count > 0)
+            foreach (string serverName in McpServerConstants.NuGetMcpServerNames)
             {
-                return inBoxTools;
+                McpServerState? state = await mcpServerInfoService.GetServerStateAsync(serverName, cancellationToken);
+                if (state is not (McpServerState.Active or McpServerState.Suspended))
+                {
+                    continue;
+                }
+
+                IReadOnlyList<CopilotMcpFunctionDescriptor> tools = functions
+                    .OfType<CopilotMcpFunctionDescriptor>()
+                    .Where(function => string.Equals(
+                        function.Group,
+                        serverName,
+                        StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (tools.Count > 0)
+                {
+                    return tools;
+                }
             }
 
-            return functions
-                .OfType<CopilotMcpFunctionDescriptor>()
-                .Where(function => string.Equals(
-                    function.Group,
-                    McpServerConstants.ComMicrosoftNuGetMcpServerName,
-                    StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            return [];
         }
     }
 #pragma warning restore VSCOPILOT_BACKEND
