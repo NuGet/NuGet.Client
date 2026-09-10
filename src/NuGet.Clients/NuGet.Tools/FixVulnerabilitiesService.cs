@@ -83,10 +83,15 @@ namespace NuGetVSExtension
             string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
             CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
             CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(session.Functions).WithContext(context);
+            CopilotUserMessage harnessRequest = new()
+            {
+                Prompt = $"{Resources.Prompt_FixNuGetPackageVulnerabilities}\n\n{solutionPathContext}",
+                Agent = NuGetSdkAgent.AgentName,
+            };
 
             try
             {
-                _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
+                await session.SendRequestAsync(requestWithFunctionsAndContext, harnessRequest, cancellationToken);
                 SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None, navigationOrigin);
             }
             catch (UnauthorizedAccessException ex)

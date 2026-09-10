@@ -84,10 +84,15 @@ namespace NuGetVSExtension
             string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
             CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
             CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(session.Functions).WithContext(context);
+            CopilotUserMessage harnessRequest = new()
+            {
+                Prompt = $"{prompt}\n\n{solutionPathContext}",
+                Agent = NuGetSdkAgent.AgentName,
+            };
 
             try
             {
-                _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
+                await session.SendRequestAsync(requestWithFunctionsAndContext, harnessRequest, cancellationToken);
                 TelemetryActivity.EmitTelemetryEvent(
                     NavigatedTelemetryEvent.CreateWithResolveSupplyChainSecurity(source.NavigationOrigin, CopilotToolSessionError.None));
             }
