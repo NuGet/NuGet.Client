@@ -184,6 +184,11 @@ namespace NuGet.Commands
 
         public PackageSourceMapping PackageSourceMapping { get; }
 
+        /// <summary>
+        /// Gets or sets the package ID patterns that are exempt from package source minimum publish age restrictions.
+        /// </summary>
+        public MinPublishAgeExceptions MinPublishAgeExceptions { get; set; }
+
         /// <remarks>
         /// This property should only be used to override the default verifier on tests.
         /// </remarks>
