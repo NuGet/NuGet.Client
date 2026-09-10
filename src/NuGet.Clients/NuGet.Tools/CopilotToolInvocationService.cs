@@ -44,14 +44,15 @@ namespace NuGetVSExtension
             }
 
             // 2. Verify service broker is available
-            if (ServiceBroker == null)
+            IServiceBroker? serviceBroker = ServiceBroker;
+            if (serviceBroker == null)
             {
                 return CopilotToolSessionResult.Failure(CopilotToolSessionError.ServiceBrokerNotAvailable);
             }
 
             // 3. Acquire Copilot service. Ownership transfers to CopilotToolSession on success.
 #pragma warning disable ISB001 // Dispose objects before losing scope - ownership is transferred to CopilotToolSession on success
-            ICopilotService? copilotService = await ServiceBroker.GetProxyAsync<ICopilotService>(CopilotDescriptors.CopilotService, cancellationToken);
+            ICopilotService? copilotService = await serviceBroker.GetProxyAsync<ICopilotService>(CopilotDescriptors.CopilotService, cancellationToken);
 #pragma warning restore ISB001
 
             bool ownershipTransferred = false;
@@ -81,6 +82,7 @@ namespace NuGetVSExtension
 #pragma warning restore VSCOPILOT_BACKEND
 
                 CopilotToolSessionResult result = await TryCreateLegacyToolSessionAsync(
+                    serviceBroker,
                     copilotService,
                     clientId,
                     correlationId,
@@ -101,6 +103,7 @@ namespace NuGetVSExtension
         }
 
         private async Task<CopilotToolSessionResult> TryCreateLegacyToolSessionAsync(
+            IServiceBroker serviceBroker,
             ICopilotService copilotService,
             CopilotClientId clientId,
             CopilotCorrelationId correlationId,
@@ -109,7 +112,7 @@ namespace NuGetVSExtension
             CancellationToken cancellationToken)
         {
             // Verify the required MCP server is registered and active.
-            IMcpServerInfoService? mcpServerInfoService = await ServiceBroker.GetProxyAsync<IMcpServerInfoService>(McpServiceIdentities.ServerInfoService.Descriptor, cancellationToken);
+            IMcpServerInfoService? mcpServerInfoService = await serviceBroker.GetProxyAsync<IMcpServerInfoService>(McpServiceIdentities.ServerInfoService.Descriptor, cancellationToken);
             using (mcpServerInfoService as IDisposable)
             {
                 if (mcpServerInfoService is null)
@@ -127,7 +130,7 @@ namespace NuGetVSExtension
             }
 
             // Acquire MCP tool function provider and get available functions.
-            ICopilotFunctionProvider? cfp = await ServiceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
+            ICopilotFunctionProvider? cfp = await serviceBroker.GetProxyAsync<ICopilotFunctionProvider>(CopilotDescriptors.McpToolService, cancellationToken);
             using (cfp as IDisposable)
             {
                 if (cfp is null)
