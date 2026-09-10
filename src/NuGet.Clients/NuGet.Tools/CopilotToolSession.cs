@@ -87,13 +87,7 @@ namespace NuGetVSExtension
         {
             try
             {
-                if (_harnessSessionId is CopilotSessionId harnessSessionId)
-                {
-#pragma warning disable VSCOPILOT_BACKEND // Experimental SDK harness contracts.
-                    await _copilotService.EndSessionAsync(harnessSessionId, CancellationToken.None);
-#pragma warning restore VSCOPILOT_BACKEND
-                }
-                else if (Thread is not null)
+                if (_harnessSessionId is null && Thread is not null)
                 {
                     await Thread.DisposeAsync();
                 }

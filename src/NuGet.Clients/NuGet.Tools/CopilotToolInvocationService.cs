@@ -71,7 +71,7 @@ namespace NuGetVSExtension
                         {
                             Feature = new CopilotFeatureId(clientId.Id),
                             DefaultAgent = NuGetSdkAgent.AgentName,
-                            IsEphemeral = true,
+                            IsEphemeral = false,
                         },
                         cancellationToken);
 
@@ -102,7 +102,7 @@ namespace NuGetVSExtension
             }
         }
 
-        private async Task<CopilotToolSessionResult> TryCreateLegacyToolSessionAsync(
+        private static async Task<CopilotToolSessionResult> TryCreateLegacyToolSessionAsync(
             IServiceBroker serviceBroker,
             ICopilotService copilotService,
             CopilotClientId clientId,

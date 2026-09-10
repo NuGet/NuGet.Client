@@ -86,8 +86,17 @@ namespace NuGetVSExtension
             CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(session.Functions).WithContext(context);
             CopilotUserMessage harnessRequest = new()
             {
-                Prompt = $"{prompt}\n\n{solutionPathContext}",
+                DisplayPrompt = prompt,
+                Prompt = prompt,
                 Agent = NuGetSdkAgent.AgentName,
+                Attachments =
+                [
+                    new CopilotTextAttachment
+                    {
+                        Content = solutionPathContext,
+                        Label = "#solution",
+                    },
+                ],
             };
 
             try
