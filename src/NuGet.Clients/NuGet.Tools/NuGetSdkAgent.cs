@@ -20,6 +20,10 @@ namespace NuGetVSExtension
     {
         internal const string AgentName = "nuget";
 
+        public void Dispose()
+        {
+        }
+
         public Task<string> GetSystemPromptAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(
