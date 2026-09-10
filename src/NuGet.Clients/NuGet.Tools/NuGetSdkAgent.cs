@@ -1,11 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
 using Microsoft.VisualStudio.Copilot.Sdk;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGetVSExtension
 {
@@ -14,11 +20,34 @@ namespace NuGetVSExtension
         AgentName,
         DisplayName = "NuGet",
         Description = "Helps resolve NuGet package management issues.",
-        IncludeBuiltInContributions = true,
+        IncludeBuiltInContributions = false,
         Usage = AgentUsage.Programmatic)]
     internal sealed class NuGetSdkAgent : ICopilotSdkAgent
     {
         internal const string AgentName = "nuget";
+
+        private static readonly IReadOnlyList<CopilotFunctionDescriptor> BuiltInTools =
+        [
+            KnownCopilotFunctions.ReadFile,
+            KnownCopilotFunctions.FindFiles,
+            KnownCopilotFunctions.GetErrors,
+            KnownCopilotFunctions.GetFilesInProject,
+            KnownCopilotFunctions.GetProjectsInSolution,
+            KnownCopilotFunctions.RemoveFile,
+            KnownCopilotFunctions.CreateFile,
+            KnownCopilotFunctions.RunBuild,
+            KnownCopilotFunctions.GetTests,
+            KnownCopilotFunctions.RunTests,
+            KnownCopilotFunctions.RunCommandInTerminal,
+            KnownCopilotFunctions.GetBackgroundTerminalOutput,
+            KnownCopilotFunctions.GetOutputWindowLogs,
+            KnownCopilotFunctions.EditFiles,
+            KnownCopilotFunctions.Plan,
+            KnownCopilotFunctions.AskQuestion,
+        ];
+
+        [Import(typeof(SVsFullAccessServiceBroker), AllowDefault = true)]
+        public IServiceBroker? ServiceBroker { get; set; }
 
         public void Dispose()
         {
@@ -31,9 +60,59 @@ namespace NuGetVSExtension
                 "Use absolute paths when invoking MCP tools.");
         }
 
-        public Task<IReadOnlyList<CopilotFunctionDescriptor>> GetToolsAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<CopilotFunctionDescriptor>> GetToolsAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult<IReadOnlyList<CopilotFunctionDescriptor>>([]);
+            IServiceBroker serviceBroker = ServiceBroker
+                ?? throw new InvalidOperationException("The Visual Studio service broker is unavailable.");
+
+            ICopilotFunctionProvider? functionProvider = await serviceBroker.GetProxyAsync<ICopilotFunctionProvider>(
+                CopilotDescriptors.McpToolService,
+                cancellationToken);
+
+            using (functionProvider as IDisposable)
+            {
+                if (functionProvider is null)
+                {
+                    throw new InvalidOperationException("The Copilot MCP tool service is unavailable.");
+                }
+
+                IReadOnlyList<CopilotFunctionDescriptor>? functions = await functionProvider.GetFunctionsAsync(
+                    CopilotCorrelationId.New(),
+                    cancellationToken);
+
+                IReadOnlyList<CopilotMcpFunctionDescriptor> nuGetMcpTools = SelectPreferredNuGetMcpTools(functions);
+                return BuiltInTools.Concat(nuGetMcpTools).ToList();
+            }
+        }
+
+        internal static IReadOnlyList<CopilotMcpFunctionDescriptor> SelectPreferredNuGetMcpTools(
+            IReadOnlyList<CopilotFunctionDescriptor>? functions)
+        {
+            if (functions is null)
+            {
+                return [];
+            }
+
+            IReadOnlyList<CopilotMcpFunctionDescriptor> inBoxTools = functions
+                .OfType<CopilotMcpFunctionDescriptor>()
+                .Where(function => string.Equals(
+                    function.Group,
+                    McpServerConstants.NuGetMcpServerName,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (inBoxTools.Count > 0)
+            {
+                return inBoxTools;
+            }
+
+            return functions
+                .OfType<CopilotMcpFunctionDescriptor>()
+                .Where(function => string.Equals(
+                    function.Group,
+                    McpServerConstants.ComMicrosoftNuGetMcpServerName,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
     }
 #pragma warning restore VSCOPILOT_BACKEND
