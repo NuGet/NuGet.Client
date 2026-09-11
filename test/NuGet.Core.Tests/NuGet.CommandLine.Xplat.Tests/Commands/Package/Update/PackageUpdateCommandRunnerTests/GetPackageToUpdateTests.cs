@@ -201,6 +201,45 @@ public class GetPackageToUpdateTests
     }
 
     [Fact]
+    public async Task RequestPackageWithMissingPublishDate_LogsError()
+    {
+        // Arrange
+        Pkg package = new()
+        {
+            Id = "Contoso.Utils",
+            VersionRange = null
+        };
+
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Contoso.Utils", [new("Version", "1.0.0")]);
+        })
+            .Build();
+
+        var packageUpdateIO = new Mock<IPackageUpdateIO>(MockBehavior.Strict);
+        packageUpdateIO
+            .Setup(v => v.GetLatestVersionAsync("Contoso.Utils", false, _anyPackageSourceMapping, It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new PackageUpdateException("The package publish date is missing."));
+        packageUpdateIO.Setup(v => v.GetPackageSourceMapping()).Returns(DisabledPackageSourceMapping);
+
+        var logger = new Mock<ILoggerWithColor>();
+
+        // Act
+        var (packagesToUpdate, scannedPackages) = await PackageUpdateCommandRunner.SelectSpecificPackagesToUpdateAsync(
+            [package],
+            packageSpec,
+            logger.Object,
+            packageUpdateIO.Object,
+            CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().BeNull();
+        scannedPackages.Should().ContainSingle().Which.Should().Be("Contoso.Utils");
+        logger.Verify(l => l.LogError("The package publish date is missing."), Times.Once);
+    }
+
+    [Fact]
     public async Task RequestMultiplePackages_GetsAllRequested()
     {
         // Arrange

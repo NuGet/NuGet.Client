@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -115,6 +116,69 @@ public class GetNonVulnerableAsyncTests
             new NuGetVersion("1.0.0"),
             NullLogger.Instance,
             knownVulnerabilities,
+            CancellationToken.None);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetNonVulnerableAsync_WhenOnlyNonVulnerableVersionIsInCooldown_ReturnsNull()
+    {
+        // Arrange
+        using var testContext = new SimpleTestPathContext();
+        const string packageId = "TestPackage.CooldownVulnerability";
+        DateTimeOffset utcNow = new(2026, 9, 11, 0, 0, 0, TimeSpan.Zero);
+
+        await SimpleTestPackageUtility.CreatePackagesAsync(
+            testContext.PackageSource,
+            new SimpleTestPackageContext(packageId, "1.0.0"),
+            new SimpleTestPackageContext(packageId, "2.0.0"));
+
+        File.SetLastWriteTimeUtc(
+            Path.Combine(testContext.PackageSource, $"{packageId}.1.0.0.nupkg"),
+            utcNow.AddHours(-25).UtcDateTime);
+        File.SetLastWriteTimeUtc(
+            Path.Combine(testContext.PackageSource, $"{packageId}.2.0.0.nupkg"),
+            utcNow.AddHours(-23).UtcDateTime);
+
+        File.WriteAllText(
+            Path.Combine(testContext.SolutionRoot, "nuget.config"),
+            $"""
+            <?xml version="1.0" encoding="utf-8"?>
+            <configuration>
+              <packageSources>
+                <clear />
+                <add key="test" value="{testContext.PackageSource}" minPublishAgeHours="24" />
+              </packageSources>
+            </configuration>
+            """);
+
+        var msbuildUtility = new MSBuildAPIUtility(NullLogger.Instance, virtualProjectBuilder: null);
+        using var packageUpdateIO = new PackageUpdateIO(
+            testContext.SolutionRoot,
+            msbuildUtility,
+            TestEnvironmentVariableReader.EmptyInstance,
+            () => utcNow);
+
+        var vulnerabilities = new Dictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>
+        {
+            [packageId] =
+            [
+                new PackageVulnerabilityInfo(
+                    url: new Uri("https://example.com/vuln"),
+                    severity: PackageVulnerabilitySeverity.High,
+                    versions: VersionRange.Parse("[1.0.0]"))
+            ]
+        };
+
+        // Act
+        NuGetVersion? result = await packageUpdateIO.GetNonVulnerableAsync(
+            packageId,
+            allowedSources: null,
+            new NuGetVersion("1.0.0"),
+            NullLogger.Instance,
+            [vulnerabilities],
             CancellationToken.None);
 
         // Assert

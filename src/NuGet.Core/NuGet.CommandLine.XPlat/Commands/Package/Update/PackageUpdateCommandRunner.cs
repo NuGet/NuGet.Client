@@ -132,7 +132,7 @@ internal static class PackageUpdateCommandRunner
         return ExitCodes.Success;
     }
 
-    private static async Task<(List<PackageUpdateResult> vulnerablePackages, HashSet<string> packagesScanned)> SelectVulnerablePackagesToUpdateAsync(
+    private static async Task<(List<PackageUpdateResult>? vulnerablePackages, HashSet<string> packagesScanned)> SelectVulnerablePackagesToUpdateAsync(
         IReadOnlyList<PackageWithVersionRange>? packages,
         DependencyGraphSpec dgSpec,
         string projectPath,
@@ -200,6 +200,7 @@ internal static class PackageUpdateCommandRunner
                 .ToList();
 
             PackageSourceMapping sourceMapping = packageUpdateIO.GetPackageSourceMapping();
+            bool successful = true;
             foreach (var (packageIdentity, tfmAliases) in packagesToUpdate)
             {
                 IReadOnlyList<string>? mappedSources = sourceMapping.IsEnabled ? sourceMapping.GetConfiguredPackageSources(packageIdentity.Id) : null;
@@ -209,7 +210,18 @@ internal static class PackageUpdateCommandRunner
                     continue;
                 }
 
-                var nonVulnerableVersion = await packageUpdateIO.GetNonVulnerableAsync(packageIdentity.Id, mappedSources, packageIdentity.Version, NullLogger.Instance, knownVulnerabilities, cancellationToken);
+                NuGetVersion? nonVulnerableVersion;
+                try
+                {
+                    nonVulnerableVersion = await packageUpdateIO.GetNonVulnerableAsync(packageIdentity.Id, mappedSources, packageIdentity.Version, NullLogger.Instance, knownVulnerabilities, cancellationToken);
+                }
+                catch (PackageUpdateException exception)
+                {
+                    logger.LogError(exception.Message);
+                    successful = false;
+                    continue;
+                }
+
                 if (nonVulnerableVersion is null)
                 {
                     logger.LogMinimal(Format.PackageUpdate_AllVersionsHaveAdvisories(packageIdentity.Id), ConsoleColor.Yellow);
@@ -227,6 +239,11 @@ internal static class PackageUpdateCommandRunner
                         TargetFrameworkAliases = tfmAliases
                     });
                 }
+            }
+
+            if (!successful)
+            {
+                return (null, scannedPackages);
             }
         }
 
@@ -343,10 +360,11 @@ internal static class PackageUpdateCommandRunner
                 projectPackageUpdates,
                 async (projectPath, ct) =>
                 {
-                    (List<PackageUpdateResult> packagesToUpdate, HashSet<string> scannedPackages) =
+                    (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages) =
                         await SelectVulnerablePackagesToUpdateAsync(args.Packages, dgSpec, projectPath, logger, packageUpdateIO, ct);
 
-                    return (packagesToUpdate, scannedPackages, null);
+                    int? errorCode = packagesToUpdate is null ? ExitCodes.Error : null;
+                    return (packagesToUpdate, scannedPackages, errorCode);
                 },
                 cancellationToken);
 
@@ -510,7 +528,18 @@ internal static class PackageUpdateCommandRunner
             else
             {
                 bool usePrerelease = existingVersion.HasLowerBound && existingVersion.MinVersion.IsPrerelease;
-                var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
+                NuGetVersion? latestVersion;
+                try
+                {
+                    latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
+                }
+                catch (PackageUpdateException exception)
+                {
+                    logger.LogError(exception.Message);
+                    hasErrors = true;
+                    continue;
+                }
+
                 if (latestVersion is null)
                 {
                     logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
@@ -647,7 +676,17 @@ internal static class PackageUpdateCommandRunner
             // package.identity.VersionRange is the project's referenced version.
             Debug.Assert(package.identity.VersionRange != null);
             bool usePrerelease = package.identity.VersionRange.HasLowerBound && package.identity.VersionRange.MinVersion.IsPrerelease;
-            var latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
+            NuGetVersion? latestVersion;
+            try
+            {
+                latestVersion = await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken);
+            }
+            catch (PackageUpdateException exception)
+            {
+                logger.LogError(exception.Message);
+                successful = false;
+                continue;
+            }
 
             if (latestVersion is null)
             {

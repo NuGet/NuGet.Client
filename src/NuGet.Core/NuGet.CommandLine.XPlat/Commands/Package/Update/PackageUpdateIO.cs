@@ -33,15 +33,22 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
     private readonly MSBuildAPIUtility _msbuildUtility;
     private readonly IEnvironmentVariableReader _environmentVariableReader;
     private readonly ISettings _settings;
-    private readonly IPackageSourceProvider _sourceProvider;
+    private readonly PackageSourceProvider _sourceProvider;
     private readonly CachingSourceProvider _cachingSourceProvider;
     private readonly IReadOnlyList<PackageSource> _enabledSources;
+    private readonly MinPublishAgeExceptions _minPublishAgeExceptions;
     private readonly SourceCacheContext _sourceCacheContext;
+    private readonly Func<DateTimeOffset> _utcNow;
 
-    public PackageUpdateIO(string solutionDirectory, MSBuildAPIUtility msbuildUtility, IEnvironmentVariableReader environmentVariableReader)
+    public PackageUpdateIO(
+        string solutionDirectory,
+        MSBuildAPIUtility msbuildUtility,
+        IEnvironmentVariableReader environmentVariableReader,
+        Func<DateTimeOffset>? utcNow = null)
     {
         _msbuildUtility = msbuildUtility;
         _environmentVariableReader = environmentVariableReader;
+        _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
 
         // the CommandLine option validates that an existing filesystem object is provided, so we can be confident that
         // we either have a directory or a file here.
@@ -51,6 +58,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         _sourceProvider = new PackageSourceProvider(_settings);
         _cachingSourceProvider = new CachingSourceProvider(_sourceProvider);
         _enabledSources = SettingsUtility.GetEnabledSources(_settings).AsList();
+        _minPublishAgeExceptions = _sourceProvider.GetMinPublishAgeExceptions();
         _sourceCacheContext = new SourceCacheContext();
     }
 
@@ -230,11 +238,20 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
     {
         var sources = GetSourcesForPackage(packageId, allowedSources);
         var lookups = new Task<NuGetVersion?>[sources.Count];
+        DateTimeOffset utcNow = _utcNow();
+        bool isCooldownExempt = _minPublishAgeExceptions.FindException(packageId) is not null;
         for (int source = 0; source < sources.Count; source++)
         {
             SourceRepository sourceRepository = sources[source];
             // If package source is a local folder feed, it might not actually be async
-            lookups[source] = Task.Run(() => FindHighestPackageVersionAsync(sourceRepository, packageId, includePrerelease, logger, cancellationToken));
+            lookups[source] = Task.Run(() => FindHighestPackageVersionAsync(
+                sourceRepository,
+                packageId,
+                includePrerelease,
+                isCooldownExempt,
+                utcNow,
+                logger,
+                cancellationToken));
         }
 
         await Task.WhenAll(lookups);
@@ -309,11 +326,21 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
     {
         var sources = GetSourcesForPackage(packageId, allowedSources);
         var lookups = new Task<NuGetVersion?>[sources.Count];
+        DateTimeOffset utcNow = _utcNow();
+        bool isCooldownExempt = _minPublishAgeExceptions.FindException(packageId) is not null;
         for (int source = 0; source < sources.Count; source++)
         {
             SourceRepository sourceRepository = sources[source];
             // If package source is a local folder feed, it might not actually be async
-            lookups[source] = Task.Run(() => FindLowestNonVulnerablePackageVersionAsync(sourceRepository, packageId, minVersion, knownVulnerabilities, logger, cancellationToken));
+            lookups[source] = Task.Run(() => FindLowestNonVulnerablePackageVersionAsync(
+                sourceRepository,
+                packageId,
+                minVersion,
+                isCooldownExempt,
+                utcNow,
+                knownVulnerabilities,
+                logger,
+                cancellationToken));
         }
 
         await Task.WhenAll(lookups);
@@ -372,6 +399,8 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         SourceRepository source,
         string packageId,
         NuGetVersion minVersion,
+        bool isCooldownExempt,
+        DateTimeOffset utcNow,
         IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities,
         ILogger logger,
         CancellationToken cancellationToken)
@@ -395,7 +424,12 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             return null;
         }
 
-        var versions = packageDetails
+        var versions = FilterPackageVersionsByCooldown(
+                packageDetails,
+                source.PackageSource,
+                packageId,
+                isCooldownExempt,
+                utcNow)
             .Select(p => p.Identity)
             .Where(p => p.Version >= minVersion && !PackageHasKnownVulnerability(p))
             .Select(p => p.Version);
@@ -428,6 +462,8 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         SourceRepository source,
         string packageId,
         bool includePrerelease,
+        bool isCooldownExempt,
+        DateTimeOffset utcNow,
         ILogger logger,
         CancellationToken cancellationToken)
     {
@@ -450,8 +486,50 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             return null;
         }
 
-        NuGetVersion highestVersion = packageDetails.Max(p => p.Identity.Version)!;
+        NuGetVersion? highestVersion = FilterPackageVersionsByCooldown(
+                packageDetails,
+                source.PackageSource,
+                packageId,
+                isCooldownExempt,
+                utcNow)
+            .Max(package => package.Identity.Version);
         return highestVersion;
+    }
+
+    internal static IEnumerable<IPackageSearchMetadata> FilterPackageVersionsByCooldown(
+        IEnumerable<IPackageSearchMetadata> packageDetails,
+        PackageSource packageSource,
+        string packageId,
+        bool isCooldownExempt,
+        DateTimeOffset utcNow)
+    {
+        TimeSpan minPublishAge = isCooldownExempt ? TimeSpan.Zero : packageSource.MinPublishAge;
+        if (minPublishAge == TimeSpan.Zero)
+        {
+            foreach (IPackageSearchMetadata package in packageDetails)
+            {
+                yield return package;
+            }
+
+            yield break;
+        }
+
+        DateTimeOffset cutoff = utcNow - minPublishAge;
+        foreach (IPackageSearchMetadata package in packageDetails)
+        {
+            if (package.Published is null)
+            {
+                throw new PackageUpdateException(Messages.Error_PackagePublishDateMissing(
+                    packageSource.Name,
+                    packageId,
+                    package.Identity.Version.ToNormalizedString()));
+            }
+
+            if (package.Published <= cutoff)
+            {
+                yield return package;
+            }
+        }
     }
 
     /// <inheritdoc cref="IPackageUpdateIO.GetProjectAssetsFileAsync(DependencyGraphSpec, string, ILogger, CancellationToken)"/>
