@@ -16,6 +16,7 @@ namespace NuGet.Protocol.Converters
     [JsonSerializable(typeof(V3SearchResults))]
     [JsonSerializable(typeof(PackageDependency))]
     [JsonSerializable(typeof(RegistrationIndex))]
+    [JsonSerializable(typeof(RegistrationIndexWithMetadata))]
     [JsonSerializable(typeof(RegistrationPage))]
     internal partial class PackageSearchJsonContext : JsonSerializerContext
     {

@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         protected List<ReportProblem> _problems = new();
         private readonly TextWriter _consoleOut;
         private readonly TextWriter _consoleError;
+        internal bool ShowSponsorshipSourceHint { get; set; } = true;
 
         public ListPackageConsoleRenderer()
             : this(Console.Out, Console.Error)
@@ -90,7 +91,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
         }
 
-        private static void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
+        private void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
         {
             foreach (ListPackageProjectModel project in projects)
             {
@@ -124,6 +125,15 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                         case ReportType.Vulnerable:
                             consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, project.ProjectName));
                             break;
+                        case ReportType.Sponsor:
+                            string message = project.HasPackages == false && !listPackageArgs.Frameworks.Any()
+                                ? Strings.ListPkg_NoPackageReferencesForProject
+                                : project.HasPackages == false
+                                    ? Strings.ListPkg_NoPackagesFoundForFrameworks
+                                    : Strings.ListPkg_NoSponsorshipForProject;
+                            string value = string.Format(CultureInfo.CurrentCulture, message, project.ProjectName);
+                            consoleOut.WriteLine(value);
+                            break;
                     }
                 }
 
@@ -134,6 +144,14 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 }
 
                 consoleOut.WriteLine(GetProjectHeader(project.ProjectName, listPackageArgs));
+
+                if (listPackageArgs.ReportType == ReportType.Sponsor)
+                {
+                    (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
+                    PrintPackages(topLevel, printingTransitive: false, listPackageArgs);
+                    PrintPackages(transitive, printingTransitive: true, listPackageArgs);
+                    continue;
+                }
 
                 foreach (ListPackageReportFrameworkPackage frameworkPackages in project.TargetFrameworkPackages)
                 {
@@ -175,28 +193,49 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                         // Print top-level packages
                         if (frameworkTopLevelPackages?.Any() == true)
                         {
-                            var tableHasAutoReference = false;
-                            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
-                            if (tableToPrint != null)
-                            {
-                                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
-                            }
+                            PrintPackages(frameworkTopLevelPackages, printingTransitive: false, listPackageArgs);
                         }
 
                         // Print transitive packages
                         if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages?.Any() == true)
                         {
-                            var tableHasAutoReference = false;
-                            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
-                            if (tableToPrint != null)
-                            {
-                                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
-                            }
+                            PrintPackages(frameworkTransitivePackages, printingTransitive: true, listPackageArgs);
                         }
                     }
                 }
+            }
+
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                PrintSponsorshipSourceDiagnostics(consoleOut, projects, listPackageArgs);
+            }
+        }
+
+        private void PrintSponsorshipSourceDiagnostics(TextWriter consoleOut, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
+        {
+            (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
+                IReadOnlyList<PackageSource> unsupportedSources,
+                bool hasSponsorships) = SponsorReportAggregator.GetSourceDiagnostics(projects, listPackageArgs.PackageSources);
+
+            if (sourcesWithoutSponsorshipDetails.Count > 0)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorNoDetailsHeader);
+                PrintSources(consoleOut, sourcesWithoutSponsorshipDetails);
+                consoleOut.WriteLine();
+            }
+
+            if (unsupportedSources.Count > 0)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorUnsupportedSourcesHeader);
+                PrintSources(consoleOut, unsupportedSources);
+                consoleOut.WriteLine();
+            }
+
+            if (ShowSponsorshipSourceHint &&
+                (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0) &&
+                !hasSponsorships)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorSourceHint);
             }
         }
 
@@ -242,11 +281,25 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     return string.Format(Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName);
                 case ReportType.Vulnerable:
                     return string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName);
+                case ReportType.Sponsor:
+                    return string.Format(Strings.ListPkg_ProjectSponsorHeaderLog, projectName);
                 case ReportType.Default:
                     break;
             }
 
             return string.Format(Strings.ListPkg_ProjectHeaderLog, projectName);
+        }
+
+        private static void PrintPackages(List<ListReportPackage> packages, bool printingTransitive, ListPackageArgs listPackageArgs)
+        {
+            var tableHasAutoReference = false;
+            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
+                packages, printingTransitive, listPackageArgs, ref tableHasAutoReference);
+
+            if (tableToPrint != null)
+            {
+                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
+            }
         }
     }
 }

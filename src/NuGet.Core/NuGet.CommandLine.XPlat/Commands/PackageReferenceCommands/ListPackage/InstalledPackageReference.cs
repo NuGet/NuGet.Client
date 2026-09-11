@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using NuGet.Protocol.Core.Types;
 
@@ -25,6 +26,7 @@ namespace NuGet.CommandLine.XPlat
         internal bool AutoReference { get; set; }
         internal UpdateLevel UpdateLevel { get; set; }
         internal bool IsVersionOverride { get; set; }
+        internal IReadOnlyList<PackageSponsorship> Sponsorships { get; set; } = Array.Empty<PackageSponsorship>();
 
         /// <summary>
         /// A constructor that takes a name of a package

@@ -5,8 +5,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.ListPackage;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -16,6 +20,35 @@ namespace NuGet.CommandLine.Xplat.Tests
 {
     public class ListPackageTestHelper
     {
+        internal static ListPackageArgs CreateSponsorArgs(
+            string projectPath,
+            List<PackageSource> packageSources,
+            IReportRenderer renderer,
+            ILogger logger = null,
+            PackageSourceMapping packageSourceMapping = null,
+            IReadOnlyList<PackageSource> auditSources = null)
+        {
+            var frameworks = new List<string>();
+            logger ??= NullLogger.Instance;
+            if (packageSourceMapping == null)
+            {
+                var patterns = new Dictionary<string, IReadOnlyList<string>>();
+                packageSourceMapping = new PackageSourceMapping(patterns);
+            }
+            return new ListPackageArgs(
+                projectPath, packageSources, frameworks, ReportType.Sponsor, renderer,
+                includeTransitive: false, prerelease: false, highestPatch: false, highestMinor: false,
+                auditSources, logger, CancellationToken.None, packageSourceMapping);
+        }
+
+        internal static ListReportPackage CreateSponsoredPackage(string packageId, params PackageSponsorship[] sponsorships)
+        {
+            return new ListReportPackage(
+                packageId, resolvedVersion: "1.0.0", latestVersion: null, vulnerabilities: null,
+                deprecationReasons: null, alternativePackage: null, requestedVersion: "1.0.0",
+                autoReference: false, sponsorships);
+        }
+
         internal static InstalledPackageReference CreateInstalledPackageReference(
             string packageId = "Package.Id",
             bool autoReference = false,

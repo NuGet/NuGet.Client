@@ -24,6 +24,9 @@ namespace NuGet.XPlat.FuncTest
     [Collection(XPlatCollection.Name)]
     public class XplatListPackageJsonRendererTests
     {
+        private static readonly PackageSourceMapping NoPackageSourceMapping =
+            new(new Dictionary<string, IReadOnlyList<string>>());
+
         [Fact]
         public void JsonRenderer_ListPackage_SucceedsAsync()
         {
@@ -55,7 +58,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -202,7 +206,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -301,7 +306,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -391,7 +397,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -495,7 +502,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -607,7 +615,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -688,7 +697,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -859,7 +869,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -990,7 +1001,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1133,7 +1145,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1235,7 +1248,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (
@@ -1333,7 +1347,8 @@ namespace NuGet.XPlat.FuncTest
                                 highestMinor: false,
                                 auditSources: null,
                                 NullLogger.Instance,
-                                CancellationToken.None);
+                                CancellationToken.None,
+                                NoPackageSourceMapping);
 
                     ListPackageReportModel listPackageReportModel = CreateListReportModel(packageRefArgs,
                         (

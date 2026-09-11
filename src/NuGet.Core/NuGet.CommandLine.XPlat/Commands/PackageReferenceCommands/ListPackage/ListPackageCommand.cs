@@ -67,6 +67,12 @@ namespace NuGet.CommandLine.XPlat
                 Arity = ArgumentArity.Zero
             };
 
+            var sponsorReport = new Option<bool>("--sponsor")
+            {
+                Description = Strings.ListPkg_SponsorDescription,
+                Arity = ArgumentArity.Zero
+            };
+
             var includeTransitive = new Option<bool>("--include-transitive")
             {
                 Description = Strings.ListPkg_TransitiveDescription,
@@ -132,6 +138,7 @@ namespace NuGet.CommandLine.XPlat
             listCommand.Options.Add(deprecatedReport);
             listCommand.Options.Add(outdatedReport);
             listCommand.Options.Add(vulnerableReport);
+            listCommand.Options.Add(sponsorReport);
             listCommand.Options.Add(includeTransitive);
             listCommand.Options.Add(prerelease);
             listCommand.Options.Add(highestPatch);
@@ -157,29 +164,70 @@ namespace NuGet.CommandLine.XPlat
                 var settings = ProcessConfigFile(configValue, pathValue);
                 var sourceValues = parseResult.GetValue(source) ?? Array.Empty<string>();
 
-                var packageSources = GetPackageSources(settings, sourceValues, hasConfig);
-
-                var reportType = GetReportType(
-                    isOutdated: parseResult.GetValue(outdatedReport),
-                    isDeprecated: parseResult.GetValue(deprecatedReport),
-                    isVulnerable: parseResult.GetValue(vulnerableReport));
+                bool isOutdated = parseResult.GetValue(outdatedReport);
+                bool isDeprecated = parseResult.GetValue(deprecatedReport);
+                bool isVulnerable = parseResult.GetValue(vulnerableReport);
+                bool isSponsor = parseResult.GetValue(sponsorReport);
+                var reportType = GetReportType(isDeprecated, isOutdated, isVulnerable, isSponsor);
+                bool includeConfiguredSources = hasConfig && reportType != ReportType.Sponsor;
+                var packageSources = GetPackageSources(settings, sourceValues, includeConfiguredSources);
+                if (reportType == ReportType.Sponsor)
+                {
+                    packageSources = packageSources.Distinct().ToList();
+                }
 
                 IReportRenderer reportRenderer = GetOutputType(consoleOut ?? Console.Out, consoleError ?? Console.Error, parseResult.GetValue(outputFormat), outputVersionOption: parseResult.GetValue(outputVersion));
                 var provider = new PackageSourceProvider(settings);
                 var frameworkValues = parseResult.GetValue(framework) ?? Array.Empty<string>();
+
+                PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+                if (reportRenderer is ListPackageConsoleRenderer consoleRenderer)
+                {
+                    consoleRenderer.ShowSponsorshipSourceHint =
+                        sourceValues.Length == 0 &&
+                        !packageSourceMapping.IsEnabled &&
+                        !provider.LoadPackageSources().Any(source => UriUtility.IsNuGetOrg(source.Source));
+                }
+
+                List<string> frameworks = frameworkValues.ToList();
+                bool includeTransitiveValue = parseResult.GetValue(includeTransitive);
+                bool prereleaseValue = parseResult.GetValue(prerelease);
+                bool highestPatchValue = parseResult.GetValue(highestPatch);
+                bool highestMinorValue = parseResult.GetValue(highestMinor);
+                IReadOnlyList<PackageSource> auditSources = provider.LoadAuditSources();
                 var packageRefArgs = new ListPackageArgs(
                     pathValue,
                     packageSources,
-                    frameworkValues.ToList(),
+                    frameworks,
                     reportType,
                     reportRenderer,
-                    parseResult.GetValue(includeTransitive),
-                    parseResult.GetValue(prerelease),
-                    parseResult.GetValue(highestPatch),
-                    parseResult.GetValue(highestMinor),
-                    provider.LoadAuditSources(),
+                    includeTransitiveValue,
+                    prereleaseValue,
+                    highestPatchValue,
+                    highestMinorValue,
+                    auditSources,
                     logger,
-                    CancellationToken.None);
+                    CancellationToken.None,
+                    packageSourceMapping);
+
+                if (reportType == ReportType.Sponsor && packageSourceMapping.IsEnabled)
+                {
+                    if (sourceValues.Length > 0)
+                    {
+                        // --source could select a source no mapping covers, so fail rather than bypass mapping.
+                        reportRenderer.AddProblem(
+                            ProblemType.Error,
+                            Strings.ListPkg_SponsorPackageSourceMappingWithSource);
+                        var listPackageReportModel = new ListPackageReportModel(packageRefArgs);
+                        reportRenderer.Render(listPackageReportModel);
+                        return ExitCodes.Error;
+                    }
+
+                    if (reportRenderer is ListPackageConsoleRenderer)
+                    {
+                        logger.LogInformation(Strings.ListPkg_SponsorPackageSourceMappingEnabled);
+                    }
+                }
 
                 WarnAboutIncompatibleOptions(packageRefArgs, reportRenderer);
 
@@ -192,19 +240,20 @@ namespace NuGet.CommandLine.XPlat
             parent.Subcommands.Add(listCommand);
         }
 
-        private static ReportType GetReportType(bool isDeprecated, bool isOutdated, bool isVulnerable)
+        private static ReportType GetReportType(bool isDeprecated, bool isOutdated, bool isVulnerable, bool isSponsor)
         {
             var mutexCount = 0;
             mutexCount += isDeprecated ? 1 : 0;
             mutexCount += isOutdated ? 1 : 0;
             mutexCount += isVulnerable ? 1 : 0;
+            mutexCount += isSponsor ? 1 : 0;
             if (mutexCount == 0)
             {
                 return ReportType.Default;
             }
             else if (mutexCount == 1)
             {
-                return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : ReportType.Vulnerable;
+                return isDeprecated ? ReportType.Deprecated : isOutdated ? ReportType.Outdated : isSponsor ? ReportType.Sponsor : ReportType.Vulnerable;
             }
 
             throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_InvalidOptions));
@@ -269,7 +318,7 @@ namespace NuGet.CommandLine.XPlat
                 machineWideSettings: new XPlatMachineWideSetting());
         }
 
-        private static List<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, bool hasConfig)
+        private static List<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, bool includeConfiguredSources)
         {
             var availableSources = PackageSourceProvider.LoadPackageSources(settings).Where(source => source.IsEnabled);
             var uniqueSources = new HashSet<string>();
@@ -284,7 +333,7 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            if (packageSources.Count == 0 || hasConfig)
+            if (packageSources.Count == 0 || includeConfiguredSources)
             {
                 packageSources.AddRange(availableSources);
             }

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -77,6 +78,44 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(2, vulnerability.Severity);
                 Assert.Equal("https://contoso.test/advisory/1", vulnerability.AdvisoryUrl.OriginalString);
             }
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_WithInvalidSponsorshipMetadata_ReturnsOrdinaryMetadata(string useStj)
+        {
+            // Arrange
+            var registrationIndex = JObject.Parse(JsonData.DeepEqualRegistationIndex);
+            registrationIndex["metadata"] = new JArray();
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+            string value = registrationIndex.ToString();
+            responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", value);
+
+            IEnumerable<Lazy<INuGetResourceProvider>> providers = CreateProvidersWithEnvReader(useStj);
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", providers, responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected PackageMetadataResource.");
+            NuGetVersion version = NuGetVersion.Parse("0.9.0");
+            var package = new PackageIdentity("deepequal", version);
+            using var sourceCacheContext = new SourceCacheContext { NoCache = true };
+
+            // Act
+            IPackageSearchMetadata? result = await resource.GetMetadataAsync(
+                package, sourceCacheContext, NullLogger.Instance, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(package, result.Identity);
+            Assert.Equal("An extensible deep comparison library for .NET", result.Description);
+            var expected = new Uri("http://github.com/jamesfoster/DeepEqual");
+            Assert.Equal(expected, result.ProjectUrl);
+            Assert.True(result.IsListed);
+            Assert.NotNull(result.Vulnerabilities);
+            var vulnerability = Assert.Single(result.Vulnerabilities);
+            Assert.Equal(2, vulnerability.Severity);
+            Assert.Equal("https://contoso.test/advisory/1", vulnerability.AdvisoryUrl.OriginalString);
         }
 
         [Theory]

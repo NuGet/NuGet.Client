@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -39,6 +40,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private const string SeverityProperty = "severity";
         private const string AdvisoryUrlProperty = "advisoryurl";
         private const string VulnerabilitiesProperty = "vulnerabilities";
+        private const string SponsorshipsProperty = "sponsorships";
+        private const string UrlsProperty = "urls";
+        private const string PackagesProperty = "packages";
+        private const string IsTransitiveProperty = "isTransitive";
         private const string LatestVersionProperty = "latestVersion";
         private const string DeprecationReasonsProperty = "deprecationReasons";
         private const string AlternativePackageProperty = "alternativePackage";
@@ -70,8 +75,34 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         {
             // Aggregate problems from projects.
             _problems.AddRange(listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems));
+            AddSponsorshipSourceProblems(listPackageReportModel);
             var jsonRenderedOutput = WriteJson(listPackageReportModel);
             _writer.WriteLine(jsonRenderedOutput);
+        }
+
+        private void AddSponsorshipSourceProblems(ListPackageReportModel listPackageReportModel)
+        {
+            if (listPackageReportModel.ListPackageArgs.ReportType != ReportType.Sponsor)
+            {
+                return;
+            }
+
+            (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
+                IReadOnlyList<PackageSource> unsupportedSources,
+                _) = SponsorReportAggregator.GetSourceDiagnostics(
+                    listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs.PackageSources);
+
+            AddSourceProblems(sourcesWithoutSponsorshipDetails, Strings.ListPkg_SponsorProblemNoDetails);
+            AddSourceProblems(unsupportedSources, Strings.ListPkg_SponsorProblemUnsupportedSource);
+        }
+
+        private void AddSourceProblems(IEnumerable<PackageSource> packageSources, string messageFormat)
+        {
+            foreach (PackageSource source in packageSources)
+            {
+                string text = string.Format(CultureInfo.CurrentCulture, messageFormat, source.Source);
+                AddProblem(ProblemType.Warning, text);
+            }
         }
 
         internal string WriteJson(ListPackageReportModel listPackageReportModel)
@@ -105,7 +136,16 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
 
             WriteSources(writer, listPackageReportModel);
-            WriteProjects(writer, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
+
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                WriteSponsorPackages(writer, listPackageReportModel);
+            }
+            else
+            {
+                WriteProjects(writer, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
+            }
+
             writer.WriteEndObject();
         }
 
@@ -357,6 +397,78 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
                 writer.WritePropertyName(AdvisoryUrlProperty);
                 writer.WriteValue(vulnerability.AdvisoryUrl);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        private static void WriteSponsorships(JsonWriter writer, IReadOnlyList<PackageSponsorship> sponsorships)
+        {
+            IReadOnlyList<SponsorReportAggregator.MergedSponsorship> mergedSponsorships =
+                SponsorReportAggregator.MergeBySponsorshipUrls(sponsorships);
+
+            if (mergedSponsorships.Count == 0)
+            {
+                return;
+            }
+
+            writer.WritePropertyName(SponsorshipsProperty);
+            writer.WriteStartArray();
+
+            foreach (SponsorReportAggregator.MergedSponsorship sponsorship in mergedSponsorships)
+            {
+                writer.WriteStartObject();
+                WriteStringArray(writer, SourcesProperty, sponsorship.Sources);
+                WriteStringArray(writer, UrlsProperty, sponsorship.Urls);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        private static void WriteStringArray(JsonWriter writer, string propertyName, IEnumerable<string> values)
+        {
+            writer.WritePropertyName(propertyName);
+            writer.WriteStartArray();
+
+            foreach (string value in values)
+            {
+                writer.WriteValue(value);
+            }
+
+            writer.WriteEndArray();
+        }
+
+        private static void WriteSponsorPackages(JsonWriter writer, ListPackageReportModel listPackageReportModel)
+        {
+            writer.WritePropertyName(PackagesProperty);
+            writer.WriteStartArray();
+
+            foreach (SponsorReportAggregator.SponsorReportPackage package in SponsorReportAggregator.CollapseProjects(listPackageReportModel.Projects))
+            {
+                writer.WriteStartObject();
+
+                writer.WritePropertyName(IdProperty);
+                writer.WriteValue(package.PackageId);
+
+                writer.WritePropertyName(ProjectsProperty);
+                writer.WriteStartArray();
+                foreach ((string projectPath, bool isTopLevel) in package.Projects)
+                {
+                    writer.WriteStartObject();
+                    writer.WritePropertyName(PathProperty);
+                    string path = PathUtility.GetPathWithForwardSlashes(projectPath);
+                    writer.WriteValue(path);
+                    writer.WritePropertyName(IsTransitiveProperty);
+                    bool isTransitive = !isTopLevel;
+                    writer.WriteValue(isTransitive);
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
+
+                WriteSponsorships(writer, package.Sponsorships);
+
                 writer.WriteEndObject();
             }
 

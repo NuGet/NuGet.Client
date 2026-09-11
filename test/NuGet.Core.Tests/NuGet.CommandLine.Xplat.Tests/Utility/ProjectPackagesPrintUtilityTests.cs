@@ -19,6 +19,9 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
 {
     public class ProjectPackagesPrintUtilityTests
     {
+        private static readonly PackageSourceMapping NoPackageSourceMapping =
+            new(new Dictionary<string, IReadOnlyList<string>>());
+
         [Theory]
         [MemberData(nameof(ReportData))]
         public void CreatesCorrectPackagesReportTableForVariousPackageCollections(
@@ -59,6 +62,40 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
                 }
 
                 Assert.Equal(autoReferenceFoundExpected, autoReferenceFound);
+            }
+        }
+
+        [Theory]
+        [InlineData(false, "Top-level Package")]
+        [InlineData(true, "Transitive Package")]
+        public void BuildPackagesTable_Sponsor_OmitsVersionColumnsAndAlignsCells(bool printingTransitive, string expectedFirstHeader)
+        {
+            // Arrange
+            var sponsorship = new PackageSponsorship("https://source", new[] { "https://sponsor/a" });
+            var packages = new[]
+            {
+                ListPackageTestHelper.CreateSponsoredPackage("Package.Sponsored", sponsorship)
+            };
+            var packageSources = new List<PackageSource>();
+            var renderer = new ListPackageConsoleRenderer();
+            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs("", packageSources, renderer);
+            string[] headers = ProjectPackagesPrintUtility.BuildTableHeaders(printingTransitive, args);
+            bool autoReferenceFound = false;
+
+            // Act
+            FormattedCell[] table = ProjectPackagesPrintUtility
+                .BuildPackagesTable(packages, printingTransitive, args, ref autoReferenceFound)
+                .ToArray();
+
+            // Assert
+            Assert.Equal(new[] { expectedFirstHeader, string.Empty, "Sponsor" }, headers);
+            Assert.Contains(table, cell => cell.Value.Contains("Source: https://source", StringComparison.Ordinal));
+            Assert.Contains(table, cell => cell.Value.Contains("https://sponsor/a", StringComparison.Ordinal));
+            for (int i = 0; i < table.Length; i++)
+            {
+                bool expectNewLine = (i + 1) % (headers.Length + 1) == 0;
+                bool actual = table[i].Value == Environment.NewLine;
+                Assert.Equal(expectNewLine, actual);
             }
         }
 
@@ -160,28 +197,32 @@ namespace NuGet.CommandLine.Xplat.Tests.Utility
             new ListPackageArgs(
                         path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
                         ReportType.Default, new ListPackageConsoleRenderer(), includeTransitive: false,
-                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None));
+                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None,
+                        packageSourceMapping: NoPackageSourceMapping));
 
         private static ListPackageArgs OutdatedReportArgsCache;
         private static ListPackageArgs OutdatedReportArgs => OutdatedReportArgsCache ?? (OutdatedReportArgsCache =
             new ListPackageArgs(
                         path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
                         ReportType.Outdated, new ListPackageConsoleRenderer(), includeTransitive: false,
-                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None));
+                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None,
+                        packageSourceMapping: NoPackageSourceMapping));
 
         private static ListPackageArgs DeprecatedReportArgsCache;
         private static ListPackageArgs DeprecatedReportArgs => DeprecatedReportArgsCache ?? (DeprecatedReportArgsCache =
             new ListPackageArgs(
                         path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
                         ReportType.Deprecated, new ListPackageConsoleRenderer(), includeTransitive: false,
-                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None));
+                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None,
+                        packageSourceMapping: NoPackageSourceMapping));
 
         private static ListPackageArgs VulnerableReportArgsCache;
         private static ListPackageArgs VulnerableReportArgs => VulnerableReportArgsCache ?? (VulnerableReportArgsCache =
             new ListPackageArgs(
                         path: string.Empty, packageSources: new List<PackageSource>(), frameworks: new List<string>(),
                         ReportType.Vulnerable, new ListPackageConsoleRenderer(), includeTransitive: false,
-                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None));
+                        prerelease: false, highestPatch: false, highestMinor: false, auditSources: null, logger: new Mock<ILogger>().Object, cancellationToken: CancellationToken.None,
+                        packageSourceMapping: NoPackageSourceMapping));
 
         private static InstalledPackageReference StandardPackageCache;
         private static InstalledPackageReference StandardPackage =>
