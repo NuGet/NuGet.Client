@@ -177,6 +177,7 @@ namespace NuGetVSExtension
                 CopilotToolSessionError.McpServerInfoServiceNotAvailable => Resources.Error_McpServerInfoServiceNotAvailable,
                 CopilotToolSessionError.McpServerNotActive => Resources.Error_McpServerNotActive,
                 CopilotToolSessionError.ToolNotAvailable => toolNotAvailableMessage,
+                CopilotToolSessionError.CopilotRequestFailed => Resources.Error_CopilotRequestFailed,
                 _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
             };
 
