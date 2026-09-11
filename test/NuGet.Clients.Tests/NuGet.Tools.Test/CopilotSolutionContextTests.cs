@@ -4,14 +4,13 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 using NuGetVSExtension;
 using Xunit;
 
@@ -39,16 +38,13 @@ namespace NuGet.Tools.Test
                 File.WriteAllText(directoryPackagesPropsPath, string.Empty);
                 File.WriteAllText(directoryBuildPropsPath, string.Empty);
 
-                var project = new Mock<NuGetProject>(
-                    new Dictionary<string, object>
-                    {
-                        [NuGetProjectMetadataKeys.FullPath] = projectPath,
-                    });
+                var project = new Mock<IVsProjectAdapter>();
+                project.SetupGet(adapter => adapter.FullProjectPath).Returns(projectPath);
 
                 var solutionManager = new Mock<IVsSolutionManager>();
                 solutionManager.SetupGet(manager => manager.SolutionDirectory).Returns(solutionDirectory);
                 solutionManager.Setup(manager => manager.GetSolutionFilePathAsync()).ReturnsAsync(solutionFilePath);
-                solutionManager.Setup(manager => manager.GetNuGetProjectsAsync()).ReturnsAsync([project.Object]);
+                solutionManager.Setup(manager => manager.GetAllVsProjectAdaptersAsync()).ReturnsAsync([project.Object]);
 
                 string context = await CopilotSolutionContext.CreateAsync(solutionManager.Object, CancellationToken.None);
                 JObject json = JObject.Parse(context);

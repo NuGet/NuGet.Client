@@ -90,14 +90,6 @@ namespace NuGetVSExtension
                 DisplayPrompt = prompt,
                 Prompt = prompt,
                 Agent = NuGetSdkAgent.AgentName,
-                Attachments =
-                [
-                    new CopilotTextAttachment
-                    {
-                        Content = solutionContext,
-                        Label = "#nuget-solution-context",
-                    },
-                ],
             };
 
             try

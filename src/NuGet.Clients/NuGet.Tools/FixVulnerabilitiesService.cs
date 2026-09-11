@@ -89,14 +89,6 @@ namespace NuGetVSExtension
                 DisplayPrompt = Resources.Prompt_FixNuGetPackageVulnerabilities,
                 Prompt = Resources.Prompt_FixNuGetPackageVulnerabilities,
                 Agent = NuGetSdkAgent.AgentName,
-                Attachments =
-                [
-                    new CopilotTextAttachment
-                    {
-                        Content = solutionContext,
-                        Label = "#nuget-solution-context",
-                    },
-                ],
             };
 
             try

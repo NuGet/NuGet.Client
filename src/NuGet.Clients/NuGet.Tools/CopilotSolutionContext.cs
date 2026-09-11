@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.ProjectManagement;
+using NuGet.VisualStudio;
 
 namespace NuGetVSExtension
 {
@@ -31,10 +31,10 @@ namespace NuGetVSExtension
 
             string solutionDirectory = solutionManager.SolutionDirectory;
             string solutionFilePath = await solutionManager.GetSolutionFilePathAsync();
-            IEnumerable<NuGetProject> projects = await solutionManager.GetNuGetProjectsAsync();
+            IEnumerable<IVsProjectAdapter> projects = await solutionManager.GetAllVsProjectAdaptersAsync();
 
             IReadOnlyList<string> projectPaths = projects
-                .Select(project => project.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out string path) ? path : null)
+                .Select(project => project.FullProjectPath)
                 .Where(path => !string.IsNullOrEmpty(path))
                 .Select(path => Path.GetFullPath(path!))
                 .Distinct(StringComparer.OrdinalIgnoreCase)

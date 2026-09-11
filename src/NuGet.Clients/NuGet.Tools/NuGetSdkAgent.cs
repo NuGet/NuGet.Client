@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Copilot;
-using Microsoft.VisualStudio.Copilot.Internal.Mcp;
 using Microsoft.VisualStudio.Copilot.Sdk;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using NuGet.PackageManagement.VisualStudio;
@@ -23,16 +22,15 @@ namespace NuGetVSExtension
         Description = "Helps resolve NuGet package management issues.",
         IncludeBuiltInContributions = false,
         Usage = AgentUsage.Programmatic)]
-    internal sealed class NuGetSdkAgent : ICopilotSdkAgent
+    internal sealed class NuGetSdkAgent : CopilotSdkAgentHooks, ICopilotSdkAgent
     {
         internal const string AgentName = "nuget";
 
         [Import(typeof(SVsFullAccessServiceBroker), AllowDefault = true)]
         public IServiceBroker? ServiceBroker { get; set; }
 
-        public void Dispose()
-        {
-        }
+        [Import(typeof(IVsSolutionManager), AllowDefault = true)]
+        public IVsSolutionManager? SolutionManager { get; set; }
 
         public Task<string> GetSystemPromptAsync(CancellationToken cancellationToken)
         {
@@ -46,73 +44,54 @@ namespace NuGetVSExtension
             IServiceBroker serviceBroker = ServiceBroker
                 ?? throw new InvalidOperationException("The Visual Studio service broker is unavailable.");
 
-            IMcpServerInfoService? mcpServerInfoService = await serviceBroker.GetProxyAsync<IMcpServerInfoService>(
-                McpServiceIdentities.ServerInfoService.Descriptor,
+            ICopilotFunctionProvider? functionProvider = await serviceBroker.GetProxyAsync<ICopilotFunctionProvider>(
+                CopilotDescriptors.McpToolService,
                 cancellationToken);
 
-            using (mcpServerInfoService as IDisposable)
+            using (functionProvider as IDisposable)
             {
-                if (mcpServerInfoService is null)
+                if (functionProvider is null)
                 {
-                    throw new InvalidOperationException("The MCP server information service is unavailable.");
+                    throw new InvalidOperationException("The Copilot MCP tool service is unavailable.");
                 }
 
-                ICopilotFunctionProvider? functionProvider = await serviceBroker.GetProxyAsync<ICopilotFunctionProvider>(
-                    CopilotDescriptors.McpToolService,
+                IReadOnlyList<CopilotFunctionDescriptor>? functions = await functionProvider.GetFunctionsAsync(
+                    CopilotCorrelationId.New(),
                     cancellationToken);
 
-                using (functionProvider as IDisposable)
-                {
-                    if (functionProvider is null)
-                    {
-                        throw new InvalidOperationException("The Copilot MCP tool service is unavailable.");
-                    }
-
-                    IReadOnlyList<CopilotFunctionDescriptor>? functions = await functionProvider.GetFunctionsAsync(
-                        CopilotCorrelationId.New(),
-                        cancellationToken);
-
-                    return await SelectPreferredNuGetMcpToolsAsync(
-                        mcpServerInfoService,
-                        functions,
-                        cancellationToken);
-                }
+                return SelectInBoxNuGetMcpTools(functions);
             }
         }
 
-        internal static async Task<IReadOnlyList<CopilotMcpFunctionDescriptor>> SelectPreferredNuGetMcpToolsAsync(
-            IMcpServerInfoService mcpServerInfoService,
-            IReadOnlyList<CopilotFunctionDescriptor>? functions,
-            CancellationToken cancellationToken)
+        internal static IReadOnlyList<CopilotMcpFunctionDescriptor> SelectInBoxNuGetMcpTools(
+            IReadOnlyList<CopilotFunctionDescriptor>? functions)
         {
             if (functions is null)
             {
                 return [];
             }
 
-            foreach (string serverName in McpServerConstants.NuGetMcpServerNames)
+            return functions
+                .OfType<CopilotMcpFunctionDescriptor>()
+                .Where(function => string.Equals(
+                    function.Group,
+                    McpServerConstants.NuGetMcpServerName,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        protected override async ValueTask<CopilotSdkRequestSubmittedResult> OnRequestSubmittedAsync(
+            CopilotSdkRequestSubmittedArgs args,
+            CancellationToken cancellationToken)
+        {
+            IVsSolutionManager solutionManager = SolutionManager
+                ?? throw new InvalidOperationException("The Visual Studio solution manager is unavailable.");
+
+            string solutionContext = await CopilotSolutionContext.CreateAsync(solutionManager, cancellationToken);
+            return new CopilotSdkRequestSubmittedResult
             {
-                McpServerState? state = await mcpServerInfoService.GetServerStateAsync(serverName, cancellationToken);
-                if (state is not (McpServerState.Active or McpServerState.Suspended))
-                {
-                    continue;
-                }
-
-                IReadOnlyList<CopilotMcpFunctionDescriptor> tools = functions
-                    .OfType<CopilotMcpFunctionDescriptor>()
-                    .Where(function => string.Equals(
-                        function.Group,
-                        serverName,
-                        StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (tools.Count > 0)
-                {
-                    return tools;
-                }
-            }
-
-            return [];
+                AdditionalContext = solutionContext,
+            };
         }
     }
 #pragma warning restore VSCOPILOT_BACKEND
