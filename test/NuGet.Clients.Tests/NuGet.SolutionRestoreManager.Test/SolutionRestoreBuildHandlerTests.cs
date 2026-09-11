@@ -149,5 +149,44 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Verify(x => x.RestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
+        [Fact]
+        public async Task QueryDelayBuildAction_RestoreInProgress_DelaysBuild()
+        {
+            var settings = Mock.Of<ISettings>();
+            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+            var buildManager = Mock.Of<IVsSolutionBuildManager3>();
+            var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
+            var restoreStarted = new TaskCompletionSource<bool>();
+            var restoreCompleted = new TaskCompletionSource<bool>();
+            var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD;
+
+            Mock.Get(settings)
+                .Setup(x => x.GetSection("packageRestore"))
+                .Returns(() => new VirtualSettingSection("packageRestore",
+                    new AddItem("automatic", bool.TrueString)));
+            Mock.Get(restoreWorker)
+                .SetupGet(x => x.JoinableTaskFactory)
+                .Returns(_jtf);
+            Mock.Get(restoreWorker)
+                .Setup(x => x.RestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()))
+                .Returns(() =>
+                {
+                    restoreStarted.SetResult(true);
+                    return restoreCompleted.Task;
+                });
+
+            using var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager, restoreChecker);
+            await _jtf.SwitchToMainThreadAsync();
+
+            Task<bool> buildDelayTask = handler.RestoreAsync(buildAction, CancellationToken.None);
+            await restoreStarted.Task;
+
+            Assert.False(buildDelayTask.IsCompleted);
+
+            restoreCompleted.SetResult(true);
+
+            Assert.True(await buildDelayTask);
+        }
+
     }
 }
