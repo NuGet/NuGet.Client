@@ -107,6 +107,15 @@ namespace NuGetVSExtension
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_ResolveSupplyChainSecurityWithCopilot);
             }
+            catch (CopilotRequestException ex)
+            {
+                TelemetryActivity.EmitTelemetryEvent(
+                    NavigatedTelemetryEvent.CreateWithResolveSupplyChainSecurity(
+                        source.NavigationOrigin,
+                        CopilotToolSessionError.CopilotRequestFailed));
+                ActivityLogger?.LogError(ex.ToString());
+                MessageHelper.ShowWarningMessage(Resources.Error_CopilotRequestFailed, Resources.Title_ResolveSupplyChainSecurityWithCopilot);
+            }
         }
     }
 }

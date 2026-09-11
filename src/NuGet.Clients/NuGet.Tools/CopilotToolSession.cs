@@ -75,12 +75,29 @@ namespace NuGetVSExtension
             if (_harnessSessionId is CopilotSessionId harnessSessionId)
             {
 #pragma warning disable VSCOPILOT_BACKEND // Experimental SDK harness contracts.
-                _ = await _copilotService.SendRequestAsync(harnessSessionId, harnessRequest, cancellationToken);
+                CopilotMessageResponse response = await _copilotService.SendRequestAsync(harnessSessionId, harnessRequest, cancellationToken);
+                EnsureSuccessfulHarnessResponse(response);
 #pragma warning restore VSCOPILOT_BACKEND
                 return;
             }
 
             _ = await Thread!.Session.SendRequestAsync(legacyRequest, cancellationToken);
+        }
+
+        internal static void EnsureSuccessfulHarnessResponse(CopilotMessageResponse response)
+        {
+            if (response.Status == CopilotResponseStatus.Success)
+            {
+                return;
+            }
+
+            string? errorMessage = response.Error?.Message;
+            if (response.Status == CopilotResponseStatus.UserHasNoChatAccess)
+            {
+                throw new UnauthorizedAccessException(errorMessage);
+            }
+
+            throw new CopilotRequestException(response.Status, errorMessage);
         }
 
         public async ValueTask DisposeAsync()
@@ -96,6 +113,23 @@ namespace NuGetVSExtension
             {
                 _copilotServiceDisposable?.Dispose();
             }
+        }
+    }
+
+    internal sealed class CopilotRequestException : Exception
+    {
+        internal CopilotRequestException(CopilotResponseStatus status, string? errorMessage)
+            : base(CreateMessage(status, errorMessage))
+        {
+            Status = status;
+        }
+
+        internal CopilotResponseStatus Status { get; }
+
+        private static string CreateMessage(CopilotResponseStatus status, string? errorMessage)
+        {
+            string message = $"Copilot request failed with status '{status}'.";
+            return string.IsNullOrEmpty(errorMessage) ? message : $"{message} {errorMessage}";
         }
     }
 }

@@ -102,6 +102,12 @@ namespace NuGetVSExtension
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_FixVulnerabilitiesWithCopilot);
             }
+            catch (CopilotRequestException ex)
+            {
+                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotRequestFailed, navigationOrigin);
+                ActivityLogger?.LogError(ex.ToString());
+                MessageHelper.ShowWarningMessage(Resources.Error_CopilotRequestFailed, Resources.Title_FixVulnerabilitiesWithCopilot);
+            }
         }
 
         private static void SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType errorType, NavigationOrigin navigationOrigin)
@@ -123,6 +129,7 @@ namespace NuGetVSExtension
                 CopilotToolSessionError.ToolNotAvailable => FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable,
                 CopilotToolSessionError.McpServerInfoServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable,
                 CopilotToolSessionError.McpServerNotActive => FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive,
+                CopilotToolSessionError.CopilotRequestFailed => FixVulnerabilitiesWithCopilotErrorType.CopilotRequestFailed,
                 _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
             };
         }
