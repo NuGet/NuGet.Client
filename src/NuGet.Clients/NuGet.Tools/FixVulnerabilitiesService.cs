@@ -80,13 +80,20 @@ namespace NuGetVSExtension
             await using CopilotToolSession session = result.Session!;
 
             // Attach solution context and available functions to the request
-            string solutionPathContext = $"The current solution file path is: {GetSolutionPath()}.";
-            CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionPathContext);
+            Assumes.Present(SolutionManager);
+            string solutionContext = await CopilotSolutionContext.CreateAsync(SolutionManager, cancellationToken);
+            CopilotContext context = new CopilotContext(ProviderDescriptor.Moniker, ContextDescriptor, request.CorrelationId, solutionContext);
             CopilotRequest requestWithFunctionsAndContext = request.WithFunctions(session.Functions).WithContext(context);
+            CopilotUserMessage harnessRequest = new()
+            {
+                DisplayPrompt = Resources.Prompt_FixNuGetPackageVulnerabilities,
+                Prompt = Resources.Prompt_FixNuGetPackageVulnerabilities,
+                Agent = NuGetSdkAgent.AgentName,
+            };
 
             try
             {
-                _ = await session.Thread.Session.SendRequestAsync(requestWithFunctionsAndContext, cancellationToken);
+                await session.SendRequestAsync(requestWithFunctionsAndContext, harnessRequest, cancellationToken);
                 SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.None, navigationOrigin);
             }
             catch (UnauthorizedAccessException ex)
@@ -94,6 +101,12 @@ namespace NuGetVSExtension
                 SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotAccessDenied, navigationOrigin);
                 ActivityLogger?.LogError(ex.Message);
                 MessageHelper.ShowWarningMessage(Resources.Error_CopilotAccessDenied, Resources.Title_FixVulnerabilitiesWithCopilot);
+            }
+            catch (CopilotRequestException ex)
+            {
+                SendTelemetryEvent(FixVulnerabilitiesWithCopilotErrorType.CopilotRequestFailed, navigationOrigin);
+                ActivityLogger?.LogError(ex.ToString());
+                MessageHelper.ShowWarningMessage(Resources.Error_CopilotRequestFailed, Resources.Title_FixVulnerabilitiesWithCopilot);
             }
         }
 
@@ -116,10 +129,9 @@ namespace NuGetVSExtension
                 CopilotToolSessionError.ToolNotAvailable => FixVulnerabilitiesWithCopilotErrorType.NuGetSolverNotAvailable,
                 CopilotToolSessionError.McpServerInfoServiceNotAvailable => FixVulnerabilitiesWithCopilotErrorType.McpServerInfoServiceNotAvailable,
                 CopilotToolSessionError.McpServerNotActive => FixVulnerabilitiesWithCopilotErrorType.McpServerNotActive,
+                CopilotToolSessionError.CopilotRequestFailed => FixVulnerabilitiesWithCopilotErrorType.CopilotRequestFailed,
                 _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
             };
         }
-
-        private string GetSolutionPath() => SolutionManager?.SolutionDirectory ?? string.Empty;
     }
 }
