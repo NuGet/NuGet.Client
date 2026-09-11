@@ -118,7 +118,7 @@ namespace NuGet.Commands
 
             // Warn if the package ID doesn't adhere to the restricted character set (NU5052)
             if (!symbolsPackage &&
-                _packArgs.UsingMicrosoftNETSdk &&
+                (_packArgs.UsingMicrosoftNETSdk || _packArgs.PackTargetArgs != null) &&
                 SdkAnalysisLevelMinimums.IsEnabled(_packArgs.SdkAnalysisLevel, _packArgs.UsingMicrosoftNETSdk, SdkAnalysisLevelMinimums.V11_0_100) &&
                 !PackageIdValidator.IsValidPackageId(builder.Id, useRestrictedCharacterSet: true))
             {
