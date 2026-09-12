@@ -142,6 +142,10 @@
   <data name="Log_ResolvingConflicts" xml:space="preserve">
     <value>Resolving conflicts for {0}...</value>
   </data>
+  <data name="Log_RefreshingHttpCacheOnMiss" xml:space="preserve">
+    <value>Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</value>
+    <comment>{0} - Package id, {1} - version range string</comment>
+  </data>
   <data name="Log_RestoringPackages" xml:space="preserve">
     <value>Restoring packages for {0}...</value>
   </data>

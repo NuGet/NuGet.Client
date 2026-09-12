@@ -165,8 +165,9 @@ namespace NuGet.Protocol
                                     request.EnsureValidContents,
                                     lockedToken);
 
+                                // Freshly written cache file: this is still an origin fetch, not a cache hit.
                                 using (var httpSourceResult = new HttpSourceResult(
-                                    HttpSourceResultStatus.OpenedFromDisk,
+                                    HttpSourceResultStatus.OpenedFromNetwork,
                                     cacheResult.CacheFile,
                                     cacheResult.Stream!)) // Stream is set by CreateCacheFileAsync above
                                 {

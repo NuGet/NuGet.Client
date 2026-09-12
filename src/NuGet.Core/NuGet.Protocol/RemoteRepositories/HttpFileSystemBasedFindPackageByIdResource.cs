@@ -33,20 +33,35 @@ namespace NuGet.Protocol
     /// PackageA.Version0.nupkg
     /// and are accessible via HTTP Gets.
     /// </summary>
-    public class HttpFileSystemBasedFindPackageByIdResource : FindPackageByIdResource
+    public class HttpFileSystemBasedFindPackageByIdResource : FindPackageByIdResource, IVersionListCacheInfo
     {
         private const int DefaultMaxRetries = 3;
         private int _maxRetries;
         private readonly HttpSource _httpSource;
         private readonly ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>?>> _packageVersionsCache =
             new ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>?>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, VersionListFetchKind> _versionListSources =
+            new ConcurrentDictionary<string, VersionListFetchKind>(StringComparer.OrdinalIgnoreCase);
         private readonly IReadOnlyList<Uri> _baseUris;
         private string? _chosenBaseUri;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
         private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
 
-        private const string ResourceTypeName = nameof(FindPackageByIdResource);
-        private const string ThisTypeName = nameof(HttpFileSystemBasedFindPackageByIdResource);
+        bool IVersionListCacheInfo.TryGetVersionListSource(string id, out VersionListFetchKind kind)
+        {
+            if (id != null && _versionListSources.TryGetValue(id, out kind))
+            {
+                return true;
+            }
+
+            kind = VersionListFetchKind.Unknown;
+            return false;
+        }
+
+        private void RecordVersionListSource(string id, HttpSourceResultStatus status)
+        {
+            VersionListSourceMap.Record(_versionListSources, id, status);
+        }
 
         /// <summary>
         /// Initializes a new <see cref="HttpFileSystemBasedFindPackageByIdResource" /> class.
@@ -89,6 +104,9 @@ namespace NuGet.Protocol
             _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
             _maxRetries = _enhancedHttpRetryHelper.RetryCountOrDefault;
         }
+
+        private const string ResourceTypeName = nameof(FindPackageByIdResource);
+        private const string ThisTypeName = nameof(HttpFileSystemBasedFindPackageByIdResource);
 
         /// <summary>
         /// Asynchronously gets all package versions for a package ID.
@@ -517,6 +535,8 @@ namespace NuGet.Protocol
                         },
                         async httpSourceResult =>
                         {
+                            RecordVersionListSource(id, httpSourceResult.Status);
+
                             HashSet<NuGetVersion>? result = null;
 
                             if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromDisk)
