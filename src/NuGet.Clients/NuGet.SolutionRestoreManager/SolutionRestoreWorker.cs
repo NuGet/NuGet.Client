@@ -905,17 +905,13 @@ namespace NuGet.SolutionRestoreManager
             {
                 RestoreReason = ImplicitRestoreReason.None;
                 ProjectRestoreInfoSourcesCount = -1;
-                ProjectReadyTimings = new List<TimeSpan>();
+                ProjectReadyTimings = [];
             }
 
             public ImplicitRestoreReason RestoreReason { get; set; }
-
             public DateTime? BulkRestoreCoordinationCheckStartTime { get; set; }
-
             public int ProjectsReadyCheckCount { get; set; }
-
             public int ProjectRestoreInfoSourcesCount { get; set; }
-
             public List<TimeSpan> ProjectReadyTimings { get; }
         }
 
