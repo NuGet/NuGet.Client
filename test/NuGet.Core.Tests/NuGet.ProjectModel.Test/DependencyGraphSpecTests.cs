@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Commands.Test;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -452,6 +453,104 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
+        public void GetHash_WithDifferentProjectPathCasings_UsesFileSystemCaseSensitivity(bool useLegacyHashFunction)
+        {
+            PackageSpec firstProject = CreatePackageSpecWithPaths(Path.Combine(Path.GetTempPath(), "Projects"));
+            PackageSpec secondProject = CreatePackageSpecWithPaths(Path.Combine(Path.GetTempPath(), "projects"));
+            DependencyGraphSpec first = ProjectTestHelpers.GetDGSpecForFirstProject(firstProject);
+            DependencyGraphSpec second = ProjectTestHelpers.GetDGSpecForFirstProject(secondProject);
+            string firstJson = GetJson(first);
+            string secondJson = GetJson(second);
+
+            string firstHash = GetHash(first, useLegacyHashFunction);
+            string secondHash = GetHash(second, useLegacyHashFunction);
+
+            Assert.Equal(PathUtility.IsFileSystemCaseInsensitive, StringComparer.Ordinal.Equals(firstHash, secondHash));
+            Assert.Equal(firstJson, GetJson(first));
+            Assert.Equal(secondJson, GetJson(second));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetHash_WithDifferentReferencedProjectPathCasings_UsesFileSystemCaseSensitivity(bool useLegacyHashFunction)
+        {
+            PackageSpec firstRoot = CreatePackageSpecWithPaths(Path.Combine(Path.GetTempPath(), "Root"));
+            PackageSpec secondRoot = firstRoot.Clone();
+            PackageSpec firstChild = CreatePackageSpecWithPaths(Path.Combine(Path.GetTempPath(), "Referenced"), "Child");
+            PackageSpec secondChild = CreatePackageSpecWithPaths(Path.Combine(Path.GetTempPath(), "referenced"), "Child");
+            firstRoot = firstRoot.WithTestProjectReference(firstChild);
+            secondRoot = secondRoot.WithTestProjectReference(secondChild);
+            DependencyGraphSpec first = ProjectTestHelpers.GetDGSpecForFirstProject(firstRoot, firstChild);
+            DependencyGraphSpec second = ProjectTestHelpers.GetDGSpecForFirstProject(secondRoot, secondChild);
+
+            DependencyGraphSpec firstClosure = first.WithProjectClosure(firstRoot.RestoreMetadata.ProjectUniqueName);
+            DependencyGraphSpec secondClosure = second.WithProjectClosure(secondRoot.RestoreMetadata.ProjectUniqueName);
+            Assert.Equal(2, firstClosure.Projects.Count);
+            Assert.Equal(2, secondClosure.Projects.Count);
+            string firstJson = GetJson(firstClosure);
+            string secondJson = GetJson(secondClosure);
+
+            string firstHash = GetHash(firstClosure, useLegacyHashFunction);
+            string secondHash = GetHash(secondClosure, useLegacyHashFunction);
+
+            Assert.Equal(PathUtility.IsFileSystemCaseInsensitive, StringComparer.Ordinal.Equals(firstHash, secondHash));
+            Assert.Equal(firstJson, GetJson(firstClosure));
+            Assert.Equal(secondJson, GetJson(secondClosure));
+        }
+
+        [Theory]
+        [InlineData(false, "ProjectName")]
+        [InlineData(true, "ProjectName")]
+        [InlineData(false, "Source")]
+        [InlineData(true, "Source")]
+        [InlineData(false, "PackagePath")]
+        [InlineData(true, "PackagePath")]
+        [InlineData(false, "OutputPath")]
+        [InlineData(true, "OutputPath")]
+        [InlineData(false, "DependencyVersion")]
+        [InlineData(true, "DependencyVersion")]
+        public void GetHash_WithMeaningfulChanges_ReturnsDifferentHashes(bool useLegacyHashFunction, string changedValue)
+        {
+            PackageSpec first = CreatePackageSpecWithPaths(Path.Combine(Path.GetTempPath(), "Projects"));
+            PackageSpec second = first.Clone();
+
+            switch (changedValue)
+            {
+                case "ProjectName":
+                    second.RestoreMetadata.ProjectName = "project";
+                    break;
+                case "Source":
+                    second.RestoreMetadata.Sources = [new PackageSource("https://example.test/feed/index.json")];
+                    break;
+                case "PackagePath":
+                    second.RestoreMetadata.Files = [new ProjectRestoreMetadataFile("lib/net10.0/project.dll", first.RestoreMetadata.Files[0].AbsolutePath)];
+                    break;
+                case "OutputPath":
+                    second.RestoreMetadata.OutputPath = Path.Combine(Path.GetTempPath(), "OtherOutput");
+                    break;
+                case "DependencyVersion":
+                    second.TargetFrameworks[0] = new TargetFrameworkInformation(second.TargetFrameworks[0])
+                    {
+                        Dependencies = [new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange("Package", VersionRange.Parse("2.0.0"), LibraryDependencyTarget.Package)
+                        }]
+                    };
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(changedValue));
+            }
+
+            string firstHash = GetHash(ProjectTestHelpers.GetDGSpecForFirstProject(first), useLegacyHashFunction);
+            string secondHash = GetHash(ProjectTestHelpers.GetDGSpecForFirstProject(second), useLegacyHashFunction);
+
+            Assert.NotEqual(firstHash, secondHash);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         public void GetHash_WithCentralPackageVersionsAndPackagesToPrune_IgnoresDictionaryCreationOrder(bool useLegacyHashFunction)
         {
             // Arrange
@@ -747,6 +846,42 @@ namespace NuGet.ProjectModel.Test
                     Assert.True(expectedResult.Equals(actualResult));
                     Assert.NotSame(expectedResult, actualResult);
                 });
+        }
+
+        private static PackageSpec CreatePackageSpecWithPaths(string directory, string projectName = "Project")
+        {
+            string projectPath = Path.Combine(directory, projectName + ".csproj");
+            var framework = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net10.0"),
+                RuntimeIdentifierGraphPath = Path.Combine(directory, "RuntimeIdentifierGraph.json"),
+                Dependencies = [new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange("Package", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
+                }]
+            };
+
+            return new PackageSpec([framework])
+            {
+                Name = projectName,
+                FilePath = projectPath,
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    ProjectUniqueName = projectPath,
+                    ProjectName = projectName,
+                    ProjectPath = projectPath,
+                    ProjectJsonPath = Path.Combine(directory, "project.json"),
+                    OutputPath = Path.Combine(directory, "obj"),
+                    PackagesPath = Path.Combine(directory, "Packages"),
+                    ConfigFilePaths = [Path.Combine(directory, "NuGet.Config")],
+                    FallbackFolders = [Path.Combine(directory, "Fallback")],
+                    Sources = [new PackageSource("https://example.test/Feed/index.json")],
+                    TargetFrameworks = [new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName)],
+                    Files = [new ProjectRestoreMetadataFile("lib/net10.0/Project.dll", Path.Combine(directory, "bin", "Project.dll"))],
+                    RestoreLockProperties = new RestoreLockProperties("true", Path.Combine(directory, "packages.lock.json"), false)
+                }
+            };
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpec()
