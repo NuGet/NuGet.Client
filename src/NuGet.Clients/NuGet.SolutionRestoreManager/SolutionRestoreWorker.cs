@@ -426,7 +426,13 @@ namespace NuGet.SolutionRestoreManager
                         RestoreReadinessResult restoreReadiness = new();
                         if (ShouldWaitForOnBuildRestoreReadiness(request))
                         {
-                            restoreReadiness = await WaitForOnBuildRestoreReadinessAsync(token);
+                            restoreReadiness = await WaitForOnBuildRestoreReadinessCoreAsync(
+                                waitForSolutionLoadedAsync: WaitForSolutionLoadedAsync,
+                                isAllProjectsNominatedAsync: () => _solutionManager.Value.IsAllProjectsNominatedAsync(),
+                                checkProjectsReadyAsync: CheckProjectsReadyAsync,
+                                delayAsync: Task.Delay,
+                                getUtcNow: () => DateTime.UtcNow,
+                                token: token);
                         }
 
                         var restoreTrackingData = GetRestoreTrackingData(
@@ -463,17 +469,6 @@ namespace NuGet.SolutionRestoreManager
         private bool ShouldWaitForOnBuildRestoreReadiness(SolutionRestoreRequest request)
         {
             return request.RestoreSource == RestoreOperationSource.OnBuild && _isFirstRestore;
-        }
-
-        internal async Task<RestoreReadinessResult> WaitForOnBuildRestoreReadinessAsync(CancellationToken token)
-        {
-            return await WaitForOnBuildRestoreReadinessCoreAsync(
-                waitForSolutionLoadedAsync: WaitForSolutionLoadedAsync,
-                isAllProjectsNominatedAsync: () => _solutionManager.Value.IsAllProjectsNominatedAsync(),
-                checkProjectsReadyAsync: CheckProjectsReadyAsync,
-                delayAsync: (delay, cancellationToken) => Task.Delay(delay, cancellationToken),
-                getUtcNow: () => DateTime.UtcNow,
-                token: token);
         }
 
         internal static async Task<RestoreReadinessResult> WaitForOnBuildRestoreReadinessCoreAsync(
