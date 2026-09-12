@@ -56,6 +56,8 @@ namespace NuGet.SolutionRestoreManager.Test
 
                     return (true, false, 1, TimeSpan.FromMilliseconds(5));
                 },
+                delayAsync: (delay, cancellationToken) => Task.Delay(delay, cancellationToken),
+                getUtcNow: () => DateTime.UtcNow,
                 token: CancellationToken.None);
 
             await whenNominatedStarted.Task;
@@ -85,9 +87,10 @@ namespace NuGet.SolutionRestoreManager.Test
                 },
                 checkProjectsReadyAsync: (bulkRestoreCoordinationCheckStartTime, cancellationToken) =>
                     Task.FromResult((true, false, 0, TimeSpan.Zero)),
+                delayAsync: (delay, cancellationToken) => Task.Delay(delay, cancellationToken),
+                getUtcNow: () => DateTime.UtcNow,
                 token: CancellationToken.None);
 
-            await Task.Delay(50);
             isAllProjectsNominatedCallCount.Should().Be(0);
 
             solutionLoadCompleted.SetResult(true);
@@ -96,6 +99,63 @@ namespace NuGet.SolutionRestoreManager.Test
             readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReady);
             readiness.ProjectsReadyCheckCount.Should().Be(1);
             isAllProjectsNominatedCallCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenNominationsDoNotComplete_TimesOut()
+        {
+            var utcNow = new DateTime(year: 2026, month: 9, day: 11);
+
+            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessCoreAsync(
+                waitForSolutionLoadedAsync: _ => Task.CompletedTask,
+                isAllProjectsNominatedAsync: () => Task.FromResult(false),
+                checkProjectsReadyAsync: (lastProgressTime, cancellationToken) =>
+                    throw new InvalidOperationException("Projects cannot be ready before all projects are nominated."),
+                delayAsync: (delay, cancellationToken) =>
+                {
+                    utcNow += TimeSpan.FromMinutes(6);
+                    return Task.CompletedTask;
+                },
+                getUtcNow: () => utcNow,
+                token: CancellationToken.None);
+
+            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReadyCheckTimeout);
+            readiness.BulkRestoreCoordinationCheckStartTime.Should().Be(new DateTime(year: 2026, month: 9, day: 11));
+            readiness.ProjectsReadyCheckCount.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenBulkCoordinationMakesProgress_DoesNotTimeOut()
+        {
+            var utcNow = new DateTime(year: 2026, month: 9, day: 11);
+            DateTime firstCheckStartTime = default;
+            int checkProjectsReadyCallCount = 0;
+
+            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessCoreAsync(
+                waitForSolutionLoadedAsync: _ => Task.CompletedTask,
+                isAllProjectsNominatedAsync: () => Task.FromResult(true),
+                checkProjectsReadyAsync: (lastProgressTime, cancellationToken) =>
+                {
+                    checkProjectsReadyCallCount++;
+                    utcNow += TimeSpan.FromMinutes(4);
+
+                    if (checkProjectsReadyCallCount == 1)
+                    {
+                        firstCheckStartTime = lastProgressTime;
+                        return Task.FromResult((false, false, 2, TimeSpan.FromMinutes(4)));
+                    }
+
+                    lastProgressTime.Should().Be(utcNow - TimeSpan.FromMinutes(4));
+                    lastProgressTime.Should().BeAfter(firstCheckStartTime);
+                    return Task.FromResult((true, false, 2, TimeSpan.FromMinutes(4)));
+                },
+                delayAsync: (delay, cancellationToken) => Task.Delay(delay, cancellationToken),
+                getUtcNow: () => utcNow,
+                token: CancellationToken.None);
+
+            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReady);
+            readiness.ProjectsReadyCheckCount.Should().Be(2);
+            readiness.ProjectReadyTimings.Should().HaveCount(2);
         }
     }
 }
