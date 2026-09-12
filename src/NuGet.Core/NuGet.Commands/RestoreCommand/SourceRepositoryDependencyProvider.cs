@@ -233,6 +233,13 @@ namespace NuGet.Commands
 
             try
             {
+                // Do not cache misses from the suppressed first pass of a multi-source lookup;
+                // the second pass must be allowed to refresh a stale HTTP cache.
+                if (cacheContext.SuppressHttpCacheRefreshOnMiss)
+                {
+                    return await FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken);
+                }
+
                 LibraryIdentity result = await _libraryMatchCache.GetOrAddAsync(
                     libraryRange,
                     cacheContext.RefreshMemoryCache,
@@ -267,12 +274,19 @@ namespace NuGet.Commands
 
             string id = libraryRange.Name;
 
-            LibraryIdentity result = await FindLibraryFromFeedAsync(libraryRange, cacheContext, logger, cancellationToken);
+            // If origin already answered for this id, do not honor a later WithRefreshCacheTrue()
+            // (that would force a second GET to the same versions URL).
+            SourceCacheContext lookupContext = cacheContext;
+            if (_idsFetchedThisOperation.ContainsKey(id) && cacheContext.RefreshMemoryCache)
+            {
+                lookupContext = _cacheContext;
+            }
 
-            // If this lookup already consulted a fresh cache (an explicit refresh-on-miss, --no-cache,
-            // or the existing download-retry path), record the id so a later miss for the same id does
-            // not trigger another, redundant refresh during this operation.
-            if (cacheContext.RefreshMemoryCache)
+            LibraryIdentity result = await FindLibraryFromFeedAsync(libraryRange, lookupContext, logger, cancellationToken);
+
+            RecordIfOriginAlreadyAuthoritative(id);
+
+            if (lookupContext.RefreshMemoryCache)
             {
                 _idsFetchedThisOperation[id] = 0;
             }
@@ -282,12 +296,9 @@ namespace NuGet.Commands
                 return result;
             }
 
-            // Refresh-on-miss: the cached versions list for this HTTP source did not contain the
-            // requested exact version. Refresh the HTTP cache once per id per restore operation and
-            // retry before declaring the package unresolved. This eliminates spurious NU1102 failures
-            // for the publish-then-consume scenario. See https://github.com/NuGet/Home/issues/3116.
-            if (ShouldRefreshHttpCacheOnMiss(libraryRange, cacheContext)
-                && !_idsFetchedThisOperation.ContainsKey(id)
+            // Refresh-on-miss: only when the versions list came from the HTTP cache. A miss after an
+            // origin GET is authoritative for this restore. See https://github.com/NuGet/Home/issues/3116.
+            if (ShouldRefreshHttpCacheOnMiss(libraryRange, lookupContext, id)
                 && _idsRefreshedOnMiss.TryAdd(id, 0))
             {
                 logger.LogMinimal(string.Format(
@@ -296,7 +307,7 @@ namespace NuGet.Commands
                     id,
                     libraryRange.VersionRange.ToString()));
 
-                SourceCacheContext refreshedCacheContext = cacheContext.WithRefreshCacheTrue();
+                SourceCacheContext refreshedCacheContext = lookupContext.WithRefreshCacheTrue();
 
                 result = await FindLibraryFromFeedAsync(libraryRange, refreshedCacheContext, logger, cancellationToken);
 
@@ -306,17 +317,35 @@ namespace NuGet.Commands
             return result;
         }
 
+        private void RecordIfOriginAlreadyAuthoritative(string id)
+        {
+            if (_findPackagesByIdResource is IVersionListCacheInfo cacheInfo
+                && cacheInfo.TryGetVersionListSource(id, out VersionListFetchKind kind)
+                && kind == VersionListFetchKind.Network)
+            {
+                _idsFetchedThisOperation[id] = 0;
+            }
+        }
+
         /// <summary>
         /// Determines whether a cache miss for the given <paramref name="libraryRange" /> should trigger a
         /// one-time HTTP cache refresh. Only exact (non-floating, min-inclusive) version requests against an
-        /// HTTP source qualify: those are the ones where "the cache says the version doesn't exist" is
-        /// unambiguous. Floating ranges may be legitimately satisfied by an older cached version.
+        /// HTTP source qualify, and only when the versions list was served from the HTTP cache.
         /// </summary>
-        private bool ShouldRefreshHttpCacheOnMiss(LibraryRange libraryRange, SourceCacheContext cacheContext)
+        private bool ShouldRefreshHttpCacheOnMiss(LibraryRange libraryRange, SourceCacheContext cacheContext, string id)
         {
             if (!_refreshHttpCacheOnMissEnabled
                 || !IsHttp
-                || cacheContext.RefreshMemoryCache)
+                || cacheContext.RefreshMemoryCache
+                || cacheContext.SuppressHttpCacheRefreshOnMiss
+                || _idsFetchedThisOperation.ContainsKey(id))
+            {
+                return false;
+            }
+
+            if (_findPackagesByIdResource is not IVersionListCacheInfo cacheInfo
+                || !cacheInfo.TryGetVersionListSource(id, out VersionListFetchKind kind)
+                || kind != VersionListFetchKind.HttpCache)
             {
                 return false;
             }

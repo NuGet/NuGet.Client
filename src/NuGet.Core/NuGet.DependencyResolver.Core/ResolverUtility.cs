@@ -469,14 +469,54 @@ namespace NuGet.DependencyResolver
                 return nonHttpMatch;
             }
 
-            // Otherwise try the http sources
-            var httpMatch = await FindLibraryFromSourcesAsync(
-                libraryRange,
-                providers.Where(p => p.IsHttp),
-                framework,
-                cacheContext,
-                logger,
-                token);
+            List<IRemoteDependencyProvider> httpProviders = new List<IRemoteDependencyProvider>();
+            foreach (IRemoteDependencyProvider provider in providers)
+            {
+                if (provider.IsHttp)
+                {
+                    httpProviders.Add(provider);
+                }
+            }
+
+            // Two-phase refresh-on-miss is only needed when a miss on one HTTP feed must not
+            // refresh while another HTTP feed can still resolve the package. A single HTTP source
+            // refreshes (if at all) inside SourceRepositoryDependencyProvider.
+            RemoteMatch? httpMatch;
+            if (httpProviders.Count > 1
+                && !cacheContext.SuppressHttpCacheRefreshOnMiss
+                && !cacheContext.RefreshMemoryCache)
+            {
+                SourceCacheContext suppressed = cacheContext.Clone();
+                suppressed.SuppressHttpCacheRefreshOnMiss = true;
+                httpMatch = await FindLibraryFromSourcesAsync(
+                    libraryRange,
+                    httpProviders,
+                    framework,
+                    suppressed,
+                    logger,
+                    token);
+
+                if (httpMatch == null)
+                {
+                    httpMatch = await FindLibraryFromSourcesAsync(
+                        libraryRange,
+                        httpProviders,
+                        framework,
+                        cacheContext,
+                        logger,
+                        token);
+                }
+            }
+            else
+            {
+                httpMatch = await FindLibraryFromSourcesAsync(
+                    libraryRange,
+                    httpProviders,
+                    framework,
+                    cacheContext,
+                    logger,
+                    token);
+            }
 
             // Pick the best match of the 2
             if (libraryRange.VersionRange.IsBetter(
