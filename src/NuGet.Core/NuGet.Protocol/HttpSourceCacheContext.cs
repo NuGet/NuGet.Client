@@ -3,11 +3,18 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace NuGet.Protocol.Core.Types
 {
     public class HttpSourceCacheContext
     {
+        private const int Unknown = 0;
+        private const int Fresh = 1;
+        private const int NotFresh = 2;
+
+        private int _freshness;
+
         private HttpSourceCacheContext(string? rootTempFolder, TimeSpan maxAge, bool directDownload, SourceCacheContext cacheContext)
         {
             if (maxAge <= TimeSpan.Zero)
@@ -44,6 +51,18 @@ namespace NuGet.Protocol.Core.Types
         /// Inner cache context.
         /// </summary>
         public SourceCacheContext SourceCacheContext { get; }
+
+        internal bool IsFresh => Volatile.Read(ref _freshness) == Fresh;
+
+        internal void SetFresh()
+        {
+            Interlocked.CompareExchange(ref _freshness, Fresh, Unknown);
+        }
+
+        internal void SetNotFresh()
+        {
+            Interlocked.Exchange(ref _freshness, NotFresh);
+        }
 
         public static HttpSourceCacheContext Create(SourceCacheContext cacheContext, int retryCount)
         {

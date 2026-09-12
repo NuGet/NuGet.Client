@@ -173,6 +173,45 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public async Task GetAllVersionsWithCacheStateAsync_WhenVersionsComeFromNetwork_ReturnsFreshResult()
+        {
+            using (var test = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync())
+            {
+                PackageVersionsResult result = await test.Resource.GetAllVersionsWithCacheStateAsync(
+                    test.PackageIdentity.Id,
+                    test.SourceCacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                Assert.Contains(test.PackageIdentity.Version, result.Versions);
+                Assert.True(result.IsFresh);
+            }
+        }
+
+        [Fact]
+        public async Task GetAllVersionsWithCacheStateAsync_WhenMemoryCacheComesFromPreviousSession_ReturnsNonFreshResult()
+        {
+            using (var test = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync())
+            {
+                await test.Resource.GetAllVersionsWithCacheStateAsync(
+                    test.PackageIdentity.Id,
+                    test.SourceCacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                using var nextSessionCacheContext = new SourceCacheContext();
+                PackageVersionsResult result = await test.Resource.GetAllVersionsWithCacheStateAsync(
+                    test.PackageIdentity.Id,
+                    nextSessionCacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                Assert.NotEmpty(result.Versions);
+                Assert.False(result.IsFresh);
+            }
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

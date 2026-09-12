@@ -889,6 +889,11 @@ Upgradujte svou sadu .NET SDK nebo odeberte RestoreUseLegacyDependencyResolver, 
         <target state="translated">Čte se soubor projektu {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Log_RefreshingHttpCacheOnMiss">
+        <source>Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</source>
+        <target state="new">Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</target>
+        <note>{0} - Package id, {1} - version range string</note>
+      </trans-unit>
       <trans-unit id="Log_ResolverConflict">
         <source>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</source>
         <target state="translated">Nejde vyhovět konfliktním žádostem pro {0}: {1} Architektura: {2}</target>

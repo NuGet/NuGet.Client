@@ -41,6 +41,35 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken cancellationToken);
 
         /// <summary>
+        /// Asynchronously gets all package versions for a package ID, and reports whether the listing is authoritative
+        /// for the current cache session.
+        /// </summary>
+        /// <param name="id">A package ID.</param>
+        /// <param name="cacheContext">A source cache context.</param>
+        /// <param name="logger">A logger.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <remarks>
+        /// The default implementation reports the listing as fresh. Only sources that can answer from an HTTP cache
+        /// written before this session need to override this; every other source reads its listing directly.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
+        /// is either <see langword="null" /> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
+        /// is cancelled.</exception>
+        public virtual async Task<PackageVersionsResult> GetAllVersionsWithCacheStateAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            IEnumerable<NuGetVersion>? versions = await GetAllVersionsAsync(id, cacheContext, logger, cancellationToken);
+
+            return new PackageVersionsResult(versions, isFresh: true);
+        }
+
+        /// <summary>
         /// Asynchronously gets dependency information for a specific package.
         /// </summary>
         /// <param name="id">A package id.</param>

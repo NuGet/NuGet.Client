@@ -38,8 +38,8 @@ namespace NuGet.Protocol
         private const int DefaultMaxRetries = 3;
         private int _maxRetries;
         private readonly HttpSource _httpSource;
-        private readonly ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>?>> _packageVersionsCache =
-            new ConcurrentDictionary<string, AsyncLazy<HashSet<NuGetVersion>?>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, AsyncLazy<CachedVersions>> _packageVersionsCache =
+            new ConcurrentDictionary<string, AsyncLazy<CachedVersions>>(StringComparer.OrdinalIgnoreCase);
         private readonly IReadOnlyList<Uri> _baseUris;
         private string? _chosenBaseUri;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
@@ -453,16 +453,53 @@ namespace NuGet.Protocol
             return true;
         }
 
+        public override async Task<PackageVersionsResult> GetAllVersionsWithCacheStateAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(id));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            CachedVersions result = await GetCachedPackageVersionsAsync(id, cacheContext, logger, cancellationToken);
+
+            return new PackageVersionsResult(result.Versions, result.IsFreshFor(cacheContext));
+        }
+
         private async ValueTask<HashSet<NuGetVersion>?> GetAvailablePackageVersionsAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            AsyncLazy<HashSet<NuGetVersion>?> result;
+            return (await GetCachedPackageVersionsAsync(id, cacheContext, logger, cancellationToken)).Versions;
+        }
 
-            Func<string, AsyncLazy<HashSet<NuGetVersion>?>> findPackages =
-                (keyId) => new AsyncLazy<HashSet<NuGetVersion>?>(
+        private async ValueTask<CachedVersions> GetCachedPackageVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            AsyncLazy<CachedVersions> result;
+
+            Func<string, AsyncLazy<CachedVersions>> findPackages =
+                (keyId) => new AsyncLazy<CachedVersions>(
                     () => FindPackagesByIdAsync(
                         keyId,
                         cacheContext,
@@ -483,7 +520,7 @@ namespace NuGet.Protocol
             return await result;
         }
 
-        private async Task<HashSet<NuGetVersion>?> FindPackagesByIdAsync(
+        private async Task<CachedVersions> FindPackagesByIdAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
@@ -503,7 +540,7 @@ namespace NuGet.Protocol
 
                 try
                 {
-                    return await _httpSource.GetAsync(
+                    HashSet<NuGetVersion>? versions = await _httpSource.GetAsync(
                         new HttpSourceCachedRequest(
                             uri,
                             $"list_{packageIdLowerCase}",
@@ -543,6 +580,8 @@ namespace NuGet.Protocol
                         },
                         logger,
                         cancellationToken);
+
+                    return new CachedVersions(versions, cacheContext, httpSourceCacheContext.IsFresh);
                 }
                 catch (Exception ex) when (retry < _maxRetries)
                 {
@@ -575,7 +614,29 @@ namespace NuGet.Protocol
                 }
             }
 
-            return null;
+            return new CachedVersions(versions: null, cacheContext, isFresh: false);
+        }
+
+        /// <summary>
+        /// A cached version listing together with whether the lookup that produced it reached the origin. Freshness
+        /// only counts for the session that produced it, because this cache outlives a single restore and a later
+        /// session has no evidence that the origin was contacted on its behalf.
+        /// </summary>
+        private readonly struct CachedVersions
+        {
+            private readonly Guid _sessionId;
+            private readonly bool _isFresh;
+
+            internal CachedVersions(HashSet<NuGetVersion>? versions, SourceCacheContext cacheContext, bool isFresh)
+            {
+                Versions = versions;
+                _sessionId = cacheContext.SessionId;
+                _isFresh = isFresh;
+            }
+
+            internal HashSet<NuGetVersion>? Versions { get; }
+
+            internal bool IsFreshFor(SourceCacheContext cacheContext) => _isFresh && _sessionId == cacheContext.SessionId;
         }
 
         private static async Task<HashSet<NuGetVersion>> ConsumeFlatContainerIndexAsync(Stream stream, string id, string baseUri, CancellationToken token)

@@ -101,6 +101,8 @@ namespace NuGet.Protocol
                                     cacheResult.CacheFile,
                                     cacheResult.Stream);
 
+                                request.CacheContext.SetNotFresh();
+
                                 return await processAsync(httpSourceResult);
                             }
                             catch (Exception e)
@@ -144,6 +146,8 @@ namespace NuGet.Protocol
                             {
                                 var httpSourceResult = new HttpSourceResult(HttpSourceResultStatus.NotFound);
 
+                                request.CacheContext.SetFresh();
+
                                 return await processAsync(httpSourceResult);
                             }
 
@@ -151,6 +155,8 @@ namespace NuGet.Protocol
                             {
                                 // Ignore reading and caching the empty stream.
                                 var httpSourceResult = new HttpSourceResult(HttpSourceResultStatus.NoContent);
+
+                                request.CacheContext.SetFresh();
 
                                 return await processAsync(httpSourceResult);
                             }
@@ -170,6 +176,8 @@ namespace NuGet.Protocol
                                     cacheResult.CacheFile,
                                     cacheResult.Stream!)) // Stream is set by CreateCacheFileAsync above
                                 {
+                                    request.CacheContext.SetFresh();
+
                                     return await processAsync(httpSourceResult);
                                 }
                             }
@@ -190,6 +198,8 @@ namespace NuGet.Protocol
                                     cacheFileName: null,
                                     stream: stream))
                                 {
+                                    request.CacheContext.SetFresh();
+
                                     return await processAsync(httpSourceResult);
                                 }
                             }

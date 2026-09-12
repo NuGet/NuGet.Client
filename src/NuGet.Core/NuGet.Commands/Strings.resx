@@ -408,6 +408,10 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Log_RestoreNoOpFinish" xml:space="preserve">
     <value>The restore inputs for '{0}' have not changed. No further actions are required to complete the restore.</value>
   </data>
+  <data name="Log_RefreshingHttpCacheOnMiss" xml:space="preserve">
+    <value>Cached versions for '{0}' did not contain a version satisfying '{1}'; refreshing the HTTP cache once before failing.</value>
+    <comment>{0} - Package id, {1} - version range string</comment>
+  </data>
   <data name="Log_SkippingAssetsFile" xml:space="preserve">
     <value>Assets file has not changed. Skipping assets file writing. Path: {0}</value>
   </data>

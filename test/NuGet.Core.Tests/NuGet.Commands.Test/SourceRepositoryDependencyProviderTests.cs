@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -496,6 +497,7 @@ namespace NuGet.Commands.Test
             var versionsHitCount = 0;
 
             var findResource = new Mock<FindPackageByIdResource>();
+            findResource.CallBase = true;
             findResource.Setup(s => s.GetAllVersionsAsync(
                     It.IsAny<string>(),
                     It.IsAny<SourceCacheContext>(),
@@ -794,7 +796,7 @@ namespace NuGet.Commands.Test
             // Arrange
             // This test verifies that GetAllVersionsAsync properly calls EnsureResource
             // to initialize _findPackagesByIdResource. Previously, EnsureResource was not called
-            // and GetAllVersionsInternalAsync would see _findPackagesByIdResource as null,
+            // and GetAllVersionsAsync would see _findPackagesByIdResource as null,
             // silently returning null instead of the actual versions.
             var testLogger = new TestLogger();
             var cacheContext = new SourceCacheContext();
@@ -1128,6 +1130,276 @@ namespace NuGet.Commands.Test
             {
                 library.Dependencies.Should().HaveCount(0);
             }
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenCachedExactVersionMisses_RefreshesAndResolves()
+        {
+            var testLogger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            int lookupCallCount = 0;
+            int refreshedLookupCallCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource
+                .Setup(s => s.GetAllVersionsWithCacheStateAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, SourceCacheContext, ILogger, CancellationToken>((_, context, _, _) =>
+                {
+                    lookupCallCount++;
+                    if (context.RefreshMemoryCache)
+                    {
+                        refreshedLookupCallCount++;
+                        return Task.FromResult(new PackageVersionsResult(new[] { NuGetVersion.Parse("1.0.0") }, isFresh: true));
+                    }
+
+                    return Task.FromResult(new PackageVersionsResult(versions: null, isFresh: false));
+                });
+
+            SourceRepositoryDependencyProvider provider = CreateHttpProvider(findResource, testLogger, cacheContext);
+            var libraryRange = new LibraryRange(
+                "x",
+                new VersionRange(new NuGetVersion(1, 0, 0)),
+                LibraryDependencyTarget.Package);
+
+            LibraryIdentity result = await provider.FindLibraryAsync(
+                libraryRange,
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                testLogger,
+                CancellationToken.None);
+
+            Assert.NotNull(result);
+            Assert.Equal("1.0.0", result.Version.ToNormalizedString());
+            Assert.Equal(2, lookupCallCount);
+            Assert.Equal(1, refreshedLookupCallCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenOriginAlreadyReturnedMissing_DoesNotRefresh()
+        {
+            using var testDirectory = TestDirectory.Create();
+            using var cacheContext = new SourceCacheContext();
+            var logger = new TestLogger();
+            var packageSource = new PackageSource("http://unit.test/v3-flatcontainer");
+            int requestCount = 0;
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+            {
+                {
+                    $"{packageSource.Source}/x/index.json",
+                    _ =>
+                    {
+                        Interlocked.Increment(ref requestCount);
+                        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent("{\"versions\":[]}")
+                        });
+                    }
+                }
+            };
+            var httpSource = new TestHttpSource(packageSource, responses)
+            {
+                HttpCacheDirectory = testDirectory.Path
+            };
+            var findResource = new HttpFileSystemBasedFindPackageByIdResource(
+                new[] { packageSource.SourceUri },
+                httpSource);
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(findResource);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(packageSource);
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object,
+                logger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true);
+            var libraryRange = new LibraryRange(
+                "x",
+                new VersionRange(new NuGetVersion(1, 0, 0)),
+                LibraryDependencyTarget.Package);
+
+            LibraryIdentity result = await provider.FindLibraryAsync(
+                libraryRange,
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                logger,
+                CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(1, requestCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenCachedFloatingRangeMisses_RefreshesAndResolves()
+        {
+            var testLogger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            int refreshedCallCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource
+                .Setup(s => s.GetAllVersionsWithCacheStateAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, SourceCacheContext, ILogger, CancellationToken>((_, context, _, _) =>
+                {
+                    if (context.RefreshMemoryCache)
+                    {
+                        refreshedCallCount++;
+                        return Task.FromResult(new PackageVersionsResult(new[] { NuGetVersion.Parse("1.0.0-beta") }, isFresh: true));
+                    }
+
+                    return Task.FromResult(new PackageVersionsResult(versions: null, isFresh: false));
+                });
+
+            SourceRepositoryDependencyProvider provider = CreateHttpProvider(findResource, testLogger, cacheContext);
+            var libraryRange = new LibraryRange(
+                "x",
+                VersionRange.Parse("1.0.0-*"),
+                LibraryDependencyTarget.Package);
+
+            LibraryIdentity result = await provider.FindLibraryAsync(
+                libraryRange,
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                testLogger,
+                CancellationToken.None);
+
+            Assert.NotNull(result);
+            Assert.Equal("1.0.0-beta", result.Version.ToNormalizedString());
+            Assert.Equal(1, refreshedCallCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenSecondRangeMissesSamePackage_RefreshesOnlyOnce()
+        {
+            var testLogger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            IReadOnlyList<NuGetVersion> availableVersions = Array.Empty<NuGetVersion>();
+            int refreshedCallCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource
+                .Setup(s => s.GetAllVersionsWithCacheStateAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, SourceCacheContext, ILogger, CancellationToken>((_, context, _, _) =>
+                {
+                    if (context.RefreshMemoryCache)
+                    {
+                        refreshedCallCount++;
+                        availableVersions = new[]
+                        {
+                            NuGetVersion.Parse("1.0.0-beta"),
+                            NuGetVersion.Parse("2.0.0-beta")
+                        };
+                    }
+
+                    return Task.FromResult(new PackageVersionsResult(availableVersions, isFresh: context.RefreshMemoryCache));
+                });
+
+            SourceRepositoryDependencyProvider provider = CreateHttpProvider(findResource, testLogger, cacheContext);
+
+            LibraryIdentity first = await provider.FindLibraryAsync(
+                new LibraryRange("x", VersionRange.Parse("1.0.0-*"), LibraryDependencyTarget.Package),
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                testLogger,
+                CancellationToken.None);
+
+            // A different range of the same package now reads the refreshed listing, so it must not refresh again.
+            LibraryIdentity second = await provider.FindLibraryAsync(
+                new LibraryRange("x", VersionRange.Parse("2.0.0-*"), LibraryDependencyTarget.Package),
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                testLogger,
+                CancellationToken.None);
+
+            Assert.Equal("1.0.0-beta", first.Version.ToNormalizedString());
+            Assert.Equal("2.0.0-beta", second.Version.ToNormalizedString());
+            Assert.Equal(1, refreshedCallCount);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenRefreshOnMissIsDisabled_DoesNotRefresh()
+        {
+            var testLogger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            int refreshedCallCount = 0;
+
+            var findResource = new Mock<FindPackageByIdResource>();
+            findResource
+                .Setup(s => s.GetAllVersionsWithCacheStateAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns<string, SourceCacheContext, ILogger, CancellationToken>((_, context, _, _) =>
+                {
+                    if (context.RefreshMemoryCache)
+                    {
+                        refreshedCallCount++;
+                    }
+
+                    return Task.FromResult(new PackageVersionsResult(versions: null, isFresh: false));
+                });
+
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "NUGET_HTTP_CACHE_REFRESH_ON_MISS", "false" }
+            });
+            SourceRepositoryDependencyProvider provider = CreateHttpProvider(
+                findResource,
+                testLogger,
+                cacheContext,
+                environment);
+            var libraryRange = new LibraryRange(
+                "x",
+                new VersionRange(new NuGetVersion(1, 0, 0)),
+                LibraryDependencyTarget.Package);
+
+            LibraryIdentity result = await provider.FindLibraryAsync(
+                libraryRange,
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                testLogger,
+                CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(0, refreshedCallCount);
+        }
+
+        private static SourceRepositoryDependencyProvider CreateHttpProvider(
+            Mock<FindPackageByIdResource> findResource,
+            TestLogger logger,
+            SourceCacheContext cacheContext,
+            IEnvironmentVariableReader environmentVariableReader = null)
+        {
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(findResource.Object);
+            source.SetupGet(s => s.PackageSource)
+                .Returns(new PackageSource("http://test/index.json"));
+
+            return new SourceRepositoryDependencyProvider(
+                source.Object,
+                logger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true,
+                fileCache: null,
+                isGlobalPackagesFolder: false,
+                isFallbackFolderSource: false,
+                environmentVariableReader ?? new TestEnvironmentVariableReader(new Dictionary<string, string>()));
         }
 
         private sealed class SourceRepositoryDependencyProviderTest : IDisposable

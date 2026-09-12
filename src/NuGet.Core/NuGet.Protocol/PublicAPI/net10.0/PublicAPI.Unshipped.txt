@@ -1,1 +1,8 @@
 #nullable enable
+NuGet.Protocol.Core.Types.PackageVersionsResult
+NuGet.Protocol.Core.Types.PackageVersionsResult.IsFresh.get -> bool
+NuGet.Protocol.Core.Types.PackageVersionsResult.PackageVersionsResult() -> void
+NuGet.Protocol.Core.Types.PackageVersionsResult.PackageVersionsResult(System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion!>? versions, bool isFresh) -> void
+NuGet.Protocol.Core.Types.PackageVersionsResult.Versions.get -> System.Collections.Generic.IEnumerable<NuGet.Versioning.NuGetVersion!>?
+override NuGet.Protocol.HttpFileSystemBasedFindPackageByIdResource.GetAllVersionsWithCacheStateAsync(string! id, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.PackageVersionsResult>!
+virtual NuGet.Protocol.Core.Types.FindPackageByIdResource.GetAllVersionsWithCacheStateAsync(string! id, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.PackageVersionsResult>!

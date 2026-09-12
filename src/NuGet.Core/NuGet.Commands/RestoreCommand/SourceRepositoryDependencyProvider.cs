@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -38,9 +39,26 @@ namespace NuGet.Commands
         private bool _isFallbackFolderSource;
         private bool _isGlobalPackagesFolder;
         private bool _useLegacyAssetTargetFallbackBehavior;
+        private readonly bool _refreshHttpCacheOnMissEnabled;
 
         private readonly TaskResultCache<LibraryRangeCacheKey, LibraryDependencyInfo> _dependencyInfoCache = new();
         private readonly TaskResultCache<LibraryRange, LibraryIdentity> _libraryMatchCache = new();
+
+        /// <summary>
+        /// Package IDs whose version listing has already been re-read from the origin after a miss. Keyed by cache
+        /// session so that a later restore reusing this provider refreshes again.
+        /// </summary>
+        private readonly ConcurrentDictionary<(Guid SessionId, string PackageId), byte> _refreshedPackageIds = new();
+
+        private const string RefreshHttpCacheOnMissEnvironmentVariable = "NUGET_HTTP_CACHE_REFRESH_ON_MISS";
+
+        private static bool IsRefreshOnMissEnabled(IEnvironmentVariableReader environmentVariableReader)
+        {
+            string value = environmentVariableReader.GetEnvironmentVariable(RefreshHttpCacheOnMissEnvironmentVariable);
+
+            return !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "0", StringComparison.Ordinal);
+        }
 
         // Limiting concurrent requests to limit the amount of files open at a time.
         // Deliberately readonly: this gate is only meaningful if it is the same instance for the lifetime of every
@@ -149,6 +167,7 @@ namespace NuGet.Commands
             _isFallbackFolderSource = isFallbackFolderSource;
             _isGlobalPackagesFolder = isGlobalPackagesFolder;
             _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
+            _refreshHttpCacheOnMissEnabled = IsRefreshOnMissEnabled(environmentVariableReader);
         }
 
         /// <summary>
@@ -249,6 +268,33 @@ namespace NuGet.Commands
         {
             await EnsureResource(cancellationToken);
 
+            FindPackageByIdResult result = await FindLibraryFromFeedAsync(libraryRange, cacheContext, logger, cancellationToken);
+
+            // A miss reported only by cached data may be stale. Ask the origin once per package ID, then repeat the
+            // lookup against the refreshed listing.
+            if (result.IsStaleMiss
+                && _refreshHttpCacheOnMissEnabled
+                && !cacheContext.RefreshMemoryCache
+                && _refreshedPackageIds.TryAdd((cacheContext.SessionId, libraryRange.Name), 0))
+            {
+                logger.LogVerbose(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_RefreshingHttpCacheOnMiss,
+                    libraryRange.Name,
+                    libraryRange.VersionRange?.ToString() ?? string.Empty));
+
+                result = await FindLibraryFromFeedAsync(libraryRange, cacheContext.WithRefreshCacheTrue(), logger, cancellationToken);
+            }
+
+            return result.Library;
+        }
+
+        private async Task<FindPackageByIdResult> FindLibraryFromFeedAsync(
+            LibraryRange libraryRange,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
             if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
             {
                 // first check if the exact min version exist then simply return that
@@ -274,12 +320,9 @@ namespace NuGet.Commands
 
                 if (versionExists)
                 {
-                    return new LibraryIdentity
-                    {
-                        Name = libraryRange.Name,
-                        Version = libraryRange.VersionRange.MinVersion,
-                        Type = LibraryType.Package
-                    };
+                    return new FindPackageByIdResult(
+                        CreateLibraryIdentity(libraryRange.Name, libraryRange.VersionRange.MinVersion),
+                        isFresh: true);
                 }
             }
 
@@ -296,26 +339,72 @@ namespace NuGet.Commands
                     }
                 }
 
-                return null;
+                // Local folders have no HTTP cache that could be hiding a newer version, so a miss here is final.
+                return new FindPackageByIdResult(library: null, isFresh: true);
             }
 
             // Discover all versions from the feed
-            var packageVersions = await GetAllVersionsInternalAsync(libraryRange.Name, cacheContext, logger, false, cancellationToken);
-
-            // Select the best match
-            var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
-
-            if (packageVersion != null)
+            PackageVersionsResult packageVersions;
+            try
             {
-                return new LibraryIdentity
+                if (_throttle != null)
                 {
-                    Name = libraryRange.Name,
-                    Version = packageVersion,
-                    Type = LibraryType.Package
-                };
+                    await _throttle.WaitAsync(cancellationToken);
+                }
+
+                packageVersions = await _findPackagesByIdResource.GetAllVersionsWithCacheStateAsync(
+                    libraryRange.Name,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
+            }
+            finally
+            {
+                _throttle?.Release();
             }
 
-            return null;
+            // Select the best match
+            var packageVersion = packageVersions.Versions?.FindBestMatch(libraryRange.VersionRange, version => version);
+
+            return new FindPackageByIdResult(
+                CreateLibraryIdentity(libraryRange.Name, packageVersion),
+                packageVersions.IsFresh);
+        }
+
+        /// <summary>
+        /// A resolved library, if the source had one, together with whether the source itself was asked.
+        /// </summary>
+        private readonly struct FindPackageByIdResult
+        {
+            internal FindPackageByIdResult(LibraryIdentity library, bool isFresh)
+            {
+                Library = library;
+                IsFresh = isFresh;
+            }
+
+            internal LibraryIdentity Library { get; }
+
+            internal bool IsFresh { get; }
+
+            /// <summary>
+            /// The source had no match, but only cached data said so, so the origin may know better.
+            /// </summary>
+            internal bool IsStaleMiss => Library == null && !IsFresh;
+        }
+
+        private static LibraryIdentity CreateLibraryIdentity(string packageId, NuGetVersion version)
+        {
+            if (version == null)
+            {
+                return null;
+            }
+
+            return new LibraryIdentity
+            {
+                Name = packageId,
+                Version = version,
+                Type = LibraryType.Package
+            };
         }
 
         /// <summary>
@@ -645,16 +734,6 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            return await GetAllVersionsInternalAsync(id, cacheContext, logger, catchAndLogExceptions: true, cancellationToken: cancellationToken);
-        }
-
-        internal async Task<IEnumerable<NuGetVersion>> GetAllVersionsInternalAsync(
-            string id,
-            SourceCacheContext cacheContext,
-            ILogger logger,
-            bool catchAndLogExceptions,
-            CancellationToken cancellationToken)
-        {
             try
             {
                 if (_throttle != null)
@@ -670,7 +749,7 @@ namespace NuGet.Commands
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (catchAndLogExceptions)
+            catch (FatalProtocolException e)
             {
                 if (_ignoreFailedSources)
                 {

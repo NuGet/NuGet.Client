@@ -293,6 +293,66 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task HttpSource_GetAsync_MarksResultFreshWhenCacheIsMissing()
+        {
+            using var testDirectory = TestDirectory.Create();
+            var testContext = new TestContext(testDirectory);
+            using var sourceCacheContext = new SourceCacheContext();
+            HttpSourceCacheContext httpCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, retryCount: 0);
+
+            await testContext.HttpSource.GetAsync(
+                new HttpSourceCachedRequest(testContext.Url, testContext.CacheKey, httpCacheContext),
+                result => Task.FromResult(testContext.ReadStream(result.Stream)),
+                testContext.Logger,
+                CancellationToken.None);
+
+            Assert.True(httpCacheContext.IsFresh);
+        }
+
+        [Fact]
+        public async Task HttpSource_GetAsync_MarksResultNotFreshWhenUsingExistingCache()
+        {
+            using var testDirectory = TestDirectory.Create();
+            var testContext = new TestContext(testDirectory);
+            await testContext.WriteToCacheAsync(testContext.CacheKey, testContext.CacheContent);
+            using var sourceCacheContext = new SourceCacheContext();
+            HttpSourceCacheContext httpCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, retryCount: 0);
+
+            await testContext.HttpSource.GetAsync(
+                new HttpSourceCachedRequest(testContext.Url, testContext.CacheKey, httpCacheContext),
+                result => Task.FromResult(testContext.ReadStream(result.Stream)),
+                testContext.Logger,
+                CancellationToken.None);
+
+            Assert.False(httpCacheContext.IsFresh);
+        }
+
+        [Fact]
+        public async Task HttpSource_GetAsync_MarksResultNotFreshWhenAnyRequestUsesExistingCache()
+        {
+            using var testDirectory = TestDirectory.Create();
+            var testContext = new TestContext(testDirectory);
+            using var sourceCacheContext = new SourceCacheContext();
+            HttpSourceCacheContext httpCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, retryCount: 0);
+
+            await testContext.HttpSource.GetAsync(
+                new HttpSourceCachedRequest(testContext.Url, testContext.CacheKey, httpCacheContext),
+                result => Task.FromResult(testContext.ReadStream(result.Stream)),
+                testContext.Logger,
+                CancellationToken.None);
+
+            const string cachedKey = "cached";
+            await testContext.WriteToCacheAsync(cachedKey, testContext.CacheContent);
+            await testContext.HttpSource.GetAsync(
+                new HttpSourceCachedRequest(testContext.Url, cachedKey, httpCacheContext),
+                result => Task.FromResult(testContext.ReadStream(result.Stream)),
+                testContext.Logger,
+                CancellationToken.None);
+
+            Assert.False(httpCacheContext.IsFresh);
+        }
+
+        [Fact]
         public async Task HttpSource_ReadsFromTheCacheWithDirectDownload()
         {
             // Arrange
