@@ -510,7 +510,21 @@ namespace NuGet.ProjectModel.Test
         [InlineData(true, "OutputPath")]
         [InlineData(false, "DependencyVersion")]
         [InlineData(true, "DependencyVersion")]
-        public void GetHash_WithMeaningfulChanges_ReturnsDifferentHashes(bool useLegacyHashFunction, string changedValue)
+        [InlineData(false, "ProjectJsonPath")]
+        [InlineData(true, "ProjectJsonPath")]
+        [InlineData(false, "PackagesPath")]
+        [InlineData(true, "PackagesPath")]
+        [InlineData(false, "ConfigFilePath")]
+        [InlineData(true, "ConfigFilePath")]
+        [InlineData(false, "FallbackFolder")]
+        [InlineData(true, "FallbackFolder")]
+        [InlineData(false, "LockFilePath")]
+        [InlineData(true, "LockFilePath")]
+        [InlineData(false, "RuntimeIdentifierGraphPath")]
+        [InlineData(true, "RuntimeIdentifierGraphPath")]
+        [InlineData(false, "AbsolutePath")]
+        [InlineData(true, "AbsolutePath")]
+        public void GetHash_WithOtherRestoreInputChanges_ReturnsDifferentHashes(bool useLegacyHashFunction, string changedValue)
         {
             PackageSpec first = CreatePackageSpecWithPaths(Path.Combine(Path.GetTempPath(), "Projects"));
             PackageSpec second = first.Clone();
@@ -537,6 +551,32 @@ namespace NuGet.ProjectModel.Test
                             LibraryRange = new LibraryRange("Package", VersionRange.Parse("2.0.0"), LibraryDependencyTarget.Package)
                         }]
                     };
+                    break;
+                case "ProjectJsonPath":
+                    second.RestoreMetadata.ProjectJsonPath = second.RestoreMetadata.ProjectJsonPath.ToUpperInvariant();
+                    break;
+                case "PackagesPath":
+                    second.RestoreMetadata.PackagesPath = second.RestoreMetadata.PackagesPath.ToUpperInvariant();
+                    break;
+                case "ConfigFilePath":
+                    second.RestoreMetadata.ConfigFilePaths[0] = second.RestoreMetadata.ConfigFilePaths[0].ToUpperInvariant();
+                    break;
+                case "FallbackFolder":
+                    second.RestoreMetadata.FallbackFolders[0] = second.RestoreMetadata.FallbackFolders[0].ToUpperInvariant();
+                    break;
+                case "LockFilePath":
+                    second.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties(
+                        "true", second.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath.ToUpperInvariant(), false);
+                    break;
+                case "RuntimeIdentifierGraphPath":
+                    second.TargetFrameworks[0] = new TargetFrameworkInformation(second.TargetFrameworks[0])
+                    {
+                        RuntimeIdentifierGraphPath = second.TargetFrameworks[0].RuntimeIdentifierGraphPath.ToUpperInvariant()
+                    };
+                    break;
+                case "AbsolutePath":
+                    second.RestoreMetadata.Files = [new ProjectRestoreMetadataFile(
+                        first.RestoreMetadata.Files[0].PackagePath, first.RestoreMetadata.Files[0].AbsolutePath.ToUpperInvariant())];
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(changedValue));
@@ -851,10 +891,11 @@ namespace NuGet.ProjectModel.Test
         private static PackageSpec CreatePackageSpecWithPaths(string directory, string projectName = "Project")
         {
             string projectPath = Path.Combine(directory, projectName + ".csproj");
+            string restoreSettingsDirectory = Path.Combine(Path.GetTempPath(), "RestoreSettings");
             var framework = new TargetFrameworkInformation
             {
                 FrameworkName = NuGetFramework.Parse("net10.0"),
-                RuntimeIdentifierGraphPath = Path.Combine(directory, "RuntimeIdentifierGraph.json"),
+                RuntimeIdentifierGraphPath = Path.Combine(restoreSettingsDirectory, "RuntimeIdentifierGraph.json"),
                 Dependencies = [new LibraryDependency
                 {
                     LibraryRange = new LibraryRange("Package", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
@@ -871,15 +912,15 @@ namespace NuGet.ProjectModel.Test
                     ProjectUniqueName = projectPath,
                     ProjectName = projectName,
                     ProjectPath = projectPath,
-                    ProjectJsonPath = Path.Combine(directory, "project.json"),
+                    ProjectJsonPath = Path.Combine(restoreSettingsDirectory, "project.json"),
                     OutputPath = Path.Combine(directory, "obj"),
-                    PackagesPath = Path.Combine(directory, "Packages"),
-                    ConfigFilePaths = [Path.Combine(directory, "NuGet.Config")],
-                    FallbackFolders = [Path.Combine(directory, "Fallback")],
+                    PackagesPath = Path.Combine(restoreSettingsDirectory, "Packages"),
+                    ConfigFilePaths = [Path.Combine(restoreSettingsDirectory, "NuGet.Config")],
+                    FallbackFolders = [Path.Combine(restoreSettingsDirectory, "Fallback")],
                     Sources = [new PackageSource("https://example.test/Feed/index.json")],
                     TargetFrameworks = [new ProjectRestoreMetadataFrameworkInfo(framework.FrameworkName)],
-                    Files = [new ProjectRestoreMetadataFile("lib/net10.0/Project.dll", Path.Combine(directory, "bin", "Project.dll"))],
-                    RestoreLockProperties = new RestoreLockProperties("true", Path.Combine(directory, "packages.lock.json"), false)
+                    Files = [new ProjectRestoreMetadataFile("lib/net10.0/Project.dll", Path.Combine(restoreSettingsDirectory, "bin", "Project.dll"))],
+                    RestoreLockProperties = new RestoreLockProperties("true", Path.Combine(restoreSettingsDirectory, "packages.lock.json"), false)
                 }
             };
         }
