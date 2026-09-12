@@ -56,6 +56,86 @@ public class GetLatestVersionAsyncTests
     }
 
     [Fact]
+    public async Task GetLatestVersionAsync_WithAllowedVersions_ReturnsHighestVersionInRange()
+    {
+        // Arrange
+        using var testContext = new SimpleTestPathContext();
+        var packageId = "TestPackage.Range";
+
+        var packages = new[]
+        {
+            new SimpleTestPackageContext(packageId, "1.0.0"),
+            new SimpleTestPackageContext(packageId, "1.5.0"),
+            new SimpleTestPackageContext(packageId, "2.0.0"),
+        };
+
+        await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
+
+        using var packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot);
+
+        // Act
+        var result = await packageUpdateIO.GetLatestVersionAsync(packageId, includePrerelease: false, allowedSources: null, allowedVersions: VersionRange.Parse("[1.0.0,2.0.0)"), NullLogger.Instance, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().Be(new NuGetVersion("1.5.0"));
+    }
+
+    [Fact]
+    public async Task GetLatestVersionAsync_WithAllowedVersions_FiltersOutVersionsAboveUpperBound()
+    {
+        // Arrange
+        // Strengthened version of the in-range test: feed contains a version in the next major
+        // (2.5.0) above the upper bound. The allowedVersions filter must drop both 2.0.0 and 2.5.0.
+        using var testContext = new SimpleTestPathContext();
+        var packageId = "TestPackage.RangeFilter";
+
+        var packages = new[]
+        {
+            new SimpleTestPackageContext(packageId, "1.0.0"),
+            new SimpleTestPackageContext(packageId, "1.5.0"),
+            new SimpleTestPackageContext(packageId, "2.0.0"),
+            new SimpleTestPackageContext(packageId, "2.5.0"),
+        };
+
+        await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
+
+        using var packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot);
+
+        // Act
+        var result = await packageUpdateIO.GetLatestVersionAsync(packageId, includePrerelease: false, allowedSources: null, allowedVersions: VersionRange.Parse("[1.0.0,2.0.0)"), NullLogger.Instance, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().Be(new NuGetVersion("1.5.0"));
+    }
+
+    [Fact]
+    public async Task GetLatestVersionAsync_WithAllowedVersions_WhenAllVersionsOutOfRange_ReturnsNull()
+    {
+        // Arrange
+        // Cross-major filter at the IO layer: only a 9.0.0 package is published,
+        // but the allowed range is [1.0.0, 2.0.0). The auto-update path must surface no candidate.
+        using var testContext = new SimpleTestPathContext();
+        var packageId = "TestPackage.RangeMiss";
+
+        var packages = new[]
+        {
+            new SimpleTestPackageContext(packageId, "9.0.0"),
+        };
+
+        await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packages);
+
+        using var packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot);
+
+        // Act
+        var result = await packageUpdateIO.GetLatestVersionAsync(packageId, includePrerelease: false, allowedSources: null, allowedVersions: VersionRange.Parse("[1.0.0,2.0.0)"), NullLogger.Instance, CancellationToken.None);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetLatestVersionAsync_WithPrereleaseVersions_WhenIncludePrereleaseTrue_ReturnsPrereleaseVersion()
     {
         // Arrange

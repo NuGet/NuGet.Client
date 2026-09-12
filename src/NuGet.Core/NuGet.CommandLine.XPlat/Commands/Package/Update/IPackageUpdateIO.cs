@@ -82,6 +82,24 @@ internal interface IPackageUpdateIO
         ILogger logger,
         CancellationToken cancellationToken);
 
+    /// <summary>Gets the highest package version matching the allowed update range.</summary>
+    /// <param name="packageId">The package name to check.</param>
+    /// <param name="includePrerelease">Whether prerelease packages should be considered.</param>
+    /// <param name="allowedSources">Package source mapping sources configured for this package name.
+    /// <see langword="null"/> if package source mapping is not configured.</param>
+    /// <param name="allowedVersions">The version range allowed by the project reference.</param>
+    /// <param name="logger">Output logger</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The <see cref="NuGetVersion"/> of the highest version of the package available in the allowed range.
+    /// <see langword="null"/> if no versions of the package are found.</returns>
+    Task<NuGetVersion?> GetLatestVersionAsync(
+        string packageId,
+        bool includePrerelease,
+        IReadOnlyList<string>? allowedSources,
+        VersionRange? allowedVersions,
+        ILogger logger,
+        CancellationToken cancellationToken);
+
     /// <summary>Gets the vulnerability database from the source(s) vulnerability info resource. Uses
     /// audit sources if the settings have any configured, otherwise uses package sources, just like restore.</summary>
     /// <param name="logger">The output logger.</param>
