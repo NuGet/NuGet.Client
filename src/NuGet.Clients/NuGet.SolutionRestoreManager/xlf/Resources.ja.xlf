@@ -83,8 +83,8 @@ Missing packages: {0}</source>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFailedForProject">
-        <source>NuGet Package restore failed for project {0}: {1}. Please see Error List window for detailed warnings and errors.</source>
-        <target state="translated">プロジェクト {0} の NuGet パッケージの復元に失敗しました: {1}。警告とエラーの詳細は、[エラー一覧] ウィンドウを参照してください。</target>
+        <source>NuGet Package restore failed for project {0}: {1}. See the Error List window for detailed warnings and errors.</source>
+        <target state="translated">プロジェクト {0} の NuGet パッケージの復元に失敗しました: {1}。詳細な警告とエラーについては、[エラー一覧] ウィンドウを参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFinished">
@@ -98,8 +98,8 @@ Missing packages: {0}</source>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFinishedWithError">
-        <source>NuGet package restore failed. Please see Error List window for detailed warnings and errors.</source>
-        <target state="translated">NuGet パッケージの復元に失敗しました。警告とエラーの詳細は、[エラー一覧] ウィンドウを参照してください。</target>
+        <source>NuGet package restore failed. See the Error List window for detailed warnings and errors.</source>
+        <target state="translated">NuGet パッケージの復元に失敗しました。詳細な警告とエラーについては、[エラー一覧] ウィンドウを参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreOptOutMessage">
@@ -109,14 +109,19 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
 NuGet がビルド中にパッケージを復元しないようにするには、Visual Studio の [オプション] ダイアログ ボックスを開き、NuGet の [パッケージ マネージャー] ノードをクリックして、[ビルド中に足りないパッケージをダウンロードすることを NuGet に許可] チェック ボックスをオフにします。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Prompt_ResolveSupplyChainSecurityNUCode">
+        <source>Resolve {0} by reviewing my NuGet supply chain security configuration.</source>
+        <target state="translated">NuGet サプライ チェーンのセキュリティ構成を確認して {0} を解決します。</target>
+        <note>Do not translate NuGet</note>
+      </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
         <target state="translated">プロパティ {0} には、すべてのターゲット フレームワークに対して 1 つの値が必要ですが、代わりに次の値が指定されていました: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RelativeGlobalPackagesFolder">
-        <source>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Please save your solution or configure a 'globalPackagesFolder' which is a full path.</source>
-        <target state="translated">nuget.config ファイルの 'globalPackagesFolder' または環境変数に相対パスの '{0}' が指定されており、ソリューションが保存されていません。ソリューションを保存するか、'globalPackagesFolder' を完全なパスで構成してください。</target>
+        <source>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Save your solution or configure a 'globalPackagesFolder' which is a full path.</source>
+        <target state="translated">nuget.config ファイルの 'globalPackagesFolder' または環境変数に相対パスの '{0}' が指定されており、ソリューションが保存されていません。ソリューションを保存するか、完全なパスの 'globalPackagesFolder' を構成してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoredPackage">
@@ -130,9 +135,19 @@ NuGet がビルド中にパッケージを復元しないようにするには�
         <note />
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
-        <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
-        <target state="translated">ソリューションが保存されていません。ソリューションを保存してから NuGet パッケージを管理してください。</target>
+        <source>Solution is not saved. Save your solution before managing NuGet packages.</source>
+        <target state="translated">ソリューションが保存されていません。NuGet パッケージを管理する前に、ソリューションを保存してください。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Title_AskCopilotForFix">
+        <source>Ask Copilot for a fix</source>
+        <target state="translated">Copilot に修正を依頼する</target>
+        <note>Do not translate Copilot</note>
+      </trans-unit>
+      <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
+        <source>Ask Copilot to fix NuGet package vulnerabilities</source>
+        <target state="translated">NuGet パッケージの脆弱性を修正するよう Copilot に依頼する</target>
+        <note>Do not translate Copilot or NuGet</note>
       </trans-unit>
     </body>
   </file>

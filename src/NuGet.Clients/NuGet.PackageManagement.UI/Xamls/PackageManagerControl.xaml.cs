@@ -64,6 +64,9 @@ namespace NuGet.PackageManagement.UI
         // This tells the operation execution part that it needs to trigger a refresh when done.
         private bool _isRefreshRequired;
         private bool _isExecutingAction; // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
+        // Set when a relevant change occurs while the control is not visible, so that the
+        // pending refresh can be applied when the control becomes visible again.
+        private bool _refreshOnVisibleChange;
         private RestartRequestBar _restartBar;
         private bool _missingPackageStatus;
         private bool _loadedAndInitialized = false;
@@ -74,6 +77,8 @@ namespace NuGet.PackageManagement.UI
         private IPackageVulnerabilityService _packageVulnerabilityService;
         private INuGetPackageFileService _nugetPackageFileService;
         private bool _isReadmeTabEnabled;
+        private PackageManagerInfoBarService _infoBarService;
+        private PackageManagerVulnerabilitiesInfoBar _vulnerabilitiesInfoBar;
 
         private SearchControl SearchControl
         {
@@ -188,10 +193,11 @@ namespace NuGet.PackageManagement.UI
             await IsCentralPackageManagementEnabledAsync(CancellationToken.None);
 
             // UI is initialized. Start the first search
-            _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-            _packageList.IsSolution = Model.IsSolution;
+            _packageList.ViewModel.IsUpdateMode = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+            _packageList.ViewModel.IsSolution = Model.IsSolution;
 
             Loaded += PackageManagerLoaded;
+            IsVisibleChanged += OnIsVisibleChanged;
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -246,7 +252,20 @@ namespace NuGet.PackageManagement.UI
             {
                 _detailModel.PackageSourceMappingViewModel.SettingsChanged();
                 _detailModel.SetInstalledOrUpdateButtonIsEnabled();
-                RefreshAfterSettingsChanged(sender, e);
+
+                // When an action is executing, this settings change is a side effect of that action
+                // (e.g. auto-creating a package source mapping on install). The mapping is saved before
+                // the action's package changes are applied, so refreshing now would read pre-action state
+                // and race the post-action refresh, leaving the UI stale. Defer to the action's completion,
+                // which already performs a full refresh.
+                if (_isExecutingAction)
+                {
+                    _isRefreshRequired = true;
+                }
+                else
+                {
+                    RefreshAfterSettingsChanged(sender, e);
+                }
             }
             finally
             {
@@ -321,7 +340,7 @@ namespace NuGet.PackageManagement.UI
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
-            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            // Do not refresh if the UI is not visible. A pending refresh is recorded and applied when the control becomes visible again.
             if (IsVisible && Model.IsSolution)
             {
                 var solutionModel = _detailModel as PackageSolutionDetailControlModel;
@@ -341,6 +360,11 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                if (Model.IsSolution)
+                {
+                    _refreshOnVisibleChange = true;
+                }
+
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.NoOp, isUIFiltering: false, duration: 0);
             }
         }
@@ -348,7 +372,7 @@ namespace NuGet.PackageManagement.UI
         private void OnProjectActionsExecuted(object sender, IReadOnlyCollection<string> projectIds)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            // Do not refresh if the UI is not visible. A pending refresh is recorded and applied when the control becomes visible again.
             if (IsVisible)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
@@ -365,6 +389,11 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                if (Model.IsSolution || projectIds.Contains(Model.Context.Projects.First().ProjectId, StringComparer.OrdinalIgnoreCase))
+                {
+                    _refreshOnVisibleChange = true;
+                }
+
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.NoOp);
             }
         }
@@ -409,7 +438,7 @@ namespace NuGet.PackageManagement.UI
         private void OnNuGetCacheUpdated(object sender, string e)
         {
             var timeSpan = GetTimeSinceLastRefreshAndRestart();
-            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            // Do not refresh if the UI is not visible. A pending refresh is recorded and applied when the control becomes visible again.
             if (IsVisible)
             {
                 NuGetUIThreadHelper.JoinableTaskFactory
@@ -418,7 +447,23 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                _refreshOnVisibleChange = true;
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.CacheUpdated, RefreshOperationStatus.NoOp);
+            }
+        }
+
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            // When the control is hidden (e.g. another document is opened on top of it), refreshes
+            // triggered by external changes are skipped and recorded via _refreshOnVisibleChange.
+            // Apply the pending refresh now that the control is visible again.
+            if (e.NewValue is true && _loadedAndInitialized && _refreshOnVisibleChange)
+            {
+                _refreshOnVisibleChange = false;
+                var timeSpan = GetTimeSinceLastRefreshAndRestart();
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(async () => await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.WindowActivated, timeSpan))
+                    .PostOnFailure(nameof(PackageManagerControl), nameof(OnIsVisibleChanged));
             }
         }
 
@@ -538,6 +583,7 @@ namespace NuGet.PackageManagement.UI
                 await RunAndEmitRefreshAsync(async () =>
                 {
                     _loadedAndInitialized = true;
+                    _refreshOnVisibleChange = false;
                     await SearchPackagesAndRefreshUpdateCountAsync(useCacheForUpdates: false);
                 },
                 RefreshOperationSource.PackageManagerLoaded, timeSpan, sw);
@@ -806,6 +852,29 @@ namespace NuGet.PackageManagement.UI
             _missingPackageStatus = e.PackagesMissing;
         }
 
+        /// <summary>
+        /// Initializes the InfoBar service for this PM UI instance using the hosting window frame.
+        /// Must be called on the UI thread after the window frame is created.
+        /// </summary>
+        public async Task SetWindowFrameAsync(IVsWindowFrame windowFrame)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var infoBarFactory = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsInfoBarUIFactory, IVsInfoBarUIFactory>(throwOnFailure: false);
+            _infoBarService = PackageManagerInfoBarService.TryCreate(windowFrame, infoBarFactory);
+
+            if (_infoBarService != null)
+            {
+                var fixVulnerabilitiesService = await ServiceLocator.GetComponentModelServiceAsync<IFixVulnerabilitiesService>();
+                if (fixVulnerabilitiesService != null)
+                {
+                    _vulnerabilitiesInfoBar = new PackageManagerVulnerabilitiesInfoBar(
+                        _infoBarService,
+                        fixVulnerabilitiesService.LaunchFixVulnerabilitiesAsync);
+                }
+            }
+        }
+
         private async Task SetTitleAsync(IProjectMetadataContextInfo projectMetadata = null)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -965,7 +1034,7 @@ namespace NuGet.PackageManagement.UI
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
                 // this will wait for searchResultTask to complete instead of creating a new task
-                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+                await _packageList.ViewModel.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
                 if (ActiveFilter == ItemFilter.Installed)
                 {
@@ -1031,6 +1100,12 @@ namespace NuGet.PackageManagement.UI
             (int vulnerablePackages, int deprecatedPackages) = await GetInstalledVulnerableAndDeprecatedPackagesCountAsync(loadContext, SelectedSource.PackageSources, _packageVulnerabilityService, refreshCts.Token);
             _topPanel.UpdateWarningStatusOnInstalledTab(vulnerablePackages, deprecatedPackages);
 
+            // Show/hide the vulnerabilities InfoBar based on the installed vulnerable package count.
+            if (_vulnerabilitiesInfoBar != null)
+            {
+                await _vulnerabilitiesInfoBar.UpdateAsync(vulnerablePackages);
+            }
+
             // Update updates tab count
             Model.CachedUpdates = new PackageSearchMetadataCache
             {
@@ -1054,33 +1129,44 @@ namespace NuGet.PackageManagement.UI
             IInstalledAndTransitivePackages installedAndTransitivePackages = await PackageCollection.GetInstalledAndTransitivePackagesAsync(loadContext.ServiceBroker, loadContext.Projects, includeTransitiveOrigins: true, token);
             installedPackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.InstalledPackages);
             PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedAndTransitivePackages.TransitivePackages.Where(p => p.TransitiveOrigins.Any()));
-            //Use ShutdownToken to ensure the operation is canceled if it's still running when VS shuts down.
-            IEnumerable<PackageVulnerabilityMetadataContextInfo>[] transitivePackageVulnerabilities = await Task.WhenAll(transitivePackageCollection.Select(p => vulnerabilityService.GetVulnerabilityInfoAsync(p, VsShellUtilities.ShutdownToken)));
 
-            foreach (IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo in transitivePackageVulnerabilities)
+            async Task<bool> IsVulnerableAsync(
+                PackageIdentity packageIdentity,
+                PackageSearchMetadataContextInfo packageMetadata)
             {
-                if (vulnerabilityInfo != null && vulnerabilityInfo.Any())
+                if (!vulnerabilityService.IsAuditSourceConfigured
+                    && packageMetadata?.Vulnerabilities != null
+                    && packageMetadata.Vulnerabilities.Any())
                 {
-                    vulnerablePackagesCount++;
+                    return true;
                 }
+
+                List<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfo =
+                    await vulnerabilityService.GetVulnerabilityInfoAsync(packageIdentity, token);
+                return vulnerabilityInfo.Count > 0;
             }
+
+            bool[] transitivePackageVulnerabilities = await Task.WhenAll(transitivePackageCollection.Select(async package =>
+            {
+                PackageSearchMetadataContextInfo packageMetadata = null;
+                if (!vulnerabilityService.IsAuditSourceConfigured)
+                {
+                    (packageMetadata, _) = await GetPackageMetadataAsync(package, packageSources, token);
+                }
+
+                return await IsVulnerableAsync(package, packageMetadata);
+            }));
+            vulnerablePackagesCount += transitivePackageVulnerabilities.Count(isVulnerable => isVulnerable);
 
             var installedPackageMetadata = await Task.WhenAll(installedPackageCollection.Select(p => GetPackageMetadataAsync(p, packageSources, token)));
 
             foreach ((PackageSearchMetadataContextInfo s, PackageDeprecationMetadataContextInfo d) in installedPackageMetadata)
             {
-                if (s.Vulnerabilities != null && s.Vulnerabilities.Any())
+                if (await IsVulnerableAsync(s.Identity, s))
                 {
                     vulnerablePackagesCount++;
                 }
-                else // Fallback to checking audit sources.
-                {
-                    List<PackageVulnerabilityMetadataContextInfo> auditSourceVulnerabilityContextInfo = await _packageVulnerabilityService.GetVulnerabilityInfoAsync(s.Identity, token);
-                    if (auditSourceVulnerabilityContextInfo.Count > 0)
-                    {
-                        vulnerablePackagesCount++;
-                    }
-                }
+
                 if (d != null)
                 {
                     deprecatedPackagesCount++;
@@ -1153,9 +1239,9 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         internal async Task UpdateDetailPaneAsync(CancellationToken cancellationToken)
         {
-            PackageItemViewModel selectedItem = _packageList.SelectedItem;
+            PackageItemViewModel selectedItem = _packageList.ViewModel.SelectedPackageItem;
             int selectedIndex = _packageList.SelectedIndex;
-            int recommendedCount = _packageList.PackageItems.Count(item => item.Recommended == true);
+            int recommendedCount = _packageList.ViewModel.PackageItems.Count(item => item.Recommended == true);
 
             if (selectedItem == null)
             {
@@ -1168,7 +1254,7 @@ namespace NuGet.PackageManagement.UI
 
                 EmitSearchSelectionTelemetry(selectedItem);
 
-                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.SelectedItem, cancellationToken);
+                await _detailModel.SetCurrentPackageAsync(selectedItem, _topPanel.Filter, () => _packageList.ViewModel.SelectedPackageItem, cancellationToken);
                 Model.UIController.SelectedPackageId = selectedItem.Id;
                 _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, selectedItem.RecommenderVersion);
 
@@ -1183,9 +1269,9 @@ namespace NuGet.PackageManagement.UI
 
         private void EmitSearchSelectionTelemetry(PackageItemViewModel selectedPackage)
         {
-            var operationId = _packageList.OperationId;
+            var operationId = _packageList.ViewModel.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
-            var recommendedCount = _packageList.PackageItems.Count(item => item.Recommended == true);
+            var recommendedCount = _packageList.ViewModel.PackageItems.Count(item => item.Recommended == true);
             var hasDeprecationAlternative = selectedPackage.AlternatePackage != null;
 
             if (_topPanel.Filter == ItemFilter.All
@@ -1206,7 +1292,7 @@ namespace NuGet.PackageManagement.UI
 
         private void IncrementInstalledPackageSelectionCount()
         {
-            PackageItemViewModel selectedItem = _packageList.SelectedItem;
+            PackageItemViewModel selectedItem = _packageList.ViewModel.SelectedPackageItem;
             if (selectedItem == null || ActiveFilter != ItemFilter.Installed)
             {
                 return;
@@ -1287,11 +1373,10 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
-                _packageList.ResetLoadingStatusIndicator();
+                _packageList.ViewModel.ResetLoadingStatusIndicator();
                 var sw = Stopwatch.StartNew();
                 // Collapse the Update controls when the current tab is not "Updates".
-                _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
+                _packageList.ViewModel.IsUpdateMode = _topPanel.Filter == ItemFilter.UpdatesAvailable;
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
@@ -1331,7 +1416,7 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.ServiceBroker,
                     Model.Context.Projects,
                     CancellationToken.None);
-                await _packageList.UpdatePackageStatusAsync(installedPackages.ToArray(), CancellationToken.None, clearCache);
+                await _packageList.ViewModel.UpdatePackageStatusAsync(installedPackages.ToArray(), CancellationToken.None, clearCache);
 
                 await RefreshInstalledAndUpdatesTabsAsync();
             }
@@ -1527,10 +1612,10 @@ namespace NuGet.PackageManagement.UI
                 EventHandler handler = null;
                 handler = (s, e) =>
                 {
-                    _packageList.LoadItemsCompleted -= handler;
+                    _packageList.ViewModel.LoadItemsCompleted -= handler;
                     SelectMatchingUpdatePackages(updatePackageOptions);
                 };
-                _packageList.LoadItemsCompleted += handler;
+                _packageList.ViewModel.LoadItemsCompleted += handler;
             }
         }
 
@@ -1545,7 +1630,7 @@ namespace NuGet.PackageManagement.UI
 
             if (updatePackageOptions.ShouldUpdateAllPackages)
             {
-                foreach (var packageItem in _packageList.PackageItems)
+                foreach (var packageItem in _packageList.ViewModel.PackageItems)
                 {
                     packageItem.IsSelected = true;
                 }
@@ -1554,7 +1639,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var packagesToSelect = new HashSet<string>(updatePackageOptions.PackagesToUpdate);
                 PackageItemViewModel firstSelectedItem = null;
-                foreach (var packageItem in _packageList.PackageItems)
+                foreach (var packageItem in _packageList.ViewModel.PackageItems)
                 {
                     packageItem.IsSelected = packagesToSelect.Contains(packageItem.Id, StringComparer.OrdinalIgnoreCase);
 
@@ -1604,6 +1689,7 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ProjectUpdated -= OnProjectUpdated;
             solutionManager.ProjectRenamed -= OnProjectRenamed;
             solutionManager.AfterNuGetCacheUpdated -= OnNuGetCacheUpdated;
+            IsVisibleChanged -= OnIsVisibleChanged;
 
             Model.Context.ProjectActionsExecuted -= OnProjectActionsExecuted;
 
@@ -1624,6 +1710,7 @@ namespace NuGet.PackageManagement.UI
             _packageDetail.Cleanup();
             _detailModel.Dispose();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
+            _packageList.Dispose();
 
             EmitPMUIClosingTelemetry();
         }
@@ -1890,6 +1977,7 @@ namespace NuGet.PackageManagement.UI
 
             if (disposing)
             {
+                _infoBarService?.Dispose();
                 _nugetPackageFileService.Dispose();
                 CleanUp();
             }

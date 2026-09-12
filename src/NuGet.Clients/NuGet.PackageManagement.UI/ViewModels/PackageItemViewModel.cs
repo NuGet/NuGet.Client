@@ -518,6 +518,8 @@ namespace NuGet.PackageManagement.UI
 
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo> Vulnerabilities => (_packageModel as IVulnerableCapable)?.Vulnerabilities ?? [];
 
+        public bool IsAuditSourceConfigured => _vulnerabilityService?.IsAuditSourceConfigured ?? false;
+
         public void UpdateTransitiveInfo(PackageSearchMetadataContextInfo metadataContextInfo)
         {
             if (metadataContextInfo.TransitiveOrigins == null)
@@ -728,7 +730,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (_packageModel is IVulnerableCapable vulnerableCapable)
                 {
-                    UpdateVulnerabilityInfo(vulnerableCapable);
+                    UpdateVulnerabilityInfo(vulnerableCapable, Version);
                 }
             },
             cancellationToken);
@@ -768,7 +770,7 @@ namespace NuGet.PackageManagement.UI
                 await vulnerabilityDatabaseCapability.PopulateDataAsync(VsShellUtilities.ShutdownToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                UpdateVulnerabilityInfo(vulnerabilityDatabaseCapability);
+                UpdateVulnerabilityInfo(vulnerabilityDatabaseCapability, packageIdentity.Version);
             },
             cancellationToken);
         }
@@ -800,14 +802,14 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(AlternatePackage));
         }
 
-        private void UpdateVulnerabilityInfo(IVulnerableCapable vulnerableCapable)
+        private void UpdateVulnerabilityInfo(IVulnerableCapable vulnerableCapable, NuGetVersion version)
         {
             if (vulnerableCapable == null)
             {
                 return;
             }
 
-            SetVulnerabilityMaxSeverity(Version, (int)vulnerableCapable.VulnerabilityMaxSeverity);
+            SetVulnerabilityMaxSeverity(version, (int)vulnerableCapable.VulnerabilityMaxSeverity);
             OnPropertyChanged(nameof(IsPackageVulnerable));
             OnPropertyChanged(nameof(IsPackageWithWarnings));
             OnPropertyChanged(nameof(Vulnerabilities));
@@ -818,6 +820,35 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(() => UpdatePackageMaxVulnerabilityAsync(packageIdentity, _cancellationToken))
                 .PostOnFailure(nameof(PackageItemViewModel), nameof(UpdatePackageMaxVulnerabilityAsync));
+        }
+
+        public async Task<IReadOnlyDictionary<NuGetVersion, int>> GetVulnerableVersionsAsync(
+            IReadOnlyCollection<NuGetVersion> versions,
+            CancellationToken cancellationToken)
+        {
+            if (_vulnerabilityService is null || versions is null || versions.Count == 0)
+            {
+                return ImmutableDictionary<NuGetVersion, int>.Empty;
+            }
+
+            return await _vulnerabilityService.GetVulnerableVersionsAsync(Id, versions, cancellationToken);
+        }
+
+        public async Task<IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>> GetVulnerabilityInfoAsync(
+            NuGetVersion version,
+            CancellationToken cancellationToken)
+        {
+            if (_vulnerabilityService is null)
+            {
+                return Array.Empty<PackageVulnerabilityMetadataContextInfo>();
+            }
+
+            List<PackageVulnerabilityMetadataContextInfo> vulnerabilities =
+                await _vulnerabilityService.GetVulnerabilityInfoAsync(
+                    new PackageIdentity(Id, version),
+                    cancellationToken);
+
+            return vulnerabilities ?? (IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>)Array.Empty<PackageVulnerabilityMetadataContextInfo>();
         }
 
         public async Task UpdatePackageStatusAsync(IEnumerable<PackageCollectionItem> installedPackages, CancellationToken cancellationToken, bool clearCache = false)

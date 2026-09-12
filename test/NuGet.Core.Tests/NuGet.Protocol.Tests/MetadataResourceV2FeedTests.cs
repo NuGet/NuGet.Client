@@ -30,13 +30,14 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var latestVersion = await metadataResource.GetLatestVersion("WindowsAzure.Storage", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
-            Assert.Equal("6.2.2-preview", latestVersion.ToNormalizedString());
+            Assert.Equal("6.2.2-preview", latestVersion!.ToNormalizedString());
         }
 
         [Fact]
@@ -52,13 +53,14 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var latestVersion = await metadataResource.GetLatestVersion("WindowsAzure.Storage", false, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
 
             // Assert
-            Assert.Equal("6.2.0", latestVersion.ToNormalizedString());
+            Assert.Equal("6.2.0", latestVersion!.ToNormalizedString());
         }
 
         [Fact]
@@ -74,7 +76,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var versions = await metadataResource.GetVersions("WindowsAzure.Storage", false, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -96,7 +99,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var versions = await metadataResource.GetVersions("WindowsAzure.Storage", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -118,7 +122,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var exist = await metadataResource.Exists("WindowsAzure.Storage", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -141,7 +146,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             var package = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview"));
 
@@ -169,7 +175,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             var packageIdList = new List<string>() { "WindowsAzure.Storage", "xunit" };
 
@@ -178,9 +185,9 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             Assert.Equal("WindowsAzure.Storage", versions[1].Key);
-            Assert.Equal("6.2.2-preview", versions[1].Value.ToNormalizedString());
+            Assert.Equal("6.2.2-preview", versions[1].Value!.ToNormalizedString());
             Assert.Equal("xunit", versions[0].Key);
-            Assert.Equal("2.2.0-beta1-build3239", versions[0].Value.ToNormalizedString());
+            Assert.Equal("2.2.0-beta1-build3239", versions[0].Value!.ToNormalizedString());
         }
 
         [Fact]
@@ -197,7 +204,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var latestVersion = await metadataResource.GetLatestVersion("not-found", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -220,7 +228,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var versions = await metadataResource.GetVersions("not-found", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -244,7 +253,8 @@ namespace NuGet.Protocol.Tests
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses,
                  ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.500Error.xml", GetType()));
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             var package = new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound"));
 
@@ -269,7 +279,8 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None);
+            var metadataResource = await repo.GetResourceAsync<MetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected MetadataResource.");
 
             // Act
             var exist = await metadataResource.Exists("not-found", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);

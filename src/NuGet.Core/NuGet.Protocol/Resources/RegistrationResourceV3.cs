@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +11,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -101,7 +100,7 @@ namespace NuGet.Protocol
         /// Returns the registration blob for the id and version
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
+        public virtual async Task<JObject?> GetPackageMetadata(PackageIdentity identity, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
             return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, cacheContext, log, token)).SingleOrDefault();
         }
@@ -141,10 +140,10 @@ namespace NuGet.Protocol
                     throw new InvalidDataException(registrationUri.AbsoluteUri);
                 }
 
-                foreach (JObject packageObj in rangeObj["items"])
+                foreach (JObject packageObj in rangeObj["items"]!)
                 {
-                    var catalogEntry = (JObject)packageObj["catalogEntry"];
-                    var version = NuGetVersion.Parse(catalogEntry["version"].ToString());
+                    var catalogEntry = (JObject)packageObj["catalogEntry"]!;
+                    var version = NuGetVersion.Parse(catalogEntry["version"]!.ToString());
                     var listed = catalogEntry.GetBoolean("listed") ?? true;
 
                     if (range.Satisfies(version)
@@ -171,6 +170,65 @@ namespace NuGet.Protocol
         public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
         {
             return GetPackageMetadata(packageId, VersionRange.All, true, includeUnlisted, cacheContext, log, token);
+        }
+
+        /// <summary>
+        /// Strongly typed, System.Text.Json based equivalent of <see cref="GetPackageMetadata(string, VersionRange, bool, bool, SourceCacheContext, Common.ILogger, CancellationToken)"/>.
+        /// Returns the registration leaf items (catalog entry plus package content url) matching the filters. Used when
+        /// the <c>NuGet.UseSystemTextJsonDeserialization</c> feature switch is enabled so that the Newtonsoft.Json based
+        /// JObject path can be trimmed by the linker.
+        /// </summary>
+        internal virtual async Task<IReadOnlyList<RegistrationLeafItem>> GetPackageMetadataItemsAsync(
+            string packageId,
+            VersionRange range,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext cacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var results = new List<RegistrationLeafItem>();
+
+            Uri registrationUri = GetUri(packageId);
+
+            IReadOnlyList<RegistrationPage?> ranges = await RegistrationUtility.LoadRangesAsItemsAsync(_client, registrationUri, packageId, range, cacheContext, log, token);
+
+            // NoAllocEnumerate can't be used on nullable types, so avoid allocating an enumerator by using a for loop.
+            for (int i = 0; i < ranges.Count; i++)
+            {
+                RegistrationPage? page = ranges[i];
+
+                if (page is null || page.Items is null)
+                {
+                    throw new InvalidDataException(registrationUri.AbsoluteUri);
+                }
+
+                foreach (RegistrationLeafItem leaf in page.Items)
+                {
+                    if (leaf is null || leaf.CatalogEntry is null)
+                    {
+                        throw new InvalidDataException(registrationUri.AbsoluteUri);
+                    }
+
+                    PackageSearchMetadataRegistration catalogEntry = leaf.CatalogEntry;
+                    NuGetVersion version = catalogEntry.Version;
+                    bool listed = catalogEntry.IsListed;
+
+                    if (range.Satisfies(version)
+                        && (includePrerelease || !version.IsPrerelease)
+                        && (includeUnlisted || listed))
+                    {
+                        results.Add(leaf);
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        internal virtual async Task<RegistrationLeafItem?> GetPackageMetadataItemAsync(PackageIdentity identity, SourceCacheContext cacheContext, Common.ILogger log, CancellationToken token)
+        {
+            return (await GetPackageMetadataItemsAsync(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, cacheContext, log, token)).SingleOrDefault();
         }
     }
 }

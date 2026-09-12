@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -171,7 +169,7 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+        public override async Task<FindPackageByIdDependencyInfo?> GetDependencyInfoAsync(
             string id,
             NuGetVersion version,
             SourceCacheContext cacheContext,
@@ -327,7 +325,7 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public override async Task<IPackageDownloader> GetPackageDownloaderAsync(
+        public override async Task<IPackageDownloader?> GetPackageDownloaderAsync(
             PackageIdentity packageIdentity,
             SourceCacheContext cacheContext,
             ILogger logger,
@@ -443,7 +441,7 @@ namespace NuGet.Protocol
             }
         }
 
-        private async Task<PackageInfo> GetPackageInfoAsync(
+        private async Task<PackageInfo?> GetPackageInfoAsync(
             string id,
             NuGetVersion version,
             SourceCacheContext cacheContext,
@@ -525,9 +523,9 @@ namespace NuGet.Protocol
                                     return false;
                                 }
 
-                                var doc = await V2FeedParser.LoadXmlAsync(httpSourceResult.Stream, cancellationToken);
+                                var doc = await V2FeedParser.LoadXmlAsync(httpSourceResult.Stream!, cancellationToken);
 
-                                var result = doc.Root
+                                var result = doc.Root!
                                     .Elements(_xnameEntry)
                                     .Select(x => BuildModel(id, x))
                                     .Where(x => x != null);
@@ -544,7 +542,7 @@ namespace NuGet.Protocol
                                 }
 
                                 // check for any duplicate url and error out
-                                if (!uris.Add(nextUri))
+                                if (!uris.Add(nextUri!))
                                 {
                                     throw new FatalProtocolException(string.Format(
                                         CultureInfo.CurrentCulture,
@@ -552,7 +550,7 @@ namespace NuGet.Protocol
                                         nextUri));
                                 }
 
-                                uri = nextUri;
+                                uri = nextUri!;
                                 page++;
 
                                 return true;
@@ -582,30 +580,30 @@ namespace NuGet.Protocol
                 }
             }
 
-            return null;
+            return null!; // Unreachable: the last retry always rethrows
         }
 
         private static PackageInfo BuildModel(string id, XElement element)
         {
-            var properties = element.Element(_xnameProperties);
+            var properties = element.Element(_xnameProperties)!;
             var idElement = properties.Element(_xnameId);
 
             return new PackageInfo
             {
                 Identity = new PackageIdentity(
                      idElement?.Value ?? id, // Use the given Id as final fallback if all elements above don't exist
-                     NuGetVersion.Parse(properties.Element(_xnameVersion).Value)),
-                ContentUri = element.Element(_xnameContent).Attribute("src").Value,
+                     NuGetVersion.Parse(properties.Element(_xnameVersion)!.Value)),
+                ContentUri = element.Element(_xnameContent)!.Attribute("src")!.Value,
             };
         }
 
         private class PackageInfo
         {
-            public PackageIdentity Identity { get; set; }
+            public required PackageIdentity Identity { get; set; }
 
-            public string Path { get; set; }
+            public string? Path { get; set; }
 
-            public string ContentUri { get; set; }
+            public required string ContentUri { get; set; }
         }
     }
 }

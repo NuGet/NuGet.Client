@@ -155,13 +155,20 @@ namespace NuGet.Commands
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
-            var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
+            var restoreMetadata = project.RestoreMetadata;
+            var rootProjectStyle = restoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
+
+            // Analyzer assets are a project-wide opt-in (the RestoreEnableAnalyzerAssets MSBuild property).
+            // When enabled, analyzer assets are honored for every target framework.
+            bool restoreEnableAnalyzerAssets = restoreMetadata?.RestoreEnableAnalyzerAssets ?? false;
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
                 .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
+                var librariesWithMonoAndroidWarnings = new HashSet<LibraryIdentity>();
+
                 var target = lockFile.Version >= LockFileFormat.AliasedVersion ?
                     new LockFileTarget
                     {
@@ -180,11 +187,13 @@ namespace NuGet.Commands
                 var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, targetGraph);
 
                 // Check if warnings should be displayed for the current framework.
-                var tfi = project.GetTargetFramework(targetGraph.Framework);
+                var tfi = project.GetTargetFramework(targetGraph.TargetAlias);
 
-                bool warnForImportsOnGraph = tfi.Warn
+                bool warnForImportsOnGraph = tfi?.Warn == true
                     && (target.TargetFramework is FallbackFramework
                         || target.TargetFramework is AssetTargetFallbackFramework);
+
+                bool checkMonoAndroidDeprecation = MonoAndroidDeprecation.ShouldCheck(project, targetGraph.Framework);
 
                 foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
@@ -224,9 +233,9 @@ namespace NuGet.Commands
                         }
 
                         var package = packageInfo.Package;
-                        var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                        var libraryDependency = tfi?.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
-                        (LockFileTargetLibrary targetLibrary, bool usedFallbackFramework) = LockFileUtils.CreateLockFileTargetLibrary(
+                        (LockFileTargetLibrary targetLibrary, bool usedFallbackFramework, NuGetFramework compileAssetFramework, NuGetFramework runtimeAssetFramework) = LockFileUtils.CreateLockFileTargetLibrary(
                             libraryDependency?.Aliases,
                             libraries[ValueTuple.Create(library.Name, library.Version)],
                             package,
@@ -234,6 +243,7 @@ namespace NuGet.Commands
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
+                            restoreEnableAnalyzerAssets: restoreEnableAnalyzerAssets,
                             cache: lockFileBuilderCache);
 
                         target.Libraries.Add(targetLibrary);
@@ -254,6 +264,7 @@ namespace NuGet.Commands
                                     targetFrameworkOverride: nonFallbackFramework,
                                     dependencyType: includeFlags,
                                     dependencies: graphItem.Data.Dependencies,
+                                    restoreEnableAnalyzerAssets: restoreEnableAnalyzerAssets,
                                     cache: lockFileBuilderCache);
                                 usedFallbackFramework = !targetLibrary.Equals(targetLibraryWithoutFallback);
                             }
@@ -279,6 +290,32 @@ namespace NuGet.Commands
                                 // only log the warning once per library
                                 librariesWithWarnings.Add(library);
                             }
+                        }
+
+                        // Log NU1703 warning if the package uses the deprecated MonoAndroid framework
+                        if (checkMonoAndroidDeprecation
+                            && !librariesWithMonoAndroidWarnings.Contains(library)
+                            && MonoAndroidDeprecation.ShouldWarn(
+                                compileAssetFramework,
+                                targetLibrary.CompileTimeAssemblies,
+                                runtimeAssetFramework,
+                                targetLibrary.RuntimeAssemblies))
+                        {
+                            var message = string.Format(CultureInfo.CurrentCulture,
+                                Strings.Warning_MonoAndroidFrameworkDeprecated,
+                                library.Name,
+                                library.Version);
+
+                            var logMessage = RestoreLogMessage.CreateWarning(
+                                NuGetLogCode.NU1703,
+                                message,
+                                library.Name,
+                                targetGraph.TargetGraphName);
+
+                            _logger.Log(logMessage);
+
+                            // only log the warning once per library
+                            librariesWithMonoAndroidWarnings.Add(library);
                         }
                     }
                 }

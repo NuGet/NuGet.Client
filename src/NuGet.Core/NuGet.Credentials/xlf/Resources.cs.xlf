@@ -43,8 +43,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PluginWarning_PluginIsBeingDeprecated">
-        <source>The credential plugin model used by '{0}' is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
-        <target state="translated">Model modulu plug-in přihlašovacích údajů, který používá {0}, je zastaralý. Požádejte prosím poskytovatele modulu plug-in o alternativu. Další informace o doporučeném modelu modulu plug-in najdete zde: {1}.</target>
+        <source>The credential plugin model used by '{0}' is deprecated. Contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</source>
+        <target state="translated">Model modulu plug-in přihlašovacích údajů, který používá {0}, je zastaralý. Požádejte poskytovatele modulu plug-in o alternativu. Další informace o doporučeném modelu modulu plug-in najdete zde: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProviderException_InvalidCredentialResponse">
@@ -56,6 +56,11 @@
         <source>Credential provider gave an invalid response.</source>
         <target state="translated">Poskytovatel pověření dal neplatnou odpověď.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SecurePluginException_ConnectionClosed">
+        <source>The connection to credential plugin '{0}' was closed before it answered the credential request. The plugin process may have exited or been shut down while the request was in flight.</source>
+        <target state="translated">Připojení k modulu plug-in přihlašovacích údajů {0} se ukončilo dřív, než modul odpověděl na žádost o přihlašovací údaje. Proces modulu plug-in se mohl během zpracování požadavku ukončit nebo vypnout.</target>
+        <note>{0} - plugin path</note>
       </trans-unit>
       <trans-unit id="SecurePluginNotice_UsingPluginAsProvider">
         <source>Using {0} as a credential provider plugin.</source>

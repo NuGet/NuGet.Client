@@ -48,12 +48,10 @@ else
 fi
 
 export DOTNET_ROOT="$CLI_DIR"
-export DOTNET_MULTILEVEL_LOOKUP="0"
 export "PATH=$CLI_DIR:$PATH"
 
 if [ "$CI" == "true" ]; then
     echo "##vso[task.setvariable variable=DOTNET_ROOT;isOutput=false;issecret=false;]$CLI_DIR"
-    echo "##vso[task.setvariable variable=DOTNET_MULTILEVEL_LOOKUP;isOutput=false;issecret=false;]0"
     echo "##vso[task.prependpath]$CLI_DIR"
 fi
 
@@ -85,7 +83,7 @@ if [ "$DOTNET_SDK_TEST_VERSIONS" != "" ]; then
     done
 else
     # Get CLI Branches for testing
-    cat build/DotNetSdkTestVersions.txt | while IFS=$'\r' read -r CliArgs || [[ -n $line ]];
+    cat build/DotNetSdkTestVersions.txt | while IFS=$'\r' read -r CliArgs || [[ -n $CliArgs ]];
     do
         if [ "${CliArgs:0:1}" != "#" ] || [ "$CliArgs" == "" ]; then
             echo "'cli/dotnet-install.sh -InstallDir $NETSDK_FOR_TESTING_DIR -NoPath $CliArgs'"

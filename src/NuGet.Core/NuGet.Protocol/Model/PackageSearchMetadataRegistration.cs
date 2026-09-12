@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using Newtonsoft.Json;
 
@@ -18,6 +16,8 @@ namespace NuGet.Protocol
         /// The <see cref="Uri"/> of this package in the catalog.
         /// </summary>
         [JsonProperty(PropertyName = JsonProperties.SubjectId)]
-        public Uri CatalogUri { get; private set; }
+        [System.Text.Json.Serialization.JsonPropertyName("@id")]
+        [System.Text.Json.Serialization.JsonInclude]
+        public Uri? CatalogUri { get; internal set; }
     }
 }

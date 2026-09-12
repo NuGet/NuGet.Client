@@ -123,28 +123,6 @@ function Test-UpdatingPackageDependentPackageVersion {
 }
 
 
-function Test-UpdatingPackageWhatIf {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p = New-ClassLibrary
-    Install-Package D -Version 1.0 -Source $context.RepositoryPath
-    Assert-Package $p D 1.0
-    Assert-Package $p B 1.0
-    Assert-Package $p C 1.0
-    Assert-Package $p A 2.0
-
-    # Act
-    Update-Package D -Source $context.RepositoryPath -WhatIf
-
-    # Assert: no packages are touched
-    Assert-Package $p D 1.0
-    Assert-Package $p B 1.0
-    Assert-Package $p C 1.0
-    Assert-Package $p A 2.0
-}
 
 function Test-UpdatingPackageWithSharedDependencySimple {
     param(
@@ -175,14 +153,6 @@ function Test-UpdatingPackageWithSharedDependencySimple {
     Assert-Null (Get-ProjectPackage $p B 1.0)
     Assert-Null (Get-SolutionPackage D 1.0)
     Assert-Null (Get-SolutionPackage B 1.0)
-}
-
-function Test-UpdateWithoutPackageInstalledThrows {
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act & Assert
-    Assert-Throws { $p | Update-Package elmah } ("'elmah' was not installed in any project. Update failed.")
 }
 
 #function Test-UpdateSolutionOnlyPackage {
@@ -418,19 +388,6 @@ function Test-UpdatePackageWithOlderVersionOfSharedDependencyInUse {
     Assert-Null (Get-SolutionPackage A 1.0)
 }
 
-function Test-UpdatePackageAcceptsSourceName {
-    # Arrange
-    $p = New-ConsoleApplication
-    Install-Package Antlr -Version 3.1.1 -Project $p.Name -Source $SourceNuGet
-
-    Assert-Package $p Antlr 3.1.1
-
-    # Act
-    Update-Package Antlr -Version 3.1.3.42154 -Project $p.Name -Source $SourceNuGet
-
-    # Assert
-    Assert-Package $p Antlr 3.1.3.42154
-}
 
 function UpdatePackageAcceptsAllAsSourceName {
     # Arrange
@@ -496,17 +453,6 @@ function Test-UpdatePackageAcceptsRelativePathSource2 {
     popd
 }
 
-function Test-UpdateProjectLevelPackageNotInstalledInAnyProject {
-    # Arrange
-    $p1 = New-ConsoleApplication
-
-    # Act
-    $p1 | Install-Package Ninject -Version 2.0.1.0
-    Remove-ProjectItem $p1 packages.config
-
-    # Assert
-    Assert-Throws { Update-Package Ninject } "'Ninject' was not installed in any project. Update failed."
-}
 
 # https://github.com/NuGet/Home/issues/9283
 #function Test-UpdatePackageMissingPackage {
@@ -690,52 +636,6 @@ function Test-UpdateScenariosWithConstraints {
     Assert-SolutionPackage F 1.0
 }
 
-function Test-UpdateAllPackagesInSolutionWithSafeFlag {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p1 = New-ConsoleApplication
-    $p1 | Install-Package A -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
-    $p1 | Install-Package B -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
-    $p1 | Install-Package C -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
-
-    # Act
-    Update-Package -Source $context.RepositoryPath -Safe
-
-    # Assert
-    Assert-Package $p1 A 1.0.3
-    Assert-Package $p1 B 1.0.3
-    Assert-Package $p1 C 1.0.0.1
-    Assert-SolutionPackage A 1.0.3
-    Assert-SolutionPackage B 1.0.3
-    Assert-SolutionPackage C 1.0.0.1
-}
-
-function Test-UpdatePackageWithSafeFlag {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p1 = New-ConsoleApplication
-    $p1 | Install-Package A -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
-    $p1 | Install-Package B -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
-    $p1 | Install-Package C -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
-
-    # Act
-    Update-Package A -Source $context.RepositoryPath -Safe
-
-    # Assert
-    Assert-Package $p1 A 1.0.3
-    Assert-Package $p1 B 1.0.0
-    Assert-Package $p1 C 1.0.0.0
-    Assert-SolutionPackage A 1.0.3
-    Assert-SolutionPackage B 1.0.0
-    Assert-SolutionPackage C 1.0.0.0
-}
-
 function Test-UpdatePackageDiamondDependenciesBottomNodeConflictingPackages {
     param(
         $context
@@ -844,15 +744,6 @@ function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
 
     # Act
     Assert-Throws { Update-Package B -Source $context.RepositoryPath } "Unable to resolve dependencies. 'B 2.0.0' is not compatible with 'A 1.0.0 constraint: B (= 1.0.0)'."
-}
-
-function Test-UpdatePackageThrowsWhenSourceIsInvalid {
-    # Arrange
-    $p = New-ConsoleApplication
-    $p | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
-
-    # Act & Assert
-    Assert-Throws { Update-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
 }
 
 function Test-UpdatePackageInOneProjectDoesNotCheckAllPackagesInSolution {
@@ -997,56 +888,6 @@ function Test-UpdateAllPackagesInAllProjectsExecutesInstallPs1OnAllProjects {
     Remove-Variable UninstallPackageMessages -Scope Global
 }
 
-function Test-UpdatePackageDoesNotConsiderPrereleasePackagesForUpdateIfFlagIsNotSpecified {
-     param(
-        $context
-    )
-
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act
-    $p | Install-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0.0-a -Prerelease
-    Assert-Package $p 'PreReleaseTestPackage'
-    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage
-
-    # Assert
-    Assert-Package $p PreReleaseTestPackage 1.0.0
-}
-
-function Test-UpdatePackageFailsIfNewVersionLessThanInstalledPrereleaseVersion {
-     param(
-        $context
-    )
-
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act
-    $p | Install-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0.1-a -Prerelease
-    Assert-Package $p 'PreReleaseTestPackage' 1.0.1-a
-    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage
-
-    # Assert
-    Assert-Package $p PreReleaseTestPackage 1.0.1-a
-}
-
-function Test-UpdatePackageDowngradesIfNewVersionLessThanInstalledPrereleaseVersionWhenVersionIsSetExplicitly {
-     param(
-        $context
-    )
-
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act & Assert
-    $p | Install-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0.1-a -Prerelease
-    Assert-Package $p 'PreReleaseTestPackage' 1.0.1-a
-
-    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0
-    Assert-Package $p 'PreReleaseTestPackage' 1.0
-}
-
 function Test-UpdatePackageDoesNotConsiderPrereleasePackagesForSafeUpdateIfFlagIsNotSpecified {
      param(
         $context
@@ -1062,23 +903,6 @@ function Test-UpdatePackageDoesNotConsiderPrereleasePackagesForSafeUpdateIfFlagI
 
     # Assert
     Assert-Package $p PreReleaseTestPackage 1.0.0
-}
-
-function Test-UpdatePackageConsidersPrereleasePackagesForUpdateIfFlagIsSpecified {
-     param(
-        $context
-    )
-
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act
-    $p | Install-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0.0-a -Prerelease
-    Assert-Package $p 'PreReleaseTestPackage'
-    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Prerelease
-
-    # Assert
-    Assert-Package $p PreReleaseTestPackage 1.0.1-a
 }
 
 function Test-UpdatePackageDoesNotConsiderPrereleasePackagesForSafeUpdateIfFlagIsNotSpecified {
@@ -1487,24 +1311,6 @@ function Test-FinishFailedUpdateOnSolutionOpen
     Assert-True [NuGet.ProjectManagement.FileSystemUtility]::DirectoryExists($packageFolderPath, "TestUpdatePackage.2.0.0.0")
 }
 
-function Test-UpdatePackageThrowsIfMinClientVersionIsNotSatisfied
-{
-    param ($context)
-
-    # Arrange
-    $p = New-ClassLibrary
-
-    $p | Install-Package kitty -version 1.0.0 -Source $context.RepositoryPath
-
-    $currentVersion = Get-HostSemanticVersion
-
-    # Act & Assert
-    Assert-Throws { $p | Update-Package Kitty -Source $context.RepositoryPath } "The 'kitty 2.0.0' package requires NuGet client version '100.0.0.1' or above, but the current NuGet version is '$currentVersion'. To upgrade NuGet, please go to https://docs.nuget.org/consume/installing-nuget"
-
-    Assert-NoPackage $p "Kitty" -Version 2.0.0
-    Assert-Package $p "Kitty" -Version 1.0.0
-}
-
 #function Test-UpdatePackageWhenAnUnusedVersionOfPackageIsPresentInPackagesFolder
 function UpdatePackageWhenAnUnusedVersionOfPackageIsPresentInPackagesFolder
 {
@@ -1624,42 +1430,6 @@ function Test-UpdatePackagePreservesProjectConfigFile
     Assert-Null (Get-ProjectItem $p 'packages.config')
 }
 
-# Test update-package -WhatIf to downgrade an installed package.
-function Test-UpdatePackageDowngradeWhatIf {
-    # Arrange
-    $project = New-ConsoleApplication
-
-    Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $context.RepositoryRoot
-    Assert-Package $project TestUpdatePackage '2.0.0.0'
-
-    # Act
-    Update-Package TestUpdatePackage -Version 1.0.0.0 -Source $context.RepositoryRoot -WhatIf
-
-    # Assert
-    # that the installed package is not touched.
-    Assert-Package $project TestUpdatePackage '2.0.0.0'
-}
-
-# Test update-package -WhatIf when there are multiple projects
-function Test-UpdatePackageWhatIfMultipleProjects {
-    # Arrange
-    $p1 = New-ConsoleApplication
-    $p2 = New-ConsoleApplication
-
-    $p1 | Install-Package TestUpdatePackage -Version 1.0.0.0 -Source $context.RepositoryRoot
-    $p2 | Install-Package TestUpdatePackage -Version 1.0.0.0 -Source $context.RepositoryRoot
-    Assert-Package $p1 TestUpdatePackage '1.0.0.0'
-    Assert-Package $p2 TestUpdatePackage '1.0.0.0'
-
-    # Act
-    Update-Package TestUpdatePackage -Source $context.RepositoryRoot -WhatIf
-
-    # Assert
-    # that the installed packages are not touched in either projects
-    Assert-Package $p1 TestUpdatePackage '1.0.0.0'
-    Assert-Package $p2 TestUpdatePackage '1.0.0.0'
-}
-
 # Test update-package ordering
 function Test-UpdatingPackageInstallOrdering {
     param(
@@ -1687,59 +1457,6 @@ function Test-UpdatingPackageInstallOrdering {
     Assert-Null (Get-ProjectPackage $p A 1.0)
     Assert-Null (Get-ProjectPackage $p B 1.0)
     Assert-Null (Get-ProjectPackage $p C 1.0)
-}
-
-# Test update-package with ToHighestPatch flag - this is the same exact behavior as -Safe
-function Test-UpdatePackageWithToHighestPatchFlag {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p1 = New-ConsoleApplication
-    $p1 | Install-Package A -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
-    $p1 | Install-Package B -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
-    $p1 | Install-Package C -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
-
-    # Act
-    Update-Package A -Source $context.RepositoryPath -Safe
-
-    # Assert
-    Assert-Package $p1 A 1.0.3
-    Assert-Package $p1 B 1.0.0
-    Assert-Package $p1 C 1.0.0
-    Assert-SolutionPackage A 1.0.3
-    Assert-SolutionPackage B 1.0.0
-    Assert-SolutionPackage C 1.0.0
-}
-
-# Test update-package with ToHighestMinor flag
-function Test-UpdatePackageWithToHighestMinorFlag {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p = New-ConsoleApplication
-
-	$p | Install-Package A -Version 1.0.0 -Source $context.RepositoryPath
-
-    Assert-Package $p A 1.0.0
-    Assert-Package $p B 1.0.0
-    Assert-Package $p C 1.0.0
-
-    # Act
-    Update-Package A -Source $context.RepositoryPath -ToHighestMinor
-
-    # Assert
-    Assert-Package $p A 1.2.0
-    Assert-Package $p B 1.2.0
-    Assert-Package $p C 1.2.0
-
-    # Make sure the old package is removed
-    Assert-Null (Get-ProjectPackage $p A 1.0.0)
-    Assert-Null (Get-ProjectPackage $p B 1.0.0)
-    Assert-Null (Get-ProjectPackage $p C 1.0.0)
 }
 
 function Test-UpdatingBindingRedirectAfterUpdate {

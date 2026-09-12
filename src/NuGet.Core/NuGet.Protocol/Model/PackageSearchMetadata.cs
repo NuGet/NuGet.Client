@@ -1,18 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
+using NuGet.Protocol.Converters;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -21,13 +21,19 @@ namespace NuGet.Protocol
     public class PackageSearchMetadata : IPackageSearchMetadata
     {
         [JsonProperty(PropertyName = JsonProperties.Authors)]
-        [JsonConverter(typeof(MetadataFieldConverter))]
-        public string Authors { get; private set; }
+        [Newtonsoft.Json.JsonConverter(typeof(MetadataFieldConverter))]
+        [JsonPropertyName(JsonProperties.Authors)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(MetadataFieldStjConverter))]
+        [JsonInclude]
+        public string? Authors { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.DependencyGroups)]
-        public IEnumerable<PackageDependencyGroup> DependencySetsInternal { get; private set; }
+        [JsonPropertyName(JsonProperties.DependencyGroups)]
+        [JsonInclude]
+        public IEnumerable<PackageDependencyGroup>? DependencySetsInternal { get; internal set; }
 
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public IEnumerable<PackageDependencyGroup> DependencySets
         {
             get
@@ -37,17 +43,25 @@ namespace NuGet.Protocol
         }
 
         [JsonProperty(PropertyName = JsonProperties.Description)]
-        public string Description { get; private set; }
+        [JsonPropertyName(JsonProperties.Description)]
+        [JsonInclude]
+        public string? Description { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.DownloadCount)]
-        public long? DownloadCount { get; private set; }
+        [JsonPropertyName(JsonProperties.DownloadCount)]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+        [JsonInclude]
+        public long? DownloadCount { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.IconUrl)]
-        public Uri IconUrl { get; private set; }
+        [JsonPropertyName(JsonProperties.IconUrl)]
+        [JsonInclude]
+        public Uri? IconUrl { get; internal set; }
 
-        private PackageIdentity _packageIdentity = null;
+        private PackageIdentity? _packageIdentity = null;
 
-        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public PackageIdentity Identity
         {
             get
@@ -61,17 +75,23 @@ namespace NuGet.Protocol
         }
 
         [JsonProperty(PropertyName = JsonProperties.LicenseUrl)]
-        [JsonConverter(typeof(SafeUriConverter))]
-        public Uri LicenseUrl { get; private set; }
+        [Newtonsoft.Json.JsonConverter(typeof(SafeUriConverter))]
+        [JsonPropertyName(JsonProperties.LicenseUrl)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SafeUriStjConverter))]
+        [JsonInclude]
+        public Uri? LicenseUrl { get; internal set; }
 
-        private IReadOnlyList<string> _ownersList;
+        private IReadOnlyList<string>? _ownersList;
 
         [JsonProperty(PropertyName = JsonProperties.Owners)]
-        [JsonConverter(typeof(MetadataStringOrArrayConverter))]
-        public IReadOnlyList<string> OwnersList
+        [Newtonsoft.Json.JsonConverter(typeof(MetadataStringOrArrayConverter))]
+        [JsonPropertyName(JsonProperties.Owners)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(MetadataStringOrArrayStjConverter))]
+        [JsonInclude]
+        public IReadOnlyList<string>? OwnersList
         {
             get { return _ownersList; }
-            private set
+            internal set
             {
                 if (_ownersList != value)
                 {
@@ -81,8 +101,9 @@ namespace NuGet.Protocol
             }
         }
 
-        private string _owners;
-        public string Owners
+        private string? _owners;
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? Owners
         {
             get
             {
@@ -95,72 +116,107 @@ namespace NuGet.Protocol
         }
 
         [JsonProperty(PropertyName = JsonProperties.PackageId)]
-        public string PackageId { get; private set; }
+        [JsonPropertyName(JsonProperties.PackageId)]
+        [JsonInclude]
+        public string PackageId { get; internal set; } = null!;
 
         [JsonProperty(PropertyName = JsonProperties.ProjectUrl)]
-        [JsonConverter(typeof(SafeUriConverter))]
-        public Uri ProjectUrl { get; private set; }
+        [Newtonsoft.Json.JsonConverter(typeof(SafeUriConverter))]
+        [JsonPropertyName(JsonProperties.ProjectUrl)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SafeUriStjConverter))]
+        [JsonInclude]
+        public Uri? ProjectUrl { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.Published)]
-        public DateTimeOffset? Published { get; private set; }
+        [JsonPropertyName(JsonProperties.Published)]
+        [JsonInclude]
+        public DateTimeOffset? Published { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.ReadmeUrl)]
-        [JsonConverter(typeof(SafeUriConverter))]
-        public Uri ReadmeUrl { get; private set; }
+        [Newtonsoft.Json.JsonConverter(typeof(SafeUriConverter))]
+        [JsonPropertyName(JsonProperties.ReadmeUrl)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SafeUriStjConverter))]
+        [JsonInclude]
+        public Uri? ReadmeUrl { get; internal set; }
 
-        [JsonIgnore]
-        public string ReadmeFileUrl { get; internal set; }
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? ReadmeFileUrl { get; internal set; }
 
-        [JsonIgnore]
-        public Uri ReportAbuseUrl { get; set; }
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Uri? ReportAbuseUrl { get; set; }
 
-        [JsonIgnore]
-        public Uri PackageDetailsUrl { get; set; }
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public Uri? PackageDetailsUrl { get; set; }
 
         [JsonProperty(PropertyName = JsonProperties.RequireLicenseAcceptance, DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(false)]
-        [JsonConverter(typeof(SafeBoolConverter))]
-        public bool RequireLicenseAcceptance { get; private set; }
+        [Newtonsoft.Json.JsonConverter(typeof(SafeBoolConverter))]
+        [JsonPropertyName(JsonProperties.RequireLicenseAcceptance)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SafeBoolStjConverter))]
+        [JsonInclude]
+        public bool RequireLicenseAcceptance { get; internal set; }
 
-        private string _summaryValue;
+        private string? _summaryValue;
 
         [JsonProperty(PropertyName = JsonProperties.Summary)]
-        public string Summary
+        [JsonPropertyName(JsonProperties.Summary)]
+        [JsonInclude]
+        public string? Summary
         {
             get { return !string.IsNullOrEmpty(_summaryValue) ? _summaryValue : Description; }
-            private set { _summaryValue = value; }
+            internal set { _summaryValue = value; }
         }
 
         [JsonProperty(PropertyName = JsonProperties.Tags)]
-        [JsonConverter(typeof(MetadataFieldConverter))]
-        public string Tags { get; private set; }
+        [Newtonsoft.Json.JsonConverter(typeof(MetadataFieldConverter))]
+        [JsonPropertyName(JsonProperties.Tags)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(MetadataFieldStjConverter))]
+        [JsonInclude]
+        public string? Tags { get; internal set; }
 
-        private string _titleValue;
+        private string? _titleValue;
 
         [JsonProperty(PropertyName = JsonProperties.Title)]
+        [JsonPropertyName(JsonProperties.Title)]
+        [JsonInclude]
         public string Title
         {
-            get { return !string.IsNullOrEmpty(_titleValue) ? _titleValue : PackageId; }
-            private set { _titleValue = value; }
+            get { return string.IsNullOrEmpty(_titleValue) ? PackageId : _titleValue!; }
+            internal set { _titleValue = value; }
         }
 
         [JsonProperty(PropertyName = JsonProperties.Version)]
-        public NuGetVersion Version { get; private set; }
+        [JsonPropertyName(JsonProperties.Version)]
+        [JsonInclude]
+        public NuGetVersion Version { get; internal set; } = null!;
 
         [JsonProperty(PropertyName = JsonProperties.Versions)]
-        public VersionInfo[] ParsedVersions { get; private set; }
+        [JsonPropertyName(JsonProperties.Versions)]
+        [JsonInclude]
+        public VersionInfo[]? ParsedVersions { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.PrefixReserved)]
-        public bool PrefixReserved { get; private set; }
+        [JsonPropertyName(JsonProperties.PrefixReserved)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SafeBoolStjConverter))]
+        [JsonInclude]
+        public bool PrefixReserved { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.LicenseExpression)]
-        public string LicenseExpression { get; private set; }
+        [JsonPropertyName(JsonProperties.LicenseExpression)]
+        [JsonInclude]
+        public string? LicenseExpression { get; internal set; }
 
         [JsonProperty(PropertyName = JsonProperties.LicenseExpressionVersion)]
-        public string LicenseExpressionVersion { get; private set; }
+        [JsonPropertyName(JsonProperties.LicenseExpressionVersion)]
+        [JsonInclude]
+        public string? LicenseExpressionVersion { get; internal set; }
 
-        [JsonIgnore]
-        public LicenseMetadata LicenseMetadata
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public LicenseMetadata? LicenseMetadata
         {
             get
             {
@@ -169,13 +225,13 @@ namespace NuGet.Protocol
                     return null;
                 }
 
-                var trimmedLicenseExpression = LicenseExpression.Trim();
+                var trimmedLicenseExpression = LicenseExpression!.Trim();
 
                 _ = System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
                 effectiveVersion = effectiveVersion ?? LicenseMetadata.EmptyVersion;
 
-                List<string> errors = null;
-                NuGetLicenseExpression parsedExpression = null;
+                List<string>? errors = null;
+                NuGetLicenseExpression? parsedExpression = null;
 
                 if (effectiveVersion.CompareTo(LicenseMetadata.CurrentVersion) <= 0)
                 {
@@ -222,9 +278,9 @@ namespace NuGet.Protocol
             }
         }
 
-        private static IList<string> GetNonStandardLicenseIdentifiers(NuGetLicenseExpression expression)
+        private static IList<string>? GetNonStandardLicenseIdentifiers(NuGetLicenseExpression expression)
         {
-            IList<string> invalidLicenseIdentifiers = null;
+            IList<string>? invalidLicenseIdentifiers = null;
             Action<NuGetLicense> licenseProcessor = delegate (NuGetLicense nugetLicense)
             {
                 if (!nugetLicense.IsStandardLicense)
@@ -242,30 +298,37 @@ namespace NuGet.Protocol
         }
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions ?? Enumerable.Empty<VersionInfo>());
 
         [JsonProperty(PropertyName = JsonProperties.Listed)]
-        public bool IsListed { get; private set; } = true;
+        [JsonPropertyName(JsonProperties.Listed)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(SafeBoolStjConverter))]
+        [JsonInclude]
+        public bool IsListed { get; internal set; } = true;
 
         [JsonProperty(PropertyName = JsonProperties.Deprecation)]
-        public PackageDeprecationMetadata DeprecationMetadata { get; private set; }
+        [JsonPropertyName(JsonProperties.Deprecation)]
+        [JsonInclude]
+        public PackageDeprecationMetadata? DeprecationMetadata { get; internal set; }
 
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
-        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
+        public Task<PackageDeprecationMetadata?> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
 
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
-        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
+        [JsonPropertyName(JsonProperties.Vulnerabilities)]
+        [JsonInclude]
+        public IEnumerable<PackageVulnerabilityMetadata>? Vulnerabilities { get; internal set; }
 
         internal void CacheStrings(MetadataReferenceCache cache)
         {
             Authors = cache.GetString(Authors);
             Description = cache.GetString(Description);
-            PackageId = cache.GetString(PackageId);
+            PackageId = cache.GetString(PackageId)!;
             ReadmeFileUrl = cache.GetString(ReadmeFileUrl);
             Tags = cache.GetString(Tags);
             Summary = cache.GetString(Summary);
-            Title = cache.GetString(Title);
+            Title = cache.GetString(Title)!;
             LicenseExpression = cache.GetString(LicenseExpression);
             LicenseExpressionVersion = cache.GetString(LicenseExpressionVersion);
         }

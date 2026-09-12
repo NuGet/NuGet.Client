@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -98,6 +99,9 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
         /// <param name="options">The set of options to use when restoring.  These options come from the main MSBuild process and control how restore functions.</param>
         /// <returns><code>true</code> if the restore succeeded, otherwise <code>false</code>.</returns>
+#if NET
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
+#endif
         [MethodImpl(MethodImplOptions.NoInlining)]
         public async Task<bool> RestoreAsync(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
@@ -105,7 +109,7 @@ namespace NuGet.Build.Tasks.Console
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -162,6 +166,7 @@ namespace NuGet.Build.Tasks.Console
                     hideWarningsAndErrors: IsOptionTrue(nameof(RestoreTaskEx.HideWarningsAndErrors), options),
                     restorePC: restorePackagesConfig,
                     cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
+                    additionalMessages: additionalMessages,
                     log: MSBuildLogger,
                 cancellationToken: CancellationToken.None);
                 bool result = restoreSummaries.All(rs => rs.Success);
@@ -185,13 +190,16 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
         /// <param name="options">The set of options to use to generate the graph, including the restore graph output path.</param>
         /// <returns><code>true</code> if the dependency graph spec was generated and written, otherwise <code>false</code>.</returns>
+#if NET
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
+#endif
         public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
             bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, _) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
 
             try
             {
@@ -542,12 +550,21 @@ namespace NuGet.Build.Tasks.Console
         internal static string[] GetTargetFrameworkStrings(IMSBuildProject project)
         {
             var targetFrameworks = project.GetProperty("TargetFrameworks");
-            if (string.IsNullOrEmpty(targetFrameworks))
+            if (!string.IsNullOrEmpty(targetFrameworks))
             {
-                targetFrameworks = project.GetProperty("TargetFramework");
+                return MSBuildStringUtility.Split(targetFrameworks);
             }
-            var projectFrameworkStrings = MSBuildStringUtility.Split(targetFrameworks);
-            return projectFrameworkStrings;
+
+            // TargetFramework (singular) is a single value and should not be split by semicolons.
+            // If a user mistakenly puts semicolons in TargetFramework, it should be treated as one
+            // (invalid) framework identifier so that validation reports the correct error.
+            var targetFramework = project.GetProperty("TargetFramework")?.Trim();
+            if (string.IsNullOrEmpty(targetFramework))
+            {
+                return Array.Empty<string>();
+            }
+
+            return new[] { targetFramework };
         }
 
         /// <summary>
@@ -618,6 +635,13 @@ namespace NuGet.Build.Tasks.Console
             string outputPath = project.GetProperty("RestoreOutputPath") ?? project.GetProperty("MSBuildProjectExtensionsPath");
 
             return outputPath == null ? null : Path.GetFullPath(Path.Combine(project.Directory, outputPath));
+        }
+
+        internal static string GetRestoreOutputPath(ITargetFramework outerBuild, string projectDirectory)
+        {
+            string outputPath = outerBuild.GetProperty("RestoreOutputPath") ?? outerBuild.GetProperty("MSBuildProjectExtensionsPath");
+
+            return outputPath == null ? null : Path.GetFullPath(Path.Combine(projectDirectory, outputPath));
         }
 
         /// <summary>
@@ -789,19 +813,24 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
         /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
         /// <returns>A <see cref="DependencyGraphSpec" /> for the specified project if they could be loaded, otherwise <code>null</code>.</returns>
-        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader)
+#if NET
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
+#endif
+        private (DependencyGraphSpec DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> AdditionalMessages) GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader)
         {
+            var additionalMessages = new ConcurrentBag<IAssetsLogMessage>();
+
             string envVar = environmentVariableReader.GetEnvironmentVariable(PackageSpecFactory.EnvironmentVariableName);
             if (!string.Equals(envVar, bool.FalseString, StringComparison.OrdinalIgnoreCase))
             {
-                return GetDependencyGraphSpec(
+                var dgSpec = GetDependencyGraphSpec(
                     entryProjectPath,
                     globalProperties,
                     interactive,
                     binaryLoggerParameters,
                     createProjectFactory: static (string projectPath, (ProjectInstance projectInstance, string targetFramework) args) =>
                     {
-                        var adapter = new RestoreProjectAdapter(args.projectInstance.FullPath);
+                        var adapter = new RestoreProjectAdapter(args.projectInstance.FullPath, args.projectInstance.GlobalProperties);
                         adapter.AddTargetFramework(args.targetFramework, new TargetFrameworkAdapter(args.projectInstance));
                         return adapter;
                     },
@@ -820,14 +849,21 @@ namespace NuGet.Build.Tasks.Console
                             MachineWideSettingsLazy,
                             _settingsLoadContext);
 
-                        var packageSpec = PackageSpecFactory.GetPackageSpec(project, settings);
-                        return packageSpec;
+                        return GetPackageSpecOrCreateError(
+                            () => PackageSpecFactory.GetPackageSpec(project, settings),
+                            project.FullPath,
+                            project.OuterBuild.GetProperty("MSBuildProjectName"),
+                            GetRestoreOutputPath(project.OuterBuild, project.Directory),
+                            project.Directory,
+                            additionalMessages);
                     });
+
+                return (dgSpec, additionalMessages.ToArray());
             }
             else
             {
                 // Delete this code path once PackageSpecFactory.GetPackageSpec has been tested long enough to trust.
-                return GetDependencyGraphSpec(
+                var dgSpec = GetDependencyGraphSpec(
                     entryProjectPath,
                     globalProperties,
                     interactive,
@@ -839,12 +875,81 @@ namespace NuGet.Build.Tasks.Console
                     projectFinalizeDelegate: null,
                     getPackageSpec: project =>
                     {
-                        var packageSpec = GetPackageSpec(project.OuterProject, project);
-                        return packageSpec;
+                        return GetPackageSpecOrCreateError(
+                            () => GetPackageSpec(project.OuterProject, project),
+                            project.OuterProject.FullPath,
+                            project.OuterProject.GetProperty("MSBuildProjectName"),
+                            GetRestoreOutputPath(project.OuterProject),
+                            project.OuterProject.Directory,
+                            additionalMessages);
                     });
+
+                return (dgSpec, additionalMessages.ToArray());
             }
         }
 
+        /// <summary>
+        /// Attempts to get a <see cref="PackageSpec"/> for a project. If the creation fails (e.g. due to an invalid TargetFramework),
+        /// creates a minimal <see cref="PackageSpec"/> and records the error as an additional message so it gets attributed to the correct project.
+        /// </summary>
+        private static PackageSpec GetPackageSpecOrCreateError(
+            Func<PackageSpec> getPackageSpec,
+            string projectPath,
+            string projectName,
+            string outputPath,
+            string projectDirectory,
+            ConcurrentBag<IAssetsLogMessage> additionalMessages)
+        {
+            try
+            {
+                return getPackageSpec();
+            }
+#pragma warning disable CA1031 // We intentionally catch all non-cancellation exceptions to attribute errors to the correct project.
+            catch (Exception e) when (e is not OperationCanceledException)
+#pragma warning restore CA1031
+            {
+                var innerException = e is AggregateException agg ? agg.InnerExceptions[0] : e;
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_ReadingProjectInformation, projectName ?? Path.GetFileNameWithoutExtension(projectPath), innerException.Message);
+
+                return CreateErrorSpec(projectPath, projectName, projectDirectory, outputPath, message, additionalMessages);
+            }
+        }
+
+        private static PackageSpec CreateErrorSpec(
+            string projectPath,
+            string projectName,
+            string projectDirectory,
+            string outputPath,
+            string errorMessage,
+            ConcurrentBag<IAssetsLogMessage> additionalMessages)
+        {
+            var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, errorMessage);
+            restoreLogMessage.ProjectPath = projectPath;
+            restoreLogMessage.FilePath = projectPath;
+
+            additionalMessages.Add(AssetsLogMessage.Create(restoreLogMessage));
+
+            outputPath ??= Path.Combine(projectDirectory, "obj");
+
+            return new PackageSpec
+            {
+                FilePath = projectPath,
+                Name = projectName ?? Path.GetFileNameWithoutExtension(projectPath),
+                RestoreMetadata = new ProjectRestoreMetadata()
+                {
+                    ProjectUniqueName = projectPath,
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    ProjectPath = projectPath,
+                    OutputPath = outputPath,
+                    PackagesPath = string.Empty,
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath),
+                }
+            };
+        }
+
+#if NET
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
+#endif
         private DependencyGraphSpec GetDependencyGraphSpec<TProject>(
             string entryProjectPath,
             IDictionary<string, string> globalProperties,
@@ -1084,6 +1189,7 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.UseLegacyDependencyResolver = project.IsPropertyTrue("RestoreUseLegacyDependencyResolver");
             restoreMetadata.RestoreDoNotWriteDependencyGraphSpec = project.IsPropertyTrue("RestoreDoNotWriteDependencyGraphSpec");
+            restoreMetadata.RestoreEnableAnalyzerAssets = GetRestoreEnableAnalyzerAssets(project, projectsByTargetFramework.Values);
 
             return (restoreMetadata, targetFrameworkInfos);
 
@@ -1100,6 +1206,19 @@ namespace NuGet.Build.Tasks.Console
 
                 return (projectStyleResult.ProjectStyle, projectStyleResult.PackagesConfigFilePath);
             }
+        }
+
+        internal static bool GetRestoreEnableAnalyzerAssets(IMSBuildProject project, IEnumerable<IMSBuildProject> innerBuilds)
+        {
+            foreach (IMSBuildProject innerBuild in innerBuilds.NoAllocEnumerate())
+            {
+                if (innerBuild.IsPropertyTrue("RestoreEnableAnalyzerAssets"))
+                {
+                    return true;
+                }
+            }
+
+            return project.IsPropertyTrue("RestoreEnableAnalyzerAssets");
         }
 
         internal static bool GetPackagePruningDefault(IEnumerable<IMSBuildProject> innerBuilds)
@@ -1132,6 +1251,9 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="updateProjectFactory">A factory method that updates a project adapter with a target framework and MSBuild ProjectInstance.</param>
         /// <param name="projectFinalizeDelegate">An option delegate to finalize a project adapter once all projects have been evaluated.</param>
         /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
+#if NET
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
+#endif
         private ConcurrentDictionary<string, TProject> LoadProjects<TProject>(
             IEnumerable<ProjectGraphEntryPoint> entryProjects,
             bool interactive,
@@ -1385,3 +1507,4 @@ namespace NuGet.Build.Tasks.Console
         }
     }
 }
+

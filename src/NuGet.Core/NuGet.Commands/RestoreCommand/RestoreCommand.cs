@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -104,6 +105,7 @@ namespace NuGet.Commands
         private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
         private const string UseLegacyDependencyResolver = nameof(UseLegacyDependencyResolver);
         private const string UsedLegacyDependencyResolver = nameof(UsedLegacyDependencyResolver);
+        private const string PackagesWithFloatingVersionCount = nameof(PackagesWithFloatingVersionCount);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
@@ -151,6 +153,14 @@ namespace NuGet.Commands
         private const string PackagePruningRemovablePackagesCount = "Pruning.RemovablePackages.Count";
         private const string PackagePruningDirectCount = "Pruning.Pruned.Direct.Count";
 
+        // Analyzer assets names
+        private const string AnalyzerAssetsEnabled = "AnalyzerAssets.Enabled";
+        private const string AnalyzerAssetsExcluded = "AnalyzerAssets.Excluded";
+        private const string AnalyzerAssetsPackagesWithAnalyzersCount = "AnalyzerAssets.PackagesWithAnalyzers.Count";
+        private const string AnalyzerAssetsPackagesWithExcludedAnalyzersCount = "AnalyzerAssets.PackagesWithExcludedAnalyzers.Count";
+        private const string AnalyzerAssetsExcludedByPrivateAssetsCount = "AnalyzerAssets.ExcludedByPrivateAssets.Count";
+        private const string AnalyzerAssetsExcludedByExcludeAssetsCount = "AnalyzerAssets.ExcludedByExcludeAssets.Count";
+
         internal readonly bool _enableNewDependencyResolver;
         private readonly bool _isLockFileEnabled;
 
@@ -179,7 +189,7 @@ namespace NuGet.Commands
 
             _isLockFileEnabled = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
             _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && ShouldUseNewResolverWithLockFile(_isLockFileEnabled, _request.Project) && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
-            EnvironmentVariableReader = EnvironmentVariableWrapper.Instance;
+            EnvironmentVariableReader = _request.EnvironmentVariableReader;
         }
 
         // Use the new resolver if lock files are not enabled, or if lock files are enabled and legacy projects or .NET 10 SDK is used.
@@ -207,6 +217,7 @@ namespace NuGet.Commands
                     _request.Project.FilePath,
                     _logger);
                 InitializeTelemetry(telemetry, httpSourcesCount, auditEnabled);
+                telemetry.TelemetryEvent[PackagesWithFloatingVersionCount] = CountPackagesWithFloatingVersion(_request.Project);
 
                 var restoreTime = Stopwatch.StartNew();
 
@@ -239,7 +250,7 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[NoOpResult] = false; // Getting here means we did not no-op.
 
                 bool success = !_request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
-                success &= BeforeGraphResolutionValidations(httpSourcesCount);
+                success &= BeforeGraphResolutionValidations(httpSourcesCount, auditEnabled);
 
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 PackagesLockFile packagesLockFile = null;
@@ -354,18 +365,19 @@ namespace NuGet.Commands
 
                 telemetry.TelemetryEvent[UpdatedAssetsFile] = restoreResult._isAssetsFileDirty.Value;
                 telemetry.TelemetryEvent[UpdatedMSBuildFiles] = restoreResult._dirtyMSBuildFiles.Value.Count > 0;
+                PopulateAnalyzerAssetsTelemetry(telemetry.TelemetryEvent, assetsFile, graphs, _request.Project);
 
                 return restoreResult;
             }
         }
 
-        private bool BeforeGraphResolutionValidations(int httpSourcesCount)
+        private bool BeforeGraphResolutionValidations(int httpSourcesCount, bool auditEnabled)
         {
             var success = true;
 
             success &= EnsureNotDeprecatedProjectJsonProjectType();
             success &= AreCentralVersionRequirementsSatisfied(_request, httpSourcesCount);
-            success &= EvaluateHttpSourceUsage();
+            success &= EvaluateHttpSourceUsage(auditEnabled);
             success &= HasValidPlatformVersions();
             success &= PackageReferencesHaveVersions();
             success &= EnsureNoAliasesWithDisallowedCharacters();
@@ -408,6 +420,7 @@ namespace NuGet.Commands
             }
 
             telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
+            telemetry.TelemetryEvent[AnalyzerAssetsEnabled] = _request.Project.RestoreMetadata?.RestoreEnableAnalyzerAssets ?? false;
 
             PopulatePruningEnabledTelemetry(_request.Project, telemetry.TelemetryEvent);
         }
@@ -451,6 +464,128 @@ namespace NuGet.Commands
             telemetryEvent[PackagePruningFrameworksEnabledCount] = pruningEnabledCount;
             telemetryEvent[PackagePruningFrameworksDisabledCount] = pruningDisabledCount;
             telemetryEvent[PackagePruningFrameworksUnsupportedCount] = pruningNotApplicableCount;
+        }
+
+        /// <summary>
+        /// Reports analyzer-asset usage so the impact of enabling <c>RestoreEnableAnalyzerAssets</c> by
+        /// default can be measured ahead of the rollout. The data is derived from the resolved dependency
+        /// graphs and the package file lists, so it is reported on every restore regardless of whether the
+        /// feature is currently enabled. This lets us see, before flipping the default, how many packages
+        /// would stop having their analyzers applied because <c>PrivateAssets</c>/<c>ExcludeAssets</c> would
+        /// finally be honored. Detection is per package (not per analyzer assembly): the rollout decision is
+        /// driven by whether a package's analyzers are affected, not by how many assemblies it ships.
+        /// </summary>
+        /// <remarks>
+        /// Analyzers are not runtime-identifier specific, so only the target-framework graphs (those with a
+        /// null runtime identifier) are inspected to avoid counting the same package once per RID. This runs on
+        /// the full-restore path only (after the no-op short-circuit), where the dependency graphs are available.
+        /// </remarks>
+        private void PopulateAnalyzerAssetsTelemetry(TelemetryEvent telemetryEvent, LockFile assetsFile, List<RestoreTargetGraph> graphs, PackageSpec project)
+        {
+            // Identify which packages contribute at least one analyzer assembly, from the always-present
+            // libraries section. Detection is per package (not per assembly) since the rollout decision is
+            // driven by whether a package's analyzers are affected, not by how many assemblies it ships.
+            var packagesWithAnalyzerAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (LockFileLibrary library in assetsFile.Libraries.NoAllocEnumerate())
+            {
+                foreach (string file in library.Files.NoAllocEnumerate())
+                {
+                    if (IsAnalyzerAssemblyPath(file))
+                    {
+                        packagesWithAnalyzerAssemblies.Add(GetAnalyzerPackageKey(library.Name, library.Version));
+                        break;
+                    }
+                }
+            }
+
+            int packagesWithAnalyzers = 0;
+            int packagesWithExcludedAnalyzers = 0;
+            int excludedByPrivateAssets = 0;
+            int excludedByExcludeAssets = 0;
+
+            foreach (RestoreTargetGraph graph in graphs.NoAllocEnumerate())
+            {
+                // Analyzers are not runtime specific; only inspect the target framework graphs.
+                if (graph.RuntimeIdentifier != null)
+                {
+                    continue;
+                }
+
+                Dictionary<string, LibraryIncludeFlags> flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, project, graph);
+                TargetFrameworkInformation targetFrameworkInformation = project.GetNearestTargetFramework(graph.Framework, graph.TargetAlias);
+
+                foreach (GraphItem<RemoteResolveResult> graphItem in graph.Flattened)
+                {
+                    LibraryIdentity library = graphItem.Key;
+                    if (library.Type != LibraryType.Package)
+                    {
+                        continue;
+                    }
+
+                    if (!packagesWithAnalyzerAssemblies.Contains(GetAnalyzerPackageKey(library.Name, library.Version)))
+                    {
+                        continue;
+                    }
+
+                    packagesWithAnalyzers++;
+
+                    if (!flattenedFlags.TryGetValue(library.Name, out LibraryIncludeFlags includeFlags))
+                    {
+                        includeFlags = ~LibraryIncludeFlags.ContentFiles;
+                    }
+
+                    if ((includeFlags & LibraryIncludeFlags.Analyzers) != LibraryIncludeFlags.None)
+                    {
+                        continue;
+                    }
+
+                    // The package contributes analyzers, but they would be filtered out for this project.
+                    packagesWithExcludedAnalyzers++;
+
+                    // Attribute the exclusion: a direct reference whose own IncludeAssets/ExcludeAssets drops
+                    // analyzers is counted separately from analyzers suppressed transitively via PrivateAssets
+                    // (the default for analyzers), since the transitive case is the surprising one for customers.
+                    LibraryDependency directDependency = targetFrameworkInformation?.Dependencies.FirstOrDefault(
+                        dependency => dependency.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+
+                    bool excludedByOwnAssetsFilter = directDependency != null
+                        && (directDependency.IncludeType & LibraryIncludeFlags.Analyzers) == LibraryIncludeFlags.None;
+
+                    if (excludedByOwnAssetsFilter)
+                    {
+                        excludedByExcludeAssets++;
+                    }
+                    else
+                    {
+                        excludedByPrivateAssets++;
+                    }
+                }
+            }
+
+            telemetryEvent[AnalyzerAssetsExcluded] = packagesWithExcludedAnalyzers > 0;
+            telemetryEvent[AnalyzerAssetsPackagesWithAnalyzersCount] = packagesWithAnalyzers;
+            telemetryEvent[AnalyzerAssetsPackagesWithExcludedAnalyzersCount] = packagesWithExcludedAnalyzers;
+            telemetryEvent[AnalyzerAssetsExcludedByPrivateAssetsCount] = excludedByPrivateAssets;
+            telemetryEvent[AnalyzerAssetsExcludedByExcludeAssetsCount] = excludedByExcludeAssets;
+        }
+
+        private static string GetAnalyzerPackageKey(string id, NuGetVersion version)
+        {
+            return id + "/" + version?.ToNormalizedString();
+        }
+
+        /// <summary>
+        /// Determines whether a package file path is an analyzer assembly. This intentionally mirrors the
+        /// detection used by ManagedCodeConventions.ManagedCodePatterns.AnalyzerAssemblies (any '.dll' under
+        /// 'analyzers/' at any depth, excluding satellite '.resources.dll' assemblies), but as a cheap string
+        /// check so analyzer packages can be counted from the package file list for telemetry even when analyzer
+        /// assets are not selected (the feature is off), without allocating a content-item collection per package.
+        /// </summary>
+        private static bool IsAnalyzerAssemblyPath(string path)
+        {
+            return path.StartsWith("analyzers/", StringComparison.Ordinal)
+                && path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                && !path.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<(RestoreResult, bool, CacheFile)> EvaluateNoOpAsync(TelemetryActivity telemetry, CacheFile cacheFile, Stopwatch restoreTime)
@@ -514,49 +649,77 @@ namespace NuGet.Commands
             return (null, noOpCacheFileEvaluation, cacheFile);
         }
 
-        private bool EvaluateHttpSourceUsage()
+        private bool EvaluateHttpSourceUsage(bool auditEnabled)
         {
             bool error = false;
+
+            // Track source URLs that have already been warned/errored about so the same URL,
+            // even when configured as both a package source and an audit source, is only reported once.
+            var reportedSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (_request.DependencyProviders.RemoteProviders != null)
             {
                 foreach (var remoteProvider in _request.DependencyProviders.RemoteProviders)
                 {
-                    var source = remoteProvider.Source;
-                    if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
+                    error |= CheckDisallowedInsecureHttpSource(remoteProvider.Source, SdkAnalysisLevelMinimums.V9_0_100, reportedSources);
+                }
+            }
+
+            // Audit sources are only contacted when auditing is enabled, so only error about insecure audit sources in that case.
+            // Unlike package sources, audit sources error when the SDK analysis level is high enough and are silent otherwise (no warning).
+            if (auditEnabled && _request.DependencyProviders.VulnerabilityInfoProviders != null)
+            {
+                foreach (var vulnerabilityInfoProvider in _request.DependencyProviders.VulnerabilityInfoProviders)
+                {
+                    if (vulnerabilityInfoProvider.IsAuditSource)
                     {
-                        var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(
-                            _request.Project.RestoreMetadata.SdkAnalysisLevel,
-                            _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
-                            SdkAnalysisLevelMinimums.V9_0_100);
-
-                        if (isErrorEnabled)
-                        {
-                            _logger.Log(
-                                RestoreLogMessage.CreateError(
-                                    NuGetLogCode.NU1302,
-                                    string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
-
-                            error = true;
-                        }
-                        else
-                        {
-                            var message = RestoreLogMessage.CreateWarning(
-                                    NuGetLogCode.NU1803,
-                                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
-                            _logger.Log(message);
-
-                            // If the project treats this warning as an error, we should not continue
-                            if (message.Level == LogLevel.Error)
-                            {
-                                error = true;
-                            }
-                        }
+                        error |= CheckDisallowedInsecureHttpSource(vulnerabilityInfoProvider.PackageSource, SdkAnalysisLevelMinimums.V10_0_400, reportedSources, warnWhenNotError: false);
                     }
                 }
             }
 
             return !error;
+        }
+
+        private bool CheckDisallowedInsecureHttpSource(PackageSource source, NuGetVersion errorMinSdkAnalysisLevel, HashSet<string> reportedSources, bool warnWhenNotError = true)
+        {
+            if (!source.IsHttp || source.IsHttps || source.AllowInsecureConnections)
+            {
+                return false;
+            }
+
+            // Only warn/error once per unique source URL.
+            if (!reportedSources.Add(source.Source))
+            {
+                return false;
+            }
+
+            var isErrorEnabled = SdkAnalysisLevelMinimums.IsEnabled(
+                _request.Project.RestoreMetadata.SdkAnalysisLevel,
+                _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                errorMinSdkAnalysisLevel);
+
+            if (isErrorEnabled)
+            {
+                _logger.Log(
+                    RestoreLogMessage.CreateError(
+                        NuGetLogCode.NU1302,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+
+                return true;
+            }
+            else if (warnWhenNotError)
+            {
+                var message = RestoreLogMessage.CreateWarning(
+                    NuGetLogCode.NU1803,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
+                _logger.Log(message);
+
+                // If the project treats this warning as an error, we should not restore
+                return message.Level == LogLevel.Error;
+            }
+
+            return false;
         }
 
         private record struct EvaluateLockFileResult(bool Success, bool IsLockFileValid, bool RegenerateLockFile, string PackagesLockFilePath, PackagesLockFile PackagesLockFile);
@@ -748,7 +911,7 @@ namespace NuGet.Commands
                 }
 
                 telemetry.TelemetryEvent[NewPackagesInstalledCount] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Install).Distinct().Count();
-                telemetry.TelemetryEvent[AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Flattened).Any(i => HasNonAlphanumericDotDashOrUnderscoreCharacters(i.Key.Name));
+                telemetry.TelemetryEvent[AnyPackageIdContainsNonAlphanumericDotDashOrUnderscoreCharacters] = graphs.Where(g => !g.InConflict).SelectMany(g => g.Flattened).Any(i => i.Key.Type == LibraryType.Package && HasNonAlphanumericDotDashOrUnderscoreCharacters(i.Key.Name));
                 telemetry.TelemetryEvent[RestoreSuccess] = success;
             }
 
@@ -932,6 +1095,42 @@ namespace NuGet.Commands
             }
 
             return true;
+        }
+
+        internal static int CountPackagesWithFloatingVersion(PackageSpec project)
+        {
+            // With a single target framework there can be no duplicate package names, so avoid the HashSet allocation.
+            if (project.TargetFrameworks.Count == 1)
+            {
+                int count = 0;
+                foreach (LibraryDependency dependency in project.TargetFrameworks[0].Dependencies)
+                {
+                    if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && dependency.LibraryRange.VersionRange?.IsFloating == true)
+                    {
+                        count++;
+                    }
+                }
+
+                return count;
+            }
+
+            HashSet<string> packagesWithFloatingVersion = null;
+
+            foreach (TargetFrameworkInformation framework in project.TargetFrameworks)
+            {
+                foreach (LibraryDependency dependency in framework.Dependencies)
+                {
+                    if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && dependency.LibraryRange.VersionRange?.IsFloating == true)
+                    {
+                        packagesWithFloatingVersion ??= new(StringComparer.OrdinalIgnoreCase);
+                        packagesWithFloatingVersion.Add(dependency.Name);
+                    }
+                }
+            }
+
+            return packagesWithFloatingVersion?.Count ?? 0;
         }
 
         internal static void AnalyzePruningResults(PackageSpec project, TelemetryEvent telemetryEvent, ILogger logger)
@@ -1394,6 +1593,21 @@ namespace NuGet.Commands
                 await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
 
                 return (success, isLockFileValid, packagesLockFile);
+            }
+
+            // RestoreLockedMode and RestoreForceEvaluate are contradictory: locked mode requires the lock file to remain
+            // unchanged, while force-evaluate re-evaluates the dependencies and regenerates it. When both are set,
+            // force-evaluate takes precedence; warn so the requested locked mode being ignored is not silent.
+            if (_isLockFileEnabled
+                && _request.IsRestoreOriginalAction
+                && _request.RestoreForceEvaluate
+                && _request.Project.RestoreMetadata.RestoreLockProperties.RestoreLockedMode
+                && SdkAnalysisLevelMinimums.IsEnabled(
+                    _request.Project.RestoreMetadata.SdkAnalysisLevel,
+                    _request.Project.RestoreMetadata.UsingMicrosoftNETSdk,
+                    SdkAnalysisLevelMinimums.V11_0_100))
+            {
+                await _request.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1512, Strings.Warning_RestoreLockedModeAndForceEvaluate));
             }
 
             // read packages.lock.json file if exists and RestoreForceEvaluate flag is not set to true

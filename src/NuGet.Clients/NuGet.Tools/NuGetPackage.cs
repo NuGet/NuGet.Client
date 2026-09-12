@@ -146,6 +146,9 @@ namespace NuGetVSExtension
         private Lazy<IServiceBrokerProvider> ServiceBrokerProvider { get; set; }
 
         [Import]
+        private Lazy<IResolveSupplyChainSecurityService> ResolveSupplyChainSecurityService { get; set; }
+
+        [Import]
         private Lazy<INuGetExperimentationService> NuGetExperimentationService { get; set; }
 
         [Import]
@@ -201,6 +204,11 @@ namespace NuGetVSExtension
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
+            if (NuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization))
+            {
+                AppContext.SetSwitch(NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, isEnabled: true);
+            }
+
             VSSettings vsSettings = Settings.Value as VSSettings;
             PackageSourceProvider packageSourceProvider = new(Settings.Value);
             PackageSourceMappingProvider packageSourceMappingProvider = new(Settings.Value);
@@ -220,6 +228,9 @@ namespace NuGetVSExtension
 
             ClearNuGetLocalResourcesCommand clearNuGetLocalResourcesCommand = new(oleMenuCommandService: _mcs, OutputConsoleLogger);
             clearNuGetLocalResourcesCommand.Initialize();
+
+            PackageSourceMapperCommand packageSourceMapperCommand = new(_mcs, ResolveSupplyChainSecurityService, SolutionManager);
+            packageSourceMapperCommand.Initialize();
         }
 
         /// <summary>
@@ -436,40 +447,39 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
+            IVsHierarchy projectHierarchy = await project.ToVsHierarchyAsync();
+            return await FindExistingNuGetWindowFrameAsync(
+                (IVsUIHierarchy)projectHierarchy,
+                (uint)VSConstants.VSITEMID.Root,
+                project.FullName);
+        }
+
+        private async Task<IVsWindowFrame> FindExistingNuGetWindowFrameAsync(
+            IVsUIHierarchy hierarchy,
+            uint itemId,
+            string documentName)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var uiShellOpenDocument = await this.GetServiceAsync<SVsUIShellOpenDocument, IVsUIShellOpenDocument>();
+            Assumes.Present(uiShellOpenDocument);
+
+            Guid editorType = GuidList.guidNuGetEditorType;
+            var hr = uiShellOpenDocument.IsSpecificDocumentViewOpen(
+                hierarchy,
+                itemId,
+                documentName,
+                ref editorType,
+                null,
+                (uint)__VSIDOFLAGS.IDO_IgnoreLogicalView,
+                out _,
+                out _,
+                out IVsWindowFrame windowFrame,
+                out int isOpen);
+
+            if (ErrorHandler.Succeeded(hr) && isOpen != 0)
             {
-                object docView;
-                var hr = windowFrame.GetProperty(
-                    (int)__VSFPROPID.VSFPROPID_DocView,
-                    out docView);
-                if (hr == VSConstants.S_OK
-                    && docView is PackageManagerWindowPane)
-                {
-                    var packageManagerWindowPane = (PackageManagerWindowPane)docView;
-                    if (packageManagerWindowPane.Model.IsSolution)
-                    {
-                        // the window is the solution package manager
-                        continue;
-                    }
-
-                    var projects = packageManagerWindowPane.Model.Context.Projects;
-                    if (projects.Count() != 1)
-                    {
-                        continue;
-                    }
-
-                    IProjectContextInfo existingProject = projects.First();
-                    IServiceBroker serviceBroker = await ServiceBrokerProvider.Value.GetAsync();
-                    IProjectMetadataContextInfo projectMetadata = await existingProject.GetMetadataAsync(
-                        serviceBroker,
-                        CancellationToken.None);
-
-                    if (string.Equals(projectMetadata.Name, project.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return windowFrame;
-                    }
-                }
+                return windowFrame;
             }
 
             return null;
@@ -603,6 +613,7 @@ namespace NuGetVSExtension
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
                     WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
+                    await control.SetWindowFrameAsync(windowFrame);
                 }
             }
             finally
@@ -684,11 +695,14 @@ namespace NuGetVSExtension
             }
 
             Project project = VsMonitorSelection.GetActiveProject();
+            NuGetProject nuGetProject = null;
+            if (project != null)
+            {
+                string uniqueName = await project.GetCustomUniqueNameAsync();
+                nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+            }
 
-            string uniqueName = await project.GetCustomUniqueNameAsync();
-            NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
-
-            if (nuGetProject is not ProjectJsonNuGetProject)
+            if (project == null || nuGetProject is not ProjectJsonNuGetProject)
             {
                 MessageHelper.ShowWarningMessage(Resources.ProjectJsonMigrateErrorMessage, Resources.ErrorDialogBoxTitle);
                 return;
@@ -714,7 +728,16 @@ namespace NuGetVSExtension
             string parameterString = (e as OleMenuCmdEventArgs)?.InValue as string;
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString));
+                try
+                {
+                    await ShowManageLibraryPackageDialogAsync(GetSearchText(parameterString));
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    await OnPackageManagerOpenFailureAsync(exception, nameof(ShowManageLibraryPackageDialog));
+                }
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageDialog));
         }
 
@@ -788,25 +811,13 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var uiShell = await this.GetServiceAsync<SVsUIShell, IVsUIShell>();
-            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
-            {
-                object property;
-                var hr = windowFrame.GetProperty(
-                    (int)__VSFPROPID.VSFPROPID_DocData,
-                    out property);
-                var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
-                if (hr == VSConstants.S_OK
-                    &&
-                    property is IVsSolution
-                    &&
-                    packageManagerControl != null)
-                {
-                    return windowFrame;
-                }
-            }
+            var solution = await this.GetServiceAsync<SVsSolution, IVsSolution>();
+            Assumes.Present(solution);
 
-            return null;
+            return await FindExistingNuGetWindowFrameAsync(
+                (IVsUIHierarchy)solution,
+                (uint)VSConstants.VSITEMID.Root,
+                await SolutionManager.Value.GetSolutionFilePathAsync());
         }
 
         private static string GetSearchText(string parameterString)
@@ -1000,6 +1011,7 @@ namespace NuGetVSExtension
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
                     WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
+                    await control.SetWindowFrameAsync(windowFrame);
                 }
             }
             finally
@@ -1040,7 +1052,16 @@ namespace NuGetVSExtension
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await ShowManageLibraryPackageForSolutionDialogAsync(options);
+                try
+                {
+                    await ShowManageLibraryPackageForSolutionDialogAsync(options);
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    await OnPackageManagerOpenFailureAsync(exception, nameof(ShowManageLibraryPackageForSolutionDialog));
+                }
             }).PostOnFailure(nameof(NuGetPackage), nameof(ShowManageLibraryPackageForSolutionDialog));
         }
 
@@ -1195,8 +1216,10 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                string uniqueName = VsMonitorSelection.GetActiveProject().GetUniqueName();
-                NuGetProject nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);
+                Project project = VsMonitorSelection.GetActiveProject();
+                NuGetProject nuGetProject = project == null
+                    ? null
+                    : await SolutionManager.Value.GetNuGetProjectAsync(project.GetUniqueName());
 
                 command.Visible = GetIsSolutionOpen() && nuGetProject != null && nuGetProject is ProjectJsonNuGetProject;
 
@@ -1234,6 +1257,11 @@ namespace NuGetVSExtension
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dteProject = VsMonitorSelection.GetActiveProject();
+
+            if (dteProject == null)
+            {
+                return false;
+            }
 
             var uniqueName = dteProject.GetUniqueName();
             var nuGetProject = await SolutionManager.Value.GetNuGetProjectAsync(uniqueName);

@@ -543,7 +543,7 @@ namespace NuGet.Protocol
                             {
                                 try
                                 {
-                                    result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri, cancellationToken);
+                                    result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream!, id, baseUri, cancellationToken);
                                     _chosenBaseUri = baseUri;
                                 }
                                 catch
@@ -555,7 +555,7 @@ namespace NuGet.Protocol
                             }
                             else if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromNetwork)
                             {
-                                result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream, id, baseUri, cancellationToken);
+                                result = await ConsumeFlatContainerIndexAsync(httpSourceResult.Stream!, id, baseUri, cancellationToken);
                                 _chosenBaseUri = baseUri;
                             }
 

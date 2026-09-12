@@ -1,1 +1,4 @@
 #nullable enable
+NuGet.Common.StaticState
+static NuGet.Common.StaticState.BuildEnded -> System.Action?
+static NuGet.Common.StaticState.RaiseBuildEnded() -> void

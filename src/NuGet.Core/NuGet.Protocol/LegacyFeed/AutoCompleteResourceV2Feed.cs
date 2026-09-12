@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +10,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -20,8 +20,14 @@ namespace NuGet.Protocol
     {
         private readonly HttpSource _httpSource;
         private readonly Uri _baseUri;
+        private readonly IEnvironmentVariableReader? _environmentVariableReader;
 
         public AutoCompleteResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource)
+            : this(httpSourceResource, baseAddress, packageSource, environmentVariableReader: null)
+        {
+        }
+
+        internal AutoCompleteResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource, IEnvironmentVariableReader? environmentVariableReader)
         {
             if (httpSourceResource == null)
             {
@@ -34,8 +40,8 @@ namespace NuGet.Protocol
             }
 
             _httpSource = httpSourceResource.HttpSource;
-
             _baseUri = UriUtility.CreateSourceUri($"{baseAddress}/");
+            _environmentVariableReader = environmentVariableReader;
         }
 
         public override async Task<IEnumerable<string>> IdStartsWith(
@@ -79,20 +85,52 @@ namespace NuGet.Protocol
             Common.ILogger logger,
             CancellationToken token)
         {
-            return await _httpSource.ProcessStreamAsync(
-                   new HttpSourceRequest(apiEndpointUri, logger),
-                   async stream =>
-                   {
-                       using (var reader = new StreamReader(await stream.AsSeekableStreamAsync(token)))
-                       using (var jsonReader = new JsonTextReader(reader))
-                       {
-                           var serializer = JsonSerializer.Create();
-                           var json = serializer.Deserialize<string[]>(jsonReader);
-                           return json;
-                       }
-                   },
-                   logger,
-                   token);
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
+            {
+                return await _httpSource.ProcessStreamAsync(
+                    new HttpSourceRequest(apiEndpointUri, logger),
+                    async stream =>
+                    {
+                        if (stream == null)
+                        {
+                            return Array.Empty<string>();
+                        }
+
+                        var seekableStream = (await stream.AsSeekableStreamAsync(token))!;
+                        return await System.Text.Json.JsonSerializer.DeserializeAsync(seekableStream, JsonContext.Default.StringArray, token) ?? Array.Empty<string>();
+                    },
+                    logger,
+                    token);
+            }
+            else
+            {
+                return await _httpSource.ProcessStreamAsync(
+                    new HttpSourceRequest(apiEndpointUri, logger),
+                    async stream =>
+                    {
+                        if (stream == null)
+                        {
+                            return Array.Empty<string>();
+                        }
+
+                        if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                        {
+                            var seekableStream = (await stream.AsSeekableStreamAsync(token))!;
+                            return await System.Text.Json.JsonSerializer.DeserializeAsync(seekableStream, JsonContext.Default.StringArray, token) ?? Array.Empty<string>();
+                        }
+                        else
+                        {
+                            using var reader = new StreamReader((await stream.AsSeekableStreamAsync(token))!);
+                            using var jsonReader = new JsonTextReader(reader);
+#pragma warning disable IL2026, IL3050 // Legacy Newtonsoft.Json code path is unreachable when feature switch is true; ILC trims this branch in AOT
+                            var serializer = Newtonsoft.Json.JsonSerializer.Create();
+                            return serializer.Deserialize<string[]>(jsonReader) ?? Array.Empty<string>();
+#pragma warning restore IL2026, IL3050
+                        }
+                    },
+                    logger,
+                    token);
+            }
         }
     }
 }

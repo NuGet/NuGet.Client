@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,8 +20,8 @@ namespace NuGet.Protocol
     {
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _sourceUri;
-        private HttpClient _httpClient;
-        private string _httpCacheDirectory;
+        private HttpClient? _httpClient;
+        private string? _httpCacheDirectory;
         private readonly PackageSource _packageSource;
         private readonly IThrottle _throttle;
         private bool _disposed = false;
@@ -171,7 +169,7 @@ namespace NuGet.Protocol
                                 using (var httpSourceResult = new HttpSourceResult(
                                     HttpSourceResultStatus.OpenedFromNetwork,
                                     cacheResult.CacheFile,
-                                    cacheResult.Stream))
+                                    cacheResult.Stream!)) // Stream is set by CreateCacheFileAsync above
                                 {
                                     return await processAsync(httpSourceResult);
                                 }
@@ -211,7 +209,7 @@ namespace NuGet.Protocol
 
         public Task<T> ProcessStreamAsync<T>(
             HttpSourceRequest request,
-            Func<Stream, Task<T>> processAsync,
+            Func<Stream?, Task<T>> processAsync,
             ILogger log,
             CancellationToken token)
         {
@@ -220,11 +218,12 @@ namespace NuGet.Protocol
 
         internal async Task<T> ProcessHttpStreamAsync<T>(
             HttpSourceRequest request,
-            Func<HttpResponseMessage, Task<T>> processAsync,
+            Func<HttpResponseMessage?, Task<T>> processAsync,
             ILogger log,
             CancellationToken token)
         {
-            ThrowIfHttpUriAndInsecureConnectionsNotAllowed(request.RequestFactory().RequestUri.AbsoluteUri);
+            // RequestUri is always set for NuGet HTTP requests
+            ThrowIfHttpUriAndInsecureConnectionsNotAllowed(request.RequestFactory().RequestUri!.AbsoluteUri);
 
             return await ProcessResponseAsync(
                 request,
@@ -247,8 +246,8 @@ namespace NuGet.Protocol
 
         public async Task<T> ProcessStreamAsync<T>(
             HttpSourceRequest request,
-            Func<Stream, Task<T>> processAsync,
-            SourceCacheContext cacheContext,
+            Func<Stream?, Task<T>> processAsync,
+            SourceCacheContext? cacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -284,7 +283,7 @@ namespace NuGet.Protocol
         public async Task<T> ProcessResponseAsync<T>(
             HttpSourceRequest request,
             Func<HttpResponseMessage, Task<T>> processAsync,
-            SourceCacheContext cacheContext,
+            SourceCacheContext? cacheContext,
             ILogger log,
             CancellationToken token)
         {
@@ -308,7 +307,7 @@ namespace NuGet.Protocol
             }
         }
 
-        public async Task<JObject> GetJObjectAsync(HttpSourceRequest request, ILogger log, CancellationToken token)
+        public async Task<JObject?> GetJObjectAsync(HttpSourceRequest request, ILogger log, CancellationToken token)
         {
             return await ProcessStreamAsync(
                 request,
@@ -336,10 +335,9 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken cancellationToken)
         {
-            await EnsureHttpClientAsync();
+            HttpClient httpClient = await GetHttpClientAsync();
 
-            // Build the retriable request.
-            var request = new HttpRetryHandlerRequest(_httpClient, requestFactory)
+            var request = new HttpRetryHandlerRequest(httpClient, requestFactory)
             {
                 RequestTimeout = requestTimeout,
                 DownloadTimeout = downloadTimeout,
@@ -371,7 +369,7 @@ namespace NuGet.Protocol
             return new ThrottledResponse(_throttle, response);
         }
 
-        private async Task EnsureHttpClientAsync()
+        private async Task<HttpClient> GetHttpClientAsync()
         {
             // Create the http client on the first call
             if (_httpClient == null)
@@ -390,6 +388,8 @@ namespace NuGet.Protocol
                     _httpClientLock.Release();
                 }
             }
+
+            return _httpClient;
         }
 
         private async Task<HttpClient> CreateHttpClientAsync()
@@ -428,7 +428,7 @@ namespace NuGet.Protocol
             set { _httpCacheDirectory = value; }
         }
 
-        protected virtual Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
+        protected virtual Stream? TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
             // Do not need the uri here
             return CachingUtility.ReadCacheFile(maxAge, cacheFile);
@@ -451,7 +451,9 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(throttle));
             }
 
-            Func<Task<HttpHandlerResource>> factory = () => source.GetResourceAsync<HttpHandlerResource>(CancellationToken.None);
+            Func<Task<HttpHandlerResource>> factory = async () =>
+                await source.GetResourceAsync<HttpHandlerResource>(CancellationToken.None)
+                ?? throw new InvalidOperationException($"The source '{source.PackageSource.Source}' does not provide {nameof(HttpHandlerResource)}.");
 
             return new HttpSource(source.PackageSource, factory, throttle);
         }
@@ -484,7 +486,7 @@ namespace NuGet.Protocol
 
         private class ThrottledResponse : IDisposable
         {
-            private IThrottle _throttle;
+            private IThrottle? _throttle;
 
             public ThrottledResponse(IThrottle throttle, HttpResponseMessage response)
             {
