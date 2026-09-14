@@ -17,8 +17,8 @@ NuGet.Configuration.MinPublishAgeExceptions
 NuGet.Configuration.MinPublishAgeExceptions.MinPublishAgeExceptions(System.Collections.Generic.IReadOnlyList<NuGet.Configuration.MinPublishAgeExceptionItem!>! items) -> void
 NuGet.Configuration.MinPublishAgeExceptions.IsEnabled.get -> bool
 NuGet.Configuration.MinPublishAgeExceptions.FindException(string! packageId) -> NuGet.Configuration.MinPublishAgeExceptionItem?
+static NuGet.Configuration.MinPublishAgeExceptions.GetMinPublishAgeExceptions(NuGet.Configuration.ISettings! settings) -> NuGet.Configuration.MinPublishAgeExceptions!
 NuGet.Configuration.PackageSourceProvider.GetMinPublishAgeExceptionItems() -> System.Collections.Generic.IReadOnlyList<NuGet.Configuration.MinPublishAgeExceptionItem!>!
-NuGet.Configuration.PackageSourceProvider.GetMinPublishAgeExceptions() -> NuGet.Configuration.MinPublishAgeExceptions!
 NuGet.Configuration.PackageSourceProvider.RemoveMinPublishAgeExceptions() -> void
 NuGet.Configuration.PackageSourceProvider.SaveMinPublishAgeExceptions(System.Collections.Generic.IReadOnlyList<NuGet.Configuration.MinPublishAgeExceptionItem!>! exceptions) -> void
 NuGet.Configuration.SettingElementType.MinPublishAgeExceptions = 21 -> NuGet.Configuration.SettingElementType

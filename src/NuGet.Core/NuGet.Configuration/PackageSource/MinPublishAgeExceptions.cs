@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.Configuration
 {
@@ -56,6 +57,22 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
+        /// Generates a <see cref="MinPublishAgeExceptions"/> based on the settings object.
+        /// </summary>
+        /// <param name="settings">The settings used to load minimum publish age exceptions.</param>
+        /// <returns>A <see cref="MinPublishAgeExceptions"/> based on the settings.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="settings"/> is <see langword="null"/>.</exception>
+        public static MinPublishAgeExceptions GetMinPublishAgeExceptions(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            return new MinPublishAgeExceptions(GetMinPublishAgeExceptionItems(settings));
+        }
+
+        /// <summary>
         /// Finds the exception that matches a package ID.
         /// </summary>
         /// <param name="packageId">The package ID to match.</param>
@@ -66,6 +83,36 @@ namespace NuGet.Configuration
             return matchingPattern != null && _itemsByPattern.TryGetValue(matchingPattern, out var item)
                 ? item
                 : null;
+        }
+
+        internal static IReadOnlyList<MinPublishAgeExceptionItem> GetMinPublishAgeExceptionItems(ISettings settings)
+        {
+            var sectionItems = settings.GetSection(ConfigurationConstants.MinPublishAgeExceptions)?
+                .Items ??
+                Array.Empty<SettingItem>();
+
+            if (sectionItems.Count > 1 && sectionItems.Any(item => item.Origin?.ConfigFilePath != null))
+            {
+                var configFilePaths = settings.GetConfigFilePaths();
+                string? closestConfigFilePath = configFilePaths.FirstOrDefault(configFilePath =>
+                    sectionItems.Any(item => string.Equals(
+                        item.Origin?.ConfigFilePath,
+                        configFilePath,
+                        StringComparison.OrdinalIgnoreCase)));
+
+                if (closestConfigFilePath != null)
+                {
+                    sectionItems = sectionItems.Where(item => string.Equals(
+                        item.Origin?.ConfigFilePath,
+                        closestConfigFilePath,
+                        StringComparison.OrdinalIgnoreCase)).ToList().AsReadOnly();
+                }
+            }
+
+            return sectionItems
+                .OfType<MinPublishAgeExceptionItem>()
+                .ToList()
+                .AsReadOnly();
         }
     }
 }

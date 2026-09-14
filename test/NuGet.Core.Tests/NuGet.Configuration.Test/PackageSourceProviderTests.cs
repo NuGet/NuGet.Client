@@ -1161,6 +1161,16 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void GetMinPublishAgeExceptions_WithNullSettings_Throws()
+        {
+            // Act
+            var exception = Record.Exception(() => MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings: null!));
+
+            // Assert
+            exception.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
         public void SaveMinPublishAgeExceptions_SavesAndLoadsPatterns()
         {
             // Arrange
@@ -1185,7 +1195,7 @@ namespace NuGet.Configuration.Test
 
             settings = new Settings(directory);
             var provider = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
-            var exceptions = provider.GetMinPublishAgeExceptions();
+            var exceptions = MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings);
 
             // Assert
             exceptions.IsEnabled.Should().BeTrue();
@@ -1347,9 +1357,8 @@ namespace NuGet.Configuration.Test
                 </configuration>
                 """);
 
-            var provider = new PackageSourceProvider(
-                new Settings(directory),
-                TestConfigurationDefaults.NullInstance);
+            var settings = new Settings(directory);
+            var provider = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
 
             // Act
             provider.SaveMinPublishAgeExceptions(Array.Empty<MinPublishAgeExceptionItem>());
@@ -1358,7 +1367,7 @@ namespace NuGet.Configuration.Test
             var config = File.ReadAllText(Path.Combine(directory.Path, "NuGet.Config"));
             config.Should().Contain("<minPublishAgeExceptions />");
             config.Should().NotContain("<clear />");
-            provider.GetMinPublishAgeExceptions().IsEnabled.Should().BeFalse();
+            MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings).IsEnabled.Should().BeFalse();
         }
 
         [Fact]
@@ -1440,8 +1449,7 @@ namespace NuGet.Configuration.Test
                 machineWideSettings: null,
                 loadUserWideSettings: false,
                 useTestingGlobalPath: false);
-            var exceptions = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance)
-                .GetMinPublishAgeExceptions();
+            var exceptions = MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings);
 
             // Assert
             exceptions.FindException("Fabrikam.WebApi.Client").Should().NotBeNull();
@@ -1476,8 +1484,7 @@ namespace NuGet.Configuration.Test
 
             // Act
             var settings = Settings.LoadDefaultSettings(childDirectory);
-            var exceptions = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance)
-                .GetMinPublishAgeExceptions();
+            var exceptions = MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings);
 
             // Assert
             exceptions.IsEnabled.Should().BeFalse();

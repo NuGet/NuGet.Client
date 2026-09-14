@@ -176,22 +176,11 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
-        /// Gets the package-specific minimum publish age exceptions used by this provider.
-        /// </summary>
-        public MinPublishAgeExceptions GetMinPublishAgeExceptions()
-        {
-            return new MinPublishAgeExceptions(GetMinPublishAgeExceptionItems());
-        }
-
-        /// <summary>
         /// Gets the package-specific minimum publish age exception items from the closest applicable configuration.
         /// </summary>
         public IReadOnlyList<MinPublishAgeExceptionItem> GetMinPublishAgeExceptionItems()
         {
-            return GetClosestMinPublishAgeExceptionSectionItems()
-                .OfType<MinPublishAgeExceptionItem>()
-                .ToList()
-                .AsReadOnly();
+            return MinPublishAgeExceptions.GetMinPublishAgeExceptionItems(Settings);
         }
 
         /// <summary>
@@ -254,38 +243,12 @@ namespace NuGet.Configuration
         /// </summary>
         public void RemoveMinPublishAgeExceptions()
         {
-            foreach (var existingException in GetClosestMinPublishAgeExceptionSectionItems())
+            foreach (var existingException in MinPublishAgeExceptions.GetMinPublishAgeExceptionItems(Settings))
             {
                 Settings.Remove(ConfigurationConstants.MinPublishAgeExceptions, existingException);
             }
 
             Settings.SaveToDisk();
-        }
-
-        private IReadOnlyCollection<SettingItem> GetClosestMinPublishAgeExceptionSectionItems()
-        {
-            var sectionItems = Settings.GetSection(ConfigurationConstants.MinPublishAgeExceptions)?
-                .Items ??
-                Array.Empty<SettingItem>();
-
-            if (sectionItems.Count <= 1 || sectionItems.All(item => item.Origin?.ConfigFilePath == null))
-            {
-                return sectionItems;
-            }
-
-            var configFilePaths = Settings.GetConfigFilePaths();
-            string? closestConfigFilePath = configFilePaths.FirstOrDefault(configFilePath =>
-                sectionItems.Any(item => string.Equals(
-                    item.Origin?.ConfigFilePath,
-                    configFilePath,
-                    StringComparison.OrdinalIgnoreCase)));
-
-            return closestConfigFilePath == null
-                ? sectionItems
-                : sectionItems.Where(item => string.Equals(
-                    item.Origin?.ConfigFilePath,
-                    closestConfigFilePath,
-                    StringComparison.OrdinalIgnoreCase)).ToList().AsReadOnly();
         }
 
         internal IReadOnlyList<PackageSource> LoadAuditSources(IEnvironmentVariableReader environmentVariableReader)
