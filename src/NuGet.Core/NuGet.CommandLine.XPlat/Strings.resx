@@ -1064,6 +1064,10 @@ Do not translate "PackageVersion"</comment>
     <comment>{0}: Number of packages updated
 {1}: Package checked for updated versions</comment>
   </data>
+  <data name="PackageUpdate_PackagesAwaitingCooldown" xml:space="preserve">
+    <value>Packages with newer versions that have not reached the configured minimum publish age: {0}.</value>
+    <comment>{0}: Number of packages with newer versions that have not reached the configured minimum publish age</comment>
+  </data>
   <data name="Error_AddPkgUnresolved" xml:space="preserve">
     <value>Unable to find a resolved package for '{0}'. This is a tooling error. Please file an issue at https://github.com/NuGet/Home.</value>
     <comment>{0} Package Id</comment>

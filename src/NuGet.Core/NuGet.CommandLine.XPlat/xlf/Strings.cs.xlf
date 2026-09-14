@@ -1039,6 +1039,11 @@ Další informace najdete tady: https://docs.nuget.org/docs/reference/command-li
         <target state="translated">Odkaz na balíček ve formě identifikátoru balíčku, jako je Newtonsoft.Json, nebo identifikátor balíčku a verze oddělené znakem @, například Newtonsoft.Json@13.0.3.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_PackagesAwaitingCooldown">
+        <source>Packages with newer versions that have not reached the configured minimum publish age: {0}.</source>
+        <target state="new">Packages with newer versions that have not reached the configured minimum publish age: {0}.</target>
+        <note>{0}: Number of packages with newer versions that have not reached the configured minimum publish age</note>
+      </trans-unit>
       <trans-unit id="PackageUpdate_PreviewRestore">
         <source>Running preview restore to check package compatibility.</source>
         <target state="translated">Spouští se obnovení náhledu, aby se zkontrolovala kompatibilita balíčku.</target>

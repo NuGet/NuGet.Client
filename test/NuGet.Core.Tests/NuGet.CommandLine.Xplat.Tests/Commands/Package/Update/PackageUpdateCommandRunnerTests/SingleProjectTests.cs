@@ -769,7 +769,7 @@ public class SingleProjectTests
             It.IsAny<ILogger>(),
             It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new NuGetVersion("1.2.3"));
+            .ReturnsAsync(new PackageVersionLookupResult(new NuGetVersion("1.2.3"), null));
         testData.IoMock.Setup(x => x.GetNonVulnerableAsync(
             "Second.Package",
             It.IsAny<IReadOnlyList<string>>(),
@@ -777,7 +777,7 @@ public class SingleProjectTests
             It.IsAny<ILogger>(),
             It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new NuGetVersion("2.1.0"));
+            .ReturnsAsync(new PackageVersionLookupResult(new NuGetVersion("2.1.0"), null));
         testData.IoMock.Setup(x => x.GetNonVulnerableAsync(
             "Transitive.Package",
             It.IsAny<IReadOnlyList<string>>(),
@@ -785,7 +785,7 @@ public class SingleProjectTests
             It.IsAny<ILogger>(),
             It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new NuGetVersion("2.0.0"));
+            .ReturnsAsync(new PackageVersionLookupResult(new NuGetVersion("2.0.0"), null));
 
         // Act
         int exitCode = await RunCommand(testData, CancellationToken.None);
@@ -973,7 +973,7 @@ public class SingleProjectTests
             It.IsAny<ILogger>(),
             It.IsAny<IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new NuGetVersion("2.0.0"));
+            .ReturnsAsync(new PackageVersionLookupResult(new NuGetVersion("2.0.0"), null));
 
         // Act
         int exitCode = await RunCommand(testData, CancellationToken.None);
@@ -1038,7 +1038,7 @@ public class SingleProjectTests
             It.IsAny<IReadOnlyList<string>>(),
             It.IsAny<ILogger>(),
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new NuGetVersion("1.2.3"));
+            .ReturnsAsync(new PackageVersionLookupResult(new NuGetVersion("1.2.3"), null));
 
         // Act
         int exitCode = await RunCommand(testData, CancellationToken.None);

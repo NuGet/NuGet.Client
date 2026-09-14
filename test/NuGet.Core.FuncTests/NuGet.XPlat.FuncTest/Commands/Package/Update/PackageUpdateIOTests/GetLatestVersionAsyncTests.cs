@@ -57,8 +57,8 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().Be(new NuGetVersion("2.0.0"));
+        result.Version.Should().Be(new NuGetVersion("2.0.0"));
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]
@@ -87,8 +87,8 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().Be(new NuGetVersion("2.0.0-beta"));
+        result.Version.Should().Be(new NuGetVersion("2.0.0-beta"));
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]
@@ -108,7 +108,8 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.Version.Should().BeNull();
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]
@@ -155,8 +156,8 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().Be(new NuGetVersion("1.0.0"));
+        result.Version.Should().Be(new NuGetVersion("1.0.0"));
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]
@@ -183,7 +184,7 @@ public class GetLatestVersionAsyncTests
         using PackageUpdateIO packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot, () => utcNow);
 
         // Act
-        NuGetVersion? result = await packageUpdateIO.GetLatestVersionAsync(
+        PackageVersionLookupResult result = await packageUpdateIO.GetLatestVersionAsync(
             packageId,
             includePrerelease: false,
             allowedSources: null,
@@ -191,7 +192,8 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().Be(new NuGetVersion("1.0.0"));
+        result.Version.Should().Be(new NuGetVersion("1.0.0"));
+        result.VersionInCooldown.Should().Be(new NuGetVersion("2.0.0"));
     }
 
     [Fact]
@@ -214,7 +216,7 @@ public class GetLatestVersionAsyncTests
         using PackageUpdateIO packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot, () => utcNow);
 
         // Act
-        NuGetVersion? result = await packageUpdateIO.GetLatestVersionAsync(
+        PackageVersionLookupResult result = await packageUpdateIO.GetLatestVersionAsync(
             packageId,
             includePrerelease: false,
             allowedSources: null,
@@ -222,7 +224,8 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.Version.Should().BeNull();
+        result.VersionInCooldown.Should().Be(new NuGetVersion("1.0.0"));
     }
 
     [Fact]
@@ -249,7 +252,7 @@ public class GetLatestVersionAsyncTests
         using PackageUpdateIO packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot, () => utcNow);
 
         // Act
-        NuGetVersion? result = await packageUpdateIO.GetLatestVersionAsync(
+        PackageVersionLookupResult result = await packageUpdateIO.GetLatestVersionAsync(
             packageId,
             includePrerelease: false,
             allowedSources: null,
@@ -257,7 +260,8 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().Be(new NuGetVersion("2.0.0"));
+        result.Version.Should().Be(new NuGetVersion("2.0.0"));
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]
@@ -295,7 +299,7 @@ public class GetLatestVersionAsyncTests
         using PackageUpdateIO packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot, () => utcNow);
 
         // Act
-        NuGetVersion? result = await packageUpdateIO.GetLatestVersionAsync(
+        PackageVersionLookupResult result = await packageUpdateIO.GetLatestVersionAsync(
             packageId,
             includePrerelease: false,
             allowedSources: null,
@@ -303,11 +307,12 @@ public class GetLatestVersionAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().Be(new NuGetVersion("2.0.0"));
+        result.Version.Should().Be(new NuGetVersion("2.0.0"));
+        result.VersionInCooldown.Should().Be(new NuGetVersion("2.0.0"));
     }
 
     [Fact]
-    public void FilterPackageVersionsByCooldown_WithMissingPublishDate_Throws()
+    public void GetPackageVersionsWithCooldownStatus_WithMissingPublishDate_Throws()
     {
         // Arrange
         const string packageId = "TestPackage.MissingDate";
@@ -320,7 +325,7 @@ public class GetLatestVersionAsyncTests
         metadata.SetupGet(m => m.Published).Returns((DateTimeOffset?)null);
 
         // Act
-        Action action = () => PackageUpdateIO.FilterPackageVersionsByCooldown(
+        Action action = () => PackageUpdateIO.GetPackageVersionsWithCooldownStatus(
             [metadata.Object],
             packageSource,
             packageId,

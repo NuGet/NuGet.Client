@@ -229,7 +229,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
     }
 
     /// <inheritdoc cref="IPackageUpdateIO.GetLatestVersionAsync(string, bool, IReadOnlyList{string}?, ILogger, CancellationToken)"/>
-    public async Task<NuGetVersion?> GetLatestVersionAsync(
+    public async Task<PackageVersionLookupResult> GetLatestVersionAsync(
         string packageId,
         bool includePrerelease,
         IReadOnlyList<string>? allowedSources,
@@ -237,7 +237,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         CancellationToken cancellationToken)
     {
         var sources = GetSourcesForPackage(packageId, allowedSources);
-        var lookups = new Task<NuGetVersion?>[sources.Count];
+        var lookups = new Task<PackageVersionLookupResult>[sources.Count];
         DateTimeOffset utcNow = _utcNow();
         bool isCooldownExempt = _minPublishAgeExceptions.FindException(packageId) is not null;
         for (int source = 0; source < sources.Count; source++)
@@ -257,18 +257,23 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         await Task.WhenAll(lookups);
 
         NuGetVersion? highestVersion = null;
+        NuGetVersion? highestVersionInCooldown = null;
         foreach (var task in lookups)
         {
-            if (task.Result != null)
+            if (task.Result.Version is not null &&
+                (highestVersion is null || task.Result.Version > highestVersion))
             {
-                if (highestVersion == null || task.Result > highestVersion)
-                {
-                    highestVersion = task.Result;
-                }
+                highestVersion = task.Result.Version;
+            }
+
+            if (task.Result.VersionInCooldown is not null &&
+                (highestVersionInCooldown is null || task.Result.VersionInCooldown > highestVersionInCooldown))
+            {
+                highestVersionInCooldown = task.Result.VersionInCooldown;
             }
         }
 
-        return highestVersion;
+        return new PackageVersionLookupResult(highestVersion, highestVersionInCooldown);
     }
 
     /// <inheritdoc cref="IPackageUpdateIO.GetKnownVulnerabilitiesAsync(ILogger, CancellationToken)"/>
@@ -316,7 +321,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
     }
 
     /// <inheritdoc cref="IPackageUpdateIO.GetNonVulnerableAsync(string, IReadOnlyList{string}?, NuGetVersion, ILogger, IReadOnlyList{IReadOnlyDictionary{string, IReadOnlyList{PackageVulnerabilityInfo}}}, CancellationToken)"/>
-    public async Task<NuGetVersion?> GetNonVulnerableAsync(
+    public async Task<PackageVersionLookupResult> GetNonVulnerableAsync(
         string packageId,
         IReadOnlyList<string>? allowedSources,
         NuGetVersion minVersion,
@@ -325,7 +330,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         CancellationToken cancellationToken)
     {
         var sources = GetSourcesForPackage(packageId, allowedSources);
-        var lookups = new Task<NuGetVersion?>[sources.Count];
+        var lookups = new Task<PackageVersionLookupResult>[sources.Count];
         DateTimeOffset utcNow = _utcNow();
         bool isCooldownExempt = _minPublishAgeExceptions.FindException(packageId) is not null;
         for (int source = 0; source < sources.Count; source++)
@@ -346,18 +351,23 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         await Task.WhenAll(lookups);
 
         NuGetVersion? lowestNonVulnerableVersion = null;
+        NuGetVersion? lowestNonVulnerableVersionInCooldown = null;
         foreach (var task in lookups)
         {
-            if (task.Result != null)
+            if (task.Result.Version is not null &&
+                (lowestNonVulnerableVersion is null || task.Result.Version < lowestNonVulnerableVersion))
             {
-                if (lowestNonVulnerableVersion == null || task.Result < lowestNonVulnerableVersion)
-                {
-                    lowestNonVulnerableVersion = task.Result;
-                }
+                lowestNonVulnerableVersion = task.Result.Version;
+            }
+
+            if (task.Result.VersionInCooldown is not null &&
+                (lowestNonVulnerableVersionInCooldown is null || task.Result.VersionInCooldown < lowestNonVulnerableVersionInCooldown))
+            {
+                lowestNonVulnerableVersionInCooldown = task.Result.VersionInCooldown;
             }
         }
 
-        return lowestNonVulnerableVersion;
+        return new PackageVersionLookupResult(lowestNonVulnerableVersion, lowestNonVulnerableVersionInCooldown);
     }
 
     public PackageSourceMapping GetPackageSourceMapping()
@@ -395,7 +405,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         return sources;
     }
 
-    private async Task<NuGetVersion?>? FindLowestNonVulnerablePackageVersionAsync(
+    private async Task<PackageVersionLookupResult> FindLowestNonVulnerablePackageVersionAsync(
         SourceRepository source,
         string packageId,
         NuGetVersion minVersion,
@@ -408,7 +418,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         var packageMetadataResource = await source.GetResourceAsync<PackageMetadataResource>(cancellationToken);
         if (packageMetadataResource is null)
         {
-            return null;
+            return default;
         }
 
         var packageDetails = await packageMetadataResource.GetMetadataAsync(
@@ -421,23 +431,38 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
 
         if (packageDetails is null || !packageDetails.Any())
         {
-            return null;
+            return default;
         }
 
-        var versions = FilterPackageVersionsByCooldown(
-                packageDetails,
-                source.PackageSource,
-                packageId,
-                isCooldownExempt,
-                utcNow)
-            .Select(p => p.Identity)
-            .Where(p => p.Version >= minVersion && !PackageHasKnownVulnerability(p))
-            .Select(p => p.Version);
+        NuGetVersion? lowestVersion = null;
+        NuGetVersion? lowestVersionInCooldown = null;
+        foreach ((IPackageSearchMetadata package, bool isEligible) in GetPackageVersionsWithCooldownStatus(
+            packageDetails,
+            source.PackageSource,
+            packageId,
+            isCooldownExempt,
+            utcNow))
+        {
+            PackageIdentity identity = package.Identity;
+            if (identity.Version < minVersion || PackageHasKnownVulnerability(identity))
+            {
+                continue;
+            }
 
-        VersionRange versionRange = new VersionRange(minVersion, includeMinVersion: true, maxVersion: null, includeMaxVersion: true);
-        NuGetVersion? result = versionRange.FindBestMatch(versions);
+            if (isEligible)
+            {
+                if (lowestVersion is null || identity.Version < lowestVersion)
+                {
+                    lowestVersion = identity.Version;
+                }
+            }
+            else if (lowestVersionInCooldown is null || identity.Version < lowestVersionInCooldown)
+            {
+                lowestVersionInCooldown = identity.Version;
+            }
+        }
 
-        return result;
+        return new PackageVersionLookupResult(lowestVersion, lowestVersionInCooldown);
 
         bool PackageHasKnownVulnerability(PackageIdentity package)
         {
@@ -458,7 +483,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         }
     }
 
-    private async Task<NuGetVersion?> FindHighestPackageVersionAsync(
+    private async Task<PackageVersionLookupResult> FindHighestPackageVersionAsync(
         SourceRepository source,
         string packageId,
         bool includePrerelease,
@@ -470,7 +495,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         var packageMetadataResource = await source.GetResourceAsync<PackageMetadataResource>(cancellationToken);
         if (packageMetadataResource is null)
         {
-            return null;
+            return default;
         }
 
         var packageDetails = await packageMetadataResource.GetMetadataAsync(
@@ -483,20 +508,36 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
 
         if (packageDetails is null || !packageDetails.Any())
         {
-            return null;
+            return default;
         }
 
-        NuGetVersion? highestVersion = FilterPackageVersionsByCooldown(
-                packageDetails,
-                source.PackageSource,
-                packageId,
-                isCooldownExempt,
-                utcNow)
-            .Max(package => package.Identity.Version);
-        return highestVersion;
+        NuGetVersion? highestVersion = null;
+        NuGetVersion? highestVersionInCooldown = null;
+        foreach ((IPackageSearchMetadata package, bool isEligible) in GetPackageVersionsWithCooldownStatus(
+            packageDetails,
+            source.PackageSource,
+            packageId,
+            isCooldownExempt,
+            utcNow))
+        {
+            NuGetVersion version = package.Identity.Version;
+            if (isEligible)
+            {
+                if (highestVersion is null || version > highestVersion)
+                {
+                    highestVersion = version;
+                }
+            }
+            else if (highestVersionInCooldown is null || version > highestVersionInCooldown)
+            {
+                highestVersionInCooldown = version;
+            }
+        }
+
+        return new PackageVersionLookupResult(highestVersion, highestVersionInCooldown);
     }
 
-    internal static IEnumerable<IPackageSearchMetadata> FilterPackageVersionsByCooldown(
+    internal static IEnumerable<(IPackageSearchMetadata Package, bool IsEligible)> GetPackageVersionsWithCooldownStatus(
         IEnumerable<IPackageSearchMetadata> packageDetails,
         PackageSource packageSource,
         string packageId,
@@ -508,7 +549,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         {
             foreach (IPackageSearchMetadata package in packageDetails)
             {
-                yield return package;
+                yield return (package, true);
             }
 
             yield break;
@@ -525,10 +566,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
                     package.Identity.Version.ToNormalizedString()));
             }
 
-            if (package.Published <= cutoff)
-            {
-                yield return package;
-            }
+            yield return (package, package.Published <= cutoff);
         }
     }
 

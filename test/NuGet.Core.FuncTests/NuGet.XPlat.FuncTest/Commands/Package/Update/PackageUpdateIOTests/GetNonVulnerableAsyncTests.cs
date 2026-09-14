@@ -72,8 +72,8 @@ public class GetNonVulnerableAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().Be(new NuGetVersion("2.0.0"));
+        result.Version.Should().Be(new NuGetVersion("2.0.0"));
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]
@@ -119,7 +119,8 @@ public class GetNonVulnerableAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.Version.Should().BeNull();
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]
@@ -173,7 +174,7 @@ public class GetNonVulnerableAsyncTests
         };
 
         // Act
-        NuGetVersion? result = await packageUpdateIO.GetNonVulnerableAsync(
+        PackageVersionLookupResult result = await packageUpdateIO.GetNonVulnerableAsync(
             packageId,
             allowedSources: null,
             new NuGetVersion("1.0.0"),
@@ -182,6 +183,7 @@ public class GetNonVulnerableAsyncTests
             CancellationToken.None);
 
         // Assert
-        result.Should().BeNull();
+        result.Version.Should().BeNull();
+        result.VersionInCooldown.Should().Be(new NuGetVersion("2.0.0"));
     }
 }

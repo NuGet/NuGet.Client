@@ -1779,6 +1779,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Packages with newer versions that have not reached the configured minimum publish age: {0}..
+        /// </summary>
+        internal static string PackageUpdate_PackagesAwaitingCooldown {
+            get {
+                return ResourceManager.GetString("PackageUpdate_PackagesAwaitingCooldown", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Finding versions of packages to update..
         /// </summary>
         internal static string PackageUpdate_FindingUpdateVersions {

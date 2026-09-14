@@ -176,6 +176,60 @@ public class MultiProjectTests
     }
 
     [Fact]
+    public async Task UpgradeAllPackages_TwoProjectsWithSamePackageInCooldown_ReportsPackageOnce()
+    {
+        // Arrange
+        var solutionDirectory = RuntimeEnvironmentHelper.IsWindows
+            ? @"S:\path\to\repo\src"
+            : @"/path/to/repo/src";
+        var project1Path = Path.Combine(solutionDirectory, "ConsoleApp1", "ConsoleApp1.csproj");
+        var project1 = new TestPackageSpecFactory(project1Path, builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+        }).Build();
+
+        var project2Path = Path.Combine(solutionDirectory, "ClassLib1", "ClassLib1.csproj");
+        var project2 = new TestPackageSpecFactory(project2Path, builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+        }).Build();
+
+        var dgSpec = new DependencyGraphSpec();
+        dgSpec.AddProject(project1);
+        dgSpec.AddProject(project2);
+        dgSpec.AddRestore(project1Path);
+        dgSpec.AddRestore(project2Path);
+
+        TestData testData = InitTest(project1Path, [], dgSpec);
+        testData.IoMock.Setup(x => x.GetLatestVersionAsync(
+            "Test.Package",
+            false,
+            It.IsAny<IReadOnlyList<string>>(),
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PackageVersionLookupResult(
+                Version: new NuGetVersion("1.0.0"),
+                VersionInCooldown: new NuGetVersion("2.0.0")));
+
+        // Act
+        int exitCode = await RunCommand(testData, CancellationToken.None);
+
+        // Assert
+        exitCode.Should().Be(PackageUpdateCommandRunner.ExitCodes.NoPackagesNeedUpdating);
+        testData.LoggerMock.Verify(x => x.LogMinimal(
+            string.Format(Strings.PackageUpdate_PackagesAwaitingCooldown, 1),
+            ConsoleColor.Yellow),
+            Times.Once);
+        testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(
+            It.IsAny<DependencyGraphSpec>(),
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
     public async Task UpgradePackageA_TwoProjectsWithPackageAOneWithout_UpdatesOnlyPackageA()
     {
         // Arrange
@@ -327,7 +381,7 @@ public class MultiProjectTests
             It.IsAny<ILogger>(),
             knownVulnerabilities,
             It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new NuGetVersion("2.0.0"));
+            .ReturnsAsync(new PackageVersionLookupResult(new NuGetVersion("2.0.0"), null));
 
         var lockFile = new LockFile
         {
@@ -520,9 +574,9 @@ public class MultiProjectTests
                     if (latestPackageVersions.TryGetValue(id, out var versionString))
                     {
                         var version = NuGetVersion.Parse(versionString);
-                        return version;
+                        return new PackageVersionLookupResult(version, null);
                     }
-                    return null;
+                    return default;
                 });
         }
 

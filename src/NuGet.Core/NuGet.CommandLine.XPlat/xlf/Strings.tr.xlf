@@ -1039,6 +1039,11 @@ Daha fazla bilgi için bkz. https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">'Newtonsoft.Json' gibi bir paket tanımlayıcısı veya 'Newtonsoft.Json@13.0.3' gibi '@' ile ayrılmış paket tanımlayıcısı ve sürümü şeklinde paket başvurusu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_PackagesAwaitingCooldown">
+        <source>Packages with newer versions that have not reached the configured minimum publish age: {0}.</source>
+        <target state="new">Packages with newer versions that have not reached the configured minimum publish age: {0}.</target>
+        <note>{0}: Number of packages with newer versions that have not reached the configured minimum publish age</note>
+      </trans-unit>
       <trans-unit id="PackageUpdate_PreviewRestore">
         <source>Running preview restore to check package compatibility.</source>
         <target state="translated">Paket uyumluluğunu kontrol etmek için önizleme geri yüklemeyi çalıştırın.</target>
