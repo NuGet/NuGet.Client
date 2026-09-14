@@ -506,10 +506,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                // A multi-project operation (e.g. a Central Package Management install) nominates each affected
-                // project in rapid succession, and refreshing on every nomination causes a cancel/restart storm.
-                // Coalesce by waiting for pending nominations to settle, superseding any earlier pending wait,
-                // then refresh once. See ProjectNominationCoordinator.
+                // Supersede the previous wait and refresh after pending nominations settle.
                 var nominationCts = new CancellationTokenSource();
                 Interlocked.Exchange(ref _refreshNominationCts, nominationCts)?.Cancel();
 
@@ -518,7 +515,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     try
                     {
-                        // Solution PM UI waits solution-wide; project PM UI scopes the wait to its one project.
                         string scopedProjectFullPath = null;
                         if (!Model.IsSolution)
                         {
@@ -534,7 +530,6 @@ namespace NuGet.PackageManagement.UI
                     }
                     catch (OperationCanceledException)
                     {
-                        // A newer nomination was processed while waiting; that request will perform the refresh.
                         return;
                     }
                 }
@@ -2018,4 +2013,3 @@ namespace NuGet.PackageManagement.UI
         }
     }
 }
-
