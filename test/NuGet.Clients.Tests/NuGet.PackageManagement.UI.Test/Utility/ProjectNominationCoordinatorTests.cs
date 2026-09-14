@@ -45,7 +45,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenPendingThenNominated_WaitsThenCompletes()
         {
-            // Pending on the first scan, not pending afterward. WhenNominated completes immediately.
             int reads = 0;
             var source = new FakeRestoreInfoSource("a")
             {
@@ -63,8 +62,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenPendingFlagLagsCompletedNomination_StopsWithoutBusySpinning()
         {
-            // Progress guard: the flag stays pending forever, but WhenNominated always returns a completed task
-            // (a lagging flag). Awaiting completed tasks makes no progress, so we must stop instead of busy-looping.
             var source = new FakeRestoreInfoSource("a")
             {
                 HasPendingNominationFunc = () => true,
@@ -75,15 +72,12 @@ namespace NuGet.PackageManagement.UI.Test.Utility
 
             await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
 
-            // A single scan, then the progress guard returns; no unbounded re-scanning.
             Assert.Equal(1, source.WhenNominatedCallCount);
         }
 
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenNominationNeverCompletes_ReturnsAfterTimeoutBudget()
         {
-            // Timeout backstop: an incomplete nomination that never completes and a flag stuck pending. The wait
-            // must return (not throw, not hang) once the total budget is exhausted.
             var neverCompletes = new TaskCompletionSource<bool>();
             var source = new FakeRestoreInfoSource("a")
             {
@@ -99,7 +93,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         }
 
         [Fact]
-        public async Task WaitForNominationsToSettleAsync_WithMultiplePendingProjects_WaitsForAllOfThem()
+        public async Task WaitForNominationsToSettleAsync_WithMultiplePendingProjects_WaitsSequentially()
         {
             var nominationA = new TaskCompletionSource<bool>();
             var nominationB = new TaskCompletionSource<bool>();
@@ -111,9 +105,12 @@ namespace NuGet.PackageManagement.UI.Test.Utility
 
             Task wait = coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
 
-            // Not settled until BOTH nominations complete.
+            Assert.Equal(1, sourceA.WhenNominatedCallCount);
+            Assert.Equal(0, sourceB.WhenNominatedCallCount);
+
             nominationA.SetResult(true);
-            Assert.False(wait.IsCompleted);
+
+            await WaitForAsync(() => sourceB.WhenNominatedCallCount == 1);
 
             nominationB.SetResult(true);
             await wait;
@@ -125,8 +122,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenNominationStartsDuringWait_RescansAndWaitsAgain()
         {
-            // Pending on the first two scans: the first nomination completes, then a second (genuinely incomplete)
-            // nomination is still owed, so we must re-scan and wait again before settling on the third scan.
             var firstNomination = new TaskCompletionSource<bool>();
             var secondNomination = new TaskCompletionSource<bool>();
             int calls = 0;
@@ -153,7 +148,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenSourceWithdrawsNomination_TreatsAsSettled()
         {
-            // The source cancels its own nomination (decides it no longer needs to nominate); re-scan is clean.
             int reads = 0;
             var source = new FakeRestoreInfoSource("a")
             {
@@ -169,7 +163,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenNominationFaults_SwallowsFaultAndSettles()
         {
-            // A design-time build failure faults the nomination; the fault must not propagate into the UI refresh.
             int reads = 0;
             var source = new FakeRestoreInfoSource("a")
             {
@@ -197,7 +190,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenCancelledWhileWaiting_Throws()
         {
-            // A never-completing nomination; the caller supersedes the wait by cancelling the token.
             var neverCompletes = new TaskCompletionSource<bool>();
             var source = new FakeRestoreInfoSource("a")
             {
@@ -219,14 +211,12 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenScopedToProject_IgnoresOtherProjectsPendingNominations()
         {
-            // Project-level PM UI: only the open project ("a") should be awaited; "b" is pending but must be ignored.
             var neverCompletes = new TaskCompletionSource<bool>();
             var sourceA = new FakeRestoreInfoSource("a") { HasPendingNominationFunc = () => false };
             var sourceB = new FakeRestoreInfoSource("b") { HasPendingNominationFunc = () => true, NominationTask = neverCompletes.Task };
             var solutionManager = CreateSolutionManager(sourceA, sourceB);
             var coordinator = new ProjectNominationCoordinator(solutionManager);
 
-            // Completes even though "b" never nominates, because the wait is scoped to "a".
             await coordinator.WaitForNominationsToSettleAsync(projectFullPath: "a", CancellationToken.None);
 
             Assert.Equal(0, sourceB.WhenNominatedCallCount);
@@ -235,7 +225,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenScopedToProject_WaitsOnlyForThatProject()
         {
-            // "a" is the open project and is pending; "b" is also pending but must not be awaited.
             var nominationA = new TaskCompletionSource<bool>();
             int readsA = 0;
             var sourceA = new FakeRestoreInfoSource("a") { HasPendingNominationFunc = () => readsA++ == 0, NominationTask = nominationA.Task };
@@ -256,7 +245,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenScopedToProject_MatchesNameCaseInsensitively()
         {
-            // Full paths compare case-insensitively on Windows; a differently-cased scope must still match.
             int reads = 0;
             var source = new FakeRestoreInfoSource(@"C:\Repo\Foo\Foo.csproj")
             {
@@ -269,6 +257,16 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             await coordinator.WaitForNominationsToSettleAsync(projectFullPath: @"c:\repo\foo\foo.csproj", CancellationToken.None);
 
             Assert.Equal(1, source.WhenNominatedCallCount);
+        }
+
+        private static async Task WaitForAsync(Func<bool> condition)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            while (!condition())
+            {
+                await Task.Delay(10, cts.Token);
+            }
         }
 
         private static IVsSolutionManager CreateSolutionManager(params object[] sources)
@@ -307,7 +305,6 @@ namespace NuGet.PackageManagement.UI.Test.Utility
                     return source;
                 }
 
-                // Mirror the real contract: the returned task is cancelled if the caller's token is cancelled.
                 var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 CancellationTokenRegistration registration = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
                 _ = source.ContinueWith(
