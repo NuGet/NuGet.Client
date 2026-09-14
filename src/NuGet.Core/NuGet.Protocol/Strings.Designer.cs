@@ -205,20 +205,20 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Required property &apos;{0}&apos; not found in JSON..
-        /// </summary>
-        internal static string Error_RequiredJsonPropertyMissing {
-            get {
-                return ResourceManager.GetString("Error_RequiredJsonPropertyMissing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unexpected JSON token type &apos;{0}&apos;..
         /// </summary>
         internal static string Error_UnexpectedJsonToken {
             get {
                 return ResourceManager.GetString("Error_UnexpectedJsonToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Required property &apos;{0}&apos; not found in JSON..
+        /// </summary>
+        internal static string Error_RequiredJsonPropertyMissing {
+            get {
+                return ResourceManager.GetString("Error_RequiredJsonPropertyMissing", resourceCulture);
             }
         }
         
@@ -599,52 +599,7 @@ namespace NuGet.Protocol {
                 return ResourceManager.GetString("PackageServerEndpoint_NotSupported", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to no redirect location was provided.
-        /// </summary>
-        internal static string PackageStaging_RedirectLocationMissing {
-            get {
-                return ResourceManager.GetString("PackageStaging_RedirectLocationMissing", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to The package staging endpoint &apos;{0}&apos; returned redirect status code {1} ({2}) to &apos;{3}&apos;. Redirects are not followed for staging requests because they may contain an API key. Configure the package source to advertise the final staging endpoint..
-        /// </summary>
-        internal static string PackageStaging_RedirectNotAllowed {
-            get {
-                return ResourceManager.GetString("PackageStaging_RedirectNotAllowed", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to A package staging request attempt to &apos;{0}&apos; timed out after {1} seconds. NuGet may retry transient failures..
-        /// </summary>
-        internal static string PackageStaging_RequestTimedOut {
-            get {
-                return ResourceManager.GetString("PackageStaging_RequestTimedOut", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to {0}: {1}.
-        /// </summary>
-        internal static string PackageStaging_ServerError {
-            get {
-                return ResourceManager.GetString("PackageStaging_ServerError", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to The package staging server returned unexpected status code {0} ({1})..
-        /// </summary>
-        internal static string PackageStaging_UnexpectedStatusCode {
-            get {
-                return ResourceManager.GetString("PackageStaging_UnexpectedStatusCode", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid path..
         /// </summary>
@@ -979,20 +934,20 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source supports filtering by only one package type at a time..
-        /// </summary>
-        internal static string Protocol_PackageTypeFilterMultipleNotSupported {
-            get {
-                return ResourceManager.GetString("Protocol_PackageTypeFilterMultipleNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The source does not support filtering search results by package type..
         /// </summary>
         internal static string Protocol_PackageTypeFilterNotSupported {
             get {
                 return ResourceManager.GetString("Protocol_PackageTypeFilterNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source supports filtering by only one package type at a time..
+        /// </summary>
+        internal static string Protocol_PackageTypeFilterMultipleNotSupported {
+            get {
+                return ResourceManager.GetString("Protocol_PackageTypeFilterMultipleNotSupported", resourceCulture);
             }
         }
         
