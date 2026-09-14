@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Configuration
 {
@@ -69,7 +68,8 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            return new MinPublishAgeExceptions(GetMinPublishAgeExceptionItems(settings));
+            var provider = new MinPublishAgeExceptionsProvider(settings);
+            return new MinPublishAgeExceptions(provider.GetMinPublishAgeExceptionItems());
         }
 
         /// <summary>
@@ -85,34 +85,5 @@ namespace NuGet.Configuration
                 : null;
         }
 
-        internal static IReadOnlyList<MinPublishAgeExceptionItem> GetMinPublishAgeExceptionItems(ISettings settings)
-        {
-            var sectionItems = settings.GetSection(ConfigurationConstants.MinPublishAgeExceptions)?
-                .Items ??
-                Array.Empty<SettingItem>();
-
-            if (sectionItems.Count > 1 && sectionItems.Any(item => item.Origin?.ConfigFilePath != null))
-            {
-                var configFilePaths = settings.GetConfigFilePaths();
-                string? closestConfigFilePath = configFilePaths.FirstOrDefault(configFilePath =>
-                    sectionItems.Any(item => string.Equals(
-                        item.Origin?.ConfigFilePath,
-                        configFilePath,
-                        StringComparison.OrdinalIgnoreCase)));
-
-                if (closestConfigFilePath != null)
-                {
-                    sectionItems = sectionItems.Where(item => string.Equals(
-                        item.Origin?.ConfigFilePath,
-                        closestConfigFilePath,
-                        StringComparison.OrdinalIgnoreCase)).ToList().AsReadOnly();
-                }
-            }
-
-            return sectionItems
-                .OfType<MinPublishAgeExceptionItem>()
-                .ToList()
-                .AsReadOnly();
-        }
     }
 }

@@ -1184,17 +1184,17 @@ namespace NuGet.Configuration.Test
                 """);
 
             var settings = new Settings(directory);
-            var packageSourceProvider = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
+            var minPublishAgeExceptionsProvider = new MinPublishAgeExceptionsProvider(settings);
 
             // Act
-            packageSourceProvider.SaveMinPublishAgeExceptions(new[]
+            minPublishAgeExceptionsProvider.SaveMinPublishAgeExceptions(new[]
             {
                 new MinPublishAgeExceptionItem { Pattern = "System.*" },
                 new MinPublishAgeExceptionItem { Pattern = "Fabrikam.WebApi.Client" },
             });
 
             settings = new Settings(directory);
-            var provider = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
+            var provider = new MinPublishAgeExceptionsProvider(settings);
             var exceptions = MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings);
 
             // Assert
@@ -1230,9 +1230,7 @@ namespace NuGet.Configuration.Test
                 </configuration>
                 """);
 
-            var provider = new PackageSourceProvider(
-                new Settings(directory),
-                TestConfigurationDefaults.NullInstance);
+            var provider = new MinPublishAgeExceptionsProvider(new Settings(directory));
 
             // Act
             provider.SaveMinPublishAgeExceptions(new[]
@@ -1252,7 +1250,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var settings = new Mock<ISettings>();
-            var provider = new PackageSourceProvider(settings.Object, TestConfigurationDefaults.NullInstance);
+            var provider = new MinPublishAgeExceptionsProvider(settings.Object);
 
             // Act
             var exception = Record.Exception(() => provider.SaveMinPublishAgeExceptions(Array.Empty<MinPublishAgeExceptionItem>()));
@@ -1358,7 +1356,7 @@ namespace NuGet.Configuration.Test
                 """);
 
             var settings = new Settings(directory);
-            var provider = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
+            var provider = new MinPublishAgeExceptionsProvider(settings);
 
             // Act
             provider.SaveMinPublishAgeExceptions(Array.Empty<MinPublishAgeExceptionItem>());
@@ -1403,9 +1401,7 @@ namespace NuGet.Configuration.Test
                 </configuration>
                 """);
 
-            var provider = new PackageSourceProvider(
-                new Settings(directory),
-                TestConfigurationDefaults.NullInstance);
+            var provider = new MinPublishAgeExceptionsProvider(new Settings(directory));
 
             // Act
             provider.RemoveMinPublishAgeExceptions();
@@ -1521,7 +1517,7 @@ namespace NuGet.Configuration.Test
                 """);
 
             var settings = Settings.LoadDefaultSettings(childDirectory);
-            var provider = new PackageSourceProvider(settings, TestConfigurationDefaults.NullInstance);
+            var provider = new MinPublishAgeExceptionsProvider(settings);
 
             // Act
             provider.SaveMinPublishAgeExceptions(new[]
@@ -1531,14 +1527,13 @@ namespace NuGet.Configuration.Test
             });
 
             // Assert
-            var reloadedProvider = new PackageSourceProvider(
+            var reloadedProvider = new MinPublishAgeExceptionsProvider(
                 Settings.LoadSettings(
                     childDirectory,
                     configFileName: null,
                     machineWideSettings: null,
                     loadUserWideSettings: false,
-                    useTestingGlobalPath: false),
-                TestConfigurationDefaults.NullInstance);
+                    useTestingGlobalPath: false));
             reloadedProvider.GetMinPublishAgeExceptionItems()
                 .Select(exception => exception.Pattern)
                 .Should()
