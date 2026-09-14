@@ -57,13 +57,15 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Provider_WithDefaultProvider_ReturnsDefaultResourceProviders()
+        public void Provider_WhenUsingDefaultProvider_ShouldReturnDefaultResourceProviders()
         {
             IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders = Repository.Provider.GetCoreV3();
 
             int actualCount = resourceProviders.Count();
 
-            Assert.Equal(49, actualCount);
+            // Assert
+            Assert.Equal(50, actualCount);
+            Assert.Contains(resourceProviders, provider => provider.Value is PackageStagingResourceV3Provider);
         }
     }
 }
