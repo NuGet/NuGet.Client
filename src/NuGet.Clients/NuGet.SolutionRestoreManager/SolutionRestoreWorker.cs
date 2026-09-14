@@ -276,6 +276,7 @@ namespace NuGet.SolutionRestoreManager
             if (!isDisposing)
             {
                 _solutionLoadedEvent.Reset();
+                _isFirstRestore = true;
 
                 _workerCts = new CancellationTokenSource();
 
