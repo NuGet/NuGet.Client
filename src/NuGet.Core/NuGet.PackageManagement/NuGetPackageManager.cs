@@ -863,10 +863,14 @@ namespace NuGet.PackageManagement
 
                         if (resolvedPackage != null && resolvedPackage.LatestVersion != null && resolvedPackage.LatestVersion > installedPackage.PackageIdentity.Version)
                         {
+                            var packageIdentity = new PackageIdentity(installedPackage.PackageIdentity.Id, resolvedPackage.LatestVersion);
+                            TryGetVersionRangeForUpdate(installedPackage, packageIdentity, out VersionRange versionRange);
+
                             lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(
-                                new PackageIdentity(installedPackage.PackageIdentity.Id, resolvedPackage.LatestVersion),
+                                packageIdentity,
                                 primarySources.FirstOrDefault(),
-                                nuGetProject));
+                                nuGetProject,
+                                versionRange));
                         }
                     }
                 }
@@ -949,8 +953,11 @@ namespace NuGet.PackageManagement
                     //  if the package is not currently installed, or the installed one is auto referenced ignore it
                     if (installed != null && !autoReferenced)
                     {
-                        lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity,
-                            primarySources.FirstOrDefault(), nuGetProject));
+                        if (TryGetVersionRangeForUpdate(installed, packageIdentity, out VersionRange versionRange))
+                        {
+                            lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity,
+                                primarySources.FirstOrDefault(), nuGetProject, versionRange));
+                        }
                     }
                 }
 
@@ -990,6 +997,43 @@ namespace NuGet.PackageManagement
         {
             var buildPackageReference = package as BuildIntegratedPackageReference;
             return buildPackageReference?.Dependency?.AutoReferenced == true;
+        }
+
+        private static bool TryGetVersionRangeForUpdate(PackageReference installedPackage, PackageIdentity packageIdentity, out VersionRange versionRange)
+        {
+            versionRange = null;
+
+            if (installedPackage?.AllowedVersions == null)
+            {
+                return true;
+            }
+
+            var allowedVersions = installedPackage.AllowedVersions;
+
+            if (allowedVersions.IsFloating)
+            {
+                if (!allowedVersions.Satisfies(packageIdentity.Version))
+                {
+                    return false;
+                }
+
+                versionRange = allowedVersions;
+            }
+            else if (allowedVersions.HasUpperBound)
+            {
+                if (!allowedVersions.Satisfies(packageIdentity.Version))
+                {
+                    return false;
+                }
+
+                versionRange = new VersionRange(
+                    minVersion: packageIdentity.Version,
+                    includeMinVersion: true,
+                    maxVersion: allowedVersions.MaxVersion,
+                    includeMaxVersion: allowedVersions.IsMaxInclusive);
+            }
+
+            return true;
         }
 
         /// <summary>
