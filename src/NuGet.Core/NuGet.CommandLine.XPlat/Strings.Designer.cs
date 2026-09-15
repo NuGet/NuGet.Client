@@ -1149,7 +1149,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_NoPackageReferencesForProject", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to No packages were found for this framework..
         /// </summary>
@@ -1176,7 +1176,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_NoSponsorshipForProject", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Not found at the sources.
         /// </summary>
@@ -1302,7 +1302,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_ProjectSponsorHeaderLog", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Project `{0}` has the following updates to its packages.
         /// </summary>
@@ -1365,7 +1365,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorDescription", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Sponsor.
         /// </summary>
@@ -1374,7 +1374,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorHeader", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The following package sources did not return sponsorship details:.
         /// </summary>
@@ -1383,7 +1383,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorNoDetailsHeader", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Package Source Mapping is enabled. Sponsorship details will be requested from sources mapped to packages..
         /// </summary>
@@ -1392,7 +1392,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorPackageSourceMappingEnabled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Package Source Mapping is enabled and cannot be combined with `--source` for sponsorship reporting..
         /// </summary>
@@ -1401,7 +1401,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorPackageSourceMappingWithSource", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Package source &apos;{0}&apos; did not return sponsorship details..
         /// </summary>
@@ -1410,7 +1410,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorProblemNoDetails", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Package source &apos;{0}&apos; does not support sponsorship reporting..
         /// </summary>
@@ -1419,7 +1419,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorProblemUnsupportedSource", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Consider configuring an additional package source that provides sponsorship metadata, such as https://api.nuget.org/v3/index.json..
         /// </summary>
@@ -1428,7 +1428,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorSourceHint", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Source: {0}.
         /// </summary>
@@ -1437,7 +1437,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorSourceLine", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The following package sources do not support sponsorship reporting:.
         /// </summary>
@@ -1446,7 +1446,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("ListPkg_SponsorUnsupportedSourcesHeader", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Top-level Package.
         /// </summary>
@@ -2245,7 +2245,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("SignCommandAllowUntrustedRootDescription", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options..
         /// </summary>
