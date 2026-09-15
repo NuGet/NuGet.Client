@@ -24,6 +24,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.UI.Utility;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -57,6 +58,7 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private Stopwatch _sinceLastRefresh;
         private CancellationTokenSource _refreshCts;
+        private CancellationTokenSource _refreshNominationCts;
         // used to prevent starting new search when we update the package sources
         // list in response to Package Sources changing events.
         private bool _dontStartNewSearch;
@@ -504,6 +506,34 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                // Supersede the previous wait and refresh after pending nominations settle.
+                var nominationCts = new CancellationTokenSource();
+                Interlocked.Exchange(ref _refreshNominationCts, nominationCts)?.Cancel();
+
+                var solutionManager = Model.Context.SolutionManager;
+                if (solutionManager != null)
+                {
+                    try
+                    {
+                        string scopedProjectFullPath = null;
+                        if (!Model.IsSolution)
+                        {
+                            IProjectContextInfo project = Model.Context.Projects.First();
+                            IProjectMetadataContextInfo projectMetadata = await project.GetMetadataAsync(
+                                Model.Context.ServiceBroker,
+                                nominationCts.Token);
+                            scopedProjectFullPath = projectMetadata.FullPath;
+                        }
+
+                        var coordinator = new ProjectNominationCoordinator(solutionManager);
+                        await coordinator.WaitForNominationsToSettleAsync(scopedProjectFullPath, nominationCts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
+                }
+
                 await RunAndEmitRefreshAsync(async () => await RefreshAsync(), source, timeSpanSinceLastRefresh, Stopwatch.StartNew());
             }
         }
@@ -1700,11 +1730,13 @@ namespace NuGet.PackageManagement.UI
             // make sure to cancel currently running load or refresh tasks
             _loadCts?.Cancel();
             _refreshCts?.Cancel();
+            _refreshNominationCts?.Cancel();
             _cancelSelectionChangedSource?.Cancel();
 
             // make sure to dispose cancellation token source
             _loadCts?.Dispose();
             _refreshCts?.Dispose();
+            _refreshNominationCts?.Dispose();
             _cancelSelectionChangedSource?.Dispose();
 
             _packageDetail.Cleanup();
