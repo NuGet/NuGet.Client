@@ -1174,4 +1174,19 @@ Do not translate "PackageVersion"</comment>
   <data name="WhyCommand_Error_InconsistentAssetsFile" xml:space="preserve">
     <value>Internal error: Assets file is inconsistent</value>
   </data>
+  <data name="StageCommand_Description" xml:space="preserve">
+    <value>Manage packages in a staging service.</value>
+  </data>
+  <data name="StagePushCommand_Description" xml:space="preserve">
+    <value>Upload a package to a staging service.</value>
+  </data>
+  <data name="StagePushCommand_PackagePathArgument_Description" xml:space="preserve">
+    <value>The path to the package to stage.</value>
+  </data>
+  <data name="StagePushCommand_GroupOption_Description" xml:space="preserve">
+    <value>The existing staging group ID to receive the package.</value>
+  </data>
+  <data name="StagePushCommand_NoSymbolsOption_Description" xml:space="preserve">
+    <value>Do not automatically stage a sibling symbols package.</value>
+  </data>
 </root>

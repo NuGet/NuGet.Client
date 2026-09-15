@@ -2377,6 +2377,51 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manage packages in a staging service..
+        /// </summary>
+        internal static string StageCommand_Description {
+            get {
+                return ResourceManager.GetString("StageCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Upload a package to a staging service..
+        /// </summary>
+        internal static string StagePushCommand_Description {
+            get {
+                return ResourceManager.GetString("StagePushCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The existing staging group ID to receive the package..
+        /// </summary>
+        internal static string StagePushCommand_GroupOption_Description {
+            get {
+                return ResourceManager.GetString("StagePushCommand_GroupOption_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not automatically stage a sibling symbols package..
+        /// </summary>
+        internal static string StagePushCommand_NoSymbolsOption_Description {
+            get {
+                return ResourceManager.GetString("StagePushCommand_NoSymbolsOption_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The path to the package to stage..
+        /// </summary>
+        internal static string StagePushCommand_PackagePathArgument_Description {
+            get {
+                return ResourceManager.GetString("StagePushCommand_PackagePathArgument_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read..
         /// </summary>
         internal static string SymbolApiKey_Description {

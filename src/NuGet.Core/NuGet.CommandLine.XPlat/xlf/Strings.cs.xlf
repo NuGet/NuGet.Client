@@ -1292,6 +1292,31 @@ Hledání porovnává řetězce bez rozlišování malých a velkých písmen po
         <target state="translated">Správný příkaz je {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="StageCommand_Description">
+        <source>Manage packages in a staging service.</source>
+        <target state="new">Manage packages in a staging service.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Description">
+        <source>Upload a package to a staging service.</source>
+        <target state="new">Upload a package to a staging service.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_GroupOption_Description">
+        <source>The existing staging group ID to receive the package.</source>
+        <target state="new">The existing staging group ID to receive the package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_NoSymbolsOption_Description">
+        <source>Do not automatically stage a sibling symbols package.</source>
+        <target state="new">Do not automatically stage a sibling symbols package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_PackagePathArgument_Description">
+        <source>The path to the package to stage.</source>
+        <target state="new">The path to the package to stage.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
         <target state="translated">Klíč rozhraní API pro server symbolů Pokud není nastaven, načte se proměnná prostředí NUGET_SYMBOL_API_KEY.</target>
