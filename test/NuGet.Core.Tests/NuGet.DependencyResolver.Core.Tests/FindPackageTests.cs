@@ -3,12 +3,14 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -380,6 +382,245 @@ namespace NuGet.DependencyResolver.Core.Tests
             Assert.Equal(1, testLogger.DebugMessages.Count);
             testLogger.DebugMessages.TryPeek(out string message);
             Assert.Equal($"Package source mapping match not found for package ID '{packageX}'.", message);
+        }
+
+        [Fact]
+        public async Task FindLibraryByVersionAsync_WhenOneHttpSourceHits_DoesNotQueryMissSourceAgain()
+        {
+            var range = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+            using var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var identity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0"), LibraryType.Package);
+            var token = CancellationToken.None;
+
+            int hitCalls = 0;
+            int hitSuppress = 0;
+            int missCalls = 0;
+            int missUnsuppressed = 0;
+
+            var hit = new Mock<IRemoteDependencyProvider>();
+            hit.SetupGet(e => e.IsHttp).Returns(true);
+            hit.SetupGet(e => e.Source).Returns(new PackageSource("https://hit.test"));
+            hit.Setup(e => e.FindLibraryAsync(range, framework, It.IsAny<SourceCacheContext>(), testLogger, token))
+                .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    hitCalls++;
+                    if (ctx.SuppressHttpCacheRefreshOnMiss)
+                    {
+                        hitSuppress++;
+                    }
+
+                    return Task.FromResult(identity);
+                });
+
+            var miss = new Mock<IRemoteDependencyProvider>();
+            miss.SetupGet(e => e.IsHttp).Returns(true);
+            miss.SetupGet(e => e.Source).Returns(new PackageSource("https://miss.test"));
+            miss.Setup(e => e.FindLibraryAsync(range, framework, It.IsAny<SourceCacheContext>(), testLogger, token))
+                .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    missCalls++;
+                    if (!ctx.SuppressHttpCacheRefreshOnMiss)
+                    {
+                        missUnsuppressed++;
+                    }
+
+                    return Task.FromResult<LibraryIdentity>(null);
+                });
+
+            var result = await ResolverUtility.FindLibraryByVersionAsync(
+                range,
+                framework,
+                new[] { hit.Object, miss.Object },
+                cacheContext,
+                testLogger,
+                token);
+
+            Assert.Equal("1.0.0", result.Library.Version.ToString());
+            Assert.Equal(1, hitCalls);
+            Assert.Equal(1, hitSuppress);
+            Assert.Equal(1, missCalls);
+            Assert.Equal(0, missUnsuppressed);
+        }
+
+        [Fact]
+        public async Task FindLibraryByVersionAsync_WhenAllHttpSourcesMiss_QueriesEachSourceAgainWithoutSuppress()
+        {
+            var range = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+            using var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var token = CancellationToken.None;
+
+            int firstSuppress = 0;
+            int firstUnsuppressed = 0;
+            int secondSuppress = 0;
+            int secondUnsuppressed = 0;
+
+            Mock<IRemoteDependencyProvider> Create(Action<bool> onCall)
+            {
+                var mock = new Mock<IRemoteDependencyProvider>();
+                mock.SetupGet(e => e.IsHttp).Returns(true);
+                mock.SetupGet(e => e.Source).Returns(new PackageSource("https://miss.test"));
+                mock.Setup(e => e.FindLibraryAsync(range, framework, It.IsAny<SourceCacheContext>(), testLogger, token))
+                    .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                    {
+                        onCall(ctx.SuppressHttpCacheRefreshOnMiss);
+                        return Task.FromResult<LibraryIdentity>(null);
+                    });
+                return mock;
+            }
+
+            var first = Create(suppress => { if (suppress) firstSuppress++; else firstUnsuppressed++; });
+            var second = Create(suppress => { if (suppress) secondSuppress++; else secondUnsuppressed++; });
+
+            var result = await ResolverUtility.FindLibraryByVersionAsync(
+                range,
+                framework,
+                new[] { first.Object, second.Object },
+                cacheContext,
+                testLogger,
+                token);
+
+            Assert.Null(result);
+            Assert.Equal(1, firstSuppress);
+            Assert.Equal(1, firstUnsuppressed);
+            Assert.Equal(1, secondSuppress);
+            Assert.Equal(1, secondUnsuppressed);
+        }
+
+        [Fact]
+        public async Task FindLibraryByVersionAsync_WhenSingleHttpSourceMisses_DoesNotSuppressAndQueriesOnce()
+        {
+            var range = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+            using var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var token = CancellationToken.None;
+
+            int calls = 0;
+            int suppressed = 0;
+
+            var remote = new Mock<IRemoteDependencyProvider>();
+            remote.SetupGet(e => e.IsHttp).Returns(true);
+            remote.SetupGet(e => e.Source).Returns(new PackageSource("https://one.test"));
+            remote.Setup(e => e.FindLibraryAsync(range, framework, It.IsAny<SourceCacheContext>(), testLogger, token))
+                .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    calls++;
+                    if (ctx.SuppressHttpCacheRefreshOnMiss)
+                    {
+                        suppressed++;
+                    }
+
+                    return Task.FromResult<LibraryIdentity>(null);
+                });
+
+            var result = await ResolverUtility.FindLibraryByVersionAsync(
+                range,
+                framework,
+                new[] { remote.Object },
+                cacheContext,
+                testLogger,
+                token);
+
+            Assert.Null(result);
+            Assert.Equal(1, calls);
+            Assert.Equal(0, suppressed);
+        }
+
+        [Fact]
+        public async Task FindLibraryByVersionAsync_WhenSingleHttpSourceHits_QueriesOnceWithoutSuppress()
+        {
+            var range = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+            using var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var identity = new LibraryIdentity("x", NuGetVersion.Parse("1.0.0"), LibraryType.Package);
+            var token = CancellationToken.None;
+
+            int calls = 0;
+            int suppressed = 0;
+
+            var remote = new Mock<IRemoteDependencyProvider>();
+            remote.SetupGet(e => e.IsHttp).Returns(true);
+            remote.SetupGet(e => e.Source).Returns(new PackageSource("https://one.test"));
+            remote.Setup(e => e.FindLibraryAsync(range, framework, It.IsAny<SourceCacheContext>(), testLogger, token))
+                .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    calls++;
+                    if (ctx.SuppressHttpCacheRefreshOnMiss)
+                    {
+                        suppressed++;
+                    }
+
+                    return Task.FromResult(identity);
+                });
+
+            var result = await ResolverUtility.FindLibraryByVersionAsync(
+                range,
+                framework,
+                new[] { remote.Object },
+                cacheContext,
+                testLogger,
+                token);
+
+            Assert.Equal("1.0.0", result.Library.Version.ToString());
+            Assert.Equal(1, calls);
+            Assert.Equal(0, suppressed);
+        }
+
+        [Fact]
+        public async Task FindLibraryByVersionAsync_WhenOneHttpAndOneLocalMiss_QueriesHttpOnceWithoutSuppress()
+        {
+            var range = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+            using var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var token = CancellationToken.None;
+
+            int httpCalls = 0;
+            int httpSuppressed = 0;
+            int localCalls = 0;
+
+            var local = new Mock<IRemoteDependencyProvider>();
+            local.SetupGet(e => e.IsHttp).Returns(false);
+            local.SetupGet(e => e.Source).Returns(new PackageSource(@"C:\pkgs"));
+            local.Setup(e => e.FindLibraryAsync(range, framework, It.IsAny<SourceCacheContext>(), testLogger, token))
+                .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, _, _, _) =>
+                {
+                    localCalls++;
+                    return Task.FromResult<LibraryIdentity>(null);
+                });
+
+            var http = new Mock<IRemoteDependencyProvider>();
+            http.SetupGet(e => e.IsHttp).Returns(true);
+            http.SetupGet(e => e.Source).Returns(new PackageSource("https://one.test"));
+            http.Setup(e => e.FindLibraryAsync(range, framework, It.IsAny<SourceCacheContext>(), testLogger, token))
+                .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                {
+                    httpCalls++;
+                    if (ctx.SuppressHttpCacheRefreshOnMiss)
+                    {
+                        httpSuppressed++;
+                    }
+
+                    return Task.FromResult<LibraryIdentity>(null);
+                });
+
+            var result = await ResolverUtility.FindLibraryByVersionAsync(
+                range,
+                framework,
+                new[] { local.Object, http.Object },
+                cacheContext,
+                testLogger,
+                token);
+
+            Assert.Null(result);
+            Assert.Equal(1, localCalls);
+            Assert.Equal(1, httpCalls);
+            Assert.Equal(0, httpSuppressed);
         }
     }
 }

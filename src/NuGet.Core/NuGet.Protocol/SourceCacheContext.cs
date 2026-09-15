@@ -50,6 +50,13 @@ namespace NuGet.Protocol.Core.Types
         public bool RefreshMemoryCache { get; set; }
 
         /// <summary>
+        /// When true, HTTP sources must not refresh the versions list on an exact-version miss.
+        /// Used for the first pass of a multi-source lookup so a miss on one feed does not
+        /// refresh while another feed can still resolve the package.
+        /// </summary>
+        public bool SuppressHttpCacheRefreshOnMiss { get; set; }
+
+        /// <summary>
         /// X-NUGET-SESSION
         /// This should be unique for each package operation.
         /// </summary>
@@ -126,7 +133,8 @@ namespace NuGet.Protocol.Core.Types
                 MaxAge = MaxAge,
                 NoCache = NoCache,
                 RefreshMemoryCache = RefreshMemoryCache,
-                SessionId = SessionId
+                SessionId = SessionId,
+                SuppressHttpCacheRefreshOnMiss = SuppressHttpCacheRefreshOnMiss
             };
             clone._generatedTempFolder = _generatedTempFolder;
             return clone;

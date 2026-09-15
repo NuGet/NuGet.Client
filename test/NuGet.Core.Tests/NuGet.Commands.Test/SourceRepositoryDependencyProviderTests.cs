@@ -5,7 +5,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1127,6 +1130,559 @@ namespace NuGet.Commands.Test
             else
             {
                 library.Dependencies.Should().HaveCount(0);
+            }
+        }
+
+        public static IEnumerable<object[]> RefreshOnMissEnabledValues()
+        {
+            yield return new object[] { null, true };
+            yield return new object[] { string.Empty, true };
+            yield return new object[] { "true", true };
+            yield return new object[] { "TRUE", true };
+            yield return new object[] { "1", true };
+            yield return new object[] { "false", false };
+            yield return new object[] { "FALSE", false };
+            yield return new object[] { "0", false };
+            yield return new object[] { "nope", true };
+        }
+
+        [Theory]
+        [MemberData(nameof(RefreshOnMissEnabledValues))]
+        public void IsRefreshOnMissEnabled_InterpretsEnvironmentValues(string value, bool expected)
+        {
+            var environment = new TestEnvironmentVariableReader(
+                new Dictionary<string, string>
+                {
+                    { "NUGET_HTTP_CACHE_REFRESH_ON_MISS", value }
+                });
+
+            Assert.Equal(expected, SourceRepositoryDependencyProvider.IsRefreshOnMissEnabled(environment));
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenExactVersionMissesStaleHttpCache_RefreshesOnceAndResolves()
+        {
+            // Regression test for https://github.com/NuGet/Home/issues/3116.
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource
+            {
+                Kind = VersionListFetchKind.HttpCache
+            };
+            findResource.VersionsAfterRefresh.Add(NuGetVersion.Parse("1.0.0"));
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange,
+                NuGetFramework.Parse("net45"),
+                cacheContext,
+                logger,
+                CancellationToken.None);
+
+            Assert.NotNull(result);
+            Assert.Equal("x", result.Name);
+            Assert.Equal("1.0.0", result.Version.ToString());
+            Assert.Equal(2, findResource.ExistsCalls);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: true, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenExactVersionMissesHttpCacheAndIsGenuinelyMissing_RefreshesOnceAndReturnsNull()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(2, findResource.ExistsCalls);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: true, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenExactVersionMissesAfterOriginFetch_DoesNotRefresh()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.Network };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(1, findResource.ExistsCalls);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenOriginAlreadyAuthoritative_WithRefreshCacheTrue_DoesNotHitOriginAgain()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.Network };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var first = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+            using var refreshed = cacheContext.WithRefreshCacheTrue();
+            var second = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), refreshed, logger, CancellationToken.None);
+
+            Assert.Null(first);
+            Assert.Null(second);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenFindPackageByIdResourceDoesNotReportCacheKind_DoesNotRefresh()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.Unknown };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(1, findResource.ExistsCalls);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenRefreshOnMissIsSuppressed_DoesNotRefreshEvenForHttpCache()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            cacheContext.SuppressHttpCacheRefreshOnMiss = true;
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(1, findResource.ExistsCalls);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenSameIdMissesForMultipleProjects_RefreshesAtMostOncePerOperation()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var firstProjectRange = ExactRange("x", "1.0.0");
+            var secondProjectRange = ExactRange("x", "2.0.0");
+
+            var firstResult = await provider.FindLibraryAsync(
+                firstProjectRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+            var secondResult = await provider.FindLibraryAsync(
+                secondProjectRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(firstResult);
+            Assert.Null(secondResult);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            Assert.Equal(1, logger.MinimalMessages.Count(m => m.Contains("refreshing the HTTP cache once", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenTwoPackageIdsMiss_RefreshesEachIdOnce()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var first = ExactRange("a", "1.0.0");
+            var second = ExactRange("b", "1.0.0");
+
+            Assert.Null(await provider.FindLibraryAsync(first, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None));
+            Assert.Null(await provider.FindLibraryAsync(second, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None));
+
+            Assert.Equal(2, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: true, first);
+            AssertLoggedRefresh(logger, expected: true, second);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenIdDiffersOnlyByCase_SharesRefreshGate()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var lower = ExactRange("x", "1.0.0");
+            var upper = ExactRange("X", "2.0.0");
+
+            Assert.Null(await provider.FindLibraryAsync(lower, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None));
+            Assert.Null(await provider.FindLibraryAsync(upper, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None));
+
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenSameLibraryRangeIsRequestedTwice_PerformsOneCoreLookup()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            Assert.Null(await provider.FindLibraryAsync(libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None));
+            Assert.Null(await provider.FindLibraryAsync(libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None));
+
+            Assert.Equal(2, findResource.ExistsCalls);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            Assert.Equal(1, logger.MinimalMessages.Count(m => m.Contains("refreshing the HTTP cache once", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData("1.0.0-*")]
+        [InlineData("(1.0.0, )")]
+        public async Task FindLibraryAsync_WhenRangeIsFloatingOrExclusiveMin_DoesNotRefresh(string range)
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = new LibraryRange("x", VersionRange.Parse(range), LibraryDependencyTarget.Package);
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            Assert.Equal(1, findResource.GetAllVersionsCalls);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Theory]
+        [InlineData("false")]
+        [InlineData("0")]
+        [InlineData("FALSE")]
+        public async Task FindLibraryAsync_WhenRefreshOnMissIsOptedOut_DoesNotRefresh(string envValue)
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "NUGET_HTTP_CACHE_REFRESH_ON_MISS", envValue }
+            });
+            var provider = CreateProvider(findResource, logger, cacheContext, environment: environment);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            Assert.Equal(1, findResource.ExistsCalls);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("true")]
+        [InlineData("1")]
+        public async Task FindLibraryAsync_WhenRefreshOnMissEnvAllows_RefreshesHttpCacheMiss(string envValue)
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "NUGET_HTTP_CACHE_REFRESH_ON_MISS", envValue }
+            });
+            var provider = CreateProvider(findResource, logger, cacheContext, environment: environment);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: true, libraryRange);
+        }
+
+        [Theory]
+        [InlineData(@"C:\local\packages")]
+        [InlineData("file:///C:/local/packages")]
+        public async Task FindLibraryAsync_WhenSourceIsNotHttp_DoesNotRefreshOnMiss(string source)
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext, sourceUrl: source);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            Assert.Equal(1, findResource.ExistsCalls);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Theory]
+        [InlineData("http://test/index.json")]
+        [InlineData("https://test/index.json")]
+        public async Task FindLibraryAsync_WhenSourceIsHttp_RefreshesHttpCacheMiss(string source)
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext, sourceUrl: source);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: true, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenRefreshMemoryCacheIsAlreadyTrue_DoesNotRefreshOnMiss()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            using var refreshed = cacheContext.WithRefreshCacheTrue();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), refreshed, logger, CancellationToken.None);
+
+            Assert.Null(result);
+            Assert.Equal(1, findResource.ExistsCalls);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: false, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenHttpCacheIsStaleThenPublished_HttpSourceHitsOriginOnceOnRefresh()
+        {
+            using var httpCache = TestDirectory.Create();
+            var packageSource = new PackageSource("http://unit.test/v3-flatcontainer");
+            var indexUri = $"{packageSource.Source}/x/index.json";
+            var indexJson = "{\"versions\":[\"1.0.0\"]}";
+            int originGets = 0;
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+            {
+                {
+                    indexUri,
+                    _ =>
+                    {
+                        originGets++;
+                        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new TestContent(indexJson)
+                        });
+                    }
+                }
+            };
+
+            using var httpSource = new TestHttpSource(packageSource, responses)
+            {
+                DisableCaching = false,
+                HttpCacheDirectory = httpCache.Path
+            };
+            var baseUris = new List<Uri> { packageSource.SourceUri };
+
+            var warm = new HttpFileSystemBasedFindPackageByIdResource(baseUris, httpSource);
+            using var cacheContext = new SourceCacheContext();
+            var logger = new TestLogger();
+            await warm.GetAllVersionsAsync("x", cacheContext, logger, CancellationToken.None);
+            Assert.Equal(1, originGets);
+
+            indexJson = "{\"versions\":[\"1.0.0\",\"2.0.0\"]}";
+            var live = new HttpFileSystemBasedFindPackageByIdResource(baseUris, httpSource);
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(live);
+            source.SetupGet(s => s.PackageSource).Returns(packageSource);
+            var provider = new SourceRepositoryDependencyProvider(
+                source.Object, logger, cacheContext, ignoreFailedSources: true, ignoreWarning: true);
+            var libraryRange = ExactRange("x", "2.0.0");
+
+            var result = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.NotNull(result);
+            Assert.Equal("2.0.0", result.Version.ToString());
+            Assert.Equal(2, originGets);
+            AssertLoggedRefresh(logger, expected: true, libraryRange);
+        }
+
+        private static LibraryRange ExactRange(string id, string version)
+        {
+            return new LibraryRange(id, new VersionRange(NuGetVersion.Parse(version)), LibraryDependencyTarget.Package);
+        }
+
+        private static SourceRepositoryDependencyProvider CreateProvider(
+            FindPackageByIdResource findResource,
+            TestLogger logger,
+            SourceCacheContext cacheContext,
+            string sourceUrl = "http://test/index.json",
+            IEnvironmentVariableReader environment = null)
+        {
+            var source = new Mock<SourceRepository>();
+            source.Setup(s => s.GetResourceAsync<FindPackageByIdResource>(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(findResource);
+            source.SetupGet(s => s.PackageSource).Returns(new PackageSource(sourceUrl));
+
+            return new SourceRepositoryDependencyProvider(
+                source.Object,
+                logger,
+                cacheContext,
+                ignoreFailedSources: true,
+                ignoreWarning: true,
+                fileCache: null,
+                isGlobalPackagesFolder: false,
+                isFallbackFolderSource: false,
+                environment ?? TestEnvironmentVariableReader.EmptyInstance);
+        }
+
+        private static void AssertLoggedRefresh(TestLogger logger, bool expected, LibraryRange libraryRange)
+        {
+            string message = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.Log_RefreshingHttpCacheOnMiss,
+                libraryRange.Name,
+                libraryRange.VersionRange.ToString());
+
+            if (expected)
+            {
+                Assert.Contains(message, logger.MinimalMessages);
+            }
+            else
+            {
+                Assert.DoesNotContain(message, logger.MinimalMessages);
+            }
+        }
+
+        private sealed class RecordingFindPackageByIdResource : FindPackageByIdResource, IVersionListCacheInfo
+        {
+            private readonly Dictionary<string, VersionListFetchKind> _kindById =
+                new Dictionary<string, VersionListFetchKind>(StringComparer.OrdinalIgnoreCase);
+
+            public VersionListFetchKind Kind { get; set; } = VersionListFetchKind.Unknown;
+            public HashSet<NuGetVersion> Versions { get; } = new HashSet<NuGetVersion>();
+            public HashSet<NuGetVersion> VersionsAfterRefresh { get; } = new HashSet<NuGetVersion>();
+            public int ExistsCalls { get; private set; }
+            public int ExistsCallsWithRefresh { get; private set; }
+            public int GetAllVersionsCalls { get; private set; }
+
+            public bool TryGetVersionListSource(string id, out VersionListFetchKind kind)
+            {
+                if (id != null && _kindById.TryGetValue(id, out kind))
+                {
+                    return true;
+                }
+
+                if (Kind == VersionListFetchKind.Unknown)
+                {
+                    kind = VersionListFetchKind.Unknown;
+                    return false;
+                }
+
+                kind = Kind;
+                return true;
+            }
+
+            public override Task<bool> DoesPackageExistAsync(
+                string id,
+                NuGetVersion version,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
+            {
+                ExistsCalls++;
+                if (cacheContext.RefreshMemoryCache)
+                {
+                    ExistsCallsWithRefresh++;
+                }
+
+                ApplyRefresh(id, cacheContext);
+                return Task.FromResult(Versions.Contains(version));
+            }
+
+            public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+                string id,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
+            {
+                GetAllVersionsCalls++;
+                ApplyRefresh(id, cacheContext);
+                return Task.FromResult<IEnumerable<NuGetVersion>>(Versions.ToList());
+            }
+
+            public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+                string id,
+                NuGetVersion version,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
+            {
+                return Task.FromResult<FindPackageByIdDependencyInfo>(null);
+            }
+
+            public override Task<bool> CopyNupkgToStreamAsync(
+                string id,
+                NuGetVersion version,
+                Stream destination,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
+            {
+                return Task.FromResult(false);
+            }
+
+            public override Task<IPackageDownloader> GetPackageDownloaderAsync(
+                PackageIdentity packageIdentity,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
+            {
+                return Task.FromResult<IPackageDownloader>(null);
+            }
+
+            private void ApplyRefresh(string id, SourceCacheContext cacheContext)
+            {
+                if (!cacheContext.RefreshMemoryCache)
+                {
+                    return;
+                }
+
+                _kindById[id] = VersionListFetchKind.Network;
+                foreach (var version in VersionsAfterRefresh)
+                {
+                    Versions.Add(version);
+                }
             }
         }
 

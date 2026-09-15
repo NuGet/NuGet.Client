@@ -1,1 +1,9 @@
 #nullable enable
+NuGet.Protocol.Core.Types.SourceCacheContext.SuppressHttpCacheRefreshOnMiss.get -> bool
+NuGet.Protocol.Core.Types.SourceCacheContext.SuppressHttpCacheRefreshOnMiss.set -> void
+NuGet.Protocol.IVersionListCacheInfo
+NuGet.Protocol.IVersionListCacheInfo.TryGetVersionListSource(string! id, out NuGet.Protocol.VersionListFetchKind kind) -> bool
+NuGet.Protocol.VersionListFetchKind
+NuGet.Protocol.VersionListFetchKind.HttpCache = 1 -> NuGet.Protocol.VersionListFetchKind
+NuGet.Protocol.VersionListFetchKind.Network = 2 -> NuGet.Protocol.VersionListFetchKind
+NuGet.Protocol.VersionListFetchKind.Unknown = 0 -> NuGet.Protocol.VersionListFetchKind
