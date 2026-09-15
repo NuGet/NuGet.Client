@@ -77,7 +77,14 @@ namespace NuGet.CommandLine.XPlat
                 return (GenericFailureExitCode, listPackageReportModel);
             }
 
-            if (sponsorReportProcessor == null)
+            if (sponsorReportProcessor != null)
+            {
+                if (!await sponsorReportProcessor.PrepareSourcesAsync(listPackageReportModel))
+                {
+                    return (GenericSuccessExitCode, listPackageReportModel);
+                }
+            }
+            else
             {
                 PopulateSourceRepositoryCache(listPackageArgs);
             }

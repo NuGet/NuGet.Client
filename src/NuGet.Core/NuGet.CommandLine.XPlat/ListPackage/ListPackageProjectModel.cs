@@ -22,7 +22,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         internal bool AutoReferenceFound { get; set; }
         internal bool? HasPackages { get; set; }
         internal IReadOnlyList<PackageSource> SponsorshipQueriedSources { get; set; } = Array.Empty<PackageSource>();
-        internal IReadOnlyList<PackageSource> SponsorshipUnsupportedSources { get; set; } = Array.Empty<PackageSource>();
 
         public ListPackageProjectModel(string projectPath, string projectName)
         {

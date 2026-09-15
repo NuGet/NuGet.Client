@@ -70,7 +70,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 WriteSources(_consoleOut, listPackageReportModel.ListPackageArgs);
             }
 
-            WriteProjects(_consoleOut, _consoleError, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
+            WriteProjects(_consoleOut, _consoleError, listPackageReportModel);
 
             // Print a legend message for auto-reference markers used
             if (listPackageReportModel.Projects.Any(p => p.AutoReferenceFound))
@@ -82,7 +82,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private static void WriteSources(TextWriter consoleOut, ListPackageArgs listPackageArgs)
         {
             // Print sources, but not for generic list (which is offline)
-            if (listPackageArgs.ReportType != ReportType.Default)
+            if (listPackageArgs.ReportType != ReportType.Default &&
+                listPackageArgs.ReportType != ReportType.Sponsor)
             {
                 consoleOut.WriteLine();
                 consoleOut.WriteLine(Strings.ListPkg_SourcesUsedDescription);
@@ -91,8 +92,14 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
         }
 
-        private void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
+        private void WriteProjects(
+            TextWriter consoleOut,
+            TextWriter consoleError,
+            ListPackageReportModel reportModel)
         {
+            List<ListPackageProjectModel> projects = reportModel.Projects;
+            ListPackageArgs listPackageArgs = reportModel.ListPackageArgs;
+
             foreach (ListPackageProjectModel project in projects)
             {
                 PrintProblems(consoleOut, consoleError, project.ProjectProblems, listPackageArgs);
@@ -207,15 +214,17 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
             if (listPackageArgs.ReportType == ReportType.Sponsor)
             {
-                PrintSponsorshipSourceDiagnostics(consoleOut, projects, listPackageArgs);
+                PrintSponsorshipSourceDiagnostics(consoleOut, reportModel);
             }
         }
 
-        private void PrintSponsorshipSourceDiagnostics(TextWriter consoleOut, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
+        private void PrintSponsorshipSourceDiagnostics(
+            TextWriter consoleOut,
+            ListPackageReportModel reportModel)
         {
             (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
                 IReadOnlyList<PackageSource> unsupportedSources,
-                bool hasSponsorships) = SponsorReportAggregator.GetSourceDiagnostics(projects, listPackageArgs.PackageSources);
+                bool hasSponsorships) = SponsorReportAggregator.GetSourceDiagnostics(reportModel);
 
             if (sourcesWithoutSponsorshipDetails.Count > 0)
             {

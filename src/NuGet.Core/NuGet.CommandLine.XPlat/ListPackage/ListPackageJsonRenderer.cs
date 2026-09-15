@@ -89,8 +89,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
             (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
                 IReadOnlyList<PackageSource> unsupportedSources,
-                _) = SponsorReportAggregator.GetSourceDiagnostics(
-                    listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs.PackageSources);
+                _) = SponsorReportAggregator.GetSourceDiagnostics(listPackageReportModel);
 
             AddSourceProblems(sourcesWithoutSponsorshipDetails, Strings.ListPkg_SponsorProblemNoDetails);
             AddSourceProblems(unsupportedSources, Strings.ListPkg_SponsorProblemUnsupportedSource);

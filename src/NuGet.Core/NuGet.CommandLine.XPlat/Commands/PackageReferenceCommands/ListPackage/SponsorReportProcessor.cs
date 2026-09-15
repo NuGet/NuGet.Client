@@ -21,6 +21,8 @@ namespace NuGet.CommandLine.XPlat
         private readonly Dictionary<string, PackageSponsorshipResult> _sponsorshipCache =
             new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache = new();
+        private readonly Dictionary<PackageSource, PackageMetadataResource> _packageMetadataResourceCache = new();
+        private bool _sourcesPrepared;
 
         internal SponsorReportProcessor(ListPackageArgs listPackageArgs)
         {
@@ -62,6 +64,34 @@ namespace NuGet.CommandLine.XPlat
             return true;
         }
 
+        internal async Task<bool> PrepareSourcesAsync(ListPackageReportModel reportModel)
+        {
+            var unsupportedSources = new HashSet<PackageSource>();
+
+            foreach (PackageSource source in _listPackageArgs.PackageSources)
+            {
+                PackageMetadataResource? resource =
+                    await _sourceRepositoryCache[source].GetResourceAsync<PackageMetadataResource>(
+                        _listPackageArgs.CancellationToken);
+
+                if (resource?.SupportsPackageIdMetadata == true)
+                {
+                    _packageMetadataResourceCache[source] = resource;
+                }
+                else
+                {
+                    unsupportedSources.Add(source);
+                }
+            }
+
+            reportModel.SponsorshipUnsupportedSources = _listPackageArgs.PackageSources
+                .Where(unsupportedSources.Contains)
+                .ToList();
+            _sourcesPrepared = true;
+
+            return _packageMetadataResourceCache.Count > 0;
+        }
+
         internal async Task<bool> ProcessProjectAsync(
             List<FrameworkPackages> frameworks,
             ListPackageProjectModel projectModel)
@@ -97,13 +127,19 @@ namespace NuGet.CommandLine.XPlat
 
             if (!sourceMapping.IsEnabled)
             {
-                return _listPackageArgs.PackageSources;
+                return _sourcesPrepared
+                    ? _listPackageArgs.PackageSources
+                        .Where(_packageMetadataResourceCache.ContainsKey)
+                        .ToList()
+                    : _listPackageArgs.PackageSources;
             }
 
             IReadOnlyList<string> mappedSourceNames = sourceMapping.GetConfiguredPackageSources(package);
 
             return _listPackageArgs.PackageSources
-                .Where(source => mappedSourceNames.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+                .Where(source =>
+                    (!_sourcesPrepared || _packageMetadataResourceCache.ContainsKey(source)) &&
+                    mappedSourceNames.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
                 .ToList();
         }
 
@@ -134,7 +170,6 @@ namespace NuGet.CommandLine.XPlat
                 capacity: packageIds.Count,
                 comparer: StringComparer.OrdinalIgnoreCase);
             var queriedSourceSet = new HashSet<PackageSource>();
-            var unsupportedSourceSet = new HashSet<PackageSource>();
 
             await ListPackageCommandRunner.ThrottledForEachAsync(
                 packageIds,
@@ -153,16 +188,12 @@ namespace NuGet.CommandLine.XPlat
                     _sponsorshipCache[result.PackageId] = result;
                     sponsorshipsById[result.PackageId] = result.Sponsorships;
                     queriedSourceSet.UnionWith(result.QueriedSources);
-                    unsupportedSourceSet.UnionWith(result.UnsupportedSources);
                 },
                 ListPackageCommandRunner.GetMaxParallel(_listPackageArgs),
                 _listPackageArgs.CancellationToken);
 
             projectModel.SponsorshipQueriedSources = _listPackageArgs.PackageSources
                 .Where(queriedSourceSet.Contains)
-                .ToList();
-            projectModel.SponsorshipUnsupportedSources = _listPackageArgs.PackageSources
-                .Where(unsupportedSourceSet.Contains)
                 .ToList();
 
             return sponsorshipsById;
@@ -175,7 +206,6 @@ namespace NuGet.CommandLine.XPlat
         {
             var sponsorships = new List<PackageSponsorship>();
             var queriedSources = new List<PackageSource>();
-            var unsupportedSources = new List<PackageSource>();
 
             await ListPackageCommandRunner.ThrottledForEachAsync(
                 sources,
@@ -183,18 +213,11 @@ namespace NuGet.CommandLine.XPlat
                     GetSponsorshipFromSourceAsync(source, package, innerCancellationToken),
                 result =>
                 {
-                    if (!result.SupportsSponsorship)
-                    {
-                        unsupportedSources.Add(result.Source);
-                    }
-                    else
-                    {
-                        queriedSources.Add(result.Source);
+                    queriedSources.Add(result.Source);
 
-                        if (result.Sponsorship != null)
-                        {
-                            sponsorships.Add(result.Sponsorship);
-                        }
+                    if (result.Sponsorship != null)
+                    {
+                        sponsorships.Add(result.Sponsorship);
                     }
                 },
                 sources.Count,
@@ -203,26 +226,17 @@ namespace NuGet.CommandLine.XPlat
             return new PackageSponsorshipResult(
                 package,
                 OrderSponsorshipsByConfiguredSource(sponsorships),
-                queriedSources,
-                unsupportedSources);
+                queriedSources);
         }
 
         private async Task<(
             PackageSource Source,
-            PackageSponsorship? Sponsorship,
-            bool SupportsSponsorship)> GetSponsorshipFromSourceAsync(
+            PackageSponsorship? Sponsorship)> GetSponsorshipFromSourceAsync(
                 PackageSource packageSource,
                 string package,
                 CancellationToken cancellationToken)
         {
-            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
-            PackageMetadataResource? packageMetadataResource =
-                await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
-
-            if (packageMetadataResource?.SupportsPackageIdMetadata != true)
-            {
-                return (packageSource, null, SupportsSponsorship: false);
-            }
+            PackageMetadataResource packageMetadataResource = _packageMetadataResourceCache[packageSource];
 
             using var sourceCacheContext = new SourceCacheContext();
             PackageIdMetadata? metadata = await packageMetadataResource.GetPackageIdMetadataAsync(
@@ -235,7 +249,7 @@ namespace NuGet.CommandLine.XPlat
                 ? null
                 : new PackageSponsorship(packageSource.Source, metadata.SponsorshipUrls);
 
-            return (packageSource, sponsorship, SupportsSponsorship: true);
+            return (packageSource, sponsorship);
         }
 
         private void PopulateSourceRepositoryCache()
@@ -266,19 +280,16 @@ namespace NuGet.CommandLine.XPlat
             internal PackageSponsorshipResult(
                 string packageId,
                 List<PackageSponsorship> sponsorships,
-                IReadOnlyList<PackageSource> queriedSources,
-                IReadOnlyList<PackageSource> unsupportedSources)
+                IReadOnlyList<PackageSource> queriedSources)
             {
                 PackageId = packageId;
                 Sponsorships = sponsorships;
                 QueriedSources = queriedSources;
-                UnsupportedSources = unsupportedSources;
             }
 
             internal string PackageId { get; }
             internal List<PackageSponsorship> Sponsorships { get; }
             internal IReadOnlyList<PackageSource> QueriedSources { get; }
-            internal IReadOnlyList<PackageSource> UnsupportedSources { get; }
         }
     }
 }

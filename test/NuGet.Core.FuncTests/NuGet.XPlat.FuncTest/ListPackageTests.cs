@@ -762,7 +762,6 @@ namespace NuGet.XPlat.FuncTest
                 useExplicitSource ? [source] : packageSources;
             Assert.Equal(expectedSelectedSources, args.PackageSources);
             PackageSource[] expectedQueriedSources = hasPackages && sourceSupportsSponsorship ? [source] : [];
-            PackageSource[] expectedUnsupportedSources = hasPackages && !sourceSupportsSponsorship ? [source] : [];
             int expectedRegistrationRequestCount = hasPackages && sourceSupportsSponsorship ? 1 : 0;
             AssertReport(report);
             if (expectedRegistrationRequestCount > 0)
@@ -798,11 +797,20 @@ namespace NuGet.XPlat.FuncTest
             }
             if (!sourceReturnsSponsorshipUrls)
             {
-                string expectedSubstring = hasPackages
-                    ? "Project 'ProjectA' has no sponsorable packages."
-                    : "Project 'ProjectA' has no package references.";
                 string actualString = consoleOut.ToString();
-                Assert.Contains(expectedSubstring, actualString);
+                if (sourceSupportsSponsorship)
+                {
+                    string expectedSubstring = hasPackages
+                        ? "Project 'ProjectA' has no sponsorable packages."
+                        : "Project 'ProjectA' has no package references.";
+                    Assert.Contains(expectedSubstring, actualString);
+                }
+                else
+                {
+                    Assert.DoesNotContain("Project 'ProjectA'", actualString);
+                    Assert.Contains(CommandLine.XPlat.Strings.ListPkg_SponsorUnsupportedSourcesHeader, actualString);
+                    Assert.Contains(source.Source, actualString);
+                }
             }
             if (!hasPackages)
             {
@@ -812,7 +820,15 @@ namespace NuGet.XPlat.FuncTest
 
             void AssertReport(ListPackageReportModel actualReport)
             {
+                if (!sourceSupportsSponsorship)
+                {
+                    Assert.Empty(actualReport.Projects);
+                    Assert.Equal(new[] { source }, actualReport.SponsorshipUnsupportedSources);
+                    return;
+                }
+
                 Assert.Equal(projectCount, actualReport.Projects.Count);
+                Assert.Empty(actualReport.SponsorshipUnsupportedSources);
                 IEnumerable<string> expected = solution.Projects.Select(project => project.ProjectPath);
                 IEnumerable<string> actual = actualReport.Projects.Select(project => project.ProjectPath);
                 Assert.Equal(expected, actual);
@@ -821,7 +837,6 @@ namespace NuGet.XPlat.FuncTest
                     Assert.Equal(hasPackages, projectReport.HasPackages);
                     Assert.Empty(projectReport.ProjectProblems);
                     Assert.Equal(expectedQueriedSources, projectReport.SponsorshipQueriedSources);
-                    Assert.Equal(expectedUnsupportedSources, projectReport.SponsorshipUnsupportedSources);
                     List<ListReportPackage> packages = projectReport.TargetFrameworkPackages
                         .SelectMany(framework => (framework.TopLevelPackages ?? []).Concat(framework.TransitivePackages ?? []))
                         .ToList();
@@ -873,6 +888,7 @@ namespace NuGet.XPlat.FuncTest
                 highestPatch: false, highestMinor: false, auditSources: null,
                 NullLogger.Instance, NoPackageSourceMapping, Array.Empty<PackageSource>(), CancellationToken.None);
             var report = new ListPackageReportModel(listPackageArgs);
+            report.SponsorshipUnsupportedSources = [unsupported];
             PackageSponsorship[] sponsorships =
             [
                 new(source1.Source, ["https://sponsor/a"]),
@@ -893,7 +909,6 @@ namespace NuGet.XPlat.FuncTest
                 ],
                 SponsorshipQueriedSources = hasSponsoredPackage
                     ? [empty2, source2, source1, empty1] : [empty2, empty1],
-                SponsorshipUnsupportedSources = [unsupported],
             };
             report.Projects.Add(projectA);
             var projectB = new ListPackageProjectModel("b.csproj", "B")

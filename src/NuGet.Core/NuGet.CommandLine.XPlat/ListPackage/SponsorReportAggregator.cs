@@ -94,9 +94,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             IReadOnlyList<PackageSource> WithoutDetails,
             IReadOnlyList<PackageSource> Unsupported,
             bool HasSponsorships) GetSourceDiagnostics(
-                IReadOnlyList<ListPackageProjectModel> projects,
-                IReadOnlyList<PackageSource> configuredSources)
+                ListPackageReportModel reportModel)
         {
+            IReadOnlyList<ListPackageProjectModel> projects = reportModel.Projects;
+            IReadOnlyList<PackageSource> configuredSources = reportModel.ListPackageArgs.PackageSources;
             IEnumerable<string> collection = CollapseProjects(projects)
                 .SelectMany(package => package.Sponsorships)
                 .Select(sponsorship => sponsorship.Source);
@@ -107,8 +108,9 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 .Where(source => !sourcesWithSponsorshipDetails.Contains(source.Source))
                 .ToList();
 
-            sources = projects.SelectMany(project => project.SponsorshipUnsupportedSources);
-            IReadOnlyList<PackageSource> unsupported = OrderSourcesByConfiguration(sources, configuredSources);
+            IReadOnlyList<PackageSource> unsupported = OrderSourcesByConfiguration(
+                reportModel.SponsorshipUnsupportedSources,
+                configuredSources);
 
             return (withoutDetails, unsupported, sourcesWithSponsorshipDetails.Count > 0);
         }
