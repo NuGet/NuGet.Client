@@ -112,7 +112,11 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            Uri requestUri = new(_endpoint.AbsoluteUri.TrimEnd('/') + "/" + route);
+            var requestUriBuilder = new UriBuilder(_endpoint)
+            {
+                Path = _endpoint.AbsolutePath.TrimEnd('/') + "/" + route,
+            };
+            Uri requestUri = requestUriBuilder.Uri;
             if (requestUri.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
             {
                 throw new FatalProtocolException(string.Format(

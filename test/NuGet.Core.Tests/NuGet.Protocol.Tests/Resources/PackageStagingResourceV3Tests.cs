@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Tests.Resources
     public class PackageStagingResourceV3Tests
     {
         [Fact]
-        public async Task PushPackageAsync_WhenCalled_ShouldSendExpectedMultipartRequest()
+        public async Task PushPackageAsync_WhenEndpointHasQuery_ShouldPreserveQueryAndSendExpectedMultipartRequest()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -34,7 +34,7 @@ namespace NuGet.Protocol.Tests.Resources
             string? groupContent = null;
             var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
             {
-                ["https://unit.test/staging/package"] = async request =>
+                ["https://unit.test/staging/package?token=abc"] = async request =>
                 {
                     capturedRequest = request;
                     MultipartFormDataContent? multipart = request.Content as MultipartFormDataContent;
@@ -49,7 +49,7 @@ namespace NuGet.Protocol.Tests.Resources
             };
             using var httpSource = new TestHttpSource(new PackageSource("https://unit.test/staging/"), responses);
             var resource = new PackageStagingResourceV3(
-                endpoint: new Uri("https://unit.test/staging/"),
+                endpoint: new Uri("https://unit.test/staging/?token=abc"),
                 httpSource: httpSource);
 
             // Act
@@ -65,6 +65,7 @@ namespace NuGet.Protocol.Tests.Resources
             // Assert
             capturedRequest.Should().NotBeNull();
             capturedRequest!.Method.Should().Be(HttpMethod.Put);
+            capturedRequest.RequestUri!.AbsoluteUri.Should().Be("https://unit.test/staging/package?token=abc");
             capturedRequest.Headers.GetValues(ProtocolConstants.ApiKeyHeader).Should().ContainSingle("secret");
             isMultipartRequest.Should().BeTrue();
             packageContent.Should().Be("package");

@@ -29,6 +29,11 @@ namespace NuGet.Protocol
             SourceRepository source,
             CancellationToken token)
         {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             ServiceIndexResourceV3? serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             Uri? endpoint = serviceIndex?.GetServiceEntryUri(ServiceTypes.PackageStaging);
 
