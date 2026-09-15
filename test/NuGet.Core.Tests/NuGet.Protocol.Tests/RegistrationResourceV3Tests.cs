@@ -39,6 +39,17 @@ namespace NuGet.Protocol.Tests
             return new RegistrationResourceV3(httpSource, baseUrl, supportsPackageIdMetadata: true, envReader.Object);
         }
 
+        [Fact]
+        public void PackageIdMetadata_SponsorshipUrls_HasSafeDefaultAndReusesValidInput()
+        {
+            var defaultMetadata = new PackageIdMetadata();
+            IReadOnlyList<string> sponsorshipUrls = new[] { "https://one", "https://two" };
+            var initializedMetadata = new PackageIdMetadata { SponsorshipUrls = sponsorshipUrls };
+
+            Assert.Empty(defaultMetadata.SponsorshipUrls);
+            Assert.Same(sponsorshipUrls, initializedMetadata.SponsorshipUrls);
+        }
+
         [Theory]
         [InlineData("true", MetadataJson, new[] { "https://b", "https://a", "https://b" })]
         [InlineData("false", MetadataJson, new[] { "https://b", "https://a", "https://b" })]

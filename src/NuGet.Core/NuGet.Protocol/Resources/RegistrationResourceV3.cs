@@ -294,7 +294,7 @@ namespace NuGet.Protocol
             }
 
             IReadOnlyList<string>? sponsorshipUrls = index.Metadata?.SponsorshipUrls;
-            return new PackageIdMetadata(sponsorshipUrls);
+            return new PackageIdMetadata { SponsorshipUrls = sponsorshipUrls ?? Array.Empty<string>() };
         }
 
         private async Task<RegistrationIndexWithMetadata?> DeserializeRegistrationIndexAsync(Stream? stream, CancellationToken token)
@@ -306,13 +306,31 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch
-                || NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
             {
-                return await System.Text.Json.JsonSerializer.DeserializeAsync(
-                    stream, PackageSearchJsonContext.Default.RegistrationIndexWithMetadata, token);
+                return await DeserializeRegistrationIndexWithStjAsync(stream, token);
             }
 
+            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            {
+                return await DeserializeRegistrationIndexWithStjAsync(stream, token);
+            }
+
+            return DeserializeRegistrationIndexWithNsj(stream);
+        }
+
+        private static async Task<RegistrationIndexWithMetadata?> DeserializeRegistrationIndexWithStjAsync(
+            Stream stream,
+            CancellationToken token)
+        {
+            return await System.Text.Json.JsonSerializer.DeserializeAsync(
+                stream,
+                PackageSearchJsonContext.Default.RegistrationIndexWithMetadata,
+                token);
+        }
+
+        private static RegistrationIndexWithMetadata? DeserializeRegistrationIndexWithNsj(Stream stream)
+        {
             using var streamReader = new StreamReader(stream);
             using var jsonReader = new Newtonsoft.Json.JsonTextReader(streamReader);
             return JsonExtensions.JsonObjectSerializer.Deserialize<RegistrationIndexWithMetadata>(jsonReader);

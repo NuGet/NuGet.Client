@@ -37,6 +37,50 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData("true")]
         [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetPackageIdMetadataAsync_DelegatesToRegistrationResource(string useStj)
+        {
+            // Arrange
+            string serviceIndex = JsonData.IndexWithoutFlatContainer.Replace(
+                @"""RegistrationsBaseUrl""",
+                @"""RegistrationsBaseUrl/7.12.0""");
+            const string registrationIndex = """
+                {
+                  "metadata": {
+                    "sponsorshipUrls": [ "https://sponsor.test/one", null, " ", "https://sponsor.test/two" ]
+                  }
+                }
+                """;
+            var responses = new Dictionary<string, string>
+            {
+                ["http://testsource.com/v3/index.json"] = serviceIndex,
+                ["https://api.nuget.org/v3/registration0/deepequal/index.json"] = registrationIndex,
+            };
+            SourceRepository repo = StaticHttpHandler.CreateSource(
+                "http://testsource.com/v3/index.json",
+                CreateProvidersWithEnvReader(useStj),
+                responses);
+            PackageMetadataResource resource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected PackageMetadataResource.");
+            using var sourceCacheContext = new SourceCacheContext { NoCache = true };
+
+            // Act
+            PackageIdMetadata? result = await resource.GetPackageIdMetadataAsync(
+                "deepequal",
+                sourceCacheContext,
+                NullLogger.Instance,
+                CancellationToken.None);
+
+            // Assert
+            Assert.True(resource.SupportsPackageIdMetadata);
+            Assert.NotNull(result);
+            Assert.Equal(
+                new[] { "https://sponsor.test/one", "https://sponsor.test/two" },
+                result.SponsorshipUrls);
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
         public async Task PackageMetadataResourceV3_GetMetadataAsync(string useStj)
         {
             // Arrange

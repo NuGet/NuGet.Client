@@ -20,6 +20,26 @@ namespace NuGet.Protocol.Tests
     public class PackageMetadataResourceV2FeedTests
     {
         [Fact]
+        public async Task PackageIdMetadata_IsNotSupported()
+        {
+            string serviceAddress = ProtocolUtility.CreateServiceAddress();
+            var responses = new Dictionary<string, string> { [serviceAddress] = string.Empty };
+            SourceRepository repo = StaticHttpHandler.CreateSource(
+                serviceAddress,
+                Repository.Provider.GetCoreV3(),
+                responses);
+            PackageMetadataResource resource =
+                await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
+
+            Assert.False(resource.SupportsPackageIdMetadata);
+            await Assert.ThrowsAsync<NotSupportedException>(() => resource.GetPackageIdMetadataAsync(
+                "package",
+                NullSourceCacheContext.Instance,
+                NullLogger.Instance,
+                CancellationToken.None));
+        }
+
+        [Fact]
         public async Task PackageMetadataResource_Basic()
         {
             // Arrange

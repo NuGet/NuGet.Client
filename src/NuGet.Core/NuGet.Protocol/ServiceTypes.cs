@@ -24,7 +24,9 @@ namespace NuGet.Protocol
 
         public static readonly string[] SearchQueryService = { "SearchQueryService" + Versioned, "SearchQueryService" + Version340, "SearchQueryService" + Version300beta };
         internal static readonly string[] SearchQueryService350 = { "SearchQueryService" + Version350 };
-        public static readonly string[] RegistrationsBaseUrl = { "RegistrationsBaseUrl" + Versioned, "RegistrationsBaseUrl" + Version360, "RegistrationsBaseUrl" + Version340, "RegistrationsBaseUrl" + Version300rc, "RegistrationsBaseUrl" + Version300beta, "RegistrationsBaseUrl" };
+        // The generic list selects the newest registration endpoint the client understands.
+        // The exact 7.12.0 list is also used to detect package ID metadata capability.
+        public static readonly string[] RegistrationsBaseUrl = { "RegistrationsBaseUrl" + Version7120, "RegistrationsBaseUrl" + Versioned, "RegistrationsBaseUrl" + Version360, "RegistrationsBaseUrl" + Version340, "RegistrationsBaseUrl" + Version300rc, "RegistrationsBaseUrl" + Version300beta, "RegistrationsBaseUrl" };
         internal static readonly string[] RegistrationsBaseUrl7120 = { "RegistrationsBaseUrl" + Version7120 };
         public static readonly string[] SearchAutocompleteService = { "SearchAutocompleteService" + Versioned, "SearchAutocompleteService" + Version300beta };
         public static readonly string[] ReportAbuse = { "ReportAbuseUriTemplate" + Versioned, "ReportAbuseUriTemplate" + Version300 };

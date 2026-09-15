@@ -49,7 +49,7 @@ namespace NuGet.Protocol.Tests.Resources
 
         [Theory]
         [InlineData(new string[0], false, false)]
-        [InlineData(new[] { "7.12.0" }, false, false)]
+        [InlineData(new[] { "7.12.0" }, true, true)]
         [InlineData(new[] { "3.6.0" }, false, true)]
         [InlineData(new[] { "3.6.0", "7.12.0" }, true, true)]
         public async Task TryCreate_ReportsPackageIdMetadataCapability(

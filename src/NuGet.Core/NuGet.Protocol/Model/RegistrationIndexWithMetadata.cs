@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 
 namespace NuGet.Protocol.Model
 {
-    // Version-scoped registration readers must ignore unrelated package-ID metadata.
     internal class RegistrationIndexWithMetadata : RegistrationIndex
     {
         [JsonProperty("metadata")]

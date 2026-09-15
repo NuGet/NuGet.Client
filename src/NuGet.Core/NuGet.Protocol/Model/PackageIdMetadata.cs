@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Protocol
 {
@@ -13,18 +12,51 @@ namespace NuGet.Protocol
     /// </summary>
     public class PackageIdMetadata
     {
+        private IReadOnlyList<string> _sponsorshipUrls = Array.Empty<string>();
+
         /// <summary>
         /// Sponsorship URLs the source advertises for this package, in the order returned.
         /// Empty when the source declares none.
         /// </summary>
-        public IReadOnlyList<string> SponsorshipUrls { get; }
-
-        public PackageIdMetadata(IReadOnlyList<string>? sponsorshipUrls)
+        public IReadOnlyList<string> SponsorshipUrls
         {
-            SponsorshipUrls = sponsorshipUrls?
-                .Where(url => !string.IsNullOrWhiteSpace(url))
-                .ToArray()
-                ?? Array.Empty<string>();
+            get => _sponsorshipUrls;
+            init => _sponsorshipUrls = FilterSponsorshipUrls(value);
+        }
+
+        private static IReadOnlyList<string> FilterSponsorshipUrls(IReadOnlyList<string>? sponsorshipUrls)
+        {
+            if (sponsorshipUrls == null || sponsorshipUrls.Count == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            List<string>? filteredUrls = null;
+            for (int i = 0; i < sponsorshipUrls.Count; i++)
+            {
+                string? sponsorshipUrl = sponsorshipUrls[i];
+                if (string.IsNullOrWhiteSpace(sponsorshipUrl))
+                {
+                    if (filteredUrls == null)
+                    {
+                        filteredUrls = new List<string>(sponsorshipUrls.Count - 1);
+                        for (int j = 0; j < i; j++)
+                        {
+                            filteredUrls.Add(sponsorshipUrls[j]);
+                        }
+                    }
+                }
+                else
+                {
+                    filteredUrls?.Add(sponsorshipUrl);
+                }
+            }
+
+            return filteredUrls == null
+                ? sponsorshipUrls
+                : filteredUrls.Count == 0
+                    ? Array.Empty<string>()
+                    : filteredUrls;
         }
     }
 }

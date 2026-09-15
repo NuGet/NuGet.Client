@@ -61,6 +61,17 @@ namespace NuGet.Protocol
             _environmentVariableReader = environmentVariableReader;
         }
 
+        public override bool SupportsPackageIdMetadata => _regResource.SupportsPackageIdMetadata;
+
+        public override Task<PackageIdMetadata?> GetPackageIdMetadataAsync(
+            string packageId,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            return _regResource.GetPackageIdMetadataAsync(packageId, sourceCacheContext, log, token);
+        }
+
         /// <param name="packageId">PackageId for package we're looking.</param>
         /// <param name="includePrerelease">Whether to include PreRelease versions into result.</param>
         /// <param name="includeUnlisted">Whether to include Unlisted versions into result.</param>

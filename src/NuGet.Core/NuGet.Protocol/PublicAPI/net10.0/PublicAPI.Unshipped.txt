@@ -1,6 +1,11 @@
 #nullable enable
 NuGet.Protocol.PackageIdMetadata
-NuGet.Protocol.PackageIdMetadata.PackageIdMetadata(System.Collections.Generic.IReadOnlyList<string!>? sponsorshipUrls) -> void
+NuGet.Protocol.PackageIdMetadata.PackageIdMetadata() -> void
 NuGet.Protocol.PackageIdMetadata.SponsorshipUrls.get -> System.Collections.Generic.IReadOnlyList<string!>!
+NuGet.Protocol.PackageIdMetadata.SponsorshipUrls.init -> void
+override NuGet.Protocol.PackageMetadataResourceV3.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! sourceCacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
+override NuGet.Protocol.PackageMetadataResourceV3.SupportsPackageIdMetadata.get -> bool
+virtual NuGet.Protocol.Core.Types.PackageMetadataResource.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! sourceCacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
+virtual NuGet.Protocol.Core.Types.PackageMetadataResource.SupportsPackageIdMetadata.get -> bool
 virtual NuGet.Protocol.RegistrationResourceV3.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
 virtual NuGet.Protocol.RegistrationResourceV3.SupportsPackageIdMetadata.get -> bool
