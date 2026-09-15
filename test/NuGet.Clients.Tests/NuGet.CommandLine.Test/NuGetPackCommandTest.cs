@@ -126,6 +126,11 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 Util.CreateFile(
                     workingDirectory,
+                    "content.txt",
+                    "content");
+
+                Util.CreateFile(
+                    workingDirectory,
                     "packageA.nuspec",
 @"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <metadata>
@@ -136,6 +141,9 @@ namespace NuGet.CommandLine.Test
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
   </metadata>
+  <files>
+    <file src=""content.txt"" target=""content"" />
+  </files>
 </package>");
 
                 // Act

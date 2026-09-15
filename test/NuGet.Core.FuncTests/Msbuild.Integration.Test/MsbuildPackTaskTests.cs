@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using NuGet.Frameworks;
@@ -35,11 +36,21 @@ namespace Msbuild.Integration.Test
                     pathContext.SolutionRoot,
                     NuGetFramework.Parse("net472"));
                 project.Properties.Add("PackageId", "Contöso.Utilities");
-                project.Properties.Add("PackageVersion", "1.0.0");
+                project.Properties.Add("Authors", "test");
                 project.Properties.Add("IncludeBuildOutput", "false");
 
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot, project);
                 solution.Create();
+
+                File.WriteAllText(
+                    Path.Combine(Path.GetDirectoryName(project.ProjectPath), "content.txt"),
+                    "content");
+                ProjectFileUtils.AddItem(
+                    project.ProjectPath,
+                    "None",
+                    "content.txt",
+                    string.Empty,
+                    new Dictionary<string, string> { { "Pack", "true" } });
 
                 File.WriteAllText(
                     Path.Combine(pathContext.SolutionRoot, "Directory.Build.targets"),
@@ -56,7 +67,7 @@ namespace Msbuild.Integration.Test
 
                 var packResult = _msbuildFixture.RunMsBuild(
                     pathContext.WorkingDirectory,
-                    $@"/t:pack ""{project.ProjectPath}"" /p:NoBuild=true /p:PackageOutputPath=""{pathContext.WorkingDirectory}""",
+                    $@"/t:pack ""{project.ProjectPath}"" /p:NoBuild=true /p:NoPackageAnalysis=true /p:PackageOutputPath=""{pathContext.WorkingDirectory}""",
                     ignoreExitCode: true,
                     testOutputHelper: _testOutputHelper);
 
