@@ -1358,6 +1358,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Checking package sources and projects for sponsorship information....
+        /// </summary>
+        internal static string ListPkg_SponsorCheckingSourcesAndProjects {
+            get {
+                return ResourceManager.GetString("ListPkg_SponsorCheckingSourcesAndProjects", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Lists packages that have sponsorship information. Transitive packages included by default.
         /// </summary>
         internal static string ListPkg_SponsorDescription {

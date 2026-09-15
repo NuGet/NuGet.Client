@@ -743,6 +743,11 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <target state="translated">已使用以下來源:</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_SponsorCheckingSourcesAndProjects">
+        <source>Checking package sources and projects for sponsorship information...</source>
+        <target state="new">Checking package sources and projects for sponsorship information...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_SponsorDescription">
         <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
         <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>

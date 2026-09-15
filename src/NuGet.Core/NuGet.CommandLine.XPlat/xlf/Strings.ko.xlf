@@ -743,6 +743,11 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
         <target state="translated">다음 소스가 사용되었습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_SponsorCheckingSourcesAndProjects">
+        <source>Checking package sources and projects for sponsorship information...</source>
+        <target state="new">Checking package sources and projects for sponsorship information...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_SponsorDescription">
         <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
         <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>

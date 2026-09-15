@@ -743,6 +743,11 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
         <target state="translated">使用了以下源:</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_SponsorCheckingSourcesAndProjects">
+        <source>Checking package sources and projects for sponsorship information...</source>
+        <target state="new">Checking package sources and projects for sponsorship information...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_SponsorDescription">
         <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
         <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>

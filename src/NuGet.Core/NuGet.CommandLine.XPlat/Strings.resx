@@ -1192,6 +1192,9 @@ Do not translate "PackageVersion"</comment>
   <data name="ListPkg_SponsorDescription" xml:space="preserve">
     <value>Lists packages that have sponsorship information. Transitive packages included by default</value>
   </data>
+  <data name="ListPkg_SponsorCheckingSourcesAndProjects" xml:space="preserve">
+    <value>Checking package sources and projects for sponsorship information...</value>
+  </data>
   <data name="ListPkg_SponsorHeader" xml:space="preserve">
     <value>Sponsor</value>
   </data>

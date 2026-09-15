@@ -743,6 +743,11 @@ NuGet nécessite des sources HTTPS. Pour utiliser des sources HTTP, vous devez d
         <target state="translated">Les sources suivantes ont été utilisées :</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListPkg_SponsorCheckingSourcesAndProjects">
+        <source>Checking package sources and projects for sponsorship information...</source>
+        <target state="new">Checking package sources and projects for sponsorship information...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListPkg_SponsorDescription">
         <source>Lists packages that have sponsorship information. Transitive packages included by default</source>
         <target state="new">Lists packages that have sponsorship information. Transitive packages included by default</target>

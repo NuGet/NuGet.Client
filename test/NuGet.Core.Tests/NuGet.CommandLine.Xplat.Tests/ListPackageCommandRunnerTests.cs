@@ -580,6 +580,30 @@ namespace NuGet.CommandLine.Xplat.Tests
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SponsorConfiguration_LogsMinimalProgressOnlyForConsole(bool consoleOutput)
+        {
+            IReportRenderer renderer = consoleOutput
+                ? new ListPackageConsoleRenderer()
+                : new ListPackageJsonRenderer(TextWriter.Null);
+            var logger = new Mock<ILogger>();
+            ListPackageArgs args = ListPackageTestHelper.CreateSponsorArgs(
+                "",
+                [new PackageSource("https://source.test/v3/index.json")],
+                renderer,
+                logger.Object);
+            var processor = new SponsorReportProcessor(args);
+
+            bool result = processor.Configure();
+
+            Assert.True(result);
+            logger.Verify(
+                value => value.LogMinimal(Strings.ListPkg_SponsorCheckingSourcesAndProjects),
+                consoleOutput ? Times.Once() : Times.Never());
+        }
+
+        [Theory]
         [InlineData(true, false, false)]
         [InlineData(false, true, false)]
         [InlineData(false, false, true)]

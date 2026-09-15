@@ -47,9 +47,14 @@ namespace NuGet.CommandLine.XPlat
                 _listPackageArgs.UseExplicitPackageSources();
             }
 
-            if (packageSourceMapping.IsEnabled && _listPackageArgs.Renderer is ListPackageConsoleRenderer)
+            if (_listPackageArgs.Renderer is ListPackageConsoleRenderer)
             {
-                _listPackageArgs.Logger.LogInformation(Strings.ListPkg_SponsorPackageSourceMappingEnabled);
+                _listPackageArgs.Logger.LogMinimal(Strings.ListPkg_SponsorCheckingSourcesAndProjects);
+
+                if (packageSourceMapping.IsEnabled)
+                {
+                    _listPackageArgs.Logger.LogInformation(Strings.ListPkg_SponsorPackageSourceMappingEnabled);
+                }
             }
 
             if (_listPackageArgs.Renderer is ListPackageConsoleRenderer consoleRenderer)
