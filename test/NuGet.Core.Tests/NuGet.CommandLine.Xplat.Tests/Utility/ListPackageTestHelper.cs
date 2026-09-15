@@ -26,7 +26,8 @@ namespace NuGet.CommandLine.Xplat.Tests
             IReportRenderer renderer,
             ILogger logger = null,
             PackageSourceMapping packageSourceMapping = null,
-            IReadOnlyList<PackageSource> auditSources = null)
+            IReadOnlyList<PackageSource> auditSources = null,
+            IReadOnlyList<PackageSource> explicitPackageSources = null)
         {
             var frameworks = new List<string>();
             logger ??= NullLogger.Instance;
@@ -38,7 +39,11 @@ namespace NuGet.CommandLine.Xplat.Tests
             return new ListPackageArgs(
                 projectPath, packageSources, frameworks, ReportType.Sponsor, renderer,
                 includeTransitive: false, prerelease: false, highestPatch: false, highestMinor: false,
-                auditSources, logger, CancellationToken.None, packageSourceMapping);
+                auditSources,
+                logger,
+                packageSourceMapping,
+                explicitPackageSources ?? Array.Empty<PackageSource>(),
+                CancellationToken.None);
         }
 
         internal static ListReportPackage CreateSponsoredPackage(string packageId, params PackageSponsorship[] sponsorships)

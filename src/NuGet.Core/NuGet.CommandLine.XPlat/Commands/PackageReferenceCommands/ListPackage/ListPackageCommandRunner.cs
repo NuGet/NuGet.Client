@@ -55,6 +55,19 @@ namespace NuGet.CommandLine.XPlat
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
+
+            SponsorReportProcessor sponsorReportProcessor = null;
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                sponsorReportProcessor = new SponsorReportProcessor(listPackageArgs);
+                if (!sponsorReportProcessor.Configure())
+                {
+                    return (GenericFailureExitCode, listPackageReportModel);
+                }
+            }
+
+            WarnAboutIncompatibleOptions(listPackageArgs);
+
             if (!File.Exists(listPackageArgs.Path))
             {
                 listPackageArgs.Renderer.AddProblem(problemType: ProblemType.Error,
@@ -64,12 +77,10 @@ namespace NuGet.CommandLine.XPlat
                 return (GenericFailureExitCode, listPackageReportModel);
             }
 
-            PopulateSourceRepositoryCache(listPackageArgs);
-
-            // Sequential projects share the same selected sources and package source mapping for each ID.
-            Dictionary<string, PackageSponsorshipResult> sponsorshipCache = listPackageArgs.ReportType == ReportType.Sponsor
-                ? new Dictionary<string, PackageSponsorshipResult>(StringComparer.OrdinalIgnoreCase)
-                : null;
+            if (sponsorReportProcessor == null)
+            {
+                PopulateSourceRepositoryCache(listPackageArgs);
+            }
 
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
@@ -83,7 +94,11 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (string projectPath in projectsPaths)
             {
-                await GetProjectMetadataAsync(projectPath, listPackageReportModel, listPackageArgs, sponsorshipCache);
+                await GetProjectMetadataAsync(
+                    projectPath,
+                    listPackageReportModel,
+                    listPackageArgs,
+                    sponsorReportProcessor);
             }
 
             // if there is any error then return failure code.
@@ -95,12 +110,21 @@ namespace NuGet.CommandLine.XPlat
             return (exitCode, listPackageReportModel);
         }
 
+        internal static void WarnAboutIncompatibleOptions(ListPackageArgs listPackageArgs)
+        {
+            if (listPackageArgs.ReportType != ReportType.Outdated &&
+                (listPackageArgs.Prerelease || listPackageArgs.HighestMinor || listPackageArgs.HighestPatch))
+            {
+                listPackageArgs.Renderer.AddProblem(ProblemType.Warning, Strings.ListPkg_VulnerableIgnoredOptions);
+            }
+        }
+
         [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
         private async Task GetProjectMetadataAsync(
             string projectPath,
             ListPackageReportModel listPackageReportModel,
             ListPackageArgs listPackageArgs,
-            Dictionary<string, PackageSponsorshipResult> sponsorshipCache)
+            SponsorReportProcessor sponsorReportProcessor)
         {
             //Open project to evaluate properties for the assets
             //file and the name of the project
@@ -148,18 +172,16 @@ namespace NuGet.CommandLine.XPlat
             {
                 bool vulnerabilitiesCheckedFromAuditSources = false;
 
-                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                if (sponsorReportProcessor != null)
                 {
-                    Dictionary<string, List<PackageSource>> sponsorshipSourcesById = null;
-                    if (listPackageArgs.ReportType == ReportType.Sponsor)
+                    if (!await sponsorReportProcessor.ProcessProjectAsync(frameworks, projectModel))
                     {
-                        // Validate only sources eligible for this project's packages, before any requests.
-                        sponsorshipSourcesById = GetPackageIds(frameworks, includeTransitive: true)
-                            .ToDictionary(id => id, id => FilterSourcesByPackageSourceMapping(id, listPackageArgs),
-                                StringComparer.OrdinalIgnoreCase);
+                        return;
                     }
-
-                    if (DetectAndReportInsecureSources(listPackageArgs, projectModel, sponsorshipSourcesById))
+                }
+                else if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                {
+                    if (DetectAndReportInsecureSources(listPackageArgs, projectModel))
                     {
                         return;
                     }
@@ -171,8 +193,9 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        await GetPackageMetadataAsync(frameworks, listPackageArgs, projectModel,
-                            sponsorshipSourcesById, sponsorshipCache);
+                        Dictionary<string, List<IPackageSearchMetadata>> metadata =
+                            await GetPackageMetadataAsync(frameworks, listPackageArgs);
+                        await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
                     }
                 }
 
@@ -197,21 +220,10 @@ namespace NuGet.CommandLine.XPlat
 
         private static bool DetectAndReportInsecureSources(
             ListPackageArgs listPackageArgs,
-            ListPackageProjectModel projectModel,
-            Dictionary<string, List<PackageSource>> sponsorshipSourcesById)
+            ListPackageProjectModel projectModel)
         {
-            List<PackageSource> httpSources;
-            if (listPackageArgs.ReportType == ReportType.Sponsor)
-            {
-                var sponsorshipSources = sponsorshipSourcesById.Values.SelectMany(sources => sources).ToHashSet();
-                List<PackageSource> packageSources = listPackageArgs.PackageSources.Where(sponsorshipSources.Contains).ToList();
-                httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(packageSources);
-            }
-            else
-            {
-                httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
-                httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
-            }
+            List<PackageSource> httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
+            httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
 
             if (httpSources.Count > 0)
             {
@@ -459,27 +471,6 @@ namespace NuGet.CommandLine.XPlat
             return filteredReferences;
         }
 
-        private async Task GetPackageMetadataAsync(
-            List<FrameworkPackages> frameworks,
-            ListPackageArgs listPackageArgs,
-            ListPackageProjectModel projectModel,
-            Dictionary<string, List<PackageSource>> sponsorshipSourcesById,
-            Dictionary<string, PackageSponsorshipResult> sponsorshipCache)
-        {
-            if (listPackageArgs.ReportType == ReportType.Sponsor)
-            {
-                projectModel.HasPackages = sponsorshipSourcesById.Count > 0;
-                Dictionary<string, List<PackageSponsorship>> sponsorships =
-                    await GetSponsorshipMetadataAsync(sponsorshipSourcesById, listPackageArgs, projectModel, sponsorshipCache);
-                UpdatePackagesWithSponsorshipMetadata(frameworks, sponsorships);
-            }
-            else
-            {
-                var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
-                await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
-            }
-        }
-
         /// <summary>
         /// Get package metadata from all sources
         /// </summary>
@@ -504,7 +495,7 @@ namespace NuGet.CommandLine.XPlat
             return packageMetadataById;
         }
 
-        private static int GetMaxParallel(ListPackageArgs listPackageArgs) =>
+        internal static int GetMaxParallel(ListPackageArgs listPackageArgs) =>
             listPackageArgs.PackageSources.Any(s => s.IsHttp)
                 ? 8 // Try to be nice to HTTP package sources
                 : listPackageArgs.PackageSources.Count == 0
@@ -522,179 +513,6 @@ namespace NuGet.CommandLine.XPlat
             return allPackages;
         }
 
-        private async Task<Dictionary<string, List<PackageSponsorship>>> GetSponsorshipMetadataAsync(
-            Dictionary<string, List<PackageSource>> sourcesById,
-            ListPackageArgs listPackageArgs,
-            ListPackageProjectModel projectModel,
-            Dictionary<string, PackageSponsorshipResult> sponsorshipCache)
-        {
-            List<string> packageIds = sourcesById.Keys.ToList();
-
-            var sponsorshipsById = new Dictionary<string, List<PackageSponsorship>>(
-                capacity: packageIds.Count,
-                comparer: StringComparer.OrdinalIgnoreCase);
-            var queriedSourceSet = new HashSet<PackageSource>();
-            var unsupportedSourceSet = new HashSet<PackageSource>();
-            int maxParallel = GetMaxParallel(listPackageArgs);
-
-            await ThrottledForEachAsync(packageIds,
-                (packageId, cancellationToken) =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    return sponsorshipCache.TryGetValue(packageId, out PackageSponsorshipResult cachedResult)
-                        ? Task.FromResult(cachedResult)
-                        : GetSponsorshipsForPackageAsync(
-                            packageId, sourcesById[packageId], listPackageArgs, cancellationToken);
-                },
-                result =>
-                {
-                    sponsorshipCache[result.PackageId] = result;
-                    sponsorshipsById[result.PackageId] = result.Sponsorships;
-                    queriedSourceSet.UnionWith(result.QueriedSources);
-                    unsupportedSourceSet.UnionWith(result.UnsupportedSources);
-                },
-                maxParallel,
-                listPackageArgs.CancellationToken);
-
-            projectModel.SponsorshipQueriedSources = listPackageArgs.PackageSources
-                .Where(queriedSourceSet.Contains)
-                .ToList();
-            projectModel.SponsorshipUnsupportedSources = listPackageArgs.PackageSources
-                .Where(unsupportedSourceSet.Contains)
-                .ToList();
-
-            return sponsorshipsById;
-        }
-
-        internal static List<PackageSponsorship> OrderSponsorshipsByConfiguredSource(
-            IEnumerable<PackageSponsorship> sponsorships,
-            ListPackageArgs listPackageArgs)
-        {
-            List<PackageSource> configuredSources = listPackageArgs.PackageSources;
-
-            return sponsorships
-                .OrderBy(sponsorship =>
-                {
-                    int index = configuredSources.FindIndex(
-                        source => string.Equals(
-                            source.Source,
-                            sponsorship.Source,
-                            StringComparison.Ordinal));
-                    return index < 0 ? int.MaxValue : index;
-                })
-                .ToList();
-        }
-
-        private sealed class PackageSponsorshipResult
-        {
-            public PackageSponsorshipResult(
-                string packageId,
-                List<PackageSponsorship> sponsorships,
-                IReadOnlyList<PackageSource> queriedSources,
-                IReadOnlyList<PackageSource> unsupportedSources)
-            {
-                PackageId = packageId;
-                Sponsorships = sponsorships;
-                QueriedSources = queriedSources;
-                UnsupportedSources = unsupportedSources;
-            }
-
-            public string PackageId { get; }
-            public List<PackageSponsorship> Sponsorships { get; }
-            public IReadOnlyList<PackageSource> QueriedSources { get; }
-            public IReadOnlyList<PackageSource> UnsupportedSources { get; }
-        }
-
-        private async Task<PackageSponsorshipResult> GetSponsorshipsForPackageAsync(
-            string package,
-            List<PackageSource> sources,
-            ListPackageArgs listPackageArgs,
-            CancellationToken cancellationToken)
-        {
-            var sponsorships = new List<PackageSponsorship>();
-            var queriedSources = new List<PackageSource>();
-            var unsupportedSources = new List<PackageSource>();
-            await ThrottledForEachAsync(sources,
-                (source, innerCancellationToken) => GetSponsorshipFromSourceAsync(source, listPackageArgs, package, innerCancellationToken),
-                continuation: result =>
-                {
-                    if (!result.SupportsSponsorship)
-                    {
-                        unsupportedSources.Add(result.Source);
-                    }
-                    else
-                    {
-                        queriedSources.Add(result.Source);
-
-                        if (result.Sponsorship != null)
-                        {
-                            sponsorships.Add(result.Sponsorship);
-                        }
-                    }
-                },
-                maxParallel: sources.Count,
-                cancellationToken);
-
-            sponsorships = OrderSponsorshipsByConfiguredSource(sponsorships, listPackageArgs);
-            return new PackageSponsorshipResult(
-                package,
-                sponsorships,
-                queriedSources,
-                unsupportedSources);
-        }
-
-        internal static List<PackageSource> FilterSourcesByPackageSourceMapping(
-            string package,
-            ListPackageArgs listPackageArgs)
-        {
-            PackageSourceMapping sourceMapping = listPackageArgs.PackageSourceMapping;
-
-            if (!sourceMapping.IsEnabled)
-            {
-                return listPackageArgs.PackageSources;
-            }
-
-            IReadOnlyList<string> mappedSourceNames = sourceMapping.GetConfiguredPackageSources(package);
-
-            return listPackageArgs.PackageSources
-                .Where(source => mappedSourceNames.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        private async Task<(
-            PackageSource Source,
-            PackageSponsorship Sponsorship,
-            bool SupportsSponsorship)>
-            GetSponsorshipFromSourceAsync(
-            PackageSource packageSource,
-            ListPackageArgs listPackageArgs,
-            string package,
-            CancellationToken cancellationToken)
-        {
-            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
-            RegistrationResourceV3 registrationResource = await sourceRepository.GetResourceAsync<RegistrationResourceV3>(cancellationToken);
-
-            if (registrationResource?.SupportsPackageIdMetadata != true)
-            {
-                return (packageSource, null, SupportsSponsorship: false);
-            }
-
-            using var sourceCacheContext = new SourceCacheContext();
-            PackageIdMetadata metadata = await registrationResource.GetPackageIdMetadataAsync(
-                package,
-                sourceCacheContext,
-                listPackageArgs.Logger,
-                cancellationToken);
-
-            // A missing or empty sponsorshipUrls and a package the source does not carry are both
-            // successful empty results. Network and protocol failures propagate instead.
-            PackageSponsorship sponsorship = metadata == null || metadata.SponsorshipUrls.Count == 0
-                ? null
-                : new PackageSponsorship(packageSource.Source, metadata.SponsorshipUrls);
-
-            return (packageSource, sponsorship, SupportsSponsorship: true);
-        }
-
         /// <summary>Run a throttled iteration of a list that performs async work, with a "single threaded" collection of results.</summary>
         /// <remarks>
         /// <para>The continuation delegate is called sequentially, so results can be safely added to non-synchronized collections.</para>
@@ -708,7 +526,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="cancellationToken">Cancellation token</param>
         /// <param name="maxParallel">The maximum number of tasks to allow running in parallel.</param>
         /// <returns>A task that can be awaited to wait for completion of the iteration.</returns>
-        private async Task ThrottledForEachAsync<TItem, TResult>(
+        internal static async Task ThrottledForEachAsync<TItem, TResult>(
             IList<TItem> items,
             Func<TItem, CancellationToken, Task<TResult>> taskFactory,
             Action<TResult> continuation,
@@ -874,19 +692,6 @@ namespace NuGet.CommandLine.XPlat
                             transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
                         }
                     }
-                }
-            }
-        }
-
-        private static void UpdatePackagesWithSponsorshipMetadata(
-            List<FrameworkPackages> frameworks,
-            Dictionary<string, List<PackageSponsorship>> sponsorshipsById)
-        {
-            foreach (InstalledPackageReference package in frameworks.SelectMany(f => f.TopLevelPackages.Concat(f.TransitivePackages)))
-            {
-                if (sponsorshipsById.TryGetValue(package.Name, out List<PackageSponsorship> sponsorships))
-                {
-                    package.Sponsorships = sponsorships;
                 }
             }
         }

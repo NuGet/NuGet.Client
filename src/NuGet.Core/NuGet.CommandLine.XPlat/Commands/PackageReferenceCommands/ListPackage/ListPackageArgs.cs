@@ -29,6 +29,7 @@ namespace NuGet.CommandLine.XPlat
         public bool HighestMinor { get; }
         public CancellationToken CancellationToken { get; }
         public IReadOnlyList<PackageSource> AuditSources { get; }
+        public IReadOnlyList<PackageSource> ExplicitPackageSources { get; }
 
         /// <summary>
         /// The configured package source mapping. The runner decides whether a report uses it.
@@ -51,8 +52,9 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="highestMinor"> Bool for --highest-minor present </param>
         /// <param name="auditSources"> A list of sources for performing vulnerability auditing</param>
         /// <param name="logger"></param>
-        /// <param name="cancellationToken"></param>
         /// <param name="packageSourceMapping">The configured package source mapping.</param>
+        /// <param name="explicitPackageSources">Package sources explicitly supplied with <c>--source</c>.</param>
+        /// <param name="cancellationToken"></param>
         public ListPackageArgs(
             string path,
             List<PackageSource> packageSources,
@@ -65,8 +67,9 @@ namespace NuGet.CommandLine.XPlat
             bool highestMinor,
             IReadOnlyList<PackageSource> auditSources,
             ILogger logger,
-            CancellationToken cancellationToken,
-            PackageSourceMapping packageSourceMapping)
+            PackageSourceMapping packageSourceMapping,
+            IReadOnlyList<PackageSource> explicitPackageSources,
+            CancellationToken cancellationToken)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
@@ -80,9 +83,16 @@ namespace NuGet.CommandLine.XPlat
             HighestMinor = highestMinor;
             AuditSources = auditSources;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            CancellationToken = cancellationToken;
             PackageSourceMapping = packageSourceMapping ?? throw new ArgumentNullException(nameof(packageSourceMapping));
+            ExplicitPackageSources = explicitPackageSources ?? throw new ArgumentNullException(nameof(explicitPackageSources));
+            CancellationToken = cancellationToken;
             ArgumentText = GetReportParameters();
+        }
+
+        internal void UseExplicitPackageSources()
+        {
+            PackageSources.Clear();
+            PackageSources.AddRange(ExplicitPackageSources);
         }
 
         private string GetReportParameters()
