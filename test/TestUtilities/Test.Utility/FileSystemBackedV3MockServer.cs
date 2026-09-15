@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
@@ -27,7 +26,6 @@ namespace Test.Utility
         /// <remarks>Sources can provide vulnerability info on registration pages without supporting the vulnerability info resource.</remarks>
         private readonly bool _sourceReportsVulnerabilities;
         private readonly bool _sourceSupportsSponsorship;
-        private int _registrationRequestCount;
 
         public FileSystemBackedV3MockServer(string packageDirectory, bool isPrivateFeed = false, bool sourceReportsVulnerabilities = false, bool sourceSupportsSponsorship = false)
         {
@@ -48,7 +46,6 @@ namespace Test.Utility
         public ISet<PackageIdentity> DeprecatedPackages { get; } = new HashSet<PackageIdentity>();
 
         public string ServiceIndexUri => _builder.GetV3Source();
-        public int RegistrationRequestCount => _registrationRequestCount;
 
         private void InitializeServer()
         {
@@ -148,7 +145,6 @@ namespace Test.Utility
             }
             else if (path.StartsWith("/reg/") && path.EndsWith("/index.json"))
             {
-                Interlocked.Increment(ref _registrationRequestCount);
                 var id = parts[parts.Length - 2];
                 var packages = LocalFolderUtility.GetPackagesV2(_packageDirectory, id, NullLogger.Instance);
 
