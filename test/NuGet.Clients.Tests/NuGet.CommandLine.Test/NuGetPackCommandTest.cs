@@ -121,17 +121,17 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                // Arrange
-                Util.CreateFile(
-                    workingDirectory,
-                    "content.txt",
-                    "content");
+            using var workingDirectory = TestDirectory.Create();
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "packageA.nuspec",
+            // Arrange
+            Util.CreateFile(
+                workingDirectory,
+                "content.txt",
+                "content");
+
+            Util.CreateFile(
+                workingDirectory,
+                "packageA.nuspec",
 @"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <metadata>
     <id>Contöso.Utilities</id>
@@ -146,17 +146,16 @@ namespace NuGet.CommandLine.Test
   </files>
 </package>");
 
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingDirectory,
-                    "pack packageA.nuspec",
-                    testOutputHelper: _testOutputHelper);
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingDirectory,
+                "pack packageA.nuspec",
+                testOutputHelper: _testOutputHelper);
 
-                // Assert
-                r.Success.Should().BeTrue(because: r.AllOutput);
-                r.AllOutput.Should().Contain("NU5052");
-            }
+            // Assert
+            r.Success.Should().BeTrue(because: r.AllOutput);
+            r.AllOutput.Should().Contain("NU5052");
         }
 
         [Fact]

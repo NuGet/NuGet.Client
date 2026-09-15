@@ -261,14 +261,13 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        [InlineData("Contöso.Utilities", "11.0.100", true, false, true)]       // SDK project, enabled → emits
-        [InlineData("\u0421ontoso.Utilities", "11.0.100", true, false, true)]   // SDK project, enabled → emits
-        [InlineData("Contöso.Utilities", "10.0.100", true, false, false)]      // SDK project, below threshold → suppressed
-        [InlineData("Contöso.Utilities", null, true, false, false)]            // SDK project, no level (assumes 8.0.400) → suppressed
-        [InlineData("Contöso.Utilities", null, false, false, true)]            // non-SDK project (nuget.exe) → emits
-        [InlineData("Contöso.Utilities", null, false, true, true)]             // non-SDK project (MSBuild /t:pack) → emits
-        [InlineData("Contoso.Utilities", "11.0.100", true, false, false)]      // restricted character set → suppressed
-        public void BuildPackage_PackageIdWithInvalidCharacters_EmitsNU5052_BasedOnSdkAnalysisLevel(string packageId, string? sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool usePackTargetArgs, bool expectWarning)
+        [InlineData("Contöso.Utilities", "11.0.100", true, true)]       // SDK project, enabled → emits
+        [InlineData("\u0421ontoso.Utilities", "11.0.100", true, true)]   // SDK project, enabled → emits
+        [InlineData("Contöso.Utilities", "10.0.100", true, false)]      // SDK project, below threshold → suppressed
+        [InlineData("Contöso.Utilities", null, true, false)]            // SDK project, no level (assumes 8.0.400) → suppressed
+        [InlineData("Contöso.Utilities", null, false, true)]            // non-SDK project → emits
+        [InlineData("Contoso.Utilities", "11.0.100", true, false)]      // restricted character set → suppressed
+        public void BuildPackage_PackageIdWithInvalidCharacters_EmitsNU5052_BasedOnSdkAnalysisLevel(string packageId, string? sdkAnalysisLevel, bool usingMicrosoftNETSdk, bool expectWarning)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -296,7 +295,6 @@ namespace NuGet.Commands.Test
                     Path = nuspecPath,
                     SdkAnalysisLevel = sdkAnalysisLevel != null ? new NuGetVersion(sdkAnalysisLevel) : null,
                     UsingMicrosoftNETSdk = usingMicrosoftNETSdk,
-                    PackTargetArgs = usePackTargetArgs ? new MSBuildPackTargetArgs() : null,
                 };
                 var runner = new PackCommandRunner(args, createProjectFactory: null);
 
