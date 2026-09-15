@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
@@ -32,7 +33,7 @@ namespace NuGet.PackageManagement.UI.Utility
 
         internal async Task WaitForNominationsToSettleAsync(string? projectFullPath, CancellationToken cancellationToken)
         {
-            DateTime waitStartTime = default;
+            Stopwatch? waitStopwatch = null;
 
             while (true)
             {
@@ -63,12 +64,17 @@ namespace NuGet.PackageManagement.UI.Utility
                         }
 
                         awaitedIncompleteNomination = true;
-                        if (waitStartTime == default)
+                        if (waitStopwatch == null)
                         {
-                            waitStartTime = DateTime.UtcNow;
+                            waitStopwatch = Stopwatch.StartNew();
                         }
 
-                        TimeSpan remainingBudget = CalculateRemainingTimeout(waitStartTime, DateTime.UtcNow, _nominationSettleTimeout);
+                        TimeSpan remainingBudget = _nominationSettleTimeout - waitStopwatch.Elapsed;
+                        if (remainingBudget < TimeSpan.Zero)
+                        {
+                            remainingBudget = TimeSpan.Zero;
+                        }
+
                         Task timeoutTask = Task.Delay(remainingBudget, cancellationToken);
                         Task finished = await Task.WhenAny(whenNominated, timeoutTask);
 
@@ -88,12 +94,6 @@ namespace NuGet.PackageManagement.UI.Utility
                     return;
                 }
             }
-        }
-
-        private static TimeSpan CalculateRemainingTimeout(DateTime startTime, DateTime currentTime, TimeSpan totalTimeout)
-        {
-            TimeSpan remaining = (startTime - currentTime) + totalTimeout;
-            return remaining.Ticks > 0 ? remaining : TimeSpan.Zero;
         }
     }
 }
