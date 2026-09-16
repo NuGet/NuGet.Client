@@ -13,6 +13,7 @@ using NuGet.CommandLine.XPlat.Commands.NuGet.Enable;
 using NuGet.CommandLine.XPlat.Commands.NuGet.List;
 using NuGet.CommandLine.XPlat.Commands.NuGet.Remove;
 using NuGet.CommandLine.XPlat.Commands.NuGet.Update;
+using NuGet.CommandLine.XPlat.Commands.Stage;
 using NuGet.CommandLine.XPlat.Commands.Why;
 using NuGet.Commands;
 using NuGet.Common;
@@ -140,6 +141,7 @@ namespace NuGet.CommandLine.XPlat
                 var lazyConsole = new Lazy<Spectre.Console.IAnsiConsole>(() => Spectre.Console.AnsiConsole.Console);
 
                 ConfigCommand.Register(rootCommand, getHidePrefixLogger);
+                StageCommand.Register(rootCommand, getHidePrefixLogger);
                 WhyCommand.Register(rootCommand, lazyConsole, virtualProjectBuilder);
                 DeleteCommand.Register(rootCommand, getHidePrefixLogger);
                 PushCommand.Register(rootCommand, getHidePrefixLogger);
@@ -158,6 +160,7 @@ namespace NuGet.CommandLine.XPlat
 
                 // These commands have the same parser as the dotnet CLI, so they can be used interchangeably with "dotnet nuget *"
                 ConfigCommand.Register(nugetCommand, getHidePrefixLogger);
+                StageCommand.Register(nugetCommand, getHidePrefixLogger);
                 WhyCommand.Register(nugetCommand, lazyConsole, virtualProjectBuilder);
             }
 
