@@ -58,7 +58,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         _sourceProvider = new PackageSourceProvider(_settings);
         _cachingSourceProvider = new CachingSourceProvider(_sourceProvider);
         _enabledSources = SettingsUtility.GetEnabledSources(_settings).AsList();
-        _minPublishAgeExceptions = _sourceProvider.GetMinPublishAgeExceptions();
+        _minPublishAgeExceptions = MinPublishAgeExceptions.GetMinPublishAgeExceptions(_settings);
         _sourceCacheContext = new SourceCacheContext();
     }
 
