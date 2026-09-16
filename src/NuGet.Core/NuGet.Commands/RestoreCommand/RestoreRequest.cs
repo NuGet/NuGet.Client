@@ -187,7 +187,9 @@ namespace NuGet.Commands
         /// <summary>
         /// Gets the package ID patterns that are exempt from package source minimum publish age restrictions.
         /// </summary>
+#nullable enable
         public MinPublishAgeExceptions? MinPublishAgeExceptions { get; init; }
+#nullable disable
 
         /// <remarks>
         /// This property should only be used to override the default verifier on tests.
