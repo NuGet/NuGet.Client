@@ -502,7 +502,9 @@ namespace NuGet.SolutionRestoreManager
                         // Claims the ownership over the active task
                         // Awaits for currently running restore to complete
                         await PromoteTaskToActiveAsync(restoreOperation, token);
+
                         token.ThrowIfCancellationRequested();
+
                         int requestCount = 1;
                         int projectsReadyCheckCount = 0;
                         int projectRestoreInfoSourcesCount = -1;
@@ -661,10 +663,7 @@ namespace NuGet.SolutionRestoreManager
                     break;
                 }
 
-                TimeSpan timeoutTime = CalculateTimeoutTime(
-                    restoreReadiness.BulkRestoreCoordinationCheckStartTime.Value,
-                    getUtcNow(),
-                    BulkRestoreCoordinationTimeout);
+                TimeSpan timeoutTime = CalculateTimeoutTime(restoreReadiness.BulkRestoreCoordinationCheckStartTime.Value, getUtcNow(), BulkRestoreCoordinationTimeout);
                 if (timeoutTime == TimeSpan.Zero)
                 {
                     restoreReadiness.RestoreReason = ImplicitRestoreReason.NominationsIdleTimeout;
