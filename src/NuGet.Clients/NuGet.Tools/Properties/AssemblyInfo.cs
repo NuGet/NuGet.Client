@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.Shell;
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Lucene.Net.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Web.XmlTransform.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Newtonsoft.Json.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\System.Text.Json.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Commands.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Common.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Configuration.dll")]

@@ -5,10 +5,11 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using Newtonsoft.Json.Linq;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGetVSExtension;
@@ -19,42 +20,42 @@ namespace NuGet.Tools.Test
     public class CopilotSolutionContextTests
     {
         [Fact]
-        public async Task CreateAsync_IncludesExactProjectAndConfigurationPaths()
+        public async Task CreateAsync_IncludesSolutionDirectoryAndSortedDistinctProjectPaths()
         {
             string solutionDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             string projectDirectory = Path.Combine(solutionDirectory, "src", "App");
-            string solutionFilePath = Path.Combine(solutionDirectory, "App.sln");
+            string secondProjectDirectory = Path.Combine(solutionDirectory, "src", "Library");
             string projectPath = Path.Combine(projectDirectory, "App.csproj");
-            string nuGetConfigPath = Path.Combine(solutionDirectory, "NuGet.Config");
-            string directoryPackagesPropsPath = Path.Combine(solutionDirectory, "Directory.Packages.props");
-            string directoryBuildPropsPath = Path.Combine(solutionDirectory, "src", "Directory.Build.props");
+            string secondProjectPath = Path.Combine(secondProjectDirectory, "Library.csproj");
 
             try
             {
                 Directory.CreateDirectory(projectDirectory);
-                File.WriteAllText(solutionFilePath, string.Empty);
+                Directory.CreateDirectory(secondProjectDirectory);
                 File.WriteAllText(projectPath, string.Empty);
-                File.WriteAllText(nuGetConfigPath, string.Empty);
-                File.WriteAllText(directoryPackagesPropsPath, string.Empty);
-                File.WriteAllText(directoryBuildPropsPath, string.Empty);
+                File.WriteAllText(secondProjectPath, string.Empty);
 
                 var project = new Mock<IVsProjectAdapter>();
                 project.SetupGet(adapter => adapter.FullProjectPath).Returns(projectPath);
+                var duplicateProject = new Mock<IVsProjectAdapter>();
+                duplicateProject.SetupGet(adapter => adapter.FullProjectPath).Returns(projectPath);
+                var secondProject = new Mock<IVsProjectAdapter>();
+                secondProject.SetupGet(adapter => adapter.FullProjectPath).Returns(secondProjectPath);
 
                 var solutionManager = new Mock<IVsSolutionManager>();
                 solutionManager.SetupGet(manager => manager.SolutionDirectory).Returns(solutionDirectory);
-                solutionManager.Setup(manager => manager.GetSolutionFilePathAsync()).ReturnsAsync(solutionFilePath);
-                solutionManager.Setup(manager => manager.GetAllVsProjectAdaptersAsync()).ReturnsAsync([project.Object]);
+                solutionManager.Setup(manager => manager.GetAllVsProjectAdaptersAsync())
+                    .ReturnsAsync([secondProject.Object, duplicateProject.Object, project.Object]);
 
-                string context = await CopilotSolutionContext.CreateAsync(solutionManager.Object, CancellationToken.None);
-                JObject json = JObject.Parse(context);
+                string context = await CopilotSolutionContext.CreateAsync(
+                    solutionManager.Object,
+                    CancellationToken.None);
+                using JsonDocument json = JsonDocument.Parse(context);
+                JsonElement root = json.RootElement;
 
-                Assert.Equal(solutionDirectory, json["solutionDirectory"]!.Value<string>());
-                Assert.Equal(solutionFilePath, json["solutionFilePath"]!.Value<string>());
-                Assert.Equal([projectPath], json["projectPaths"]!.Values<string>());
-                Assert.Equal(
-                    [directoryPackagesPropsPath, nuGetConfigPath, directoryBuildPropsPath],
-                    json["otherMsbuildFilePaths"]!.Values<string>());
+                Assert.Equal(solutionDirectory, root.GetProperty("solutionDirectory").GetString());
+                Assert.Equal([projectPath, secondProjectPath], GetStringValues(root, "projectPaths"));
+                Assert.Equal(2, root.EnumerateObject().Count());
             }
             finally
             {
@@ -63,6 +64,14 @@ namespace NuGet.Tools.Test
                     Directory.Delete(solutionDirectory, recursive: true);
                 }
             }
+        }
+
+        private static string[] GetStringValues(JsonElement root, string propertyName)
+        {
+            return root.GetProperty(propertyName)
+                .EnumerateArray()
+                .Select(element => element.GetString()!)
+                .ToArray();
         }
     }
 }
