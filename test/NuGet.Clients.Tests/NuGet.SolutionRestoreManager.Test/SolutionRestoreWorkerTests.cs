@@ -35,46 +35,10 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenProjectHasPendingNomination_WaitsUntilNominated()
-        {
-            var whenNominatedStarted = new TaskCompletionSource<bool>();
-            var whenNominatedCompleted = new TaskCompletionSource<bool>();
-            var checkProjectsReadyCallCount = 0;
-
-            Task<SolutionRestoreWorker.RestoreReadinessResult> coordinationTask = SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
-                waitForSolutionLoadedAsync: _ => Task.CompletedTask,
-                isAllProjectsNominatedAsync: () => Task.FromResult(true),
-                checkProjectsReadyAsync: async (bulkRestoreCoordinationCheckStartTime, cancellationToken) =>
-                {
-                    checkProjectsReadyCallCount++;
-                    if (checkProjectsReadyCallCount == 1)
-                    {
-                        whenNominatedStarted.TrySetResult(true);
-                        await whenNominatedCompleted.Task;
-                        return (false, false, 1, TimeSpan.FromMilliseconds(10));
-                    }
-
-                    return (true, false, 1, TimeSpan.FromMilliseconds(5));
-                },
-                getUtcNow: () => DateTimeOffset.UtcNow,
-                token: CancellationToken.None);
-
-            await whenNominatedStarted.Task;
-            coordinationTask.IsCompleted.Should().BeFalse();
-
-            whenNominatedCompleted.SetResult(true);
-
-            SolutionRestoreWorker.RestoreReadinessResult readiness = await coordinationTask;
-            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReady);
-            readiness.ProjectsReadyCheckCount.Should().Be(2);
-            readiness.ProjectRestoreInfoSourcesCount.Should().Be(1);
-            readiness.ProjectReadyTimings.Should().HaveCount(2);
-        }
-
-        [Fact]
         public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenSolutionLoadCompletes_ThenChecksNomination()
         {
             var solutionLoadCompleted = new TaskCompletionSource<bool>();
+            var utcNow = new DateTimeOffset(year: 2026, month: 9, day: 16, hour: 0, minute: 0, second: 0, offset: TimeSpan.Zero);
             int isAllProjectsNominatedCallCount = 0;
 
             Task<SolutionRestoreWorker.RestoreReadinessResult> coordinationTask = SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
@@ -84,9 +48,7 @@ namespace NuGet.SolutionRestoreManager.Test
                     Interlocked.Increment(ref isAllProjectsNominatedCallCount);
                     return Task.FromResult(true);
                 },
-                checkProjectsReadyAsync: (bulkRestoreCoordinationCheckStartTime, cancellationToken) =>
-                    Task.FromResult((true, false, 0, TimeSpan.Zero)),
-                getUtcNow: () => DateTimeOffset.UtcNow,
+                getUtcNow: () => utcNow,
                 token: CancellationToken.None);
 
             isAllProjectsNominatedCallCount.Should().Be(0);
@@ -94,9 +56,33 @@ namespace NuGet.SolutionRestoreManager.Test
             solutionLoadCompleted.SetResult(true);
 
             SolutionRestoreWorker.RestoreReadinessResult readiness = await coordinationTask;
-            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReady);
-            readiness.ProjectsReadyCheckCount.Should().Be(1);
+            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.AllProjectsNominated);
+            readiness.BulkRestoreCoordinationCheckStartTime.Should().Be(utcNow);
+            readiness.ProjectsReadyCheckCount.Should().Be(0);
+            readiness.ProjectRestoreInfoSourcesCount.Should().Be(-1);
+            readiness.ProjectReadyTimings.Should().BeEmpty();
             isAllProjectsNominatedCallCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenNominationsComplete_StopsWaiting()
+        {
+            var utcNow = new DateTimeOffset(year: 2026, month: 9, day: 16, hour: 0, minute: 0, second: 0, offset: TimeSpan.Zero);
+            int isAllProjectsNominatedCallCount = 0;
+
+            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
+                waitForSolutionLoadedAsync: _ => Task.CompletedTask,
+                isAllProjectsNominatedAsync: () =>
+                    Task.FromResult(Interlocked.Increment(ref isAllProjectsNominatedCallCount) > 1),
+                getUtcNow: () => utcNow,
+                token: CancellationToken.None);
+
+            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.AllProjectsNominated);
+            readiness.BulkRestoreCoordinationCheckStartTime.Should().Be(utcNow);
+            readiness.ProjectsReadyCheckCount.Should().Be(0);
+            readiness.ProjectRestoreInfoSourcesCount.Should().Be(-1);
+            readiness.ProjectReadyTimings.Should().BeEmpty();
+            isAllProjectsNominatedCallCount.Should().Be(2);
         }
 
         [Fact]
@@ -108,47 +94,14 @@ namespace NuGet.SolutionRestoreManager.Test
             SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
                 waitForSolutionLoadedAsync: _ => Task.CompletedTask,
                 isAllProjectsNominatedAsync: () => Task.FromResult(false),
-                checkProjectsReadyAsync: (lastProgressTime, cancellationToken) =>
-                    throw new InvalidOperationException("Projects cannot be ready before all projects are nominated."),
                 getUtcNow: () => utcNow + TimeSpan.FromMinutes(6 * getUtcNowCallCount++),
                 token: CancellationToken.None);
 
-            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReadyCheckTimeout);
+            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.NominationsIdleTimeout);
             readiness.BulkRestoreCoordinationCheckStartTime.Should().Be(utcNow);
             readiness.ProjectsReadyCheckCount.Should().Be(0);
-        }
-
-        [Fact]
-        public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenBulkCoordinationMakesProgress_DoesNotTimeOut()
-        {
-            var utcNow = new DateTimeOffset(year: 2026, month: 9, day: 11, hour: 0, minute: 0, second: 0, offset: TimeSpan.Zero);
-            DateTimeOffset firstCheckStartTime = default;
-            int checkProjectsReadyCallCount = 0;
-
-            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
-                waitForSolutionLoadedAsync: _ => Task.CompletedTask,
-                isAllProjectsNominatedAsync: () => Task.FromResult(true),
-                checkProjectsReadyAsync: (lastProgressTime, cancellationToken) =>
-                {
-                    checkProjectsReadyCallCount++;
-                    utcNow += TimeSpan.FromMinutes(4);
-
-                    if (checkProjectsReadyCallCount == 1)
-                    {
-                        firstCheckStartTime = lastProgressTime;
-                        return Task.FromResult((false, false, 2, TimeSpan.FromMinutes(4)));
-                    }
-
-                    lastProgressTime.Should().Be(utcNow - TimeSpan.FromMinutes(4));
-                    lastProgressTime.Should().BeAfter(firstCheckStartTime);
-                    return Task.FromResult((true, false, 2, TimeSpan.FromMinutes(4)));
-                },
-                getUtcNow: () => utcNow,
-                token: CancellationToken.None);
-
-            readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReady);
-            readiness.ProjectsReadyCheckCount.Should().Be(2);
-            readiness.ProjectReadyTimings.Should().HaveCount(2);
+            readiness.ProjectRestoreInfoSourcesCount.Should().Be(-1);
+            readiness.ProjectReadyTimings.Should().BeEmpty();
         }
     }
 }

@@ -431,7 +431,6 @@ namespace NuGet.SolutionRestoreManager
                             restoreReadiness = await WaitForOnBuildRestoreReadinessAsync(
                                 waitForSolutionLoadedAsync: WaitForSolutionLoadedAsync,
                                 isAllProjectsNominatedAsync: () => _solutionManager.Value.IsAllProjectsNominatedAsync(),
-                                checkProjectsReadyAsync: CheckProjectsReadyAsync,
                                 getUtcNow: () => DateTimeOffset.UtcNow,
                                 token: token);
                         }
@@ -468,14 +467,13 @@ namespace NuGet.SolutionRestoreManager
         }
 
         /// <summary>
-        /// Waits for the solution to be loaded and all projects to be ready before ready.
+        /// Waits for the solution to be loaded and all projects to be nominated.
         /// The current implementation assumes this is *only* called when the solution is first loaded and the first restore is being requested.
-        /// This is because we only want to wait for all projects to be ready on the first restore, otherwise we will just do a restore immediately, honoring the user action.
+        /// This is because we only want to wait for all projects to be nominated on the first restore, otherwise we will just do a restore immediately, honoring the user action.
         /// </summary>
         internal static async Task<RestoreReadinessResult> WaitForOnBuildRestoreReadinessAsync(
             Func<CancellationToken, Task> waitForSolutionLoadedAsync,
             Func<Task<bool>> isAllProjectsNominatedAsync,
-            Func<DateTimeOffset, CancellationToken, Task<(bool allProjectsReady, bool bulkCheckTimeout, int projectRestoreInfoSourcesCount, TimeSpan projectReadyCheckTime)>> checkProjectsReadyAsync,
             Func<DateTimeOffset> getUtcNow,
             CancellationToken token)
         {
@@ -484,43 +482,25 @@ namespace NuGet.SolutionRestoreManager
             await waitForSolutionLoadedAsync(token);
 
             restoreReadiness.BulkRestoreCoordinationCheckStartTime = getUtcNow();
-            DateTimeOffset lastProgressTime = restoreReadiness.BulkRestoreCoordinationCheckStartTime.Value;
             while (!token.IsCancellationRequested)
             {
-                if (!await isAllProjectsNominatedAsync())
+                if (await isAllProjectsNominatedAsync())
                 {
-                    TimeSpan timeoutTime = CalculateTimeoutTime(
-                        lastProgressTime,
-                        getUtcNow(),
-                        BulkRestoreCoordinationTimeout);
-                    if (timeoutTime == TimeSpan.Zero)
-                    {
-                        restoreReadiness.RestoreReason = ImplicitRestoreReason.ProjectsReadyCheckTimeout;
-                        break;
-                    }
-
-                    await Task.Delay(IdleTimeoutMs, token);
-                    continue;
-                }
-
-                restoreReadiness.ProjectsReadyCheckCount++;
-                (bool allProjectsReady, bool bulkCheckTimeout, int restoreInfoSourceCount, TimeSpan projectsReady) = await checkProjectsReadyAsync(lastProgressTime, token);
-                restoreReadiness.ProjectRestoreInfoSourcesCount = restoreInfoSourceCount;
-                restoreReadiness.ProjectReadyTimings.Add(projectsReady);
-
-                if (allProjectsReady)
-                {
-                    restoreReadiness.RestoreReason = ImplicitRestoreReason.ProjectsReady;
+                    restoreReadiness.RestoreReason = ImplicitRestoreReason.AllProjectsNominated;
                     break;
                 }
 
-                if (bulkCheckTimeout)
+                TimeSpan timeoutTime = CalculateTimeoutTime(
+                    restoreReadiness.BulkRestoreCoordinationCheckStartTime.Value,
+                    getUtcNow(),
+                    BulkRestoreCoordinationTimeout);
+                if (timeoutTime == TimeSpan.Zero)
                 {
-                    restoreReadiness.RestoreReason = ImplicitRestoreReason.ProjectsReadyCheckTimeout;
+                    restoreReadiness.RestoreReason = ImplicitRestoreReason.NominationsIdleTimeout;
                     break;
                 }
 
-                lastProgressTime = getUtcNow();
+                await Task.Delay(IdleTimeoutMs, token);
             }
 
             token.ThrowIfCancellationRequested();
