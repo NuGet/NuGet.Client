@@ -4,14 +4,18 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Stage;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -23,6 +27,76 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
 {
     public class StagePushCommandRunnerTests
     {
+        public static TheoryData<string?, string?, string> ApiKeyPriorityTestData => new()
+        {
+            { "explicit-api-key", "environment-api-key", "explicit-api-key" },
+            { null, "environment-api-key", "environment-api-key" },
+            { null, null, "configured-api-key" },
+        };
+
+        [PlatformTheory(Platform.Windows)]
+        [MemberData(nameof(ApiKeyPriorityTestData))]
+        public async Task ExecuteCommandAsync_ApiKeySources_UseExpectedPriority(
+            string? explicitApiKey,
+            string? environmentApiKey,
+            string expectedApiKey)
+        {
+            // Arrange
+            const string configuredApiKey = "configured-api-key";
+            const string stagingEndpoint = "https://unit.test/staging/";
+            using var directory = TestDirectory.Create();
+            string packagePath = Path.Combine(directory.Path, "Contoso.1.0.0.nupkg");
+            File.WriteAllText(packagePath, "package");
+            string? capturedApiKey = null;
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+            {
+                ["https://unit.test/staging/package"] = request =>
+                {
+                    capturedApiKey = request.Headers.TryGetValues("X-NuGet-ApiKey", out IEnumerable<string>? values)
+                        ? string.Join(",", values)
+                        : null;
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Created));
+                },
+            };
+            using var httpSource = new TestHttpSource(
+                new PackageSource("https://unit.test/v3/index.json"),
+                responses);
+            var resource = new PackageStagingResourceV3(
+                new Uri(stagingEndpoint),
+                httpSource);
+            string encryptedApiKey = EncryptionUtility.EncryptString(configuredApiKey);
+            var settings = new Mock<ISettings>(MockBehavior.Strict);
+            settings.Setup(value => value.GetSection(ConfigurationConstants.ApiKeys))
+                .Returns(new MockSettingSection(
+                    ConfigurationConstants.ApiKeys,
+                    new AddItem(stagingEndpoint, encryptedApiKey)));
+            var source = new PackageSource("https://unit.test/v3/index.json", "source");
+            var sourceProvider = CreateSourceProvider(source);
+            IEnvironmentVariableReader environmentVariableReader = environmentApiKey is null
+                ? TestEnvironmentVariableReader.EmptyInstance
+                : new TestEnvironmentVariableReader(
+                    new Dictionary<string, string>
+                    {
+                        ["NUGET_API_KEY"] = environmentApiKey,
+                    });
+            var runner = new StagePushCommandRunner(
+                environmentVariableReader,
+                (_, _, _) => Task.FromResult<PackageStagingResourceV3?>(resource));
+
+            // Act
+            int exitCode = await runner.ExecuteCommandAsync(
+                CreateArgs(
+                    packagePath,
+                    new Mock<ILoggerWithColor>().Object,
+                    apiKey: explicitApiKey),
+                settings.Object,
+                sourceProvider.Object);
+
+            // Assert
+            exitCode.Should().Be(ExitCodes.Success);
+            capturedApiKey.Should().Be(expectedApiKey);
+        }
+
         [Fact]
         public async Task ExecuteCommandAsync_UnsupportedFile_FailsBeforeResourceDiscovery()
         {
@@ -100,12 +174,14 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
 
         private static StagePushCommandArgs CreateArgs(
             string packagePath,
-            ILoggerWithColor logger)
+            ILoggerWithColor logger,
+            string? apiKey = null)
         {
             return new StagePushCommandArgs
             {
                 PackagePath = packagePath,
                 Source = "source",
+                ApiKey = apiKey,
                 Logger = logger,
                 CancellationToken = CancellationToken.None,
             };
