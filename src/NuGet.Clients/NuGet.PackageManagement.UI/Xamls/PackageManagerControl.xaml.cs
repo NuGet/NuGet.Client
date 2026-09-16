@@ -540,7 +540,7 @@ namespace NuGet.PackageManagement.UI
                     source,
                     timeSpanSinceLastRefresh,
                     Stopwatch.StartNew(),
-                    nominationWaitDuration);
+                    nominationWaitDuration: nominationWaitDuration);
             }
         }
 
