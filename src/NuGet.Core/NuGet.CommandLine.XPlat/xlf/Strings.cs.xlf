@@ -395,7 +395,7 @@ NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v sou
       </trans-unit>
       <trans-unit id="Error_NotPRProject">
         <source>The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</source>
-        <target state="needs-review-translation">Projekt {0} používá pro balíčky NuGet package.config, ale daný příkaz funguje jen s projekty odkazů na balíčky.</target>
+        <target state="new">The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</target>
         <note>{0} - Path to the project with the error, {Locked="PackageReference"}</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">

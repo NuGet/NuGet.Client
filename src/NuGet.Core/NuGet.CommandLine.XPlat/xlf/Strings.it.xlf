@@ -395,7 +395,7 @@ NuGet richiede origini HTTPS. Per utilizzare origini HTTP, è necessario imposta
       </trans-unit>
       <trans-unit id="Error_NotPRProject">
         <source>The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</source>
-        <target state="needs-review-translation">Il progetto `{0}` usa package.config per i pacchetti NuGet, mentre il comando funziona solo con progetti di riferimento al pacchetto.</target>
+        <target state="new">The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</target>
         <note>{0} - Path to the project with the error, {Locked="PackageReference"}</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">

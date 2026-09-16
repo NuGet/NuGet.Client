@@ -395,7 +395,7 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
       </trans-unit>
       <trans-unit id="Error_NotPRProject">
         <source>The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</source>
-        <target state="needs-review-translation">`{0}` projesi, NuGuet paketleri için package.config dosyasını kullanıyor fakat komut yalnızca paket başvurusu projeleriyle çalışır.</target>
+        <target state="new">The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</target>
         <note>{0} - Path to the project with the error, {Locked="PackageReference"}</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">
