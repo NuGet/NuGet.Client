@@ -20,7 +20,7 @@ namespace NuGetVSExtension
         AgentName,
         DisplayName = "NuGet",
         Description = "Helps resolve NuGet package management issues.",
-        IncludeBuiltInContributions = false,
+        IncludeBuiltInContributions = true,
         Usage = AgentUsage.Programmatic)]
     internal sealed class NuGetSdkAgent : CopilotSdkAgentHooks, ICopilotSdkAgent
     {
