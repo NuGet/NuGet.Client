@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.UI.Utility
             _nominationSettleTimeout = nominationSettleTimeout;
         }
 
-        internal async Task WaitForNominationsToSettleAsync(string? projectFullPath, CancellationToken cancellationToken)
+        internal async Task<TimeSpan?> WaitForNominationsToSettleAsync(string? projectFullPath, CancellationToken cancellationToken)
         {
             Stopwatch? waitStopwatch = null;
 
@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.UI.Utility
 
                         if (finished == timeoutTask)
                         {
-                            return;
+                            return waitStopwatch.Elapsed;
                         }
 
                         _ = whenNominated.Exception;
@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.UI.Utility
 
                 if (allProjectsReady || !awaitedIncompleteNomination)
                 {
-                    return;
+                    return waitStopwatch?.Elapsed;
                 }
             }
         }

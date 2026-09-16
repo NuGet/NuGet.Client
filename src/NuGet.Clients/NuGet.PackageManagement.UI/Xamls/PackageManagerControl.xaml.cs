@@ -511,6 +511,7 @@ namespace NuGet.PackageManagement.UI
                 Interlocked.Exchange(ref _refreshNominationCts, nominationCts)?.Cancel();
 
                 var solutionManager = Model.Context.SolutionManager;
+                TimeSpan? nominationWaitDuration = null;
                 if (solutionManager != null)
                 {
                     try
@@ -526,7 +527,7 @@ namespace NuGet.PackageManagement.UI
                         }
 
                         var coordinator = new ProjectNominationCoordinator(solutionManager);
-                        await coordinator.WaitForNominationsToSettleAsync(scopedProjectFullPath, nominationCts.Token);
+                        nominationWaitDuration = await coordinator.WaitForNominationsToSettleAsync(scopedProjectFullPath, nominationCts.Token);
                     }
                     catch (OperationCanceledException)
                     {
@@ -534,27 +535,39 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                await RunAndEmitRefreshAsync(async () => await RefreshAsync(), source, timeSpanSinceLastRefresh, Stopwatch.StartNew());
+                await RunAndEmitRefreshAsync(
+                    async () => await RefreshAsync(),
+                    source,
+                    timeSpanSinceLastRefresh,
+                    Stopwatch.StartNew(),
+                    nominationWaitDuration);
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false, double? duration = null)
+        private void EmitRefreshEvent(
+            TimeSpan timeSpan,
+            RefreshOperationSource refreshOperationSource,
+            RefreshOperationStatus status,
+            bool isUIFiltering = false,
+            double? duration = null,
+            TimeSpan? nominationWaitDuration = null)
         {
+            PackageManagerUIRefreshEvent refreshEvent;
             if (Model.IsSolution)
             {
-                TelemetryActivity.EmitTelemetryEvent(PackageManagerUIRefreshEvent.ForSolution(
+                refreshEvent = PackageManagerUIRefreshEvent.ForSolution(
                     _sessionGuid,
                     refreshOperationSource,
                     status,
                     UIUtility.ToContractsItemFilter(_topPanel.Filter),
                     isUIFiltering,
                     timeSpan,
-                    duration));
+                    duration);
             }
             else
             {
                 IProjectContextInfo project = Model.Context.Projects.First();
-                TelemetryActivity.EmitTelemetryEvent(PackageManagerUIRefreshEvent.ForProject(
+                refreshEvent = PackageManagerUIRefreshEvent.ForProject(
                     _sessionGuid,
                     refreshOperationSource,
                     status,
@@ -563,8 +576,15 @@ namespace NuGet.PackageManagement.UI
                     timeSpan,
                     duration,
                     project.ProjectId,
-                    project.ProjectKind));
+                    project.ProjectKind);
             }
+
+            if (nominationWaitDuration.HasValue)
+            {
+                refreshEvent["NominationWaitDuration"] = nominationWaitDuration.Value.TotalMilliseconds;
+            }
+
+            TelemetryActivity.EmitTelemetryEvent(refreshEvent);
         }
 
         private void EmitPMUIClosingTelemetry()
@@ -1490,7 +1510,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task RunAndEmitRefreshAsync(Func<Task> runner, RefreshOperationSource source, TimeSpan lastRefresh, Stopwatch sw, bool isUIFiltering = false)
+        private async Task RunAndEmitRefreshAsync(
+            Func<Task> runner,
+            RefreshOperationSource source,
+            TimeSpan lastRefresh,
+            Stopwatch sw,
+            bool isUIFiltering = false,
+            TimeSpan? nominationWaitDuration = null)
         {
             var refreshStatus = RefreshOperationStatus.NoOp;
             try
@@ -1506,7 +1532,13 @@ namespace NuGet.PackageManagement.UI
             finally
             {
                 sw.Stop();
-                EmitRefreshEvent(lastRefresh, source, refreshStatus, isUIFiltering, sw.Elapsed.TotalMilliseconds);
+                EmitRefreshEvent(
+                    lastRefresh,
+                    source,
+                    refreshStatus,
+                    isUIFiltering,
+                    sw.Elapsed.TotalMilliseconds,
+                    nominationWaitDuration);
             }
         }
 

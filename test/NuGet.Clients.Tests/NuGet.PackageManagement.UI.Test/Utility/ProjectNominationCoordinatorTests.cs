@@ -27,7 +27,9 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             var solutionManager = CreateSolutionManager();
             var coordinator = new ProjectNominationCoordinator(solutionManager);
 
-            await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
+            TimeSpan? nominationWaitDuration = await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
+
+            Assert.Null(nominationWaitDuration);
         }
 
         [Fact]
@@ -37,26 +39,33 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             var solutionManager = CreateSolutionManager(source);
             var coordinator = new ProjectNominationCoordinator(solutionManager);
 
-            await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
+            TimeSpan? nominationWaitDuration = await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
 
             Assert.Equal(0, source.WhenNominatedCallCount);
+            Assert.Null(nominationWaitDuration);
         }
 
         [Fact]
         public async Task WaitForNominationsToSettleAsync_WhenPendingThenNominated_WaitsThenCompletes()
         {
             int reads = 0;
+            var nomination = new TaskCompletionSource<bool>();
             var source = new FakeRestoreInfoSource("a")
             {
                 HasPendingNominationFunc = () => reads++ == 0,
-                NominationTask = Task.CompletedTask,
+                NominationTask = nomination.Task,
             };
             var solutionManager = CreateSolutionManager(source);
             var coordinator = new ProjectNominationCoordinator(solutionManager);
 
-            await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
+            Task<TimeSpan?> wait = coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
+            Assert.False(wait.IsCompleted);
+
+            nomination.SetResult(true);
+            TimeSpan? nominationWaitDuration = await wait;
 
             Assert.Equal(1, source.WhenNominatedCallCount);
+            Assert.NotNull(nominationWaitDuration);
         }
 
         [Fact]
@@ -70,9 +79,10 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             var solutionManager = CreateSolutionManager(source);
             var coordinator = new ProjectNominationCoordinator(solutionManager);
 
-            await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
+            TimeSpan? nominationWaitDuration = await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
 
             Assert.Equal(1, source.WhenNominatedCallCount);
+            Assert.Null(nominationWaitDuration);
         }
 
         [Fact]
@@ -87,9 +97,11 @@ namespace NuGet.PackageManagement.UI.Test.Utility
             var solutionManager = CreateSolutionManager(source);
             var coordinator = new ProjectNominationCoordinator(solutionManager, nominationSettleTimeout: TimeSpan.FromMilliseconds(50));
 
-            await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
+            TimeSpan? nominationWaitDuration = await coordinator.WaitForNominationsToSettleAsync(projectFullPath: null, CancellationToken.None);
 
             Assert.Equal(1, source.WhenNominatedCallCount);
+            Assert.NotNull(nominationWaitDuration);
+            Assert.True(nominationWaitDuration > TimeSpan.Zero);
         }
 
         [Fact]
