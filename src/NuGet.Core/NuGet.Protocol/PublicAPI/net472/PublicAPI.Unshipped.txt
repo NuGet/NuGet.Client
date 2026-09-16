@@ -1,6 +1,7 @@
 #nullable enable
 NuGet.Protocol.Core.Types.SourceCacheContext.SuppressHttpCacheRefreshOnMiss.get -> bool
 NuGet.Protocol.Core.Types.SourceCacheContext.SuppressHttpCacheRefreshOnMiss.set -> void
+virtual NuGet.Protocol.Core.Types.SourceCacheContext.WithSuppressHttpCacheRefreshOnMiss() -> NuGet.Protocol.Core.Types.SourceCacheContext!
 NuGet.Protocol.IVersionListCacheInfo
 NuGet.Protocol.IVersionListCacheInfo.TryGetVersionListSource(string! id, out NuGet.Protocol.VersionListFetchKind kind) -> bool
 NuGet.Protocol.PackageStagingResourceV3

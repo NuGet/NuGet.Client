@@ -1246,6 +1246,71 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task FindLibraryAsync_WhenOriginAlreadyRecorded_SecondExactRangeForSameIdDoesNotRefresh()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.Network };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var firstRange = ExactRange("x", "1.0.0");
+            var secondRange = ExactRange("x", "2.0.0");
+
+            var first = await provider.FindLibraryAsync(
+                firstRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+            var second = await provider.FindLibraryAsync(
+                secondRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+
+            Assert.Null(first);
+            Assert.Null(second);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: false, firstRange);
+            AssertLoggedRefresh(logger, expected: false, secondRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenHttpCacheRefreshRecordsId_WithRefreshCacheTrueDoesNotRefreshAgain()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.HttpCache };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var libraryRange = ExactRange("x", "1.0.0");
+
+            var first = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), cacheContext, logger, CancellationToken.None);
+            using var refreshed = cacheContext.WithRefreshCacheTrue();
+            var second = await provider.FindLibraryAsync(
+                libraryRange, NuGetFramework.Parse("net45"), refreshed, logger, CancellationToken.None);
+
+            Assert.Null(first);
+            Assert.Null(second);
+            Assert.Equal(1, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: true, libraryRange);
+        }
+
+        [Fact]
+        public async Task FindLibraryAsync_WhenSameIdIsRecordedFromOriginConcurrently_DoesNotRefresh()
+        {
+            var logger = new TestLogger();
+            using var cacheContext = new SourceCacheContext();
+            var findResource = new RecordingFindPackageByIdResource { Kind = VersionListFetchKind.Network };
+            var provider = CreateProvider(findResource, logger, cacheContext);
+            var firstRange = ExactRange("x", "1.0.0");
+            var secondRange = ExactRange("x", "2.0.0");
+            var framework = NuGetFramework.Parse("net45");
+
+            LibraryIdentity[] results = await Task.WhenAll(
+                provider.FindLibraryAsync(firstRange, framework, cacheContext, logger, CancellationToken.None),
+                provider.FindLibraryAsync(secondRange, framework, cacheContext, logger, CancellationToken.None));
+
+            Assert.Null(results[0]);
+            Assert.Null(results[1]);
+            Assert.Equal(0, findResource.ExistsCallsWithRefresh);
+            AssertLoggedRefresh(logger, expected: false, firstRange);
+            AssertLoggedRefresh(logger, expected: false, secondRange);
+        }
+
+        [Fact]
         public async Task FindLibraryAsync_WhenFindPackageByIdResourceDoesNotReportCacheKind_DoesNotRefresh()
         {
             var logger = new TestLogger();
@@ -1300,7 +1365,7 @@ namespace NuGet.Commands.Test
             Assert.Null(firstResult);
             Assert.Null(secondResult);
             Assert.Equal(1, findResource.ExistsCallsWithRefresh);
-            Assert.Equal(1, logger.MinimalMessages.Count(m => m.Contains("refreshing the HTTP cache once", StringComparison.Ordinal)));
+            Assert.Equal(1, logger.MinimalMessages.Count(m => m.Contains("refreshing once before failing", StringComparison.Ordinal)));
         }
 
         [Fact]
@@ -1351,7 +1416,7 @@ namespace NuGet.Commands.Test
 
             Assert.Equal(2, findResource.ExistsCalls);
             Assert.Equal(1, findResource.ExistsCallsWithRefresh);
-            Assert.Equal(1, logger.MinimalMessages.Count(m => m.Contains("refreshing the HTTP cache once", StringComparison.Ordinal)));
+            Assert.Equal(1, logger.MinimalMessages.Count(m => m.Contains("refreshing once before failing", StringComparison.Ordinal)));
         }
 
         [Theory]

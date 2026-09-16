@@ -491,6 +491,54 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
+        public async Task FindLibraryByVersionAsync_WhenTwoHttpSourcesLookupTwice_ReusesSuppressedCacheContext()
+        {
+            var firstRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+            var secondRange = new LibraryRange("y", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+            using var cacheContext = new SourceCacheContext();
+            var testLogger = new TestLogger();
+            var framework = NuGetFramework.Parse("net45");
+            var token = CancellationToken.None;
+            var suppressedContexts = new List<SourceCacheContext>();
+
+            Mock<IRemoteDependencyProvider> CreateHttp(string source)
+            {
+                var remote = new Mock<IRemoteDependencyProvider>();
+                remote.SetupGet(e => e.IsHttp).Returns(true);
+                remote.SetupGet(e => e.Source).Returns(new PackageSource(source));
+                remote.Setup(e => e.FindLibraryAsync(
+                        It.IsAny<LibraryRange>(),
+                        framework,
+                        It.IsAny<SourceCacheContext>(),
+                        testLogger,
+                        token))
+                    .Returns<LibraryRange, NuGetFramework, SourceCacheContext, ILogger, CancellationToken>((_, _, ctx, _, _) =>
+                    {
+                        if (ctx.SuppressHttpCacheRefreshOnMiss)
+                        {
+                            suppressedContexts.Add(ctx);
+                        }
+
+                        return Task.FromResult<LibraryIdentity>(null);
+                    });
+                return remote;
+            }
+
+            var first = CreateHttp("https://a.test");
+            var second = CreateHttp("https://b.test");
+            var providers = new[] { first.Object, second.Object };
+
+            await ResolverUtility.FindLibraryByVersionAsync(
+                firstRange, framework, providers, cacheContext, testLogger, token);
+            await ResolverUtility.FindLibraryByVersionAsync(
+                secondRange, framework, providers, cacheContext, testLogger, token);
+
+            Assert.Equal(4, suppressedContexts.Count);
+            Assert.All(suppressedContexts, ctx => Assert.Same(suppressedContexts[0], ctx));
+            Assert.NotSame(cacheContext, suppressedContexts[0]);
+        }
+
+        [Fact]
         public async Task FindLibraryByVersionAsync_WhenSingleHttpSourceMisses_DoesNotSuppressAndQueriesOnce()
         {
             var range = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);

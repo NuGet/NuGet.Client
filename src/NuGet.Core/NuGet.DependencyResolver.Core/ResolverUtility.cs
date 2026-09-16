@@ -486,8 +486,7 @@ namespace NuGet.DependencyResolver
                 && !cacheContext.SuppressHttpCacheRefreshOnMiss
                 && !cacheContext.RefreshMemoryCache)
             {
-                SourceCacheContext suppressed = cacheContext.Clone();
-                suppressed.SuppressHttpCacheRefreshOnMiss = true;
+                SourceCacheContext suppressed = cacheContext.WithSuppressHttpCacheRefreshOnMiss();
                 httpMatch = await FindLibraryFromSourcesAsync(
                     libraryRange,
                     httpProviders,

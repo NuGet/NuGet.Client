@@ -298,7 +298,7 @@ namespace NuGet.Commands
 
             if (lookupContext.RefreshMemoryCache)
             {
-                _idsFetchedThisOperation[id] = 0;
+                _idsFetchedThisOperation.TryAdd(id, 0);
             }
 
             if (result != null)
@@ -321,7 +321,7 @@ namespace NuGet.Commands
 
                 result = await FindLibraryFromFeedAsync(libraryRange, refreshedCacheContext, logger, cancellationToken);
 
-                _idsFetchedThisOperation[id] = 0;
+                _idsFetchedThisOperation.TryAdd(id, 0);
             }
 
             return result;
@@ -333,7 +333,7 @@ namespace NuGet.Commands
                 && cacheInfo.TryGetVersionListSource(id, out VersionListFetchKind kind)
                 && kind == VersionListFetchKind.Network)
             {
-                _idsFetchedThisOperation[id] = 0;
+                _idsFetchedThisOperation.TryAdd(id, 0);
             }
         }
 

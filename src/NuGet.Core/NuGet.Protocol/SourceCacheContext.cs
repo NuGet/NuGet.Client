@@ -56,6 +56,8 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public bool SuppressHttpCacheRefreshOnMiss { get; set; }
 
+        private SourceCacheContext? _suppressHttpCacheRefreshOnMiss;
+
         /// <summary>
         /// X-NUGET-SESSION
         /// This should be unique for each package operation.
@@ -152,6 +154,35 @@ namespace NuGet.Protocol.Core.Types
             updatedContext.RefreshMemoryCache = true;
 
             return updatedContext;
+        }
+
+        /// <summary>
+        /// Returns a cache context with <see cref="SuppressHttpCacheRefreshOnMiss"/> set.
+        /// The clone is created once per instance so a large restore does not allocate per lookup.
+        /// </summary>
+        public virtual SourceCacheContext WithSuppressHttpCacheRefreshOnMiss()
+        {
+            if (SuppressHttpCacheRefreshOnMiss)
+            {
+                return this;
+            }
+
+            SourceCacheContext? cached = Volatile.Read(ref _suppressHttpCacheRefreshOnMiss);
+            if (cached != null)
+            {
+                return cached;
+            }
+
+            SourceCacheContext clone = Clone();
+            if (object.ReferenceEquals(clone, this))
+            {
+                // NullSourceCacheContext.Clone() returns Instance; do not mutate the singleton.
+                return this;
+            }
+
+            clone.SuppressHttpCacheRefreshOnMiss = true;
+            Interlocked.CompareExchange(ref _suppressHttpCacheRefreshOnMiss, clone, null);
+            return Volatile.Read(ref _suppressHttpCacheRefreshOnMiss)!;
         }
 
         public void Dispose()

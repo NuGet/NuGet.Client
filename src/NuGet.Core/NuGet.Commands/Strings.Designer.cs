@@ -1665,7 +1665,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cached versions for &apos;{0}&apos; did not contain a version satisfying &apos;{1}&apos;; refreshing the HTTP cache once before failing..
+        ///   Looks up a localized string similar to The HTTP cache for package &apos;{0}&apos; does not contain a version satisfying &apos;{1}&apos;; refreshing once before failing..
         /// </summary>
         internal static string Log_RefreshingHttpCacheOnMiss {
             get {
