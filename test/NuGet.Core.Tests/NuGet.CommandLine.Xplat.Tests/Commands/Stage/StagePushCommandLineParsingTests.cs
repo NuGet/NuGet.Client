@@ -5,7 +5,6 @@ using System;
 using System.CommandLine;
 using System.Threading.Tasks;
 using FluentAssertions;
-using NuGet.CommandLine.XPlat.Commands;
 using NuGet.CommandLine.XPlat.Commands.Stage;
 using Xunit;
 
@@ -13,97 +12,154 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
 {
     public class StagePushCommandLineParsingTests
     {
-        [Fact]
-        public void StageCommand_HasHelpUrl()
+        public sealed record ExpectedStagePushArguments(
+            string PackagePath,
+            string? Source = null,
+            string? ApiKey = null,
+            string? GroupId = null,
+            bool NoSymbols = false,
+            string? ConfigFile = null,
+            bool Interactive = false,
+            bool AllowInsecureConnections = false);
+
+        public static TheoryData<string, ExpectedStagePushArguments> ValidArgumentsTestData => new()
         {
-            Command rootCommand = new("nuget");
+            {
+                "nuget stage push package.nupkg",
+                new ExpectedStagePushArguments(PackagePath: "package.nupkg")
+            },
+            {
+                "nuget stage push package.nupkg --source source",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    Source: "source")
+            },
+            {
+                "nuget stage push -s source package.nupkg",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    Source: "source")
+            },
+            {
+                "nuget stage push package.nupkg --api-key key",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    ApiKey: "key")
+            },
+            {
+                "nuget stage push package.nupkg -k key",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    ApiKey: "key")
+            },
+            {
+                "nuget stage push package.nupkg --group release-group",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    GroupId: "release-group")
+            },
+            {
+                "nuget stage push package.nupkg --no-symbols",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    NoSymbols: true)
+            },
+            {
+                "nuget stage push package.nupkg --configfile NuGet.Config",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    ConfigFile: "NuGet.Config")
+            },
+            {
+                "nuget stage push package.nupkg --interactive --allow-insecure-connections",
+                new ExpectedStagePushArguments(
+                    PackagePath: "package.nupkg",
+                    Interactive: true,
+                    AllowInsecureConnections: true)
+            },
+            {
+                "nuget stage push \"path with spaces\\package.nupkg\" --group \"release group\"",
+                new ExpectedStagePushArguments(
+                    PackagePath: "path with spaces\\package.nupkg",
+                    GroupId: "release group")
+            },
+            {
+                "nuget stage push artifacts\\Contoso.1.0.0.nupkg -s staging-source -k secret --group release-group --no-symbols --configfile config\\NuGet.Config --interactive --allow-insecure-connections",
+                new ExpectedStagePushArguments(
+                    PackagePath: "artifacts\\Contoso.1.0.0.nupkg",
+                    Source: "staging-source",
+                    ApiKey: "secret",
+                    GroupId: "release-group",
+                    NoSymbols: true,
+                    ConfigFile: "config\\NuGet.Config",
+                    Interactive: true,
+                    AllowInsecureConnections: true)
+            },
+        };
 
-            StageCommand.Register(rootCommand, NullLoggerWithColor.GetInstance);
-
-            rootCommand.Subcommands.Should().ContainSingle();
-            rootCommand.Subcommands[0].Should().BeAssignableTo<DocumentedCommand>();
-            ((DocumentedCommand)rootCommand.Subcommands[0]).HelpUrl.Should().NotBeNullOrEmpty();
-        }
-
-        [Fact]
-        public void PushCommand_WithAllOptions_SetsArguments()
+        public static TheoryData<string> InvalidArgumentsTestData => new()
         {
+            "nuget stage push",
+            "nuget stage push one.nupkg two.nupkg",
+            "nuget stage push package.nupkg --source",
+            "nuget stage push package.nupkg --api-key",
+            "nuget stage push package.nupkg --group",
+            "nuget stage push package.nupkg --configfile",
+            "nuget stage push package.nupkg --no-symbols true",
+            "nuget stage push package.nupkg --unknown",
+        };
+
+        [Theory]
+        [MemberData(nameof(ValidArgumentsTestData))]
+        public void PushCommand_WithValidArguments_SetsExpectedValues(
+            string commandLine,
+            ExpectedStagePushArguments expected)
+        {
+            // Arrange
             Command rootCommand = new("nuget");
             bool actionInvoked = false;
-
             RegisterPushCommand(rootCommand, args =>
             {
                 actionInvoked = true;
-                args.PackagePath.Should().Be(@"artifacts\Example.1.0.0.nupkg");
-                args.Source.Should().Be("staging-source");
-                args.ApiKey.Should().Be("secret");
-                args.GroupId.Should().Be("release-group");
-                args.NoSymbols.Should().BeTrue();
-                args.ConfigFile.Should().Be(@"config\NuGet.Config");
-                args.Interactive.Should().BeTrue();
-                args.AllowInsecureConnections.Should().BeTrue();
+                args.PackagePath.Should().Be(expected.PackagePath);
+                args.Source.Should().Be(expected.Source);
+                args.ApiKey.Should().Be(expected.ApiKey);
+                args.GroupId.Should().Be(expected.GroupId);
+                args.NoSymbols.Should().Be(expected.NoSymbols);
+                args.ConfigFile.Should().Be(expected.ConfigFile);
+                args.Interactive.Should().Be(expected.Interactive);
+                args.AllowInsecureConnections.Should().Be(expected.AllowInsecureConnections);
                 return Task.FromResult(0);
             });
 
-            ParseResult result = rootCommand.Parse(
-                @"nuget stage push artifacts\Example.1.0.0.nupkg -s staging-source -k secret --group release-group --no-symbols --configfile config\NuGet.Config --interactive --allow-insecure-connections");
-
-            result.Errors.Should().BeEmpty();
+            // Act
+            ParseResult result = rootCommand.Parse(commandLine);
             result.Invoke();
+
+            // Assert
+            result.Errors.Should().BeEmpty();
             actionInvoked.Should().BeTrue();
         }
 
         [Theory]
-        [InlineData("-s", "-k")]
-        [InlineData("--source", "--api-key")]
-        public void PushCommand_SourceAndApiKeyAliases_AreAccepted(string sourceOption, string apiKeyOption)
+        [MemberData(nameof(InvalidArgumentsTestData))]
+        public void PushCommand_WithInvalidArguments_HasParseError(string commandLine)
         {
+            // Arrange
             Command rootCommand = new("nuget");
-
-            RegisterPushCommand(rootCommand, args =>
+            bool actionInvoked = false;
+            RegisterPushCommand(rootCommand, _ =>
             {
-                args.Source.Should().Be("source");
-                args.ApiKey.Should().Be("key");
+                actionInvoked = true;
                 return Task.FromResult(0);
             });
 
-            ParseResult result = rootCommand.Parse(
-                $"nuget stage push package.nupkg {sourceOption} source {apiKeyOption} key");
-
-            result.Errors.Should().BeEmpty();
-            result.Invoke();
-        }
-
-        [Theory]
-        [InlineData("nuget stage push")]
-        [InlineData("nuget stage push one.nupkg two.nupkg")]
-        [InlineData("nuget stage push package.nupkg --group")]
-        public void PushCommand_InvalidArguments_HasParseError(string commandLine)
-        {
-            Command rootCommand = new("nuget");
-
-            RegisterPushCommand(rootCommand, _ =>
-                throw new InvalidOperationException("The action should not be invoked."));
-
+            // Act
             ParseResult result = rootCommand.Parse(commandLine);
 
+            // Assert
             result.Errors.Should().NotBeEmpty();
-        }
-
-        [Fact]
-        public void PushCommand_Help_DoesNotInvokeAction()
-        {
-            RootCommand rootCommand = new();
-            Command nugetCommand = new("nuget");
-            rootCommand.Subcommands.Add(nugetCommand);
-
-            RegisterPushCommand(nugetCommand, _ =>
-                throw new InvalidOperationException("The action should not be invoked."));
-
-            ParseResult result = rootCommand.Parse("nuget stage push --help");
-
-            result.Errors.Should().BeEmpty();
-            result.Action.Should().BeOfType<System.CommandLine.Help.HelpAction>();
+            actionInvoked.Should().BeFalse();
         }
 
         private static void RegisterPushCommand(

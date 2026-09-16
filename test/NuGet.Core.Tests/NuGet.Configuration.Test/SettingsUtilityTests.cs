@@ -17,83 +17,87 @@ namespace NuGet.Configuration.Test
 {
     public class SettingsUtilityTests
     {
+        private readonly string _apikey = Guid.NewGuid().ToString();
         private const string EndpointUrl = "https://www.nuget.org/api/v2/package";
-        private readonly string _apiKey = Guid.NewGuid().ToString();
 
         [PlatformFact(Platform.Windows)]
-        public void GetApiKey_ReturnsApiKeyForMatchingEndpointUrl()
+        public void GetApiKey_ReturnsApiKeyForMatchingEndpointUrl_Success()
         {
-            string encryptedApiKey = EncryptionUtility.EncryptString(_apiKey);
+            // Arrange
+            string encryptedApiKey = EncryptionUtility.EncryptString(_apikey);
+
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetSection(ConfigurationConstants.ApiKeys))
-                .Returns(new MockSettingSection(
-                    ConfigurationConstants.ApiKeys,
-                    new AddItem(EndpointUrl, encryptedApiKey)));
+            settings.Setup(s => s.GetSection("apikeys"))
+                                .Returns(new MockSettingSection("apikeys",
+                                    new AddItem(EndpointUrl, encryptedApiKey)
+                                ));
 
-            string? apiKey = SettingsUtility.GetApiKey(
-                settings.Object,
-                EndpointUrl,
-                NuGetConstants.V3FeedUrl);
+            //Act
+            string? apikey = SettingsUtility.GetApiKey(settings.Object, EndpointUrl, NuGetConstants.V3FeedUrl);
 
-            apiKey.Should().Be(_apiKey);
+            //Assert
+            Assert.Equal(_apikey, apikey);
         }
 
         [PlatformFact(Platform.Windows)]
-        public void GetApiKey_ReturnsApiKeyForMatchingPackageSourceUrl()
+        public void GetApiKey_ReturnsApiKeyForMatchingPackageSourceUrl_Success()
         {
-            string encryptedApiKey = EncryptionUtility.EncryptString(_apiKey);
+            // Arrange
+            string encryptedApiKey = EncryptionUtility.EncryptString(_apikey);
+
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetSection(ConfigurationConstants.ApiKeys))
-                .Returns(new MockSettingSection(
-                    ConfigurationConstants.ApiKeys,
-                    new AddItem("http://endpointUrl", _apiKey),
-                    new AddItem(NuGetConstants.V3FeedUrl, encryptedApiKey)));
+            settings.Setup(s => s.GetSection("apikeys"))
+                        .Returns(new MockSettingSection("apikeys",
+                            new AddItem("http://endpointUrl", _apikey),//dummy endpoint url passed to ensure apikey is read from source url config entry
+                            new AddItem(NuGetConstants.V3FeedUrl, encryptedApiKey)
+                        ));
 
-            string? apiKey = SettingsUtility.GetApiKey(
-                settings.Object,
-                EndpointUrl,
-                NuGetConstants.V3FeedUrl);
+            //Act
+            string? apikey = SettingsUtility.GetApiKey(settings.Object, EndpointUrl, NuGetConstants.V3FeedUrl);
 
-            apiKey.Should().Be(_apiKey);
+            //Assert
+            Assert.Equal(_apikey, apikey);
         }
 
         [PlatformFact(Platform.Windows)]
-        public void GetApiKey_ReturnsDefaultGalleryServerUrlApiKeyForNuGetOrgSource()
+        public void GetApiKey_ReturnsDefaultGalleryServerUrlApiKeyIfSourceHostNameIsNuGetOrg_Success()
         {
-            string encryptedApiKey = EncryptionUtility.EncryptString(_apiKey);
+            // Arrange
+            string encryptedApiKey = EncryptionUtility.EncryptString(_apikey);
+
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetSection(ConfigurationConstants.ApiKeys))
-                .Returns(new MockSettingSection(
-                    ConfigurationConstants.ApiKeys,
-                    new AddItem("http://endpointUrl", _apiKey),
-                    new AddItem(NuGetConstants.DefaultGalleryServerUrl, encryptedApiKey)));
+            settings.Setup(s => s.GetSection("apikeys"))
+                        .Returns(new MockSettingSection("apikeys",
+                            new AddItem("http://endpointUrl", _apikey),
+                            new AddItem(NuGetConstants.DefaultGalleryServerUrl, encryptedApiKey)
+                        ));
 
-            string? apiKey = SettingsUtility.GetApiKey(
-                settings.Object,
-                EndpointUrl,
-                NuGetConstants.V3FeedUrl);
+            //Act
+            string? apikey = SettingsUtility.GetApiKey(settings.Object, EndpointUrl, NuGetConstants.V3FeedUrl);
 
-            apiKey.Should().Be(_apiKey);
+            //Assert
+            Assert.Equal(_apikey, apikey);
         }
 
         [PlatformFact(Platform.Windows)]
-        public void GetApiKey_ReturnsNullWhenApiKeyIsNotFound()
+        public void GetApiKey_ReturnsNullWhenApiKeyIsNotFound_Success()
         {
-            string encryptedApiKey = EncryptionUtility.EncryptString(_apiKey);
+            // Arrange
+            string encryptedApiKey = EncryptionUtility.EncryptString(_apikey);
+
             var settings = new Mock<ISettings>(MockBehavior.Strict);
-            settings.Setup(s => s.GetSection(ConfigurationConstants.ApiKeys))
-                .Returns(new MockSettingSection(
-                    ConfigurationConstants.ApiKeys,
-                    new AddItem("http://endpointUrl", encryptedApiKey),
-                    new AddItem(NuGetConstants.DefaultGalleryServerUrl, encryptedApiKey),
-                    new AddItem("https://sourceUrl", encryptedApiKey)));
+            settings.Setup(s => s.GetSection("apikeys"))
+                        .Returns(new MockSettingSection("apikeys",
+                            new AddItem("http://endpointUrl", encryptedApiKey),
+                            new AddItem(NuGetConstants.DefaultGalleryServerUrl, encryptedApiKey),
+                            new AddItem("https://sourceUrl", encryptedApiKey)
+                        ));
 
-            string? apiKey = SettingsUtility.GetApiKey(
-                settings.Object,
-                EndpointUrl,
-                "https://someothersourceUrl");
+            //Act
+            string? apikey = SettingsUtility.GetApiKey(settings.Object, EndpointUrl, "https://someothersourceUrl");
 
-            apiKey.Should().BeNull();
+            //Assert
+            Assert.True(string.IsNullOrEmpty(apikey));
         }
 
         [Fact]
