@@ -98,6 +98,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(uri));
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (nonInteractive)
+            {
+                return new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+            }
+
             if (type != CredentialRequestType.Proxy)
             {
                 return await PromptForPackageSourceCredentialsAsync(uri, isRetry, cancellationToken);

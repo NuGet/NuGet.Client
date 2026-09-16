@@ -112,6 +112,37 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     cancellationToken: new CancellationToken(canceled: true)));
         }
 
+        [Theory]
+        [InlineData(CredentialRequestType.Proxy)]
+        [InlineData(CredentialRequestType.Unauthorized)]
+        public async Task GetAsync_WhenNonInteractive_ReturnsProviderNotApplicableWithoutPrompting(
+            CredentialRequestType requestType)
+        {
+            var vsWebProxy = new Mock<IVsWebProxy>(MockBehavior.Strict);
+            var credentialPrompt = new TestPackageSourceCredentialPrompt
+            {
+                CredentialsToReturn = new NetworkCredential("user", "password"),
+            };
+            var provider = new VisualStudioCredentialProvider(
+                vsWebProxy.Object,
+                uiShell: null,
+                new Lazy<JoinableTaskFactory>(() => NuGetUIThreadHelper.JoinableTaskFactory),
+                credentialPrompt);
+
+            CredentialResponse response = await provider.GetAsync(
+                _uri,
+                proxy: null,
+                type: requestType,
+                message: null,
+                isRetry: false,
+                nonInteractive: true,
+                cancellationToken: CancellationToken.None);
+
+            Assert.Equal(CredentialStatus.ProviderNotApplicable, response.Status);
+            Assert.Null(credentialPrompt.PackageSourceUri);
+            vsWebProxy.VerifyNoOtherCalls();
+        }
+
         [Fact]
         public async Task GetAsync_CallsWebProxy_PassesDefaultCredentialsState()
         {
@@ -143,7 +174,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 type: CredentialRequestType.Proxy,
                 message: "a",
                 isRetry: false,
-                nonInteractive: true,
+                nonInteractive: false,
                 cancellationToken: CancellationToken.None);
 
             Assert.NotNull(response);
