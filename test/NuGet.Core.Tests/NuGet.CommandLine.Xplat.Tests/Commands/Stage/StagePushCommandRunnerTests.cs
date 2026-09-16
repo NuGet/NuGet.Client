@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
                 (_, _, _) => Task.FromResult<PackageStagingResourceV3?>(null));
             string expectedMessage = string.Format(
                 CultureInfo.CurrentCulture,
-                Strings.StagePushCommand_Error_ResourceNotFound,
+                CommandLine.XPlat.Strings.StagePushCommand_Error_ResourceNotFound,
                 source.Source);
 
             // Act
