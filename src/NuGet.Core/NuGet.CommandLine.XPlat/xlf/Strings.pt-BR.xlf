@@ -403,6 +403,11 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
         <target state="translated">Não é possível localizar uma versão de pacote válida</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceDoesNotProvidePublishedDate">
+        <source>Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</source>
+        <target state="new">Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</target>
+        <note>{0} - Package ID. {1} - Package source name.</note>
+      </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
         <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
         <target state="translated">O mapeamento de origem do pacote está habilitado, mas nenhum mapeamento para {0} foi encontrado. Consulte https://aka.ms/nuget/psm para obter mais informações.</target>

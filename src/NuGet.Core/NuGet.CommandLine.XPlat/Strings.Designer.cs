@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.XPlat {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -737,7 +737,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects..
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; is not a PackageReference project. This command only supports NuGet PackageReference projects..
         /// </summary>
         internal static string Error_NotPRProject {
             get {
@@ -760,6 +760,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_PackageDownload_VersionNotFound {
             get {
                 return ResourceManager.GetString("Error_PackageDownload_VersionNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; from source &apos;{1}&apos; does not have a published date, so the minimum publish age cannot be applied..
+        /// </summary>
+        internal static string Error_PackageSourceDoesNotProvidePublishedDate {
+            get {
+                return ResourceManager.GetString("Error_PackageSourceDoesNotProvidePublishedDate", resourceCulture);
             }
         }
         
@@ -2103,6 +2112,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow signing with certificates whose root certificate is not in a trusted root store. The certificate chain is still built and validated for structure, but UntrustedRoot status is treated as a warning..
+        /// </summary>
+        internal static string SignCommandAllowUntrustedRootDescription {
+            get {
+                return ResourceManager.GetString("SignCommandAllowUntrustedRootDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options..
         /// </summary>
         internal static string SignCommandCertificateFingerprintDescription {
@@ -2229,15 +2247,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string SignCommandOverwriteDescription {
             get {
                 return ResourceManager.GetString("SignCommandOverwriteDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow signing with certificates whose root certificate is not in a trusted root store...
-        /// </summary>
-        internal static string SignCommandAllowUntrustedRootDescription {
-            get {
-                return ResourceManager.GetString("SignCommandAllowUntrustedRootDescription", resourceCulture);
             }
         }
         

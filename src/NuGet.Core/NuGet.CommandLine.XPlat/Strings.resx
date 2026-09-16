@@ -599,6 +599,10 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>There are no versions available for the package '{0}'.</value>
     <comment>{0} - PackageID</comment>
   </data>
+  <data name="Error_PackageSourceDoesNotProvidePublishedDate" xml:space="preserve">
+    <value>Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</value>
+    <comment>{0} - Package ID. {1} - Package source name.</comment>
+  </data>
   <data name="PrereleaseVersionsAvailable" xml:space="preserve">
     <value>There are no stable versions available, {0} is the best available. Consider adding the --prerelease option</value>
     <comment>{0} - Package Version</comment>

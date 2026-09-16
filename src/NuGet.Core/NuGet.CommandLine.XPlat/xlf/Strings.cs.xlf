@@ -403,6 +403,11 @@ NuGet vyžaduje zdroje HTTPS. Pokud chcete používat zdroje HTTP, musíte v sou
         <target state="translated">Nepovedlo se najít platnou verzi balíčku.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceDoesNotProvidePublishedDate">
+        <source>Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</source>
+        <target state="new">Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</target>
+        <note>{0} - Package ID. {1} - Package source name.</note>
+      </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
         <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
         <target state="translated">Mapování zdroje balíčku je povolené, ale pro balíček {0} nebylo nalezeno žádné mapování. Další informace najdete na https://aka.ms/nuget/audit.</target>

@@ -403,6 +403,11 @@ NuGet erfordert HTTPS-Quellen. Um HTTP-Quellen zu verwenden, müssen Sie „allo
         <target state="translated">Es konnte keine gültige Paketversion gefunden werden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceDoesNotProvidePublishedDate">
+        <source>Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</source>
+        <target state="new">Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</target>
+        <note>{0} - Package ID. {1} - Package source name.</note>
+      </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
         <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
         <target state="translated">Die Paketquellzuordnung ist aktiviert, aber es wurde keine Zuordnung für das Paket {0} gefunden. Weitere Informationen finden Sie unter https://aka.ms/nuget/psm.</target>

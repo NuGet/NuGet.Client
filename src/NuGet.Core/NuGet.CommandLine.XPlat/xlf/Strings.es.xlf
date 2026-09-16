@@ -403,6 +403,11 @@ NuGet requiere orígenes HTTPS. Para usar orígenes HTTP, es necesario establece
         <target state="translated">No se puede encontrar una versión válida del paquete</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceDoesNotProvidePublishedDate">
+        <source>Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</source>
+        <target state="new">Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</target>
+        <note>{0} - Package ID. {1} - Package source name.</note>
+      </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
         <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
         <target state="translated">La asignación de origen del paquete está habilitada, pero no se encontró ninguna asignación para el paquete {0}. Consulte https://aka.ms/nuget/psm para obtener más información.</target>

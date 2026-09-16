@@ -403,6 +403,11 @@ NuGet için HTTPS kaynakları gereklidir. HTTP kaynaklarını kullanmak için Nu
         <target state="translated">Geçerli bir paket sürümü bulunamıyor</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_PackageSourceDoesNotProvidePublishedDate">
+        <source>Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</source>
+        <target state="new">Package '{0}' from source '{1}' does not have a published date, so the minimum publish age cannot be applied.</target>
+        <note>{0} - Package ID. {1} - Package source name.</note>
+      </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
         <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
         <target state="translated">Paket kaynağı eşlemesi etkinleştirildi, ancak paket {0} için eşleme bulunamadı. Daha fazla bilgi için https://aka.ms/nuget/psm adresini ziyaret edin.</target>
