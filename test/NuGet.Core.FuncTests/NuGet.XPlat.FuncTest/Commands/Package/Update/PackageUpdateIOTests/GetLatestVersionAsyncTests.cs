@@ -308,7 +308,7 @@ public class GetLatestVersionAsyncTests
 
         // Assert
         result.Version.Should().Be(new NuGetVersion("2.0.0"));
-        result.VersionInCooldown.Should().Be(new NuGetVersion("2.0.0"));
+        result.VersionInCooldown.Should().BeNull();
     }
 
     [Fact]

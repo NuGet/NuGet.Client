@@ -132,6 +132,21 @@ internal interface IPackageUpdateIO
 
 }
 
+/// <summary>
+/// Contains the results of "get package versions" lookup operation. For "get latest", Version represents the
+/// highest version that is not in cooldown, and VersionInCooldown represents the highest version that is still
+/// in cooldown. For "get non-vulnerable", Version represents the lowest version that is not in cooldown, and
+/// VersionInCooldown represents the lowest version that is still in cooldown, but only when it is lower than
+/// Version and would therefore have been preferred if it were eligible.
+/// </summary>
+/// <param name="Version">
+/// A version that satisfies the lookup criteria and the minimum publish age configured for at least one source.
+/// <see langword="null"/> when no source provides a matching version that has reached its minimum publish age.
+/// </param>
+/// <param name="VersionInCooldown">
+/// A version that satisfies the lookup criteria but has not reached a source's configured minimum publish age.
+/// <see langword="null"/> when no such version would be preferred over <paramref name="Version"/>.
+/// </param>
 internal readonly record struct PackageVersionLookupResult(
     NuGetVersion? Version,
     NuGetVersion? VersionInCooldown);

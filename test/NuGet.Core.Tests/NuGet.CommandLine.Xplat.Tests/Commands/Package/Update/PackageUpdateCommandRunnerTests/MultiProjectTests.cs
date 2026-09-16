@@ -97,7 +97,7 @@ public class MultiProjectTests
     }
 
     [Fact]
-    public async Task UpgradeAllPackages_TwoProjectsWithSamePackage_UpdatesBothProjects()
+    public async Task UpgradeAllPackages_TwoProjectsWithSamePackageAndNewerVersionInCooldown_UpdatesBothProjectsAndReportsCooldownOnce()
     {
         // Arrange
         var solutionDirectory = RuntimeEnvironmentHelper.IsWindows
@@ -132,6 +132,15 @@ public class MultiProjectTests
         };
 
         TestData testData = InitTest(project1Path, packagesToUpdate, dgSpec, latestPackageVersions: latestPackageVersions);
+        testData.IoMock.Setup(x => x.GetLatestVersionAsync(
+            "Test.Package",
+            false,
+            It.IsAny<IReadOnlyList<string>>(),
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PackageVersionLookupResult(
+                Version: new NuGetVersion("2.0.0"),
+                VersionInCooldown: new NuGetVersion("3.0.0")));
 
         // Act
         int exitCode = await RunCommand(testData, CancellationToken.None);
@@ -173,10 +182,14 @@ public class MultiProjectTests
             It.Is<string>(s => s.Contains(string.Format(Strings.PackageUpdate_FinalSummary, packagesUpdated, packagesScanned))),
             It.IsAny<ConsoleColor>()),
             Times.Once);
+        testData.LoggerMock.Verify(x => x.LogMinimal(
+            string.Format(Strings.PackageUpdate_PackagesAwaitingCooldown, "Test.Package"),
+            ConsoleColor.Yellow),
+            Times.Once);
     }
 
     [Fact]
-    public async Task UpgradeAllPackages_TwoProjectsWithSamePackageInCooldown_ReportsPackageOnce()
+    public async Task UpgradeAllPackages_MultipleProjectsAndPackagesInCooldown_ReportsDistinctSortedPackageNames()
     {
         // Arrange
         var solutionDirectory = RuntimeEnvironmentHelper.IsWindows
@@ -193,7 +206,8 @@ public class MultiProjectTests
         var project2 = new TestPackageSpecFactory(project2Path, builder =>
         {
             builder.WithProperty("TargetFramework", "net9.0")
-                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")])
+                   .WithItem("PackageReference", "Another.Package", [new("Version", "1.0.0")]);
         }).Build();
 
         var dgSpec = new DependencyGraphSpec();
@@ -212,6 +226,15 @@ public class MultiProjectTests
             .ReturnsAsync(new PackageVersionLookupResult(
                 Version: new NuGetVersion("1.0.0"),
                 VersionInCooldown: new NuGetVersion("2.0.0")));
+        testData.IoMock.Setup(x => x.GetLatestVersionAsync(
+            "Another.Package",
+            false,
+            It.IsAny<IReadOnlyList<string>>(),
+            It.IsAny<ILogger>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PackageVersionLookupResult(
+                Version: new NuGetVersion("1.0.0"),
+                VersionInCooldown: new NuGetVersion("2.0.0")));
 
         // Act
         int exitCode = await RunCommand(testData, CancellationToken.None);
@@ -219,7 +242,7 @@ public class MultiProjectTests
         // Assert
         exitCode.Should().Be(PackageUpdateCommandRunner.ExitCodes.NoPackagesNeedUpdating);
         testData.LoggerMock.Verify(x => x.LogMinimal(
-            string.Format(Strings.PackageUpdate_PackagesAwaitingCooldown, 1),
+            string.Format(Strings.PackageUpdate_PackagesAwaitingCooldown, "Another.Package, Test.Package"),
             ConsoleColor.Yellow),
             Times.Once);
         testData.IoMock.Verify(x => x.PreviewUpdatePackageReferenceAsync(

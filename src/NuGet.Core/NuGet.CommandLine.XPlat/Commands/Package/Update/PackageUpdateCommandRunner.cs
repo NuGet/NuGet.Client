@@ -236,6 +236,11 @@ internal static class PackageUpdateCommandRunner
                 }
                 else
                 {
+                    if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown < versionLookup.Version)
+                    {
+                        packagesAwaitingCooldown.Add(packageIdentity.Id);
+                    }
+
                     packagesToUpdateResult.Add(new PackageUpdateResult
                     {
                         Package = new PackageToUpdate
@@ -337,7 +342,7 @@ internal static class PackageUpdateCommandRunner
         }
     }
 
-    private static async Task<(int? exitCode, Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates, int totalPackagesScanned, int packagesAwaitingCooldown)>
+    private static async Task<(int? exitCode, Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates, int totalPackagesScanned, HashSet<string> packagesAwaitingCooldown)>
         SelectPackagesToUpdateAsync(
             PackageUpdateArgs args,
             DependencyGraphSpec dgSpec,
@@ -350,7 +355,7 @@ internal static class PackageUpdateCommandRunner
 
         int? exitCode;
         int totalPackagesScanned;
-        int packagesAwaitingCooldown;
+        HashSet<string> packagesAwaitingCooldown;
 
         if (args.Vulnerable)
         {
@@ -360,7 +365,7 @@ internal static class PackageUpdateCommandRunner
                 if (!NuGetAuditEnabled(projectSpec))
                 {
                     logger.LogError(Strings.PackageUpdate_AuditDisabled);
-                    return (ExitCodes.InvalidArgs, projectPackageUpdates, 0, 0);
+                    return (ExitCodes.InvalidArgs, projectPackageUpdates, 0, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
                 }
             }
 
@@ -426,7 +431,7 @@ internal static class PackageUpdateCommandRunner
             }
         }
 
-        if (packagesAwaitingCooldown > 0)
+        if (packagesAwaitingCooldown.Count > 0)
         {
             logger.LogMinimal(Format.PackageUpdate_PackagesAwaitingCooldown(packagesAwaitingCooldown), ConsoleColor.Yellow);
         }
@@ -449,7 +454,7 @@ internal static class PackageUpdateCommandRunner
         return (null, projectPackageUpdates, totalPackagesScanned, packagesAwaitingCooldown);
     }
 
-    private static async Task<(int? exitCode, int totalPackagesScanned, int packagesAwaitingCooldown)> ProcessProjectsInParallelAsync(
+    private static async Task<(int? exitCode, int totalPackagesScanned, HashSet<string> packagesAwaitingCooldown)> ProcessProjectsInParallelAsync(
         DependencyGraphSpec dgSpec,
         Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates,
         Func<string, CancellationToken, Task<(List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages, HashSet<string> packagesAwaitingCooldown, int? errorExitCode)>> processProject,
@@ -489,7 +494,7 @@ internal static class PackageUpdateCommandRunner
             }
         });
 
-        return (exitCode, scannedPackages.Count, packagesAwaitingCooldown.Count);
+        return (exitCode, scannedPackages.Count, packagesAwaitingCooldown);
     }
 
     internal static async Task<(List<PackageUpdateResult>?, HashSet<string> scannedPackages, HashSet<string> packagesAwaitingCooldown)> SelectSpecificPackagesToUpdateAsync(
@@ -585,6 +590,11 @@ internal static class PackageUpdateCommandRunner
                         logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, versionLookup.Version.OriginalVersion!, project.FilePath), ConsoleColor.Yellow);
                     }
                     continue;
+                }
+
+                if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown > versionLookup.Version)
+                {
+                    packagesAwaitingCooldown.Add(package.Id);
                 }
 
                 upgradeVersion = VersionRange.Parse(versionLookup.Version.OriginalVersion!);
@@ -750,6 +760,11 @@ internal static class PackageUpdateCommandRunner
                 continue;
             }
 
+            if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown > versionLookup.Version)
+            {
+                packagesAwaitingCooldown.Add(package.identity.Id);
+            }
+
             var upgradeVersion = VersionRange.Parse(versionLookup.Version.OriginalVersion!);
             var result = new PackageUpdateResult
             {
@@ -903,9 +918,10 @@ internal static class PackageUpdateCommandRunner
             return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_FinalSummary, updatedCount, scannedCount);
         }
 
-        internal static string PackageUpdate_PackagesAwaitingCooldown(int packageCount)
+        internal static string PackageUpdate_PackagesAwaitingCooldown(IEnumerable<string> packageIds)
         {
-            return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_PackagesAwaitingCooldown, packageCount);
+            string packageList = string.Join(", ", packageIds.OrderBy(packageId => packageId, StringComparer.OrdinalIgnoreCase));
+            return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_PackagesAwaitingCooldown, packageList);
         }
 
         internal static string PackageUpdate_AllVersionsHaveAdvisories(string packageId)

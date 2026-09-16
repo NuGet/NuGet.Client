@@ -484,6 +484,38 @@ public class GetPackageToUpdateTests
     }
 
     [Fact]
+    public async Task NoPackagesProvided_NewerVersionIsInCooldown_UpdatesToEligibleVersionAndReportsCooldown()
+    {
+        // Arrange
+        PackageSpec packageSpec = new TestPackageSpecFactory(builder =>
+        {
+            builder.WithProperty("TargetFramework", "net9.0")
+                   .WithItem("PackageReference", "Test.Package", [new("Version", "1.0.0")]);
+        })
+            .Build();
+
+        var packageUpdateIO = new Mock<IPackageUpdateIO>(MockBehavior.Strict);
+        packageUpdateIO
+            .Setup(v => v.GetLatestVersionAsync("Test.Package", false, _anyPackageSourceMapping, It.IsAny<ILogger>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PackageVersionLookupResult(
+                Version: new NuGetVersion("2.0.0"),
+                VersionInCooldown: new NuGetVersion("3.0.0")));
+        packageUpdateIO.Setup(v => v.GetPackageSourceMapping()).Returns(DisabledPackageSourceMapping);
+
+        // Act
+        var (packagesToUpdate, _, packagesAwaitingCooldown) = await PackageUpdateCommandRunner.SelectAllPackagesWithUpdatesAsync(
+            packageSpec,
+            Mock.Of<ILoggerWithColor>(),
+            packageUpdateIO.Object,
+            CancellationToken.None);
+
+        // Assert
+        packagesToUpdate.Should().ContainSingle()
+            .Which.Package.NewVersion.Should().Be(VersionRange.Parse("2.0.0"));
+        packagesAwaitingCooldown.Should().ContainSingle().Which.Should().Be("Test.Package");
+    }
+
+    [Fact]
     public async Task NoPackagesProvided_AllVersionsInCooldown_DoesNotFail()
     {
         // Arrange

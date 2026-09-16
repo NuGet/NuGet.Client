@@ -273,6 +273,11 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             }
         }
 
+        if (highestVersion is not null && highestVersionInCooldown <= highestVersion)
+        {
+            highestVersionInCooldown = null;
+        }
+
         return new PackageVersionLookupResult(highestVersion, highestVersionInCooldown);
     }
 
@@ -365,6 +370,11 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             {
                 lowestNonVulnerableVersionInCooldown = task.Result.VersionInCooldown;
             }
+        }
+
+        if (lowestNonVulnerableVersion is not null && lowestNonVulnerableVersionInCooldown >= lowestNonVulnerableVersion)
+        {
+            lowestNonVulnerableVersionInCooldown = null;
         }
 
         return new PackageVersionLookupResult(lowestNonVulnerableVersion, lowestNonVulnerableVersionInCooldown);
