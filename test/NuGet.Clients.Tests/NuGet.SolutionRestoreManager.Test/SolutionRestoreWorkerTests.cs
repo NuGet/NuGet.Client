@@ -15,8 +15,8 @@ namespace NuGet.SolutionRestoreManager.Test
         [Fact]
         public void CalculateTimeoutTime_WithTimeoutLargerThanTimeElapsed_ReturnsPositiveValue()
         {
-            var startTime = new DateTime(year: 2021, month: 7, day: 21, hour: 10, minute: 5, second: 20);
-            var currentTime = new DateTime(year: 2021, month: 7, day: 21, hour: 10, minute: 7, second: 00);
+            var startTime = new DateTimeOffset(year: 2021, month: 7, day: 21, hour: 10, minute: 5, second: 20, offset: TimeSpan.Zero);
+            var currentTime = new DateTimeOffset(year: 2021, month: 7, day: 21, hour: 10, minute: 7, second: 00, offset: TimeSpan.Zero);
             TimeSpan timeoutSpan = new(hours: 0, minutes: 5, seconds: 0);
 
             var timeout = SolutionRestoreWorker.CalculateTimeoutTime(startTime: startTime, currentTime: currentTime, timeoutTime: timeoutSpan);
@@ -26,8 +26,8 @@ namespace NuGet.SolutionRestoreManager.Test
         [Fact]
         public void CalculateTimeoutTime_WithTimeElapsedLargerThanTimeout_Returns0()
         {
-            var startTime = new DateTime(year: 2021, month: 7, day: 21, hour: 10, minute: 5, second: 20);
-            var currentTime = new DateTime(year: 2021, month: 7, day: 21, hour: 11, minute: 0, second: 00);
+            var startTime = new DateTimeOffset(year: 2021, month: 7, day: 21, hour: 10, minute: 5, second: 20, offset: TimeSpan.Zero);
+            var currentTime = new DateTimeOffset(year: 2021, month: 7, day: 21, hour: 11, minute: 0, second: 00, offset: TimeSpan.Zero);
             TimeSpan timeoutSpan = new(hours: 0, minutes: 5, seconds: 0);
 
             var timeout = SolutionRestoreWorker.CalculateTimeoutTime(startTime: startTime, currentTime: currentTime, timeoutTime: timeoutSpan);
@@ -41,7 +41,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var whenNominatedCompleted = new TaskCompletionSource<bool>();
             var checkProjectsReadyCallCount = 0;
 
-            Task<SolutionRestoreWorker.RestoreReadinessResult> coordinationTask = SolutionRestoreWorker.WaitForOnBuildRestoreReadinessCoreAsync(
+            Task<SolutionRestoreWorker.RestoreReadinessResult> coordinationTask = SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
                 waitForSolutionLoadedAsync: _ => Task.CompletedTask,
                 isAllProjectsNominatedAsync: () => Task.FromResult(true),
                 checkProjectsReadyAsync: async (bulkRestoreCoordinationCheckStartTime, cancellationToken) =>
@@ -56,8 +56,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
                     return (true, false, 1, TimeSpan.FromMilliseconds(5));
                 },
-                delayAsync: (delay, cancellationToken) => Task.Delay(delay, cancellationToken),
-                getUtcNow: () => DateTime.UtcNow,
+                getUtcNow: () => DateTimeOffset.UtcNow,
                 token: CancellationToken.None);
 
             await whenNominatedStarted.Task;
@@ -78,7 +77,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var solutionLoadCompleted = new TaskCompletionSource<bool>();
             int isAllProjectsNominatedCallCount = 0;
 
-            Task<SolutionRestoreWorker.RestoreReadinessResult> coordinationTask = SolutionRestoreWorker.WaitForOnBuildRestoreReadinessCoreAsync(
+            Task<SolutionRestoreWorker.RestoreReadinessResult> coordinationTask = SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
                 waitForSolutionLoadedAsync: _ => solutionLoadCompleted.Task,
                 isAllProjectsNominatedAsync: () =>
                 {
@@ -87,8 +86,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 },
                 checkProjectsReadyAsync: (bulkRestoreCoordinationCheckStartTime, cancellationToken) =>
                     Task.FromResult((true, false, 0, TimeSpan.Zero)),
-                delayAsync: (delay, cancellationToken) => Task.Delay(delay, cancellationToken),
-                getUtcNow: () => DateTime.UtcNow,
+                getUtcNow: () => DateTimeOffset.UtcNow,
                 token: CancellationToken.None);
 
             isAllProjectsNominatedCallCount.Should().Be(0);
@@ -104,34 +102,30 @@ namespace NuGet.SolutionRestoreManager.Test
         [Fact]
         public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenNominationsDoNotComplete_TimesOut()
         {
-            var utcNow = new DateTime(year: 2026, month: 9, day: 11);
+            var utcNow = new DateTimeOffset(year: 2026, month: 9, day: 11, hour: 0, minute: 0, second: 0, offset: TimeSpan.Zero);
+            int getUtcNowCallCount = 0;
 
-            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessCoreAsync(
+            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
                 waitForSolutionLoadedAsync: _ => Task.CompletedTask,
                 isAllProjectsNominatedAsync: () => Task.FromResult(false),
                 checkProjectsReadyAsync: (lastProgressTime, cancellationToken) =>
                     throw new InvalidOperationException("Projects cannot be ready before all projects are nominated."),
-                delayAsync: (delay, cancellationToken) =>
-                {
-                    utcNow += TimeSpan.FromMinutes(6);
-                    return Task.CompletedTask;
-                },
-                getUtcNow: () => utcNow,
+                getUtcNow: () => utcNow + TimeSpan.FromMinutes(6 * getUtcNowCallCount++),
                 token: CancellationToken.None);
 
             readiness.RestoreReason.Should().Be(ImplicitRestoreReason.ProjectsReadyCheckTimeout);
-            readiness.BulkRestoreCoordinationCheckStartTime.Should().Be(new DateTime(year: 2026, month: 9, day: 11));
+            readiness.BulkRestoreCoordinationCheckStartTime.Should().Be(utcNow);
             readiness.ProjectsReadyCheckCount.Should().Be(0);
         }
 
         [Fact]
         public async Task WaitForOnBuildRestoreReadinessCoreAsync_WhenBulkCoordinationMakesProgress_DoesNotTimeOut()
         {
-            var utcNow = new DateTime(year: 2026, month: 9, day: 11);
-            DateTime firstCheckStartTime = default;
+            var utcNow = new DateTimeOffset(year: 2026, month: 9, day: 11, hour: 0, minute: 0, second: 0, offset: TimeSpan.Zero);
+            DateTimeOffset firstCheckStartTime = default;
             int checkProjectsReadyCallCount = 0;
 
-            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessCoreAsync(
+            SolutionRestoreWorker.RestoreReadinessResult readiness = await SolutionRestoreWorker.WaitForOnBuildRestoreReadinessAsync(
                 waitForSolutionLoadedAsync: _ => Task.CompletedTask,
                 isAllProjectsNominatedAsync: () => Task.FromResult(true),
                 checkProjectsReadyAsync: (lastProgressTime, cancellationToken) =>
@@ -149,7 +143,6 @@ namespace NuGet.SolutionRestoreManager.Test
                     lastProgressTime.Should().BeAfter(firstCheckStartTime);
                     return Task.FromResult((true, false, 2, TimeSpan.FromMinutes(4)));
                 },
-                delayAsync: (delay, cancellationToken) => Task.Delay(delay, cancellationToken),
                 getUtcNow: () => utcNow,
                 token: CancellationToken.None);
 
