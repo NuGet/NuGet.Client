@@ -75,7 +75,7 @@ steps:
   inputs:
     filePath: scripts\utils\EnsureAllPackagesExist.ps1
     arguments: >-
-      -BuildRTM:${{ parameters.BuildRTM }}
+      -BuildRTM:$${{ parameters.BuildRTM }}
       -NupkgOutputPath "$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir)"
 
 - task: MSBuild@1
