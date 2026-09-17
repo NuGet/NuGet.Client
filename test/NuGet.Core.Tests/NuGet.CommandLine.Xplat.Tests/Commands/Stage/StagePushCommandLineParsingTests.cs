@@ -5,6 +5,7 @@ using System;
 using System.CommandLine;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Stage;
 using Xunit;
 
@@ -162,12 +163,44 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
             actionInvoked.Should().BeFalse();
         }
 
+        [Fact]
+        public void NuGetCommandsAdd_RegistersStageWithProvidedInteractiveOption()
+        {
+            // Arrange
+            RootCommand rootCommand = new();
+            var nugetCommand = new Command("nuget");
+            rootCommand.Subcommands.Add(nugetCommand);
+            var interactiveOption = new Option<bool>("--interactive")
+            {
+                DefaultValueFactory = _ => true,
+            };
+
+            // Act
+            NuGetCommands.Add(
+                rootCommand,
+                interactiveOption,
+                virtualProjectBuilder: null);
+            ParseResult result = rootCommand.Parse("nuget stage push package.nupkg");
+
+            // Assert
+            result.Errors.Should().BeEmpty();
+            nugetCommand.Subcommands.Should().ContainSingle();
+            nugetCommand.Subcommands[0].Name.Should().Be("stage");
+            nugetCommand.Subcommands[0].Subcommands
+                .Should().ContainSingle(command => command.Name == "push");
+            result.GetValue(interactiveOption).Should().BeTrue();
+        }
+
         private static void RegisterPushCommand(
             Command rootCommand,
             Func<StagePushCommandArgs, Task<int>> action)
         {
             var stageCommand = new Command("stage");
-            StagePushCommand.Register(stageCommand, NullLoggerWithColor.GetInstance, action);
+            StagePushCommand.Register(
+                stageCommand,
+                new Option<bool>("--interactive"),
+                NullLoggerWithColor.GetInstance,
+                action);
             rootCommand.Subcommands.Add(stageCommand);
         }
     }

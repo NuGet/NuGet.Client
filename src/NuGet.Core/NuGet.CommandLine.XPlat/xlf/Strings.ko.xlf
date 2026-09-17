@@ -1303,14 +1303,9 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="new">Stages a package on the server without publishing it.</target>
         <note />
       </trans-unit>
-      <trans-unit id="StagePushCommand_Error_HttpSource">
-        <source>The staging source '{0}' uses HTTP. Use --allow-insecure-connections to allow this insecure connection.</source>
-        <target state="new">The staging source '{0}' uses HTTP. Use --allow-insecure-connections to allow this insecure connection.</target>
-        <note>0 - package source URL</note>
-      </trans-unit>
       <trans-unit id="StagePushCommand_Error_InvalidGroup">
-        <source>The group ID must contain at least one non-whitespace character.</source>
-        <target state="new">The group ID must contain at least one non-whitespace character.</target>
+        <source>The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</source>
+        <target state="new">The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_Error_MissingSource">

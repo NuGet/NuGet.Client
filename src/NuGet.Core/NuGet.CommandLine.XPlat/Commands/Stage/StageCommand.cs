@@ -6,26 +6,20 @@ using System.CommandLine;
 
 namespace NuGet.CommandLine.XPlat.Commands.Stage
 {
-    public static class StageCommand
+    internal static class StageCommand
     {
-        internal static void Register(Command rootCommand, Func<ILoggerWithColor> getLogger)
+        internal static void Register(
+            Command rootCommand,
+            Option<bool> interactiveOption,
+            Func<ILoggerWithColor> getLogger)
         {
             var stageCommand = new DocumentedCommand(
                 "stage",
                 Strings.StageCommand_Description,
                 "https://aka.ms/dotnet/nuget/stage");
 
-            StagePushCommand.Register(stageCommand, getLogger);
+            StagePushCommand.Register(stageCommand, interactiveOption, getLogger);
             rootCommand.Subcommands.Add(stageCommand);
-        }
-
-        /// <summary>
-        /// Adds the <c>stage</c> command to the supplied <c>dotnet nuget</c> command.
-        /// </summary>
-        /// <param name="rootCommand">The <c>dotnet nuget</c> command handler.</param>
-        public static void GetStageCommand(Command rootCommand)
-        {
-            Register(rootCommand, () => CommandOutputLogger.Create());
         }
     }
 }

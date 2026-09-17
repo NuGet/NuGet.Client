@@ -14,11 +14,15 @@ namespace NuGet.XPlat.FuncTest
     internal sealed class StagePushTestServer : IDisposable
     {
         private readonly string? _expectedApiKey;
+        private readonly bool _advertiseStagingResource;
         private readonly MockServer _server;
 
-        public StagePushTestServer(string? expectedApiKey = null)
+        public StagePushTestServer(
+            string? expectedApiKey = null,
+            bool advertiseStagingResource = true)
         {
             _expectedApiKey = expectedApiKey;
+            _advertiseStagingResource = advertiseStagingResource;
             _server = new MockServer();
             _server.Get.Add("/v3/index.json", _ => CreateServiceIndex());
             _server.Put.Add("/staging/package", request => CaptureRequest("package", request, PackageStatusCode));
@@ -45,14 +49,20 @@ namespace NuGet.XPlat.FuncTest
 
         private string CreateServiceIndex()
         {
-            return $$"""
-                {
-                  "version": "3.0.0",
-                  "resources": [
+            string resources = _advertiseStagingResource
+                ? $$"""
                     {
                       "@id": "{{StagingUrl}}",
                       "@type": "PackageStaging/1.0.0"
                     }
+                    """
+                : string.Empty;
+
+            return $$"""
+                {
+                  "version": "3.0.0",
+                  "resources": [
+                    {{resources}}
                   ]
                 }
                 """;

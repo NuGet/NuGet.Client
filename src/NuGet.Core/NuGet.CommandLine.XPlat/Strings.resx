@@ -168,12 +168,8 @@
   <data name="StagePushCommand_Description" xml:space="preserve">
     <value>Stages a package on the server without publishing it.</value>
   </data>
-  <data name="StagePushCommand_Error_HttpSource" xml:space="preserve">
-    <value>The staging source '{0}' uses HTTP. Use --allow-insecure-connections to allow this insecure connection.</value>
-    <comment>0 - package source URL</comment>
-  </data>
   <data name="StagePushCommand_Error_InvalidGroup" xml:space="preserve">
-    <value>The group ID must contain at least one non-whitespace character.</value>
+    <value>The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</value>
   </data>
   <data name="StagePushCommand_Error_MissingSource" xml:space="preserve">
     <value>No package source was provided and DefaultPushSource is not configured.</value>

@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.Linq;
 using NuGet.CommandLine.XPlat.Commands.Package.PackageDownload;
 using NuGet.CommandLine.XPlat.Commands.Package.Update;
+using NuGet.CommandLine.XPlat.Commands.Stage;
 
 namespace NuGet.CommandLine.XPlat;
 
@@ -25,6 +26,15 @@ public static class NuGetCommands
     /// Those commands are not added by this method.</remarks>
     public static void Add(Command command, Option<bool> interactiveOption, IVirtualProjectBuilder? virtualProjectBuilder)
     {
+        var nugetCommand = command.Subcommands.FirstOrDefault(c => c.Name == "nuget");
+        if (nugetCommand is null)
+        {
+            nugetCommand = new Command("nuget");
+            command.Subcommands.Add(nugetCommand);
+        }
+
+        StageCommand.Register(nugetCommand, interactiveOption, () => CommandOutputLogger.Create());
+
         var packageCommand = command.Subcommands.FirstOrDefault(c => c.Name == "package");
         if (packageCommand is null)
         {

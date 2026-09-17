@@ -2296,16 +2296,7 @@ namespace NuGet.CommandLine.XPlat {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The staging source '{0}' uses HTTP. Use --allow-insecure-connections to allow this insecure connection..
-        /// </summary>
-        internal static string StagePushCommand_Error_HttpSource {
-            get {
-                return ResourceManager.GetString("StagePushCommand_Error_HttpSource", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to The group ID must contain at least one non-whitespace character..
+        ///   Looks up a localized string similar to The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit..
         /// </summary>
         internal static string StagePushCommand_Error_InvalidGroup {
             get {

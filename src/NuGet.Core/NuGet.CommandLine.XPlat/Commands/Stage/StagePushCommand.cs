@@ -11,16 +11,19 @@ namespace NuGet.CommandLine.XPlat.Commands.Stage
     {
         internal static void Register(
             Command stageCommand,
+            Option<bool> interactiveOption,
             Func<ILoggerWithColor> getLogger)
         {
             Register(
                 stageCommand,
+                interactiveOption,
                 getLogger,
                 args => new StagePushCommandRunner().ExecuteCommandAsync(args));
         }
 
         internal static void Register(
             Command stageCommand,
+            Option<bool> interactiveOption,
             Func<ILoggerWithColor> getLogger,
             Func<StagePushCommandArgs, Task<int>> action)
         {
@@ -60,12 +63,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Stage
             {
                 Arity = ArgumentArity.ExactlyOne,
                 Description = Strings.Option_ConfigFile,
-            };
-
-            var interactiveOption = new Option<bool>("--interactive")
-            {
-                Arity = ArgumentArity.Zero,
-                Description = Strings.NuGetXplatCommand_Interactive,
             };
 
             var allowInsecureConnectionsOption = new Option<bool>("--allow-insecure-connections")

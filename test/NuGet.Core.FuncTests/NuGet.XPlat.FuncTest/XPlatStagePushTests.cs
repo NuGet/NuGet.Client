@@ -2,9 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Commands.Stage;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -29,6 +36,61 @@ namespace NuGet.XPlat.FuncTest
             "Contoso.1.0.0.snupkg",
             "Contoso.1.0.0.symbols.nupkg",
         };
+
+        public static TheoryData<string?, string?, string> ApiKeyPriorityTestData => new()
+        {
+            { "explicit-api-key", "environment-api-key", "explicit-api-key" },
+            { null, "environment-api-key", "environment-api-key" },
+            { null, null, "configured-api-key" },
+        };
+
+        [PlatformTheory(Platform.Windows)]
+        [MemberData(nameof(ApiKeyPriorityTestData))]
+        public async Task StagePush_ApiKeySources_UseExpectedPriority(
+            string? explicitApiKey,
+            string? environmentApiKey,
+            string expectedApiKey)
+        {
+            // Arrange
+            const string configuredApiKey = "configured-api-key";
+            using var pathContext = new SimpleTestPathContext();
+            using var server = new StagePushTestServer(expectedApiKey);
+            string packagePath = CreatePackage(pathContext, fileName: "Contoso.1.0.0.nupkg", content: PackageFileContent);
+            ConfigureSource(pathContext, server, setDefaultPushSource: false);
+            ISettings settings = Settings.LoadSpecificSettings(
+                pathContext.WorkingDirectory,
+                Path.GetFileName(pathContext.NuGetConfig));
+            SettingsUtility.SetEncryptedValueForAddItem(
+                settings,
+                ConfigurationConstants.ApiKeys,
+                server.StagingUrl,
+                configuredApiKey);
+            IEnvironmentVariableReader environmentVariableReader = environmentApiKey is null
+                ? TestEnvironmentVariableReader.EmptyInstance
+                : new TestEnvironmentVariableReader(
+                    new Dictionary<string, string>
+                    {
+                        ["NUGET_API_KEY"] = environmentApiKey,
+                    });
+            var runner = new StagePushCommandRunner(environmentVariableReader);
+            var args = new StagePushCommandArgs
+            {
+                PackagePath = packagePath,
+                Source = "staging",
+                ApiKey = explicitApiKey,
+                ConfigFile = pathContext.NuGetConfig,
+                AllowInsecureConnections = true,
+                Logger = new TestCommandOutputLogger(_testOutputHelper),
+                CancellationToken = CancellationToken.None,
+            };
+
+            // Act
+            int exitCode = await runner.ExecuteCommandAsync(args);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, exitCode);
+            Assert.Equal(expectedApiKey, Assert.Single(server.Requests).ApiKey);
+        }
 
         [Fact]
         public void StagePush_PackageOnly_StagesPackage()
@@ -107,6 +169,30 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
+        public void StagePush_WhenBothSymbolsFormatsExist_PrefersSnupkg()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var server = new StagePushTestServer();
+            string packagePath = CreatePackage(pathContext, fileName: "Contoso.1.0.0.nupkg", content: PackageFileContent);
+            string snupkgPath = CreatePackage(pathContext, fileName: "Contoso.1.0.0.snupkg", content: SymbolsFileContent);
+            CreatePackage(pathContext, fileName: "Contoso.1.0.0.symbols.nupkg", content: "legacy symbols file content");
+            var log = new TestCommandOutputLogger(_testOutputHelper);
+            string[] args = CreateArgs(pathContext, server, packagePath);
+
+            // Act
+            int exitCode = CommandLine.XPlat.Program.MainInternal(
+                args,
+                log,
+                TestEnvironmentVariableReader.EmptyInstance);
+
+            // Assert
+            Assert.Equal(0, exitCode);
+            Assert.Equal(2, server.Requests.Count);
+            Assert.Equal(Path.GetFileName(snupkgPath), server.Requests[1].FileName);
+        }
+
+        [Fact]
         public void StagePush_NoSymbols_StagesOnlyPackage()
         {
             // Arrange
@@ -175,6 +261,30 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(0, exitCode);
             Assert.Equal(2, server.Requests.Count);
             Assert.All(server.Requests, request => Assert.Equal("release-group", request.GroupId));
+        }
+
+        [Fact]
+        public void StagePush_WithInvalidGroupId_FailsBeforeUpload()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var server = new StagePushTestServer();
+            string packagePath = CreatePackage(pathContext, fileName: "Contoso.1.0.0.nupkg", content: PackageFileContent);
+            var log = new TestCommandOutputLogger(_testOutputHelper);
+            string[] args = [.. CreateArgs(pathContext, server, packagePath), "--group", "-release"];
+
+            // Act
+            int exitCode = CommandLine.XPlat.Program.MainInternal(
+                args,
+                log,
+                TestEnvironmentVariableReader.EmptyInstance);
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Empty(server.Requests);
+            Assert.Contains(
+                CommandLine.XPlat.Strings.StagePushCommand_Error_InvalidGroup,
+                log.ShowErrors());
         }
 
         [Fact]
@@ -259,6 +369,60 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(Path.GetFileName(packagePath), request.FileName);
             Assert.Equal(PackageFileContent, request.FileContent);
             Assert.Contains(packagePath, log.ShowMessages());
+        }
+
+        [Fact]
+        public void StagePush_UnsupportedFile_FailsBeforeUpload()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var server = new StagePushTestServer();
+            string packagePath = CreatePackage(pathContext, fileName: "Contoso.1.0.0.zip", content: PackageFileContent);
+            var log = new TestCommandOutputLogger(_testOutputHelper);
+            string[] args = CreateArgs(pathContext, server, packagePath);
+
+            // Act
+            int exitCode = CommandLine.XPlat.Program.MainInternal(
+                args,
+                log,
+                TestEnvironmentVariableReader.EmptyInstance);
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Empty(server.Requests);
+            Assert.Contains(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    CommandLine.XPlat.Strings.StagePushCommand_Error_UnsupportedPackage,
+                    packagePath),
+                log.ShowErrors());
+        }
+
+        [Fact]
+        public void StagePush_SourceWithoutStagingResource_Fails()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var server = new StagePushTestServer(advertiseStagingResource: false);
+            string packagePath = CreatePackage(pathContext, fileName: "Contoso.1.0.0.nupkg", content: PackageFileContent);
+            var log = new TestCommandOutputLogger(_testOutputHelper);
+            string[] args = CreateArgs(pathContext, server, packagePath);
+
+            // Act
+            int exitCode = CommandLine.XPlat.Program.MainInternal(
+                args,
+                log,
+                TestEnvironmentVariableReader.EmptyInstance);
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Empty(server.Requests);
+            Assert.Contains(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    CommandLine.XPlat.Strings.StagePushCommand_Error_ResourceNotFound,
+                    server.SourceUrl),
+                log.ShowErrors());
         }
 
         [Fact]
@@ -347,7 +511,8 @@ namespace NuGet.XPlat.FuncTest
             Assert.Contains(
                 string.Format(
                     CultureInfo.CurrentCulture,
-                    CommandLine.XPlat.Strings.StagePushCommand_Error_HttpSource,
+                    CommandLine.XPlat.Strings.Error_HttpServerUsage,
+                    "stage push",
                     server.SourceUrl),
                 log.ShowErrors());
         }

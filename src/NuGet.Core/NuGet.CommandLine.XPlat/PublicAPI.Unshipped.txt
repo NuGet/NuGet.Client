@@ -1,3 +1,1 @@
 #nullable enable
-NuGet.CommandLine.XPlat.Commands.Stage.StageCommand
-static NuGet.CommandLine.XPlat.Commands.Stage.StageCommand.GetStageCommand(System.CommandLine.Command! rootCommand) -> void
