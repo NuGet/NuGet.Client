@@ -92,6 +92,19 @@ namespace NuGet.Shared
 
         internal int GetInt32() => _reader.GetInt32();
 
+        internal string ReadScalarAsInvariantString()
+        {
+            return _reader.TokenType switch
+            {
+                JsonTokenType.String => _reader.GetString(),
+                JsonTokenType.Number => ReadNumberAsInvariantString(),
+                JsonTokenType.True => bool.TrueString,
+                JsonTokenType.False => bool.FalseString,
+                JsonTokenType.Null => null,
+                _ => throw new InvalidCastException(),
+            };
+        }
+
         internal int CurrentDepth => _reader.CurrentDepth;
 
         internal bool Read()
@@ -359,6 +372,25 @@ namespace NuGet.Shared
             }
 
             ReadStreamIntoBuffer(_reader.CurrentState);
+        }
+
+        private string ReadNumberAsInvariantString()
+        {
+            if (_reader.TryGetInt64(out long integer))
+            {
+                return integer.ToString(CultureInfo.InvariantCulture);
+            }
+
+            ReadOnlySpan<byte> value = _reader.ValueSpan;
+            bool isIntegral = value.IndexOf((byte)'.') < 0
+                && value.IndexOf((byte)'e') < 0
+                && value.IndexOf((byte)'E') < 0;
+            if (isIntegral)
+            {
+                throw new InvalidCastException("Object must implement IConvertible.");
+            }
+
+            return _reader.GetDouble().ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>

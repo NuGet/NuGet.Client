@@ -8,12 +8,16 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.RuntimeModel
 {
-    public static class JsonRuntimeFormat
+    public static partial class JsonRuntimeFormat
     {
+        /// <summary>
+        /// Reads a runtime graph from a file. The file can contain UTF-8 content or BOM-marked UTF-16 or UTF-32 content.
+        /// </summary>
         public static RuntimeGraph ReadRuntimeGraph(string filePath)
         {
             using (var fileStream = File.OpenRead(filePath))
@@ -22,14 +26,33 @@ namespace NuGet.RuntimeModel
             }
         }
 
+        /// <summary>
+        /// Reads a runtime graph from a stream. The stream can contain UTF-8 content or BOM-marked UTF-16 or UTF-32 content.
+        /// The stream will be disposed at the end of reading.
+        /// </summary>
         public static RuntimeGraph ReadRuntimeGraph(Stream stream)
         {
-            using (var streamReader = new StreamReader(stream))
+            using (stream)
+            using (Stream utf8Stream = Utf8JsonStream.Create(stream, leaveOpen: true))
             {
-                return ReadRuntimeGraph(streamReader);
+                return ReadUtf8RuntimeGraph(utf8Stream);
             }
         }
 
+        private static RuntimeGraph ReadUtf8RuntimeGraph(Stream stream)
+        {
+            var reader = new Utf8JsonStreamReader(stream);
+            try
+            {
+                return ReadRuntimeGraph(ref reader);
+            }
+            finally
+            {
+                reader.Dispose();
+            }
+        }
+
+        [Obsolete("Use ReadRuntimeGraph(Stream) instead.")]
         public static RuntimeGraph ReadRuntimeGraph(TextReader textReader)
         {
             var loadSettings = new JsonLoadSettings()
