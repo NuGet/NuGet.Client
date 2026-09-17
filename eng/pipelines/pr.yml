@@ -506,8 +506,8 @@ stages:
               dotnet run --project tools-local/ensure-nupkg-dependencies-on-source/ --no-build -- $nupkgs -s https://api.nuget.org/v3/index.json
               if ($LASTEXITCODE -ne 0) { throw "Validation tool failed" }
         - task: PublishPipelineArtifact@1
-          displayName: Publish MSBuild binary logs
+          displayName: Publish MSBuild Binary Logs
           condition: or(failed(), canceled(), eq(variables['System.Debug'], 'true'))
           inputs:
             targetPath: $(Build.StagingDirectory)\binlog
-            artifact: binlog - Fork Safe Validation - Attempt $(System.JobAttempt)
+            artifact: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
