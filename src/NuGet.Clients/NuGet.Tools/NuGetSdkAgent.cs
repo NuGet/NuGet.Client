@@ -29,9 +29,6 @@ namespace NuGetVSExtension
         [Import(typeof(SVsFullAccessServiceBroker), AllowDefault = true)]
         public IServiceBroker? ServiceBroker { get; set; }
 
-        [Import(typeof(IVsSolutionManager), AllowDefault = true)]
-        public IVsSolutionManager? SolutionManager { get; set; }
-
         public Task<string> GetSystemPromptAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(
@@ -78,20 +75,6 @@ namespace NuGetVSExtension
                     McpServerConstants.NuGetMcpServerName,
                     StringComparison.OrdinalIgnoreCase))
                 .ToList();
-        }
-
-        protected override async ValueTask<CopilotSdkRequestSubmittedResult> OnRequestSubmittedAsync(
-            CopilotSdkRequestSubmittedArgs args,
-            CancellationToken cancellationToken)
-        {
-            IVsSolutionManager solutionManager = SolutionManager
-                ?? throw new InvalidOperationException("The Visual Studio solution manager is unavailable.");
-
-            string solutionContext = await CopilotSolutionContext.CreateAsync(solutionManager, cancellationToken);
-            return new CopilotSdkRequestSubmittedResult
-            {
-                AdditionalContext = solutionContext,
-            };
         }
     }
 #pragma warning restore VSCOPILOT_BACKEND
