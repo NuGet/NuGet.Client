@@ -40,6 +40,11 @@ namespace NuGet.Shared
         private bool _disposed;
         private ArrayPool<byte> _bufferPool;
         private int _bufferUsed = 0;
+        private long _bufferStartOffset;
+        private long _streamStartPosition;
+        private int _bufferStartLineNumber = 1;
+        private int _bufferStartLinePosition = 1;
+        private bool _bufferStartPreviousByteWasCarriageReturn;
 
         internal Utf8JsonStreamReader(Stream stream, int bufferSize = BufferSizeDefault, ArrayPool<byte> arrayPool = null)
         {
@@ -57,6 +62,7 @@ namespace NuGet.Shared
             _buffer = _bufferPool.Rent(bufferSize);
             _disposed = false;
             _stream = stream;
+            long initialPosition = stream.CanSeek ? stream.Position : 0;
 
             if (_stream.Read(_buffer, offset: 0, count: 1) == 1 &&
                 _stream.Read(_buffer, offset: ++_bufferUsed, count: 1) == 1 &&
@@ -69,9 +75,11 @@ namespace NuGet.Shared
                 if (hasUtf8Bom)
                 {
                     _bufferUsed = 0;
+                    initialPosition += Utf8Bom.Length;
                 }
             }
 
+            _streamStartPosition = initialPosition;
             var initialJsonReaderState = new JsonReaderState(DefaultJsonReaderOptions);
 
             ReadStreamIntoBuffer(initialJsonReaderState);
@@ -82,6 +90,10 @@ namespace NuGet.Shared
 
         internal JsonTokenType TokenType => _reader.TokenType;
 
+        internal int LineNumber { get; private set; } = 1;
+
+        internal int LinePosition { get; private set; } = 1;
+
         internal bool ValueTextEquals(ReadOnlySpan<byte> utf8Text) => _reader.ValueTextEquals(utf8Text);
 
         internal bool TryGetInt32(out int value) => _reader.TryGetInt32(out value);
@@ -91,6 +103,19 @@ namespace NuGet.Shared
         internal bool GetBoolean() => _reader.GetBoolean();
 
         internal int GetInt32() => _reader.GetInt32();
+
+        internal string ReadScalarAsInvariantString()
+        {
+            return _reader.TokenType switch
+            {
+                JsonTokenType.String => _reader.GetString(),
+                JsonTokenType.Number => ReadNumberAsInvariantString(),
+                JsonTokenType.True => bool.TrueString,
+                JsonTokenType.False => bool.FalseString,
+                JsonTokenType.Null => null,
+                _ => throw new InvalidCastException(),
+            };
+        }
 
         internal int CurrentDepth => _reader.CurrentDepth;
 
@@ -103,6 +128,7 @@ namespace NuGet.Shared
             {
                 GetMoreBytesFromStream();
             }
+
             return wasRead;
         }
 
@@ -115,9 +141,42 @@ namespace NuGet.Shared
             {
                 GetMoreBytesFromStream();
             }
+
             if (!wasSkipped)
             {
                 _reader.Skip();
+            }
+        }
+
+        internal void SetExceptionLocation(Exception exception)
+        {
+            if (exception is JsonException jsonException
+                && jsonException.LineNumber is long nativeLineNumber
+                && jsonException.BytePositionInLine is long nativeBytePositionInLine)
+            {
+                LineNumber = checked((int)nativeLineNumber + 1);
+                LinePosition = checked((int)nativeBytePositionInLine + 1);
+                return;
+            }
+
+            if (_stream.CanSeek)
+            {
+                SetSeekableStreamLocation();
+            }
+            else
+            {
+                int currentLineNumber = _bufferStartLineNumber;
+                int currentLinePosition = _bufferStartLinePosition;
+                bool previousByteWasCarriageReturn = _bufferStartPreviousByteWasCarriageReturn;
+                AdvanceLocation(
+                    _buffer,
+                    offset: 0,
+                    count: checked((int)_reader.TokenStartIndex),
+                    ref currentLineNumber,
+                    ref currentLinePosition,
+                    ref previousByteWasCarriageReturn);
+                LineNumber = currentLineNumber;
+                LinePosition = currentLinePosition;
             }
         }
 
@@ -334,11 +393,25 @@ namespace NuGet.Shared
         // This function is called when Read() returns false and we're not already in the final block
         private void GetMoreBytesFromStream()
         {
-            if (_reader.BytesConsumed < _bufferUsed)
+            int bytesConsumed = checked((int)_reader.BytesConsumed);
+            if (!_stream.CanSeek)
+            {
+                AdvanceLocation(
+                    _buffer,
+                    offset: 0,
+                    count: bytesConsumed,
+                    ref _bufferStartLineNumber,
+                    ref _bufferStartLinePosition,
+                    ref _bufferStartPreviousByteWasCarriageReturn);
+            }
+
+            _bufferStartOffset += bytesConsumed;
+
+            if (bytesConsumed < _bufferUsed)
             {
                 // If the number of bytes consumed by the reader is less than the amount set in the buffer then we have leftover bytes
                 var oldBuffer = _buffer;
-                ReadOnlySpan<byte> leftover = oldBuffer.AsSpan((int)_reader.BytesConsumed);
+                ReadOnlySpan<byte> leftover = oldBuffer.AsSpan(bytesConsumed);
                 _bufferUsed = leftover.Length;
 
                 // If the leftover bytes are the same as the buffer size then we are at capacity and need to double the buffer size
@@ -359,6 +432,108 @@ namespace NuGet.Shared
             }
 
             ReadStreamIntoBuffer(_reader.CurrentState);
+        }
+
+        private void SetSeekableStreamLocation()
+        {
+            long currentPosition = _stream.Position;
+            byte[] scanBuffer = ArrayPool<byte>.Shared.Rent(BufferSizeDefault);
+            try
+            {
+                _stream.Position = _streamStartPosition;
+                long bytesRemaining = _bufferStartOffset + _reader.TokenStartIndex;
+                int lineNumber = 1;
+                int linePosition = 1;
+                bool previousByteWasCarriageReturn = false;
+                while (bytesRemaining > 0)
+                {
+                    int bytesRead = _stream.Read(
+                        scanBuffer,
+                        offset: 0,
+                        count: (int)Math.Min(scanBuffer.Length, bytesRemaining));
+                    if (bytesRead == 0)
+                    {
+                        break;
+                    }
+
+                    AdvanceLocation(
+                        scanBuffer,
+                        offset: 0,
+                        count: bytesRead,
+                        ref lineNumber,
+                        ref linePosition,
+                        ref previousByteWasCarriageReturn);
+                    bytesRemaining -= bytesRead;
+                }
+
+                LineNumber = lineNumber;
+                LinePosition = linePosition;
+            }
+            finally
+            {
+                _stream.Position = currentPosition;
+                ArrayPool<byte>.Shared.Return(scanBuffer);
+            }
+        }
+
+        private static void AdvanceLocation(
+            byte[] buffer,
+            int offset,
+            int count,
+            ref int lineNumber,
+            ref int linePosition,
+            ref bool previousByteWasCarriageReturn)
+        {
+            int endOffset = offset + count;
+            for (int i = offset; i < endOffset; i++)
+            {
+                byte value = buffer[i];
+                if (value == (byte)'\r')
+                {
+                    lineNumber++;
+                    linePosition = 1;
+                    previousByteWasCarriageReturn = true;
+                }
+                else if (value == (byte)'\n')
+                {
+                    if (!previousByteWasCarriageReturn)
+                    {
+                        lineNumber++;
+                    }
+
+                    linePosition = 1;
+                    previousByteWasCarriageReturn = false;
+                }
+                else
+                {
+                    previousByteWasCarriageReturn = false;
+
+                    // UTF-8 continuation bytes do not advance the character position.
+                    if ((value & 0xC0) != 0x80)
+                    {
+                        linePosition++;
+                    }
+                }
+            }
+        }
+
+        private string ReadNumberAsInvariantString()
+        {
+            if (_reader.TryGetInt64(out long integer))
+            {
+                return integer.ToString(CultureInfo.InvariantCulture);
+            }
+
+            ReadOnlySpan<byte> value = _reader.ValueSpan;
+            bool isIntegral = value.IndexOf((byte)'.') < 0
+                && value.IndexOf((byte)'e') < 0
+                && value.IndexOf((byte)'E') < 0;
+            if (isIntegral)
+            {
+                throw new InvalidCastException("Object must implement IConvertible.");
+            }
+
+            return _reader.GetDouble().ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
