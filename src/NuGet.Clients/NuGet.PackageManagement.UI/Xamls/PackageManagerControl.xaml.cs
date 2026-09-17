@@ -519,7 +519,7 @@ namespace NuGet.PackageManagement.UI
                     UIUtility.ToContractsItemFilter(_topPanel.Filter),
                     isUIFiltering,
                     timeSpan,
-                    duration));
+                    duration));  
             }
             else
             {
