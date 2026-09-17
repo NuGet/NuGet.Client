@@ -3,13 +3,14 @@
 
 using System;
 using System.CommandLine;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.CommandLine.XPlat;
-using NuGet.CommandLine.XPlat.Commands.Stage;
+using NuGet.CommandLine.XPlat.Commands.Package.Stage;
 using Xunit;
 
-namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
+namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
 {
     public class StagePushCommandLineParsingTests
     {
@@ -26,66 +27,66 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
         public static TheoryData<string, ExpectedStagePushArguments> ValidArgumentsTestData => new()
         {
             {
-                "nuget stage push package.nupkg",
+                "package stage push package.nupkg",
                 new ExpectedStagePushArguments(PackagePath: "package.nupkg")
             },
             {
-                "nuget stage push package.nupkg --source source",
+                "package stage push package.nupkg --source source",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     Source: "source")
             },
             {
-                "nuget stage push -s source package.nupkg",
+                "package stage push -s source package.nupkg",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     Source: "source")
             },
             {
-                "nuget stage push package.nupkg --api-key key",
+                "package stage push package.nupkg --api-key key",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     ApiKey: "key")
             },
             {
-                "nuget stage push package.nupkg -k key",
+                "package stage push package.nupkg -k key",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     ApiKey: "key")
             },
             {
-                "nuget stage push package.nupkg --group release-group",
+                "package stage push package.nupkg --group release-group",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     GroupId: "release-group")
             },
             {
-                "nuget stage push package.nupkg --no-symbols",
+                "package stage push package.nupkg --no-symbols",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     NoSymbols: true)
             },
             {
-                "nuget stage push package.nupkg --configfile NuGet.Config",
+                "package stage push package.nupkg --configfile NuGet.Config",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     ConfigFile: "NuGet.Config")
             },
             {
-                "nuget stage push package.nupkg --interactive --allow-insecure-connections",
+                "package stage push package.nupkg --interactive --allow-insecure-connections",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
                     Interactive: true,
                     AllowInsecureConnections: true)
             },
             {
-                "nuget stage push \"path with spaces\\package.nupkg\" --group \"release group\"",
+                "package stage push \"path with spaces\\package.nupkg\" --group \"release group\"",
                 new ExpectedStagePushArguments(
                     PackagePath: "path with spaces\\package.nupkg",
                     GroupId: "release group")
             },
             {
-                "nuget stage push artifacts\\Contoso.1.0.0.nupkg -s staging-source -k secret --group release-group --no-symbols --configfile config\\NuGet.Config --interactive --allow-insecure-connections",
+                "package stage push artifacts\\Contoso.1.0.0.nupkg -s staging-source -k secret --group release-group --no-symbols --configfile config\\NuGet.Config --interactive --allow-insecure-connections",
                 new ExpectedStagePushArguments(
                     PackagePath: "artifacts\\Contoso.1.0.0.nupkg",
                     Source: "staging-source",
@@ -100,14 +101,14 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
 
         public static TheoryData<string> InvalidArgumentsTestData => new()
         {
-            "nuget stage push",
-            "nuget stage push one.nupkg two.nupkg",
-            "nuget stage push package.nupkg --source",
-            "nuget stage push package.nupkg --api-key",
-            "nuget stage push package.nupkg --group",
-            "nuget stage push package.nupkg --configfile",
-            "nuget stage push package.nupkg --no-symbols true",
-            "nuget stage push package.nupkg --unknown",
+            "package stage push",
+            "package stage push one.nupkg two.nupkg",
+            "package stage push package.nupkg --source",
+            "package stage push package.nupkg --api-key",
+            "package stage push package.nupkg --group",
+            "package stage push package.nupkg --configfile",
+            "package stage push package.nupkg --no-symbols true",
+            "package stage push package.nupkg --unknown",
         };
 
         [Theory]
@@ -164,12 +165,12 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
         }
 
         [Fact]
-        public void NuGetCommandsAdd_RegistersStageWithProvidedInteractiveOption()
+        public void NuGetCommandsAdd_RegistersStageUnderPackageWithProvidedInteractiveOption()
         {
             // Arrange
             RootCommand rootCommand = new();
-            var nugetCommand = new Command("nuget");
-            rootCommand.Subcommands.Add(nugetCommand);
+            var packageCommand = new Command("package");
+            rootCommand.Subcommands.Add(packageCommand);
             var interactiveOption = new Option<bool>("--interactive")
             {
                 DefaultValueFactory = _ => true,
@@ -180,13 +181,14 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
                 rootCommand,
                 interactiveOption,
                 virtualProjectBuilder: null);
-            ParseResult result = rootCommand.Parse("nuget stage push package.nupkg");
+            ParseResult result = rootCommand.Parse("package stage push package.nupkg");
 
             // Assert
             result.Errors.Should().BeEmpty();
-            nugetCommand.Subcommands.Should().ContainSingle();
-            nugetCommand.Subcommands[0].Name.Should().Be("stage");
-            nugetCommand.Subcommands[0].Subcommands
+            packageCommand.Subcommands.Should().Contain(command => command.Name == "stage");
+            packageCommand.Subcommands
+                .Single(command => command.Name == "stage")
+                .Subcommands
                 .Should().ContainSingle(command => command.Name == "push");
             result.GetValue(interactiveOption).Should().BeTrue();
         }
@@ -195,13 +197,15 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
             Command rootCommand,
             Func<StagePushCommandArgs, Task<int>> action)
         {
+            var packageCommand = new Command("package");
             var stageCommand = new Command("stage");
             StagePushCommand.Register(
                 stageCommand,
                 new Option<bool>("--interactive"),
                 NullLoggerWithColor.GetInstance,
                 action);
-            rootCommand.Subcommands.Add(stageCommand);
+            packageCommand.Subcommands.Add(stageCommand);
+            rootCommand.Subcommands.Add(packageCommand);
         }
     }
 }

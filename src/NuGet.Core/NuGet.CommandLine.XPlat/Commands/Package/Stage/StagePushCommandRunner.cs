@@ -16,7 +16,7 @@ using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.CommandLine.XPlat.Commands.Stage
+namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
 {
     internal sealed class StagePushCommandRunner
     {

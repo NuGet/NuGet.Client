@@ -5,7 +5,7 @@ using System;
 using System.CommandLine;
 using System.Threading.Tasks;
 
-namespace NuGet.CommandLine.XPlat.Commands.Stage
+namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
 {
     internal static class StagePushCommand
     {

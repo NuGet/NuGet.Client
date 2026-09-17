@@ -13,7 +13,7 @@ using NuGet.CommandLine.XPlat.Commands.NuGet.Enable;
 using NuGet.CommandLine.XPlat.Commands.NuGet.List;
 using NuGet.CommandLine.XPlat.Commands.NuGet.Remove;
 using NuGet.CommandLine.XPlat.Commands.NuGet.Update;
-using NuGet.CommandLine.XPlat.Commands.Stage;
+using NuGet.CommandLine.XPlat.Commands.Package.Stage;
 using NuGet.CommandLine.XPlat.Commands.Why;
 using NuGet.Commands;
 using NuGet.Common;
@@ -122,6 +122,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var msbuild = new MSBuildAPIUtility(log, virtualProjectBuilder);
 
+                StageCommand.Register(packageCommand, interactiveOption, getHidePrefixLogger);
                 PackageSearchCommand.Register(packageCommand, getHidePrefixLogger);
                 AddPackageReferenceCommand.Register(packageCommand, () => log, () => new AddPackageReferenceCommandRunner(), () => msbuild.VirtualProjectBuilder);
                 RemovePackageReferenceCommand.Register(packageCommand, () => log, () => new RemovePackageReferenceCommandRunner(), () => msbuild.VirtualProjectBuilder);
@@ -141,7 +142,6 @@ namespace NuGet.CommandLine.XPlat
                 var lazyConsole = new Lazy<Spectre.Console.IAnsiConsole>(() => Spectre.Console.AnsiConsole.Console);
 
                 ConfigCommand.Register(rootCommand, getHidePrefixLogger);
-                StageCommand.Register(rootCommand, interactiveOption, getHidePrefixLogger);
                 WhyCommand.Register(rootCommand, lazyConsole, virtualProjectBuilder);
                 DeleteCommand.Register(rootCommand, getHidePrefixLogger);
                 PushCommand.Register(rootCommand, getHidePrefixLogger);

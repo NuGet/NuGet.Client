@@ -9,7 +9,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat;
-using NuGet.CommandLine.XPlat.Commands.Stage;
+using NuGet.CommandLine.XPlat.Commands.Package.Stage;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -348,6 +348,7 @@ namespace NuGet.XPlat.FuncTest
             var log = new TestCommandOutputLogger(_testOutputHelper);
             string[] args =
             [
+                "package",
                 "stage",
                 "push",
                 packagePath,
@@ -490,6 +491,7 @@ namespace NuGet.XPlat.FuncTest
             var log = new TestCommandOutputLogger(_testOutputHelper);
             string[] args =
             [
+                "package",
                 "stage",
                 "push",
                 packagePath,
@@ -526,6 +528,7 @@ namespace NuGet.XPlat.FuncTest
 
             return
             [
+                "package",
                 "stage",
                 "push",
                 packagePath,

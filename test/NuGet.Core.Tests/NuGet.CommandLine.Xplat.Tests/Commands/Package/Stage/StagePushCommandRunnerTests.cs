@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.CommandLine.XPlat.Commands.Stage;
+using NuGet.CommandLine.XPlat.Commands.Package.Stage;
 using Xunit;
 
-namespace NuGet.CommandLine.Xplat.Tests.Commands.Stage
+namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
 {
     public class StagePushCommandRunnerTests
     {

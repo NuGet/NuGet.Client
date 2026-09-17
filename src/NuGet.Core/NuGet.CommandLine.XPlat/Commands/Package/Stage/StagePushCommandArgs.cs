@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace NuGet.CommandLine.XPlat.Commands.Stage
+namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
 {
     internal sealed class StagePushCommandArgs
     {

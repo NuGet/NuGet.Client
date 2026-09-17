@@ -4,7 +4,7 @@
 using System;
 using System.CommandLine;
 
-namespace NuGet.CommandLine.XPlat.Commands.Stage
+namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
 {
     internal static class StageCommand
     {
@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Stage
             var stageCommand = new DocumentedCommand(
                 "stage",
                 Strings.StageCommand_Description,
-                "https://aka.ms/dotnet/nuget/stage");
+                "https://aka.ms/dotnet/package/stage");
 
             StagePushCommand.Register(stageCommand, interactiveOption, getLogger);
             rootCommand.Subcommands.Add(stageCommand);
