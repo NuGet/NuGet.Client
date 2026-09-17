@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,13 +102,13 @@ namespace NuGet.CommandLine.XPlat.Utility
                 if (!ignoreMinPublishAge && source.MinPublishAge > TimeSpan.Zero && packages != null)
                 {
                     var packagesWithPublishDates = packages.ToList();
-                    if (packagesWithPublishDates.Any(package => package.Published == null))
+                    IPackageSearchMetadata packageWithoutPublishDate = packagesWithPublishDates.FirstOrDefault(package => package.Published == null);
+                    if (packageWithoutPublishDate != null)
                     {
-                        throw new CommandException(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Error_PackageSourceDoesNotProvidePublishedDate,
+                        throw new CommandException(Messages.Error_PackagePublishDateMissing(
+                            source.Name,
                             packageId,
-                            source.Name));
+                            packageWithoutPublishDate.Identity.Version.ToNormalizedString()));
                     }
 
                     DateTimeOffset publishCutoff = DateTimeOffset.UtcNow - source.MinPublishAge;
