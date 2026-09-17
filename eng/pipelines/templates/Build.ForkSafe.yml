@@ -1,0 +1,188 @@
+parameters:
+- name: BuildRTM
+  type: boolean
+
+steps:
+- checkout: self
+  clean: true
+  fetchDepth: 0
+  persistCredentials: false
+
+- task: PowerShell@2
+  displayName: Run configure.ps1
+  inputs:
+    filePath: configure.ps1
+    arguments: -Force
+
+- task: PowerShell@2
+  displayName: Configure CI environment
+  inputs:
+    filePath: scripts\cibuild\ConfigureVstsBuild.ps1
+    arguments: >-
+      -BuildRTM ${{ parameters.BuildRTM }}
+      -RepositoryPath $(Build.Repository.LocalPath)
+      -BranchName $(SourceBranch)
+      -CommitHash $(Build.SourceVersion)
+      -BuildNumber $(Build.BuildNumber)
+      -BuildInfoDirectory $(Build.StagingDirectory)\BuildInfo
+
+- task: PowerShell@2
+  displayName: Prepare source link
+  inputs:
+    targetType: inline
+    script: |
+      $nugetUrl = "https://github.com/NuGet/NuGet.Client.git"
+      if (@(git remote).Contains("github")) {
+        git remote set-url github $nugetUrl
+      }
+      else {
+        git remote add github $nugetUrl
+      }
+
+      if ($LASTEXITCODE -ne 0) {
+        throw "Unable to configure the GitHub remote for source link."
+      }
+
+- task: MSBuild@1
+  displayName: Restore
+  inputs:
+    solution: build\build.proj
+    configuration: $(BuildConfiguration)
+    msbuildArchitecture: x64
+    msbuildArguments: >-
+      /restore:false
+      /target:RestoreVS
+      /property:BuildNumber=$(BuildNumber)
+      /property:BuildRTM=${{ parameters.BuildRTM }}
+      /property:IncludeApex=${{ not(parameters.BuildRTM) }}
+      /property:MicroBuild_SigningEnabled=false
+      /binarylogger:$(Build.StagingDirectory)\binlog\01.Restore.binlog
+
+- task: MSBuild@1
+  displayName: Build
+  inputs:
+    solution: build\build.proj
+    configuration: $(BuildConfiguration)
+    msbuildArchitecture: x64
+    msbuildArguments: >-
+      /restore:false
+      /target:BuildNoVSIX
+      /property:BuildRTM=${{ parameters.BuildRTM }}
+      /property:BuildNumber=$(BuildNumber)
+      /property:GitRepositoryRemoteName=github
+      /property:IncludeApex=${{ not(parameters.BuildRTM) }}
+      /property:MicroBuild_SigningEnabled=false
+      /binarylogger:$(Build.StagingDirectory)\binlog\02.Build.binlog
+
+# NuGet.exe embeds satellite resources that are produced after the main assembly.
+- task: MSBuild@1
+  displayName: Build localized NuGet.exe
+  inputs:
+    solution: src\NuGet.Clients\NuGet.CommandLine
+    configuration: $(BuildConfiguration)
+    msbuildArchitecture: x64
+    msbuildArguments: >-
+      /restore:false
+      /property:BuildProjectReferences=false
+      /property:BuildRTM=${{ parameters.BuildRTM }}
+      /property:BuildNumber=$(BuildNumber)
+      /property:GitRepositoryRemoteName=github
+      /property:MicroBuild_SigningEnabled=false
+      /binarylogger:$(Build.StagingDirectory)\binlog\02a.Build_NuGet.exe.binlog
+
+- task: MSBuild@1
+  displayName: Pack nupkgs
+  inputs:
+    solution: build\build.proj
+    configuration: $(BuildConfiguration)
+    msbuildArchitecture: x64
+    msbuildArguments: >-
+      /restore:false
+      /target:Pack
+      /property:BuildRTM=${{ parameters.BuildRTM }}
+      /property:ExcludeTestProjects=${{ parameters.BuildRTM }}
+      /property:BuildNumber=$(BuildNumber)
+      /property:MicroBuild_SigningEnabled=false
+      /binarylogger:$(Build.StagingDirectory)\binlog\11.Pack.binlog
+
+- task: PowerShell@2
+  displayName: Check expected packages exist
+  inputs:
+    filePath: scripts\utils\EnsureAllPackagesExist.ps1
+    arguments: >-
+      -BuildRTM:${{ parameters.BuildRTM }}
+      -NupkgOutputPath "$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir)"
+
+- task: MSBuild@1
+  displayName: Ensure all nupkgs and symbols are created
+  inputs:
+    solution: build\build.proj
+    configuration: $(BuildConfiguration)
+    msbuildArchitecture: x64
+    msbuildArguments: >-
+      /restore:false
+      /target:EnsurePackagesExist
+      /property:ExcludeTestProjects=${{ parameters.BuildRTM }}
+      /binarylogger:$(Build.StagingDirectory)\binlog\12.EnsurePackagesExist.binlog
+
+- ${{ if not(parameters.BuildRTM) }}:
+  - task: MSBuild@1
+    displayName: Pack VSIX
+    inputs:
+      solution: build\build.proj
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      msbuildArguments: >-
+        /restore:false
+        /target:BuildVSIX
+        /property:BuildRTM=false
+        /property:ExcludeTestProjects=false
+        /property:IsCIBuild=true
+        /property:MicroBuild_SigningEnabled=false
+        /binarylogger:$(Build.StagingDirectory)\binlog\13.PackVSIX.binlog
+
+  - task: MSBuild@1
+    displayName: Generate Build Tools package
+    inputs:
+      solution: setup\Microsoft.VisualStudio.NuGet.BuildTools\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      msbuildArguments: >-
+        /property:BuildNumber=$(BuildNumber)
+        /property:IsVsixBuild=true
+        /property:MicroBuild_SigningEnabled=false
+        /binarylogger:$(Build.StagingDirectory)\binlog\14.BuildToolsVSIX.binlog
+
+- ${{ if not(parameters.BuildRTM) }}:
+  - task: MSBuild@1
+    displayName: Validate VSIX localization
+    inputs:
+      solution: build\BuildValidator.proj
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      msbuildArguments: >-
+        /target:ValidateVsix
+        /property:BuildRTM=false
+        /property:LogsBasePath=$(Build.StagingDirectory)\BuildValidatorLogs
+        /property:TempDirectory=$(Agent.TempDirectory)
+        /binarylogger:$(Build.StagingDirectory)\binlog\19.ValidateVsixLocalization.binlog
+
+  - task: MSBuild@1
+    displayName: Validate artifact localization
+    inputs:
+      solution: build\BuildValidator.proj
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      msbuildArguments: >-
+        /target:ValidateArtifacts
+        /property:BuildRTM=false
+        /property:LogsBasePath=$(Build.StagingDirectory)\BuildValidatorLogs
+        /property:TempDirectory=$(Agent.TempDirectory)
+        /binarylogger:$(Build.StagingDirectory)\binlog\20.ValidateArtifactsLocalization.binlog
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish MSBuild binary logs
+  condition: or(failed(), canceled(), eq(variables['System.Debug'], 'true'))
+  inputs:
+    targetPath: $(Build.StagingDirectory)\binlog
+    artifact: binlog - Fork Safe Validation - Attempt $(System.JobAttempt)
