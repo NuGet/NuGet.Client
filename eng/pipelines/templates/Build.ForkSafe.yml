@@ -95,17 +95,6 @@ steps:
         /property:MicroBuild_SigningEnabled=false
         /binarylogger:$(Build.StagingDirectory)\binlog\13.PackVSIX.binlog
 
-  - task: MSBuild@1
-    displayName: Generate Build Tools package
-    inputs:
-      solution: setup\Microsoft.VisualStudio.NuGet.BuildTools\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      msbuildArguments: >-
-        /property:IsVsixBuild=true
-        /property:MicroBuild_SigningEnabled=false
-        /binarylogger:$(Build.StagingDirectory)\binlog\14.BuildToolsVSIX.binlog
-
 - ${{ if not(parameters.BuildRTM) }}:
   - task: MSBuild@1
     displayName: Validate VSIX localization
