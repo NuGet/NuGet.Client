@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.UI.Test.Utility
         }
 
         [Fact]
-        public async Task WaitForNominationsToSettleAsync_WhenNominationFaults_SwallowsFaultAndSettles()
+        public async Task WaitForNominationsToSettleAsync_WhenNominationFaults_ObservesFaultAndSettles()
         {
             int reads = 0;
             var source = new FakeRestoreInfoSource("a")

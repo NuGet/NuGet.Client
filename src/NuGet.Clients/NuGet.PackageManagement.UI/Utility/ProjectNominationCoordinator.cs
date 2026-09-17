@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.UI.Utility
 
                         if (whenNominated.IsCompleted)
                         {
-                            _ = whenNominated.Exception;
+                            ObserveNominationException(whenNominated);
                             continue;
                         }
 
@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.UI.Utility
                             return waitStopwatch.Elapsed;
                         }
 
-                        _ = whenNominated.Exception;
+                        ObserveNominationException(whenNominated);
                     }
                 }
 
@@ -93,6 +93,16 @@ namespace NuGet.PackageManagement.UI.Utility
                 {
                     return waitStopwatch?.Elapsed;
                 }
+            }
+        }
+
+        private static void ObserveNominationException(Task whenNominated)
+        {
+            // The contract allows nomination failures and PMUI intentionally proceeds.
+            // Observe the fault so the host does not later report it as unobserved.
+            if (whenNominated.IsFaulted)
+            {
+                _ = whenNominated.Exception;
             }
         }
     }
