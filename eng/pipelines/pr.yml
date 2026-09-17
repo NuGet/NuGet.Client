@@ -405,3 +405,23 @@ stages:
               "Running validation tool"
               dotnet run --project tools-local/ensure-nupkg-dependencies-on-source/ --no-build -- $nupkgs -s https://api.nuget.org/v3/index.json
               if ($LASTEXITCODE -ne 0) { throw "Validation tool failed" }
+
+- stage: ProductBuildValidation
+  displayName: Product Build Validation
+  dependsOn: []
+  condition: "and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))"
+  jobs:
+  - job: Build_NonRTM
+    displayName: Validate NuGet inserted into Visual Studio and the .NET SDK
+    timeoutInMinutes: 170
+    variables:
+      BuildConfiguration: Release
+      BuildRTM: false
+      NupkgOutputDir: Nupkgs
+    pool:
+      name: NetCore-Public
+      demands: ImageOverride -equals Windows.VS2026.Amd64.Open
+    steps:
+    - template: templates/Build.ForkSafe.yml
+      parameters:
+        BuildRTM: false

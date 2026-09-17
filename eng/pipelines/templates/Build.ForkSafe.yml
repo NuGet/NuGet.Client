@@ -14,35 +14,6 @@ steps:
     filePath: configure.ps1
     arguments: -Force
 
-- task: PowerShell@2
-  displayName: Configure CI environment
-  inputs:
-    filePath: scripts\cibuild\ConfigureVstsBuild.ps1
-    arguments: >-
-      -BuildRTM ${{ parameters.BuildRTM }}
-      -RepositoryPath $(Build.Repository.LocalPath)
-      -BranchName $(SourceBranch)
-      -CommitHash $(Build.SourceVersion)
-      -BuildNumber $(Build.BuildNumber)
-      -BuildInfoDirectory $(Build.StagingDirectory)\BuildInfo
-
-- task: PowerShell@2
-  displayName: Prepare source link
-  inputs:
-    targetType: inline
-    script: |
-      $nugetUrl = "https://github.com/NuGet/NuGet.Client.git"
-      if (@(git remote).Contains("github")) {
-        git remote set-url github $nugetUrl
-      }
-      else {
-        git remote add github $nugetUrl
-      }
-
-      if ($LASTEXITCODE -ne 0) {
-        throw "Unable to configure the GitHub remote for source link."
-      }
-
 - task: MSBuild@1
   displayName: Restore
   inputs:
@@ -52,7 +23,6 @@ steps:
     msbuildArguments: >-
       /restore:false
       /target:RestoreVS
-      /property:BuildNumber=$(BuildNumber)
       /property:BuildRTM=${{ parameters.BuildRTM }}
       /property:IncludeApex=${{ not(parameters.BuildRTM) }}
       /property:MicroBuild_SigningEnabled=false
@@ -68,8 +38,6 @@ steps:
       /restore:false
       /target:BuildNoVSIX
       /property:BuildRTM=${{ parameters.BuildRTM }}
-      /property:BuildNumber=$(BuildNumber)
-      /property:GitRepositoryRemoteName=github
       /property:IncludeApex=${{ not(parameters.BuildRTM) }}
       /property:MicroBuild_SigningEnabled=false
       /binarylogger:$(Build.StagingDirectory)\binlog\02.Build.binlog
@@ -85,8 +53,6 @@ steps:
       /restore:false
       /property:BuildProjectReferences=false
       /property:BuildRTM=${{ parameters.BuildRTM }}
-      /property:BuildNumber=$(BuildNumber)
-      /property:GitRepositoryRemoteName=github
       /property:MicroBuild_SigningEnabled=false
       /binarylogger:$(Build.StagingDirectory)\binlog\02a.Build_NuGet.exe.binlog
 
@@ -101,7 +67,6 @@ steps:
       /target:Pack
       /property:BuildRTM=${{ parameters.BuildRTM }}
       /property:ExcludeTestProjects=${{ parameters.BuildRTM }}
-      /property:BuildNumber=$(BuildNumber)
       /property:MicroBuild_SigningEnabled=false
       /binarylogger:$(Build.StagingDirectory)\binlog\11.Pack.binlog
 
@@ -148,7 +113,6 @@ steps:
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       msbuildArguments: >-
-        /property:BuildNumber=$(BuildNumber)
         /property:IsVsixBuild=true
         /property:MicroBuild_SigningEnabled=false
         /binarylogger:$(Build.StagingDirectory)\binlog\14.BuildToolsVSIX.binlog
