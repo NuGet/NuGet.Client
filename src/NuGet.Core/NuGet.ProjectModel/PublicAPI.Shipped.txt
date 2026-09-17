@@ -1,34 +1,34 @@
 #nullable enable
 NuGet.ProjectModel.AssetsLogMessage
-~NuGet.ProjectModel.AssetsLogMessage.AssetsLogMessage(NuGet.Common.LogLevel logLevel, NuGet.Common.NuGetLogCode errorCode, string errorString) -> void
-~NuGet.ProjectModel.AssetsLogMessage.AssetsLogMessage(NuGet.Common.LogLevel logLevel, NuGet.Common.NuGetLogCode errorCode, string errorString, string targetGraph) -> void
+NuGet.ProjectModel.AssetsLogMessage.AssetsLogMessage(NuGet.Common.LogLevel logLevel, NuGet.Common.NuGetLogCode errorCode, string! errorString) -> void
+NuGet.ProjectModel.AssetsLogMessage.AssetsLogMessage(NuGet.Common.LogLevel logLevel, NuGet.Common.NuGetLogCode errorCode, string! errorString, string? targetGraph) -> void
 NuGet.ProjectModel.AssetsLogMessage.Code.get -> NuGet.Common.NuGetLogCode
 NuGet.ProjectModel.AssetsLogMessage.EndColumnNumber.get -> int
 NuGet.ProjectModel.AssetsLogMessage.EndColumnNumber.set -> void
 NuGet.ProjectModel.AssetsLogMessage.EndLineNumber.get -> int
 NuGet.ProjectModel.AssetsLogMessage.EndLineNumber.set -> void
-~NuGet.ProjectModel.AssetsLogMessage.Equals(NuGet.ProjectModel.IAssetsLogMessage other) -> bool
-~NuGet.ProjectModel.AssetsLogMessage.FilePath.get -> string
-~NuGet.ProjectModel.AssetsLogMessage.FilePath.set -> void
+NuGet.ProjectModel.AssetsLogMessage.Equals(NuGet.ProjectModel.IAssetsLogMessage? other) -> bool
+NuGet.ProjectModel.AssetsLogMessage.FilePath.get -> string?
+NuGet.ProjectModel.AssetsLogMessage.FilePath.set -> void
 NuGet.ProjectModel.AssetsLogMessage.Level.get -> NuGet.Common.LogLevel
-~NuGet.ProjectModel.AssetsLogMessage.LibraryId.get -> string
-~NuGet.ProjectModel.AssetsLogMessage.LibraryId.set -> void
-~NuGet.ProjectModel.AssetsLogMessage.Message.get -> string
-~NuGet.ProjectModel.AssetsLogMessage.ProjectPath.get -> string
-~NuGet.ProjectModel.AssetsLogMessage.ProjectPath.set -> void
+NuGet.ProjectModel.AssetsLogMessage.LibraryId.get -> string?
+NuGet.ProjectModel.AssetsLogMessage.LibraryId.set -> void
+NuGet.ProjectModel.AssetsLogMessage.Message.get -> string!
+NuGet.ProjectModel.AssetsLogMessage.ProjectPath.get -> string?
+NuGet.ProjectModel.AssetsLogMessage.ProjectPath.set -> void
 NuGet.ProjectModel.AssetsLogMessage.StartColumnNumber.get -> int
 NuGet.ProjectModel.AssetsLogMessage.StartColumnNumber.set -> void
 NuGet.ProjectModel.AssetsLogMessage.StartLineNumber.get -> int
 NuGet.ProjectModel.AssetsLogMessage.StartLineNumber.set -> void
-~NuGet.ProjectModel.AssetsLogMessage.TargetGraphs.get -> System.Collections.Generic.IReadOnlyList<string>
-~NuGet.ProjectModel.AssetsLogMessage.TargetGraphs.set -> void
+NuGet.ProjectModel.AssetsLogMessage.TargetGraphs.get -> System.Collections.Generic.IReadOnlyList<string!>?
+NuGet.ProjectModel.AssetsLogMessage.TargetGraphs.set -> void
 NuGet.ProjectModel.AssetsLogMessage.WarningLevel.get -> NuGet.Common.WarningLevel
 NuGet.ProjectModel.AssetsLogMessage.WarningLevel.set -> void
 NuGet.ProjectModel.BuildAction
 NuGet.ProjectModel.BuildAction.BuildAction() -> void
 NuGet.ProjectModel.BuildAction.Equals(NuGet.ProjectModel.BuildAction other) -> bool
 NuGet.ProjectModel.BuildAction.IsKnown.get -> bool
-~NuGet.ProjectModel.BuildAction.Value.get -> string
+NuGet.ProjectModel.BuildAction.Value.get -> string?
 NuGet.ProjectModel.CacheFile
 ~NuGet.ProjectModel.CacheFile.CacheFile(string dgSpecHash) -> void
 ~NuGet.ProjectModel.CacheFile.DgSpecHash.get -> string
@@ -105,14 +105,14 @@ NuGet.ProjectModel.IAssetsLogMessage
 NuGet.ProjectModel.IAssetsLogMessage.Code.get -> NuGet.Common.NuGetLogCode
 NuGet.ProjectModel.IAssetsLogMessage.EndColumnNumber.get -> int
 NuGet.ProjectModel.IAssetsLogMessage.EndLineNumber.get -> int
-~NuGet.ProjectModel.IAssetsLogMessage.FilePath.get -> string
+NuGet.ProjectModel.IAssetsLogMessage.FilePath.get -> string?
 NuGet.ProjectModel.IAssetsLogMessage.Level.get -> NuGet.Common.LogLevel
-~NuGet.ProjectModel.IAssetsLogMessage.LibraryId.get -> string
-~NuGet.ProjectModel.IAssetsLogMessage.Message.get -> string
-~NuGet.ProjectModel.IAssetsLogMessage.ProjectPath.get -> string
+NuGet.ProjectModel.IAssetsLogMessage.LibraryId.get -> string?
+NuGet.ProjectModel.IAssetsLogMessage.Message.get -> string!
+NuGet.ProjectModel.IAssetsLogMessage.ProjectPath.get -> string?
 NuGet.ProjectModel.IAssetsLogMessage.StartColumnNumber.get -> int
 NuGet.ProjectModel.IAssetsLogMessage.StartLineNumber.get -> int
-~NuGet.ProjectModel.IAssetsLogMessage.TargetGraphs.get -> System.Collections.Generic.IReadOnlyList<string>
+NuGet.ProjectModel.IAssetsLogMessage.TargetGraphs.get -> System.Collections.Generic.IReadOnlyList<string!>?
 NuGet.ProjectModel.IAssetsLogMessage.WarningLevel.get -> NuGet.Common.WarningLevel
 NuGet.ProjectModel.IExternalProjectReferenceProvider
 NuGet.ProjectModel.IExternalProjectReferenceProvider.GetEntryPoints() -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.ExternalProjectReference!>!
@@ -544,11 +544,11 @@ NuGet.ProjectModel.WarningProperties.WarningsAsErrors.get -> System.Collections.
 NuGet.ProjectModel.WarningProperties.WarningsNotAsErrors.get -> System.Collections.Generic.ISet<NuGet.Common.NuGetLogCode>!
 const NuGet.ProjectModel.LockFileFormat.AliasedVersion = 4 -> int
 const NuGet.ProjectModel.LockFileFormat.LegacyVersion = 3 -> int
-~override NuGet.ProjectModel.AssetsLogMessage.Equals(object other) -> bool
+override NuGet.ProjectModel.AssetsLogMessage.Equals(object? other) -> bool
 override NuGet.ProjectModel.AssetsLogMessage.GetHashCode() -> int
-~override NuGet.ProjectModel.BuildAction.Equals(object obj) -> bool
+override NuGet.ProjectModel.BuildAction.Equals(object? obj) -> bool
 override NuGet.ProjectModel.BuildAction.GetHashCode() -> int
-~override NuGet.ProjectModel.BuildAction.ToString() -> string
+override NuGet.ProjectModel.BuildAction.ToString() -> string!
 ~override NuGet.ProjectModel.CacheFile.Equals(object obj) -> bool
 override NuGet.ProjectModel.CacheFile.GetHashCode() -> int
 override NuGet.ProjectModel.CentralTransitiveDependencyGroup.Equals(object? obj) -> bool
@@ -601,8 +601,8 @@ override NuGet.ProjectModel.TargetFrameworkInformation.GetHashCode() -> int
 ~override NuGet.ProjectModel.TargetFrameworkInformation.ToString() -> string
 override NuGet.ProjectModel.WarningProperties.Equals(object? obj) -> bool
 override NuGet.ProjectModel.WarningProperties.GetHashCode() -> int
-~static NuGet.ProjectModel.AssetsLogMessage.Create(NuGet.Common.IRestoreLogMessage logMessage) -> NuGet.ProjectModel.IAssetsLogMessage
-~static NuGet.ProjectModel.BuildAction.Parse(string value) -> NuGet.ProjectModel.BuildAction
+static NuGet.ProjectModel.AssetsLogMessage.Create(NuGet.Common.IRestoreLogMessage! logMessage) -> NuGet.ProjectModel.IAssetsLogMessage!
+static NuGet.ProjectModel.BuildAction.Parse(string! value) -> NuGet.ProjectModel.BuildAction
 static NuGet.ProjectModel.BuildAction.operator !=(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
 static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
 ~static NuGet.ProjectModel.CacheFileFormat.Read(System.IO.Stream stream, NuGet.Common.ILogger log, string path) -> NuGet.ProjectModel.CacheFile
