@@ -3,17 +3,6 @@ parameters:
   type: boolean
 
 steps:
-- checkout: self
-  clean: true
-  fetchDepth: 0
-  persistCredentials: false
-
-- task: PowerShell@2
-  displayName: Run configure.ps1
-  inputs:
-    filePath: configure.ps1
-    arguments: -Force
-
 - task: MSBuild@1
   displayName: Restore
   inputs:

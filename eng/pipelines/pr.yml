@@ -325,16 +325,27 @@ stages:
               ./eng/dotnet-build/build.sh --source-build
     - ${{ if eq(parameters.RunStaticAnalysis, true) }}:
       - job:
-        displayName: Run Static Analysis
-        timeoutInMinutes: 30
+        displayName: Run Static Analysis and Product Build Validation
+        timeoutInMinutes: 170
+        variables:
+          BuildConfiguration: Release
+          NupkgOutputDir: Nupkgs
         pool:
           name: NetCore-Public
           demands: ImageOverride -equals Windows.VS2026.Amd64.Open
         steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0
+          persistCredentials: false
         - task: PowerShell@2
           displayName: Run configure.ps1
           inputs:
             filePath: configure.ps1
+            arguments: -Force
+        - template: templates/Build.ForkSafe.yml
+          parameters:
+            BuildRTM: false
         - script: SET | SORT
           displayName: Log Environment Variables
         - script: dotnet format whitespace --verify-no-changes NuGet.sln
@@ -371,22 +382,6 @@ stages:
           displayName: Run AOT compatibility test app
           condition: succeededOrFailed()
 
-        - task: MSBuild@1
-          displayName: Restore and Build
-          condition: "and(succeededOrFailed(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
-          inputs:
-            solution: NuGet.sln
-            msbuildArchitecture: x64
-            msbuildArguments: "/property:BuildRTM=true /property:MicroBuild_SigningEnabled=false"
-
-        - task: MSBuild@1
-          displayName: Pack Nupkgs
-          condition: "and(succeeded(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
-          inputs:
-            solution: build\build.proj
-            msbuildArchitecture: x64
-            msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=true /property:ExcludeTestProjects=true /property:MicroBuild_SigningEnabled=false"
-
         - task: PowerShell@2
           displayName: Check package dependencies
           condition: "and(succeeded(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
@@ -405,23 +400,3 @@ stages:
               "Running validation tool"
               dotnet run --project tools-local/ensure-nupkg-dependencies-on-source/ --no-build -- $nupkgs -s https://api.nuget.org/v3/index.json
               if ($LASTEXITCODE -ne 0) { throw "Validation tool failed" }
-
-- stage: ProductBuildValidation
-  displayName: Product Build Validation
-  dependsOn: []
-  condition: "and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))"
-  jobs:
-  - job: Build_NonRTM
-    displayName: Validate NuGet inserted into Visual Studio and the .NET SDK
-    timeoutInMinutes: 170
-    variables:
-      BuildConfiguration: Release
-      BuildRTM: false
-      NupkgOutputDir: Nupkgs
-    pool:
-      name: NetCore-Public
-      demands: ImageOverride -equals Windows.VS2026.Amd64.Open
-    steps:
-    - template: templates/Build.ForkSafe.yml
-      parameters:
-        BuildRTM: false
