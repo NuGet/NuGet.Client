@@ -126,7 +126,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 int j = 0;
                 foreach (IAssetsLogMessage logMessage in lockFile.LogMessages)
                 {
-                    if (logMessage.LibraryId == null || logMessage.TargetGraphs?.Contains(target) != true)
+                    if (!logMessage.TargetGraphs.Contains(target))
                     {
                         continue;
                     }
