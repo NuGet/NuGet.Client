@@ -17,6 +17,8 @@ namespace NuGet.CommandLine.XPlat
 {
     internal sealed class SponsorReportProcessor
     {
+        private const string NuGetDevServiceIndex = "https://apidev.nugettest.org/v3/index.json";
+
         private readonly ListPackageArgs _listPackageArgs;
         private readonly Dictionary<string, PackageSponsorshipResult> _sponsorshipCache =
             new(StringComparer.OrdinalIgnoreCase);
@@ -79,7 +81,9 @@ namespace NuGet.CommandLine.XPlat
                     await _sourceRepositoryCache[source].GetResourceAsync<PackageMetadataResource>(
                         _listPackageArgs.CancellationToken);
 
-                if (resource?.SupportsPackageIdMetadata == true)
+                if (resource != null &&
+                    (resource.SupportsPackageIdMetadata ||
+                     string.Equals(source.Source, NuGetDevServiceIndex, StringComparison.OrdinalIgnoreCase)))
                 {
                     _packageMetadataResourceCache[source] = resource;
                 }
