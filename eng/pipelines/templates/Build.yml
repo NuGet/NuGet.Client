@@ -81,10 +81,7 @@ steps:
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
-      ${{ if parameters.ForkSafe }}:
-        msbuildArguments: "/restore:false /target:RestoreVS /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /property:MicroBuild_SigningEnabled=false /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
-      ${{ else }}:
-        msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+      msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
   - task: CmdLine@2
     displayName: "Restore packages to publish to the .NET Core build asset registry (BAR)"
@@ -117,10 +114,7 @@ steps:
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
-      ${{ if parameters.ForkSafe }}:
-        msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
-      ${{ else }}:
-        msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
+      msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
 
   # NuGet.exe embeds its own satellite resources, but satellite resources are built after the main assembly.
   # This means on the first build it's missing the resources, so we have to build nuget.exe a second time.
@@ -129,10 +123,7 @@ steps:
     inputs:
       solution: "src\\NuGet.Clients\\NuGet.CommandLine"
       configuration: "$(BuildConfiguration)"
-      ${{ if parameters.ForkSafe }}:
-        msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:BuildRTM=$(BuildRTM) /property:GitRepositoryRemoteName=github /binarylogger:$(Build.StagingDirectory)\\binlog\\02a.Build_NuGet.exe.binlog /property:MicroBuild_SigningEnabled=false"
-      ${{ else }}:
-        msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:GitRepositoryRemoteName=github /binarylogger:$(Build.StagingDirectory)\\binlog\\02a.Build_NuGet.exe.binlog /property:MicroBuild_SigningEnabled=false"
+      msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:GitRepositoryRemoteName=github /binarylogger:$(Build.StagingDirectory)\\binlog\\02a.Build_NuGet.exe.binlog /property:MicroBuild_SigningEnabled=false"
 
   - ${{ if not(parameters.ForkSafe) }}:
     - task: CodeQL3000Finalize@0
@@ -144,10 +135,7 @@ steps:
     inputs:
       solution: "build\\build.proj"
       configuration: "$(BuildConfiguration)"
-      ${{ if parameters.ForkSafe }}:
-        msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\11.Pack.binlog /property:MicroBuild_SigningEnabled=false"
-      ${{ else }}:
-        msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\11.Pack.binlog /property:MicroBuild_SigningEnabled=false"
+      msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\11.Pack.binlog /property:MicroBuild_SigningEnabled=false"
 
   - task: PowerShell@1
     displayName: "Check expected packages exist for publishing"

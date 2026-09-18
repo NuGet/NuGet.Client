@@ -329,6 +329,7 @@ stages:
         timeoutInMinutes: 170
         variables:
           BuildConfiguration: Release
+          BuildNumber: ""
           BuildRTM: false
           NupkgOutputDir: Nupkgs
         pool:
