@@ -329,6 +329,7 @@ stages:
         timeoutInMinutes: 170
         variables:
           BuildConfiguration: Release
+          BuildRTM: false
           NupkgOutputDir: Nupkgs
         pool:
           name: NetCore-Public
@@ -338,121 +339,11 @@ stages:
           clean: true
           fetchDepth: 0
           persistCredentials: false
-        - task: PowerShell@2
-          displayName: Run configure.ps1
-          inputs:
-            filePath: configure.ps1
-            arguments: -Force
-        - task: MSBuild@1
-          displayName: Restore
-          inputs:
-            solution: build\build.proj
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /restore:false
-              /target:RestoreVS
-              /property:BuildRTM=false
-              /property:IncludeApex=true
-              /property:MicroBuild_SigningEnabled=false
-              /binarylogger:$(Build.StagingDirectory)\binlog\01.Restore.binlog
-        - task: MSBuild@1
-          displayName: Build
-          inputs:
-            solution: build\build.proj
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /restore:false
-              /target:BuildNoVSIX
-              /property:BuildRTM=false
-              /property:IncludeApex=true
-              /property:MicroBuild_SigningEnabled=false
-              /binarylogger:$(Build.StagingDirectory)\binlog\02.Build.binlog
-        # NuGet.exe embeds satellite resources that are produced after the main assembly.
-        - task: MSBuild@1
-          displayName: Build localized NuGet.exe
-          inputs:
-            solution: src\NuGet.Clients\NuGet.CommandLine
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /restore:false
-              /property:BuildProjectReferences=false
-              /property:BuildRTM=false
-              /property:MicroBuild_SigningEnabled=false
-              /binarylogger:$(Build.StagingDirectory)\binlog\02a.Build_NuGet.exe.binlog
-        - task: MSBuild@1
-          displayName: Pack nupkgs
-          inputs:
-            solution: build\build.proj
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /restore:false
-              /target:Pack
-              /property:BuildRTM=false
-              /property:ExcludeTestProjects=false
-              /property:MicroBuild_SigningEnabled=false
-              /binarylogger:$(Build.StagingDirectory)\binlog\11.Pack.binlog
-        - task: PowerShell@2
-          displayName: Check expected packages exist
-          inputs:
-            filePath: scripts\utils\EnsureAllPackagesExist.ps1
-            arguments: >-
-              -BuildRTM:$False
-              -NupkgOutputPath "$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir)"
-        - task: MSBuild@1
-          displayName: Ensure all nupkgs and symbols are created
-          inputs:
-            solution: build\build.proj
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /restore:false
-              /target:EnsurePackagesExist
-              /property:ExcludeTestProjects=false
-              /binarylogger:$(Build.StagingDirectory)\binlog\12.EnsurePackagesExist.binlog
-        - task: MSBuild@1
-          displayName: Pack VSIX
-          inputs:
-            solution: build\build.proj
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /restore:false
-              /target:BuildVSIX
-              /property:BuildRTM=false
-              /property:ExcludeTestProjects=false
-              /property:IsCIBuild=true
-              /property:MicroBuild_SigningEnabled=false
-              /binarylogger:$(Build.StagingDirectory)\binlog\13.PackVSIX.binlog
-        - task: MSBuild@1
-          displayName: Validate VSIX localization
-          inputs:
-            solution: build\BuildValidator.proj
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /target:ValidateVsix
-              /property:BuildRTM=false
-              /property:LogsBasePath=$(Build.StagingDirectory)\BuildValidatorLogs
-              /property:TempDirectory=$(Agent.TempDirectory)
-              /binarylogger:$(Build.StagingDirectory)\binlog\19.ValidateVsixLocalization.binlog
-        - task: MSBuild@1
-          displayName: Validate artifact localization
-          inputs:
-            solution: build\BuildValidator.proj
-            configuration: $(BuildConfiguration)
-            msbuildArchitecture: x64
-            msbuildArguments: >-
-              /target:ValidateArtifacts
-              /property:BuildRTM=false
-              /property:LogsBasePath=$(Build.StagingDirectory)\BuildValidatorLogs
-              /property:TempDirectory=$(Agent.TempDirectory)
-              /binarylogger:$(Build.StagingDirectory)\binlog\20.ValidateArtifactsLocalization.binlog
-        - script: SET | SORT
-          displayName: Log Environment Variables
+        - template: templates/Build.yml
+          parameters:
+            BuildRTM: false
+            ForkSafe: true
+            SigningType: Test
         - script: dotnet format whitespace --verify-no-changes NuGet.sln
           displayName: Run dotnet format whitespace
           condition: succeededOrFailed()
