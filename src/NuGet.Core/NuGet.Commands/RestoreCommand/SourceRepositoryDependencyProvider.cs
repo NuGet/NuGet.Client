@@ -37,7 +37,6 @@ namespace NuGet.Commands
         private bool _ignoreWarning;
         private bool _isFallbackFolderSource;
         private bool _isGlobalPackagesFolder;
-        private bool _useLegacyAssetTargetFallbackBehavior;
 
         private readonly TaskResultCache<LibraryRangeCacheKey, LibraryDependencyInfo> _dependencyInfoCache = new();
         private readonly TaskResultCache<LibraryRange, LibraryIdentity> _libraryMatchCache = new();
@@ -148,7 +147,6 @@ namespace NuGet.Commands
             _packageFileCache = fileCache;
             _isFallbackFolderSource = isFallbackFolderSource;
             _isGlobalPackagesFolder = isGlobalPackagesFolder;
-            _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
         }
 
         /// <summary>
@@ -542,7 +540,7 @@ namespace NuGet.Commands
             return null;
         }
 
-        private IEnumerable<LibraryDependency> GetDependencies(
+        private static IEnumerable<LibraryDependency> GetDependencies(
             FindPackageByIdDependencyInfo packageInfo,
             NuGetFramework targetFramework)
         {
@@ -560,17 +558,14 @@ namespace NuGet.Commands
                 dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups, dualCompatibilityFramework.SecondaryFramework, item => item.TargetFramework);
             }
 
-            if (!_useLegacyAssetTargetFallbackBehavior)
-            {
-                // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
+            // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
 
-                if (dependencyGroup == null &&
-                    targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
-                {
-                    dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
-                        assetTargetFallbackFramework.AsFallbackFramework(),
-                        item => item.TargetFramework);
-                }
+            if (dependencyGroup == null &&
+                targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            {
+                dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
+                    assetTargetFallbackFramework.AsFallbackFramework(),
+                    item => item.TargetFramework);
             }
 
             if (dependencyGroup != null)

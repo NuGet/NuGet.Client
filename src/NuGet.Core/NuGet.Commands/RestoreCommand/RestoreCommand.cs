@@ -73,7 +73,6 @@ namespace NuGet.Commands
         private const string UpdatedMSBuildFiles = nameof(UpdatedMSBuildFiles);
         private const string IsPackageInstallationTrigger = nameof(IsPackageInstallationTrigger);
         private const string UsesLegacyPackagesDirectory = nameof(UsesLegacyPackagesDirectory);
-        private const string UsesLegacyAssetTargetFallback = nameof(UsesLegacyAssetTargetFallback);
 
         // no-op data names
         private const string NoOpDuration = nameof(NoOpDuration);
@@ -407,7 +406,6 @@ namespace NuGet.Commands
             telemetry.TelemetryEvent[NETSdkVersion] = _request.Project.RestoreSettings.SdkVersion;
             telemetry.TelemetryEvent[IsPackageInstallationTrigger] = !_request.IsRestoreOriginalAction;
             telemetry.TelemetryEvent[UsesLegacyPackagesDirectory] = !_request.IsLowercasePackagesDirectory;
-            telemetry.TelemetryEvent[UsesLegacyAssetTargetFallback] = MSBuildStringUtility.IsTrue(EnvironmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
 
             _operationId = telemetry.OperationId;
 
