@@ -85,8 +85,8 @@ namespace NuGet.ProjectModel
         };
 
         /// <summary>
-        /// Caches fixed schema property names in their encoded form to avoid transcoding them for every write,
-        /// which is a measurable cost on .NET Framework.
+        /// The legacy Newtonsoft writer uses the string constants above. The native writer caches fixed schema
+        /// property names in their encoded form to avoid repeated transcoding, which is a measurable cost on .NET Framework.
         /// </summary>
         private static class EncodedPropertyNames
         {

@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using NuGet.Packaging;
 using Xunit;
 
@@ -247,6 +249,66 @@ namespace NuGet.ProjectModel.Test
             _writer.WriteNameValue(name, value);
 
             string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void WriteNameValue_WithUnicodeAndControlCharacters_UsesNativeSystemTextJsonBytes(bool useLegacyHashFunction)
+        {
+            const string Value = "unicode-caf\u00e9-\U0001F600-html-<&>-delete-\u007F-next-\u0085-line-\u2028-paragraph-\u2029-controls-\u0000\u0001\b\t\n\f\r\u001F-quote-\"-slash-\\";
+            IHashFunction hashFunction = useLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function();
+            using var writer = new HashObjectWriter(hashFunction);
+            writer.WriteObjectStart();
+            writer.WriteNameValue(Value, Value);
+            writer.WriteObjectEnd();
+
+            string actualHash = writer.GetHash();
+
+            using var stream = new MemoryStream();
+            using (var jsonWriter = new Utf8JsonWriter(stream))
+            {
+                jsonWriter.WriteStartObject();
+                jsonWriter.WriteString(Value, Value);
+                jsonWriter.WriteEndObject();
+            }
+            using IHashFunction expectedHashFunction = useLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function();
+            byte[] bytes = stream.ToArray();
+            expectedHashFunction.Update(bytes, 0, bytes.Length);
+            string expectedHash = expectedHashFunction.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void WriteNameValue_LargerThanBuffer_Uses4096ByteHashUpdates()
+        {
+            using var writer = new HashObjectWriter(new FnvHash64Function());
+            writer.WriteObjectStart();
+            writer.WriteNameValue(PropertyName, new string('a', 5000));
+            writer.WriteObjectEnd();
+
+            string actualHash = writer.GetHash();
+
+            using var stream = new MemoryStream();
+            using (var jsonWriter = new Utf8JsonWriter(stream))
+            {
+                jsonWriter.WriteStartObject();
+                jsonWriter.WriteString(PropertyName, new string('a', 5000));
+                jsonWriter.WriteEndObject();
+            }
+            using var expectedHashFunction = new FnvHash64Function();
+            byte[] bytes = stream.ToArray();
+            var buffer = new byte[4096];
+            for (int offset = 0; offset < bytes.Length; offset += 4096)
+            {
+                int count = Math.Min(buffer.Length, bytes.Length - offset);
+                Array.Copy(bytes, offset, buffer, 0, count);
+                expectedHashFunction.Update(buffer, 0, count);
+            }
+            string expectedHash = expectedHashFunction.GetHash();
 
             Assert.Equal(expectedHash, actualHash);
         }
