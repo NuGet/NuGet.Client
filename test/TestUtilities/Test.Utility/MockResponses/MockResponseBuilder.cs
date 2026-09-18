@@ -185,14 +185,16 @@ namespace Test.Utility
                         e,
                         true)).ToArray(),
                 new HashSet<PackageIdentity>(),
-                null);
+                allVulnerabilities: null,
+                allSponsorshipUrls: null);
         }
 
         public MockResponse BuildRegistrationIndexResponse(
             string serverUri,
             KeyValuePair<PackageIdentity, bool>[] packageIdentityToListed,
             ISet<PackageIdentity> deprecatedPackages,
-            IReadOnlyDictionary<string, List<(Uri, PackageVulnerabilitySeverity, VersionRange)>> allVulnerabilities)
+            IReadOnlyDictionary<string, List<(Uri, PackageVulnerabilitySeverity, VersionRange)>> allVulnerabilities,
+            IReadOnlyDictionary<string, IReadOnlyList<string>> allSponsorshipUrls)
         {
             var id = packageIdentityToListed[0].Key.Id.ToLowerInvariant();
             var versions = packageIdentityToListed.Select(
@@ -205,7 +207,10 @@ namespace Test.Utility
                 packageVulnerabilities = null;
             }
 
-            var registrationIndex = FeedUtilities.CreatePackageRegistrationBlob(serverUri, id, versions, deprecatedPackages, packageVulnerabilities);
+            IReadOnlyList<string> sponsorshipUrls = null;
+            allSponsorshipUrls?.TryGetValue(id, out sponsorshipUrls);
+
+            var registrationIndex = FeedUtilities.CreatePackageRegistrationBlob(serverUri, id, versions, deprecatedPackages, packageVulnerabilities, sponsorshipUrls);
 
             return new MockResponse
             {
@@ -233,20 +238,28 @@ namespace Test.Utility
 
         public MockResponse BuildV3IndexResponseWithVulnerabilities(string serverUri)
         {
-            JObject indexJson = CreateMinimalIndexJson(serverUri);
-            FeedUtilities.AddVulnerabilitiesResource(indexJson, serverUri);
-
-            return new MockResponse
-            {
-                ContentType = "text/javascript",
-                Content = Encoding.UTF8.GetBytes(indexJson.ToString())
-            };
-
+            return BuildV3IndexResponse(serverUri, sourceReportsVulnerabilities: true, sourceSupportsSponsorship: false);
         }
 
         public MockResponse BuildV3IndexResponse(string serverUri)
         {
+            return BuildV3IndexResponse(serverUri, sourceReportsVulnerabilities: false, sourceSupportsSponsorship: false);
+        }
+
+        internal MockResponse BuildV3IndexResponse(
+            string serverUri,
+            bool sourceReportsVulnerabilities,
+            bool sourceSupportsSponsorship)
+        {
             JObject indexJson = CreateMinimalIndexJson(serverUri);
+            if (sourceSupportsSponsorship)
+            {
+                FeedUtilities.AddSponsorshipRegistrationResource(indexJson, serverUri);
+            }
+            if (sourceReportsVulnerabilities)
+            {
+                FeedUtilities.AddVulnerabilitiesResource(indexJson, serverUri);
+            }
 
             return new MockResponse
             {

@@ -1,4 +1,8 @@
 #nullable enable
+NuGet.Protocol.PackageIdMetadata
+NuGet.Protocol.PackageIdMetadata.PackageIdMetadata() -> void
+NuGet.Protocol.PackageIdMetadata.SponsorshipUrls.get -> System.Collections.Generic.IReadOnlyList<string!>!
+NuGet.Protocol.PackageIdMetadata.SponsorshipUrls.init -> void
 NuGet.Protocol.PackageStagingResourceV3
 NuGet.Protocol.PackageStagingResourceV3.PushPackageAsync(string! packagePath, string? apiKey, string? groupId, System.TimeSpan requestTimeout, bool allowInsecureConnections, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 NuGet.Protocol.PackageStagingResourceV3.PushSymbolsAsync(string! packagePath, string? apiKey, string? groupId, System.TimeSpan requestTimeout, bool allowInsecureConnections, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
@@ -6,5 +10,11 @@ NuGet.Protocol.PackageStagingResourceV3.PushSymbolsAsync(string! packagePath, st
 NuGet.Protocol.PackageStagingResourceV3.SourceUri.get -> System.Uri!
 NuGet.Protocol.PackageStagingResourceV3Provider
 NuGet.Protocol.PackageStagingResourceV3Provider.PackageStagingResourceV3Provider() -> void
+override NuGet.Protocol.PackageMetadataResourceV3.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! sourceCacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
+override NuGet.Protocol.PackageMetadataResourceV3.SupportsPackageIdMetadata.get -> bool
 override NuGet.Protocol.PackageStagingResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 static readonly NuGet.Protocol.ServiceTypes.PackageStaging -> string![]!
+virtual NuGet.Protocol.Core.Types.PackageMetadataResource.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! sourceCacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
+virtual NuGet.Protocol.Core.Types.PackageMetadataResource.SupportsPackageIdMetadata.get -> bool
+virtual NuGet.Protocol.RegistrationResourceV3.GetPackageIdMetadataAsync(string! packageId, NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Common.ILogger! log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageIdMetadata?>!
+virtual NuGet.Protocol.RegistrationResourceV3.SupportsPackageIdMetadata.get -> bool

@@ -10,7 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -31,6 +33,57 @@ namespace NuGet.Protocol.Tests
             return Repository.Provider.GetCoreV3()
                 .Where(p => p.Value is not PackageMetadataResourceV3Provider)
                 .Append(new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider(envReader.Object)));
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetPackageIdMetadataAsync_DelegatesToRegistrationResource(string useStj)
+        {
+            // Arrange
+            const string registrationBaseUrl = "https://api.nuget.org/v3/registration0/";
+            const string registrationIndex = """
+                {
+                  "metadata": {
+                    "sponsorshipUrls": [ "https://sponsor.test/one", null, " ", "https://sponsor.test/two" ]
+                  }
+                }
+                """;
+            var responses = new Dictionary<string, string>
+            {
+                [registrationBaseUrl + "deepequal/index.json"] = registrationIndex,
+            };
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader
+                .Setup(e => e.GetEnvironmentVariable(
+                    NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
+                .Returns(useStj);
+            var httpSource = new TestHttpSource(new PackageSource(registrationBaseUrl), responses);
+            var registrationResource = new RegistrationResourceV3(
+                httpSource,
+                new Uri(registrationBaseUrl),
+                supportsPackageIdMetadata: true,
+                envReader.Object);
+            PackageMetadataResource resource = new PackageMetadataResourceV3(
+                httpSource,
+                registrationResource,
+                reportAbuseResource: null,
+                packageDetailsUriResource: null);
+            using var sourceCacheContext = new SourceCacheContext { NoCache = true };
+
+            // Act
+            PackageIdMetadata? result = await resource.GetPackageIdMetadataAsync(
+                "deepequal",
+                sourceCacheContext,
+                NullLogger.Instance,
+                CancellationToken.None);
+
+            // Assert
+            Assert.True(resource.SupportsPackageIdMetadata);
+            Assert.NotNull(result);
+            Assert.Equal(
+                new[] { "https://sponsor.test/one", "https://sponsor.test/two" },
+                result.SponsorshipUrls);
         }
 
         [Theory]
@@ -77,6 +130,44 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(2, vulnerability.Severity);
                 Assert.Equal("https://contoso.test/advisory/1", vulnerability.AdvisoryUrl.OriginalString);
             }
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("false")]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_WithInvalidSponsorshipMetadata_ReturnsOrdinaryMetadata(string useStj)
+        {
+            // Arrange
+            var registrationIndex = JObject.Parse(JsonData.DeepEqualRegistationIndex);
+            registrationIndex["metadata"] = new JArray();
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+            string value = registrationIndex.ToString();
+            responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", value);
+
+            IEnumerable<Lazy<INuGetResourceProvider>> providers = CreateProvidersWithEnvReader(useStj);
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", providers, responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None)
+                ?? throw new Xunit.Sdk.XunitException("Expected PackageMetadataResource.");
+            NuGetVersion version = NuGetVersion.Parse("0.9.0");
+            var package = new PackageIdentity("deepequal", version);
+            using var sourceCacheContext = new SourceCacheContext { NoCache = true };
+
+            // Act
+            IPackageSearchMetadata? result = await resource.GetMetadataAsync(
+                package, sourceCacheContext, NullLogger.Instance, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(package, result.Identity);
+            Assert.Equal("An extensible deep comparison library for .NET", result.Description);
+            var expected = new Uri("http://github.com/jamesfoster/DeepEqual");
+            Assert.Equal(expected, result.ProjectUrl);
+            Assert.True(result.IsListed);
+            Assert.NotNull(result.Vulnerabilities);
+            var vulnerability = Assert.Single(result.Vulnerabilities);
+            Assert.Equal(2, vulnerability.Severity);
+            Assert.Equal("https://contoso.test/advisory/1", vulnerability.AdvisoryUrl.OriginalString);
         }
 
         [Theory]

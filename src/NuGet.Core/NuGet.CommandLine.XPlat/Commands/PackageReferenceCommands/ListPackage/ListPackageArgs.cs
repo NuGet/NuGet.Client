@@ -29,6 +29,12 @@ namespace NuGet.CommandLine.XPlat
         public bool HighestMinor { get; }
         public CancellationToken CancellationToken { get; }
         public IReadOnlyList<PackageSource> AuditSources { get; }
+        public IReadOnlyList<PackageSource> ExplicitPackageSources { get; }
+
+        /// <summary>
+        /// The configured package source mapping. The runner decides whether a report uses it.
+        /// </summary>
+        public PackageSourceMapping PackageSourceMapping { get; }
 
         /// <summary>
         /// A constructor for the arguments of list package
@@ -46,6 +52,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="highestMinor"> Bool for --highest-minor present </param>
         /// <param name="auditSources"> A list of sources for performing vulnerability auditing</param>
         /// <param name="logger"></param>
+        /// <param name="packageSourceMapping">The configured package source mapping.</param>
+        /// <param name="explicitPackageSources">Package sources explicitly supplied with <c>--source</c>.</param>
         /// <param name="cancellationToken"></param>
         public ListPackageArgs(
             string path,
@@ -59,6 +67,8 @@ namespace NuGet.CommandLine.XPlat
             bool highestMinor,
             IReadOnlyList<PackageSource> auditSources,
             ILogger logger,
+            PackageSourceMapping packageSourceMapping,
+            IReadOnlyList<PackageSource> explicitPackageSources,
             CancellationToken cancellationToken)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
@@ -66,14 +76,23 @@ namespace NuGet.CommandLine.XPlat
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             ReportType = reportType;
             Renderer = renderer;
-            IncludeTransitive = includeTransitive;
+            // The sponsorship report always covers transitive packages.
+            IncludeTransitive = includeTransitive || reportType == ReportType.Sponsor;
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
             AuditSources = auditSources;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            PackageSourceMapping = packageSourceMapping ?? throw new ArgumentNullException(nameof(packageSourceMapping));
+            ExplicitPackageSources = explicitPackageSources ?? throw new ArgumentNullException(nameof(explicitPackageSources));
             CancellationToken = cancellationToken;
             ArgumentText = GetReportParameters();
+        }
+
+        internal void UseExplicitPackageSources()
+        {
+            PackageSources.Clear();
+            PackageSources.AddRange(ExplicitPackageSources);
         }
 
         private string GetReportParameters()
@@ -93,11 +112,15 @@ namespace NuGet.CommandLine.XPlat
                 case ReportType.Vulnerable:
                     sb.Append(" --vulnerable");
                     break;
+                case ReportType.Sponsor:
+                    sb.Append(" --sponsor");
+                    break;
                 default:
                     break;
             }
 
-            if (IncludeTransitive)
+            // --include-transitive is implied by --sponsor, so it is not echoed back as a user-supplied parameter.
+            if (IncludeTransitive && ReportType != ReportType.Sponsor)
             {
                 sb.Append(" --include-transitive");
             }

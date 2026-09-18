@@ -19,6 +19,20 @@ namespace NuGet.Protocol.Tests
     public class LocalPackageMetadataResourceTests
     {
         [Fact]
+        public async Task PackageIdMetadata_IsNotSupported()
+        {
+            using TestDirectory root = TestDirectory.Create();
+            var resource = new LocalPackageMetadataResource(new FindLocalPackagesResourceV2(root));
+
+            Assert.False(resource.SupportsPackageIdMetadata);
+            await Assert.ThrowsAsync<NotSupportedException>(() => resource.GetPackageIdMetadataAsync(
+                "package",
+                NullSourceCacheContext.Instance,
+                Common.NullLogger.Instance,
+                CancellationToken.None));
+        }
+
+        [Fact]
         public async Task LocalPackageMetadataResourceTests_GetMetadataStableAsync()
         {
             using (var root = TestDirectory.Create())

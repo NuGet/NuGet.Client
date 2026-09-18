@@ -27,6 +27,7 @@ namespace NuGet.Protocol.Tests
         {
             string[] expected =
             {
+                "RegistrationsBaseUrl/7.12.0",
                 "RegistrationsBaseUrl/Versioned",
                 "RegistrationsBaseUrl/3.6.0",
                 "RegistrationsBaseUrl/3.4.0",
@@ -35,6 +36,23 @@ namespace NuGet.Protocol.Tests
                 "RegistrationsBaseUrl"
             };
             ServiceTypes.RegistrationsBaseUrl.Should().ContainInOrder(expected);
+        }
+
+        [Fact]
+        public void RegistrationsBaseUrls_PackageIdMetadataCapability_IsPreferredAndDetectable()
+        {
+            string[] expected =
+            {
+                "RegistrationsBaseUrl/7.12.0",
+                "RegistrationsBaseUrl/Versioned",
+                "RegistrationsBaseUrl/3.6.0",
+                "RegistrationsBaseUrl/3.4.0",
+                "RegistrationsBaseUrl/3.0.0-rc",
+                "RegistrationsBaseUrl/3.0.0-beta",
+                "RegistrationsBaseUrl"
+            };
+            ServiceTypes.RegistrationsBaseUrl.Should().Equal(expected);
+            ServiceTypes.RegistrationsBaseUrl7120.Should().Equal("RegistrationsBaseUrl/7.12.0");
         }
 
         [Fact]

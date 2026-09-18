@@ -16,6 +16,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         internal ListPackageArgs ListPackageArgs { get; }
         internal List<ListPackageProjectModel> Projects { get; } = new();
         internal HashSet<PackageSource> AuditSourcesUsed { get; set; } = new HashSet<PackageSource>();
+        internal IReadOnlyList<PackageSource> SponsorshipUnsupportedSources { get; set; } = new List<PackageSource>();
 
         private ListPackageReportModel()
         { }

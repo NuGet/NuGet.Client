@@ -55,6 +55,19 @@ namespace NuGet.CommandLine.XPlat
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
             var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
+
+            SponsorReportProcessor sponsorReportProcessor = null;
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                sponsorReportProcessor = new SponsorReportProcessor(listPackageArgs);
+                if (!sponsorReportProcessor.Configure())
+                {
+                    return (GenericFailureExitCode, listPackageReportModel);
+                }
+            }
+
+            WarnAboutIncompatibleOptions(listPackageArgs);
+
             if (!File.Exists(listPackageArgs.Path))
             {
                 listPackageArgs.Renderer.AddProblem(problemType: ProblemType.Error,
@@ -64,7 +77,17 @@ namespace NuGet.CommandLine.XPlat
                 return (GenericFailureExitCode, listPackageReportModel);
             }
 
-            PopulateSourceRepositoryCache(listPackageArgs);
+            if (sponsorReportProcessor != null)
+            {
+                if (!await sponsorReportProcessor.PrepareSourcesAsync(listPackageReportModel))
+                {
+                    return (GenericSuccessExitCode, listPackageReportModel);
+                }
+            }
+            else
+            {
+                PopulateSourceRepositoryCache(listPackageArgs);
+            }
 
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
@@ -78,7 +101,11 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (string projectPath in projectsPaths)
             {
-                await GetProjectMetadataAsync(projectPath, listPackageReportModel, listPackageArgs);
+                await GetProjectMetadataAsync(
+                    projectPath,
+                    listPackageReportModel,
+                    listPackageArgs,
+                    sponsorReportProcessor);
             }
 
             // if there is any error then return failure code.
@@ -90,11 +117,21 @@ namespace NuGet.CommandLine.XPlat
             return (exitCode, listPackageReportModel);
         }
 
+        internal static void WarnAboutIncompatibleOptions(ListPackageArgs listPackageArgs)
+        {
+            if (listPackageArgs.ReportType != ReportType.Outdated &&
+                (listPackageArgs.Prerelease || listPackageArgs.HighestMinor || listPackageArgs.HighestPatch))
+            {
+                listPackageArgs.Renderer.AddProblem(ProblemType.Warning, Strings.ListPkg_VulnerableIgnoredOptions);
+            }
+        }
+
         [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
         private async Task GetProjectMetadataAsync(
             string projectPath,
             ListPackageReportModel listPackageReportModel,
-            ListPackageArgs listPackageArgs)
+            ListPackageArgs listPackageArgs,
+            SponsorReportProcessor sponsorReportProcessor)
         {
             //Open project to evaluate properties for the assets
             //file and the name of the project
@@ -142,14 +179,17 @@ namespace NuGet.CommandLine.XPlat
             {
                 bool vulnerabilitiesCheckedFromAuditSources = false;
 
-                if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                if (sponsorReportProcessor != null)
                 {
-                    List<PackageSource> httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
-                    httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
-
-                    if (httpSources.Count > 0)
+                    if (!await sponsorReportProcessor.ProcessProjectAsync(frameworks, projectModel))
                     {
-                        projectModel.AddProjectInformation(ProblemType.Error, HttpSourcesUtility.BuildHttpSourceErrorMessage(httpSources, "list package"));
+                        return;
+                    }
+                }
+                else if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                {
+                    if (DetectAndReportInsecureSources(listPackageArgs, projectModel))
+                    {
                         return;
                     }
 
@@ -160,7 +200,8 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
+                        Dictionary<string, List<IPackageSearchMetadata>> metadata =
+                            await GetPackageMetadataAsync(frameworks, listPackageArgs);
                         await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
                     }
                 }
@@ -182,6 +223,22 @@ namespace NuGet.CommandLine.XPlat
                     }
                 }
             }
+        }
+
+        private static bool DetectAndReportInsecureSources(
+            ListPackageArgs listPackageArgs,
+            ListPackageProjectModel projectModel)
+        {
+            List<PackageSource> httpSources = HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.PackageSources);
+            httpSources.AddRange(HttpSourcesUtility.GetDisallowedInsecureHttpSources(listPackageArgs.AuditSources));
+
+            if (httpSources.Count > 0)
+            {
+                projectModel.AddProjectInformation(ProblemType.Error, HttpSourcesUtility.BuildHttpSourceErrorMessage(httpSources, "list package"));
+                return true;
+            }
+
+            return false;
         }
 
         private static async Task GetVulnerabilitiesFromAuditSourcesAsync(
@@ -372,6 +429,12 @@ namespace NuGet.CommandLine.XPlat
                         ListPackageHelper.PackagesFilterForVulnerable,
                         ListPackageHelper.PackagesFilterForVulnerable);
                     break;
+                case ReportType.Sponsor:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.PackagesFilterForSponsorship,
+                        ListPackageHelper.PackagesFilterForSponsorship);
+                    break;
             }
 
             return packages.Any(p => p.TopLevelPackages.Any() ||
@@ -425,14 +488,10 @@ namespace NuGet.CommandLine.XPlat
             List<FrameworkPackages> targetFrameworks,
             ListPackageArgs listPackageArgs)
         {
-            List<string> allPackages = GetAllPackageIdentifiers(targetFrameworks, listPackageArgs.IncludeTransitive);
+            List<string> allPackages = GetPackageIds(targetFrameworks, listPackageArgs.IncludeTransitive);
             var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count);
 
-            int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
-                ? 8 // Try to be nice to HTTP package sources
-                : listPackageArgs.PackageSources.Count == 0
-                    ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
-                    : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
+            int maxParallel = GetMaxParallel(listPackageArgs);
 
             await ThrottledForEachAsync(allPackages,
                 async (packageId, cancellationToken) => await GetPackageMetadataAsync(packageId, listPackageArgs, cancellationToken),
@@ -441,17 +500,24 @@ namespace NuGet.CommandLine.XPlat
                 listPackageArgs.CancellationToken);
 
             return packageMetadataById;
+        }
 
-            static List<string> GetAllPackageIdentifiers(List<FrameworkPackages> frameworks, bool includeTransitive)
+        internal static int GetMaxParallel(ListPackageArgs listPackageArgs) =>
+            listPackageArgs.PackageSources.Any(s => s.IsHttp)
+                ? 8 // Try to be nice to HTTP package sources
+                : listPackageArgs.PackageSources.Count == 0
+                    ? Environment.ProcessorCount + 1 // Fallback when no package sources are configured
+                    : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
+
+        internal static List<string> GetPackageIds(List<FrameworkPackages> frameworks, bool includeTransitive)
+        {
+            IEnumerable<InstalledPackageReference> intermediateEnumerable = frameworks.SelectMany(f => f.TopLevelPackages);
+            if (includeTransitive)
             {
-                IEnumerable<InstalledPackageReference> intermediateEnumerable = frameworks.SelectMany(f => f.TopLevelPackages);
-                if (includeTransitive)
-                {
-                    intermediateEnumerable = intermediateEnumerable.Concat(frameworks.SelectMany(f => f.TransitivePackages));
-                }
-                List<string> allPackages = intermediateEnumerable.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-                return allPackages;
+                intermediateEnumerable = intermediateEnumerable.Concat(frameworks.SelectMany(f => f.TransitivePackages));
             }
+            List<string> allPackages = intermediateEnumerable.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            return allPackages;
         }
 
         /// <summary>Run a throttled iteration of a list that performs async work, with a "single threaded" collection of results.</summary>
@@ -467,7 +533,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="cancellationToken">Cancellation token</param>
         /// <param name="maxParallel">The maximum number of tasks to allow running in parallel.</param>
         /// <returns>A task that can be awaited to wait for completion of the iteration.</returns>
-        private async Task ThrottledForEachAsync<TItem, TResult>(
+        internal static async Task ThrottledForEachAsync<TItem, TResult>(
             IList<TItem> items,
             Func<TItem, CancellationToken, Task<TResult>> taskFactory,
             Action<TResult> continuation,

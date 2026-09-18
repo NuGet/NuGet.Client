@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         protected List<ReportProblem> _problems = new();
         private readonly TextWriter _consoleOut;
         private readonly TextWriter _consoleError;
+        internal bool ShowSponsorshipSourceHint { get; set; } = true;
 
         public ListPackageConsoleRenderer()
             : this(Console.Out, Console.Error)
@@ -69,7 +70,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 WriteSources(_consoleOut, listPackageReportModel.ListPackageArgs);
             }
 
-            WriteProjects(_consoleOut, _consoleError, listPackageReportModel.Projects, listPackageReportModel.ListPackageArgs);
+            WriteProjects(_consoleOut, _consoleError, listPackageReportModel);
 
             // Print a legend message for auto-reference markers used
             if (listPackageReportModel.Projects.Any(p => p.AutoReferenceFound))
@@ -81,7 +82,8 @@ namespace NuGet.CommandLine.XPlat.ListPackage
         private static void WriteSources(TextWriter consoleOut, ListPackageArgs listPackageArgs)
         {
             // Print sources, but not for generic list (which is offline)
-            if (listPackageArgs.ReportType != ReportType.Default)
+            if (listPackageArgs.ReportType != ReportType.Default &&
+                listPackageArgs.ReportType != ReportType.Sponsor)
             {
                 consoleOut.WriteLine();
                 consoleOut.WriteLine(Strings.ListPkg_SourcesUsedDescription);
@@ -90,8 +92,14 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
         }
 
-        private static void WriteProjects(TextWriter consoleOut, TextWriter consoleError, List<ListPackageProjectModel> projects, ListPackageArgs listPackageArgs)
+        private void WriteProjects(
+            TextWriter consoleOut,
+            TextWriter consoleError,
+            ListPackageReportModel reportModel)
         {
+            List<ListPackageProjectModel> projects = reportModel.Projects;
+            ListPackageArgs listPackageArgs = reportModel.ListPackageArgs;
+
             foreach (ListPackageProjectModel project in projects)
             {
                 PrintProblems(consoleOut, consoleError, project.ProjectProblems, listPackageArgs);
@@ -103,7 +111,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
                 if (project.TargetFrameworkPackages == null)
                 {
-                    consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, project.ProjectName));
+                    if (listPackageArgs.ReportType != ReportType.Sponsor)
+                    {
+                        consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, project.ProjectName));
+                    }
                     continue;
                 }
 
@@ -125,6 +136,11 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                             consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, project.ProjectName));
                             break;
                     }
+                }
+
+                if (listPackageArgs.ReportType == ReportType.Sponsor)
+                {
+                    continue;
                 }
 
                 printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
@@ -175,28 +191,67 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                         // Print top-level packages
                         if (frameworkTopLevelPackages?.Any() == true)
                         {
-                            var tableHasAutoReference = false;
-                            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTopLevelPackages, printingTransitive: false, listPackageArgs, ref tableHasAutoReference);
-                            if (tableToPrint != null)
-                            {
-                                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
-                            }
+                            PrintPackages(frameworkTopLevelPackages, printingTransitive: false, listPackageArgs);
                         }
 
                         // Print transitive packages
                         if (listPackageArgs.IncludeTransitive && frameworkTransitivePackages?.Any() == true)
                         {
-                            var tableHasAutoReference = false;
-                            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
-                                frameworkTransitivePackages, printingTransitive: true, listPackageArgs, ref tableHasAutoReference);
-                            if (tableToPrint != null)
-                            {
-                                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
-                            }
+                            PrintPackages(frameworkTransitivePackages, printingTransitive: true, listPackageArgs);
                         }
                     }
                 }
+            }
+
+            if (listPackageArgs.ReportType == ReportType.Sponsor)
+            {
+                (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) =
+                    SponsorReportAggregator.CollapseProjectsForConsole(projects);
+                if (topLevel.Count > 0 || transitive.Count > 0)
+                {
+                    PrintPackages(topLevel, printingTransitive: false, listPackageArgs);
+                    PrintPackages(transitive, printingTransitive: true, listPackageArgs);
+                }
+                else
+                {
+                    bool hasValidProject = projects.Any(
+                        project => project.ProjectProblems?.Any(problem => problem.ProblemType == ProblemType.Error) != true);
+                    if (hasValidProject)
+                    {
+                        consoleOut.WriteLine(Strings.ListPkg_NoSponsorshipFound);
+                    }
+                }
+                PrintSponsorshipSourceDiagnostics(consoleOut, reportModel);
+            }
+        }
+
+        private void PrintSponsorshipSourceDiagnostics(
+            TextWriter consoleOut,
+            ListPackageReportModel reportModel)
+        {
+            (IReadOnlyList<PackageSource> sourcesWithoutSponsorshipDetails,
+                IReadOnlyList<PackageSource> unsupportedSources,
+                bool hasSponsorships) = SponsorReportAggregator.GetSourceDiagnostics(reportModel);
+
+            if (sourcesWithoutSponsorshipDetails.Count > 0)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorNoDetailsHeader);
+                PrintSources(consoleOut, sourcesWithoutSponsorshipDetails);
+                consoleOut.WriteLine();
+            }
+
+            if (unsupportedSources.Count > 0)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorUnsupportedSourcesHeader);
+                PrintSources(consoleOut, unsupportedSources);
+                consoleOut.WriteLine();
+            }
+
+            if (ShowSponsorshipSourceHint &&
+                (sourcesWithoutSponsorshipDetails.Count > 0 || unsupportedSources.Count > 0) &&
+                !hasSponsorships)
+            {
+                consoleOut.WriteLine(Strings.ListPkg_SponsorSourceHint);
             }
         }
 
@@ -247,6 +302,18 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             }
 
             return string.Format(Strings.ListPkg_ProjectHeaderLog, projectName);
+        }
+
+        private static void PrintPackages(List<ListReportPackage> packages, bool printingTransitive, ListPackageArgs listPackageArgs)
+        {
+            var tableHasAutoReference = false;
+            var tableToPrint = ProjectPackagesPrintUtility.BuildPackagesTable(
+                packages, printingTransitive, listPackageArgs, ref tableHasAutoReference);
+
+            if (tableToPrint != null)
+            {
+                ProjectPackagesPrintUtility.PrintPackagesTable(tableToPrint);
+            }
         }
     }
 }
