@@ -27,15 +27,13 @@ namespace NuGet.ProjectModel
         private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByUniqueName
             = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly bool _useLegacyAssetTargetFallbackBehavior;
-
         private readonly bool _useLegacyDependencyGraphResolution = false;
 
         public PackageSpecReferenceDependencyProvider(
             IEnumerable<ExternalProjectReference> externalProjects,
             ILogger logger) :
             this(externalProjects,
-                environmentVariableReader: EnvironmentVariableWrapper.Instance,
+                logger,
                 useLegacyDependencyGraphResolution: false)
         {
         }
@@ -43,17 +41,7 @@ namespace NuGet.ProjectModel
         public PackageSpecReferenceDependencyProvider(
             IEnumerable<ExternalProjectReference> externalProjects,
             ILogger logger,
-            bool useLegacyDependencyGraphResolution) :
-            this(externalProjects,
-                environmentVariableReader: EnvironmentVariableWrapper.Instance,
-                useLegacyDependencyGraphResolution)
-        {
-        }
-
-        internal PackageSpecReferenceDependencyProvider(
-            IEnumerable<ExternalProjectReference> externalProjects,
-            IEnvironmentVariableReader environmentVariableReader,
-            bool useLegacyDependencyGraphResolution = false)
+            bool useLegacyDependencyGraphResolution)
         {
             if (externalProjects == null)
             {
@@ -85,7 +73,6 @@ namespace NuGet.ProjectModel
                     _externalProjectsByUniqueName.Add(project.UniqueName, project);
                 }
             }
-            _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
             _useLegacyDependencyGraphResolution = useLegacyDependencyGraphResolution;
         }
 
@@ -236,11 +223,7 @@ namespace NuGet.ProjectModel
         private List<LibraryDependency> GetDependenciesFromSpecRestoreMetadata(PackageSpec packageSpec, NuGetFramework targetFramework, string targetAlias)
         {
             var targetFrameworkInfo = packageSpec.GetNearestTargetFramework(targetFramework, targetAlias);
-
-            if (!_useLegacyAssetTargetFallbackBehavior)
-            {
-                targetFrameworkInfo = GetNearestTargetFrameworkWithFallbacks(packageSpec, targetFramework, targetAlias, targetFrameworkInfo);
-            }
+            targetFrameworkInfo = GetNearestTargetFrameworkWithFallbacks(packageSpec, targetFramework, targetAlias, targetFrameworkInfo);
 
             if (targetFrameworkInfo.FrameworkName == null)
             {

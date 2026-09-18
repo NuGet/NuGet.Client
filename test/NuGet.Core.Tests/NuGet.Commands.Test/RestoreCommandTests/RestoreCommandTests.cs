@@ -4218,7 +4218,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Pruning.RemovablePackages.Count"] = value => value.Should().BeOfType<int>(),
                 ["Pruning.Pruned.Direct.Count"] = value => value.Should().BeOfType<int>(),
                 ["UsesLegacyPackagesDirectory"] = value => value.Should().Be(false),
-                ["UsesLegacyAssetTargetFallback"] = value => value.Should().Be(false),
             };
 
             HashSet<string> actualProperties = new();
@@ -4677,7 +4676,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Pruning.FrameworksUnsupported.Count"] = value => value.Should().Be(1),
                 ["Pruning.DefaultEnabled"] = value => value.Should().Be(false),
                 ["UsesLegacyPackagesDirectory"] = value => value.Should().Be(false),
-                ["UsesLegacyAssetTargetFallback"] = value => value.Should().Be(false),
             };
 
             HashSet<string> actualProperties = new();
@@ -4810,7 +4808,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Pruning.RemovablePackages.Count"] = value => value.Should().BeOfType<int>(),
                 ["Pruning.Pruned.Direct.Count"] = value => value.Should().BeOfType<int>(),
                 ["UsesLegacyPackagesDirectory"] = value => value.Should().Be(false),
-                ["UsesLegacyAssetTargetFallback"] = value => value.Should().Be(false),
             };
 
             HashSet<string> actualProperties = new();

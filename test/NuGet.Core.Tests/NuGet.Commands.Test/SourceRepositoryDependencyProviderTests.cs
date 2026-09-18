@@ -1060,19 +1060,13 @@ namespace NuGet.Commands.Test
             dependencies.Name.Should().Be("full.framework");
         }
 
-        [Theory]
-        [InlineData("true", false)]
-        [InlineData("blbla", true)]
-        public async Task GetDependenciesAsync_WhenPackageIsSelectedWithAssetTargetFallback_AndLegacyDependencyResolutionVariableIsSpecified_CorrectDependenciesAreSelected(string envValue, bool areDependenciesSelected)
+        [Fact]
+        public async Task GetDependenciesAsync_WhenPackageIsSelectedWithAssetTargetFallback_CorrectDependenciesAreSelected()
         {
             // Arrange
             var testLogger = new TestLogger();
             var cacheContext = new SourceCacheContext();
             var findResource = new Mock<FindPackageByIdResource>();
-            var wrapper = new TestEnvironmentVariableReader(new Dictionary<string, string>
-            {
-                { "NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION", envValue }
-            });
             var net472 = FrameworkConstants.CommonFrameworks.Net472;
             var net60 = FrameworkConstants.CommonFrameworks.Net60;
             var inputFramework = new AssetTargetFallbackFramework(net60, new List<NuGetFramework> { net472 });
@@ -1108,7 +1102,7 @@ namespace NuGet.Commands.Test
                 fileCache: null,
                 isGlobalPackagesFolder: false,
                 isFallbackFolderSource: false,
-                wrapper);
+                new TestEnvironmentVariableReader(new Dictionary<string, string>()));
 
             // Act
             var library = await provider.GetDependenciesAsync(
@@ -1118,16 +1112,9 @@ namespace NuGet.Commands.Test
                 testLogger,
                 CancellationToken.None);
             // Assert
-            if (areDependenciesSelected)
-            {
-                library.Dependencies.Should().HaveCount(1);
-                var dependencies = library.Dependencies.Single();
-                dependencies.Name.Should().Be("full.framework");
-            }
-            else
-            {
-                library.Dependencies.Should().HaveCount(0);
-            }
+            library.Dependencies.Should().HaveCount(1);
+            var dependencies = library.Dependencies.Single();
+            dependencies.Name.Should().Be("full.framework");
         }
 
         private sealed class SourceRepositoryDependencyProviderTest : IDisposable
