@@ -12,6 +12,7 @@ using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -40,9 +41,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageMetadataResourceV3_GetPackageIdMetadataAsync_DelegatesToRegistrationResource(string useStj)
         {
             // Arrange
-            string serviceIndex = JsonData.IndexWithoutFlatContainer.Replace(
-                @"""RegistrationsBaseUrl""",
-                @"""RegistrationsBaseUrl/7.12.0""");
+            const string registrationBaseUrl = "https://api.nuget.org/v3/registration0/";
             const string registrationIndex = """
                 {
                   "metadata": {
@@ -52,15 +51,24 @@ namespace NuGet.Protocol.Tests
                 """;
             var responses = new Dictionary<string, string>
             {
-                ["http://testsource.com/v3/index.json"] = serviceIndex,
-                ["https://api.nuget.org/v3/registration0/deepequal/index.json"] = registrationIndex,
+                [registrationBaseUrl + "deepequal/index.json"] = registrationIndex,
             };
-            SourceRepository repo = StaticHttpHandler.CreateSource(
-                "http://testsource.com/v3/index.json",
-                CreateProvidersWithEnvReader(useStj),
-                responses);
-            PackageMetadataResource resource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None)
-                ?? throw new Xunit.Sdk.XunitException("Expected PackageMetadataResource.");
+            var envReader = new Mock<IEnvironmentVariableReader>();
+            envReader
+                .Setup(e => e.GetEnvironmentVariable(
+                    NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
+                .Returns(useStj);
+            var httpSource = new TestHttpSource(new PackageSource(registrationBaseUrl), responses);
+            var registrationResource = new RegistrationResourceV3(
+                httpSource,
+                new Uri(registrationBaseUrl),
+                supportsPackageIdMetadata: true,
+                envReader.Object);
+            PackageMetadataResource resource = new PackageMetadataResourceV3(
+                httpSource,
+                registrationResource,
+                reportAbuseResource: null,
+                packageDetailsUriResource: null);
             using var sourceCacheContext = new SourceCacheContext { NoCache = true };
 
             // Act
