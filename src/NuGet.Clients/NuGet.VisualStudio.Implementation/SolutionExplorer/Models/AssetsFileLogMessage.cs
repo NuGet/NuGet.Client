@@ -18,7 +18,9 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             Level = logMessage.Level;
             WarningLevel = logMessage.WarningLevel;
             Message = logMessage.Message;
-            LibraryName = NormalizeLibraryName(logMessage.LibraryId, projectFilePath);
+            LibraryName = NormalizeLibraryName(
+                logMessage.LibraryId ?? throw new InvalidDataException("An assets file dependency log message must identify a library."),
+                projectFilePath);
         }
 
         public NuGetLogCode Code { get; }
@@ -33,7 +35,8 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                 && other.Level == Level
                 && other.WarningLevel == WarningLevel
                 && other.Message == Message
-                && NormalizeLibraryName(other.LibraryId, projectFilePath) == LibraryName;
+                && other.LibraryId is string libraryId
+                && NormalizeLibraryName(libraryId, projectFilePath) == LibraryName;
         }
 
         private static string NormalizeLibraryName(string libraryName, string projectFilePath)
