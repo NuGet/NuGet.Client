@@ -4,6 +4,9 @@
 using System;
 using System.CommandLine;
 using System.Threading.Tasks;
+using NuGet.Configuration;
+using NuGet.Credentials;
+using NuGet.Protocol;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
 {
@@ -18,7 +21,24 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
                 stageCommand,
                 interactiveOption,
                 getLogger,
-                args => new StagePushCommandRunner().ExecuteCommandAsync(args));
+                SetupSettingsAndRunAsync);
+        }
+
+        internal static Task<int> SetupSettingsAndRunAsync(StagePushCommandArgs args)
+        {
+            DefaultCredentialServiceUtility.SetupDefaultCredentialService(
+                args.Logger,
+                !args.Interactive);
+
+            ISettings settings = XPlatUtility.ProcessConfigFile(args.ConfigFile);
+            var packageSourceProvider = new PackageSourceProvider(settings);
+            var sourceRepositoryProvider = new CachingSourceProvider(packageSourceProvider);
+
+            return StagePushCommandRunner.RunAsync(
+                args,
+                settings,
+                packageSourceProvider,
+                sourceRepositoryProvider);
         }
 
         internal static void Register(
@@ -27,7 +47,10 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
             Func<ILoggerWithColor> getLogger,
             Func<StagePushCommandArgs, Task<int>> action)
         {
-            var pushCommand = new Command("push", Strings.StagePushCommand_Description);
+            var pushCommand = new DocumentedCommand(
+                "push",
+                Strings.StagePushCommand_Description,
+                "https://aka.ms/dotnet/package/stage");
 
             var packagePathArgument = new Argument<string>("PACKAGE_PATH")
             {

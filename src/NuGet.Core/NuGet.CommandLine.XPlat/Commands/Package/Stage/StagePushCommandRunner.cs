@@ -12,42 +12,43 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
 {
-    internal sealed class StagePushCommandRunner
+    internal static class StagePushCommandRunner
     {
         private const string ApiKeyEnvironmentVariableName = "NUGET_API_KEY";
         private const int FailureExitCode = 1;
         private static readonly TimeSpan RequestTimeout = TimeSpan.FromMinutes(5);
         private static readonly Regex GroupIdRegex = new("^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,62}[A-Za-z0-9])?$");
 
-        private readonly IEnvironmentVariableReader _environmentVariableReader;
-
-        internal StagePushCommandRunner()
-            : this(EnvironmentVariableWrapper.Instance)
+        internal static Task<int> RunAsync(
+            StagePushCommandArgs args,
+            ISettings settings,
+            IPackageSourceProvider packageSourceProvider,
+            ISourceRepositoryProvider sourceRepositoryProvider)
         {
+            return RunAsync(
+                args,
+                settings,
+                packageSourceProvider,
+                sourceRepositoryProvider,
+                EnvironmentVariableWrapper.Instance);
         }
 
-        internal StagePushCommandRunner(IEnvironmentVariableReader environmentVariableReader)
+        internal static async Task<int> RunAsync(
+            StagePushCommandArgs args,
+            ISettings settings,
+            IPackageSourceProvider packageSourceProvider,
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            IEnvironmentVariableReader environmentVariableReader)
         {
-            _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
-        }
-
-        internal async Task<int> ExecuteCommandAsync(StagePushCommandArgs args)
-        {
-            ISettings settings = XPlatUtility.ProcessConfigFile(args.ConfigFile);
-            var sourceProvider = new PackageSourceProvider(settings);
-            var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
-            DefaultCredentialServiceUtility.SetupDefaultCredentialService(args.Logger, !args.Interactive);
-
             string packagePath = ValidatePackagePath(args.PackagePath);
             ValidateGroupId(args.GroupId);
 
-            PackageSource packageSource = ResolvePackageSource(sourceProvider, args.Source);
+            PackageSource packageSource = ResolvePackageSource(packageSourceProvider, args.Source);
             bool allowInsecureConnections = args.AllowInsecureConnections || packageSource.AllowInsecureConnections;
 
             if (packageSource.IsHttp && !packageSource.IsHttps)
@@ -80,7 +81,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
             }
 
             string? apiKey = args.ApiKey;
-            apiKey ??= _environmentVariableReader.GetEnvironmentVariable(ApiKeyEnvironmentVariableName);
+            apiKey ??= environmentVariableReader.GetEnvironmentVariable(ApiKeyEnvironmentVariableName);
             apiKey ??= SettingsUtility.GetApiKey(settings, stagingResource.SourceUri.AbsoluteUri, packageSource.Source);
 
             if (IsSymbolsPackage(packagePath))

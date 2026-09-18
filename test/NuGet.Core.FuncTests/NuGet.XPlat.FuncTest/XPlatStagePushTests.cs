@@ -12,6 +12,7 @@ using NuGet.CommandLine.XPlat;
 using NuGet.CommandLine.XPlat.Commands.Package.Stage;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -65,6 +66,8 @@ namespace NuGet.XPlat.FuncTest
                 ConfigurationConstants.ApiKeys,
                 server.StagingUrl,
                 configuredApiKey);
+            var packageSourceProvider = new PackageSourceProvider(settings);
+            var sourceRepositoryProvider = new CachingSourceProvider(packageSourceProvider);
             IEnvironmentVariableReader environmentVariableReader = environmentApiKey is null
                 ? TestEnvironmentVariableReader.EmptyInstance
                 : new TestEnvironmentVariableReader(
@@ -72,7 +75,6 @@ namespace NuGet.XPlat.FuncTest
                     {
                         ["NUGET_API_KEY"] = environmentApiKey,
                     });
-            var runner = new StagePushCommandRunner(environmentVariableReader);
             var args = new StagePushCommandArgs
             {
                 PackagePath = packagePath,
@@ -85,7 +87,12 @@ namespace NuGet.XPlat.FuncTest
             };
 
             // Act
-            int exitCode = await runner.ExecuteCommandAsync(args);
+            int exitCode = await StagePushCommandRunner.RunAsync(
+                args,
+                settings,
+                packageSourceProvider,
+                sourceRepositoryProvider,
+                environmentVariableReader);
 
             // Assert
             Assert.Equal(ExitCodes.Success, exitCode);
