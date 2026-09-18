@@ -623,11 +623,6 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
         <target state="translated">Нет устаревших пакетов для этой платформы.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListPkg_NoPackageReferencesForProject">
-        <source>Project '{0}' has no package references.</source>
-        <target state="new">Project '{0}' has no package references.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">Пакеты для этой платформы не обнаружены.</target>
@@ -638,9 +633,9 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
         <target state="translated">Пакеты для проекта "{0}" для указанных платформ не обнаружены.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListPkg_NoSponsorshipForProject">
-        <source>Project '{0}' has no sponsorable packages.</source>
-        <target state="new">Project '{0}' has no sponsorable packages.</target>
+      <trans-unit id="ListPkg_NoSponsorshipFound">
+        <source>No sponsorable packages were found.</source>
+        <target state="new">No sponsorable packages were found.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -706,11 +701,6 @@ NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allo
       <trans-unit id="ListPkg_ProjectHeaderLog">
         <source>Project '{0}' has the following package references</source>
         <target state="translated">Проект "{0}" содержит следующие ссылки на пакеты</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
-        <source>Project '{0}' has the following sponsorable packages</source>
-        <target state="new">Project '{0}' has the following sponsorable packages</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">

@@ -451,6 +451,8 @@ namespace NuGet.XPlat.FuncTest
                 highestMinor: false,
                 auditSources: null,
                 logger: logger,
+                packageSourceMapping: NoPackageSourceMapping,
+                explicitPackageSources: Array.Empty<PackageSource>(),
                 cancellationToken: CancellationToken.None);
 
             // Act
@@ -800,10 +802,7 @@ namespace NuGet.XPlat.FuncTest
                 string actualString = consoleOut.ToString();
                 if (sourceSupportsSponsorship)
                 {
-                    string expectedSubstring = hasPackages
-                        ? "Project 'ProjectA' has no sponsorable packages."
-                        : "Project 'ProjectA' has no package references.";
-                    Assert.Contains(expectedSubstring, actualString);
+                    Assert.Contains(CommandLine.XPlat.Strings.ListPkg_NoSponsorshipFound, actualString);
                 }
                 else
                 {
@@ -955,9 +954,14 @@ namespace NuGet.XPlat.FuncTest
                 ];
                 string diagnostics = string.Join(Environment.NewLine, values);
                 output.ToString().Should().EndWith(diagnostics);
-                bool expected = !hasSponsoredPackage;
-                bool actual = output.ToString().Contains("Project 'A' has no sponsorable packages.", StringComparison.Ordinal);
-                Assert.Equal(expected, actual);
+                if (hasSponsoredPackage)
+                {
+                    Assert.DoesNotContain(CommandLine.XPlat.Strings.ListPkg_NoSponsorshipFound, output.ToString());
+                }
+                else
+                {
+                    Assert.Contains(CommandLine.XPlat.Strings.ListPkg_NoSponsorshipFound, output.ToString());
+                }
             }
         }
 

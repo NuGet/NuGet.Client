@@ -1142,15 +1142,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; has no package references..
-        /// </summary>
-        internal static string ListPkg_NoPackageReferencesForProject {
-            get {
-                return ResourceManager.GetString("ListPkg_NoPackageReferencesForProject", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to No packages were found for this framework..
         /// </summary>
         internal static string ListPkg_NoPackagesForFramework {
@@ -1169,11 +1160,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; has no sponsorable packages..
+        ///   Looks up a localized string similar to No sponsorable packages were found..
         /// </summary>
-        internal static string ListPkg_NoSponsorshipForProject {
+        internal static string ListPkg_NoSponsorshipFound {
             get {
-                return ResourceManager.GetString("ListPkg_NoSponsorshipForProject", resourceCulture);
+                return ResourceManager.GetString("ListPkg_NoSponsorshipFound", resourceCulture);
             }
         }
 
@@ -1294,15 +1285,6 @@ namespace NuGet.CommandLine.XPlat {
             }
         }
         
-        /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following sponsorable packages.
-        /// </summary>
-        internal static string ListPkg_ProjectSponsorHeaderLog {
-            get {
-                return ResourceManager.GetString("ListPkg_ProjectSponsorHeaderLog", resourceCulture);
-            }
-        }
-
         /// <summary>
         ///   Looks up a localized string similar to Project `{0}` has the following updates to its packages.
         /// </summary>

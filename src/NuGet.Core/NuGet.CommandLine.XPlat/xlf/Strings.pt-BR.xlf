@@ -623,11 +623,6 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
         <target state="translated">Não há nenhum pacote preterido dessa estrutura.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListPkg_NoPackageReferencesForProject">
-        <source>Project '{0}' has no package references.</source>
-        <target state="new">Project '{0}' has no package references.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">Nenhum pacote foi encontrado para essa estrutura.</target>
@@ -638,9 +633,9 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
         <target state="translated">Nenhum pacote foi encontrado para o projeto '{0}' dadas as estruturas especificadas.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListPkg_NoSponsorshipForProject">
-        <source>Project '{0}' has no sponsorable packages.</source>
-        <target state="new">Project '{0}' has no sponsorable packages.</target>
+      <trans-unit id="ListPkg_NoSponsorshipFound">
+        <source>No sponsorable packages were found.</source>
+        <target state="new">No sponsorable packages were found.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -706,11 +701,6 @@ O NuGet requer fontes HTTPS. Para usar fontes HTTP, você deve definir explicita
       <trans-unit id="ListPkg_ProjectHeaderLog">
         <source>Project '{0}' has the following package references</source>
         <target state="translated">O projeto '{0}' tem as seguintes referências de pacote</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
-        <source>Project '{0}' has the following sponsorable packages</source>
-        <target state="new">Project '{0}' has the following sponsorable packages</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">

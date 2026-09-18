@@ -46,7 +46,7 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     if (!packagesById.TryGetValue(package.PackageId, out SponsorReportPackage? reportPackage))
                     {
                         packagesById[package.PackageId] = reportPackage =
-                            new SponsorReportPackage(package.PackageId, package.Sponsorships);
+                            new SponsorReportPackage(package);
                     }
 
                     reportPackage.Projects.Add((project.ProjectPath, isTopLevel));
@@ -56,6 +56,22 @@ namespace NuGet.CommandLine.XPlat.ListPackage
             return packagesById.Values
                 .OrderBy(package => package.PackageId, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+        }
+
+        internal static (List<ListReportPackage> TopLevel, List<ListReportPackage> Transitive) CollapseProjectsForConsole(
+            IEnumerable<ListPackageProjectModel> projects)
+        {
+            List<SponsorReportPackage> packages = CollapseProjects(projects);
+            List<ListReportPackage> topLevel = packages
+                .Where(package => package.Projects.Any(project => project.IsTopLevel))
+                .Select(package => package.Package)
+                .ToList();
+            List<ListReportPackage> transitive = packages
+                .Where(package => package.Projects.All(project => !project.IsTopLevel))
+                .Select(package => package.Package)
+                .ToList();
+
+            return (topLevel, transitive);
         }
 
         private static List<ListReportPackage> DistinctById(
@@ -140,14 +156,14 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
         internal sealed class SponsorReportPackage
         {
-            internal string PackageId { get; }
-            internal IReadOnlyList<PackageSponsorship> Sponsorships { get; }
+            internal string PackageId => Package.PackageId;
+            internal IReadOnlyList<PackageSponsorship> Sponsorships => Package.Sponsorships;
+            internal ListReportPackage Package { get; }
             internal List<(string ProjectPath, bool IsTopLevel)> Projects { get; } = new();
 
-            internal SponsorReportPackage(string packageId, IReadOnlyList<PackageSponsorship> sponsorships)
+            internal SponsorReportPackage(ListReportPackage package)
             {
-                PackageId = packageId;
-                Sponsorships = sponsorships;
+                Package = package;
             }
         }
     }

@@ -623,11 +623,6 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
         <target state="translated">未找到此框架已弃用的包。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListPkg_NoPackageReferencesForProject">
-        <source>Project '{0}' has no package references.</source>
-        <target state="new">Project '{0}' has no package references.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ListPkg_NoPackagesForFramework">
         <source>No packages were found for this framework.</source>
         <target state="translated">未找到此框架的任何包。</target>
@@ -638,9 +633,9 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
         <target state="translated">未找到给定指定框架的项目“{0}”的任何包。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListPkg_NoSponsorshipForProject">
-        <source>Project '{0}' has no sponsorable packages.</source>
-        <target state="new">Project '{0}' has no sponsorable packages.</target>
+      <trans-unit id="ListPkg_NoSponsorshipFound">
+        <source>No sponsorable packages were found.</source>
+        <target state="new">No sponsorable packages were found.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_NoUpdatesForFramework">
@@ -706,11 +701,6 @@ NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中�
       <trans-unit id="ListPkg_ProjectHeaderLog">
         <source>Project '{0}' has the following package references</source>
         <target state="translated">项目“{0}”具有以下包引用</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListPkg_ProjectSponsorHeaderLog">
-        <source>Project '{0}' has the following sponsorable packages</source>
-        <target state="new">Project '{0}' has the following sponsorable packages</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ProjectUpdatesHeaderLog">

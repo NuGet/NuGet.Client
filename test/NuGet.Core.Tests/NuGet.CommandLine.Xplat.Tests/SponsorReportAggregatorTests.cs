@@ -36,5 +36,40 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             Assert.Equal(expected, actual);
         }
+
+        [Fact]
+        public void CollapseProjectsForConsole_GroupsPackagesByIdAndPrefersTopLevel()
+        {
+            ListReportPackage topLevelPackage = ListPackageTestHelper.CreateSponsoredPackage("Package.A");
+            ListReportPackage transitiveDuplicate = ListPackageTestHelper.CreateSponsoredPackage("package.a");
+            ListReportPackage transitivePackage = ListPackageTestHelper.CreateSponsoredPackage("Package.B");
+            var projectA = new ListPackageProjectModel("a.csproj", "A")
+            {
+                TargetFrameworkPackages =
+                [
+                    new("net8.0", "net8.0")
+                    {
+                        TopLevelPackages = [topLevelPackage],
+                        TransitivePackages = [transitivePackage],
+                    },
+                ],
+            };
+            var projectB = new ListPackageProjectModel("b.csproj", "B")
+            {
+                TargetFrameworkPackages =
+                [
+                    new("net8.0", "net8.0")
+                    {
+                        TransitivePackages = [transitiveDuplicate, transitivePackage],
+                    },
+                ],
+            };
+
+            (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) =
+                SponsorReportAggregator.CollapseProjectsForConsole([projectA, projectB]);
+
+            Assert.Equal(new[] { "Package.A" }, topLevel.Select(package => package.PackageId));
+            Assert.Equal(new[] { "Package.B" }, transitive.Select(package => package.PackageId));
+        }
     }
 }

@@ -111,7 +111,10 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
                 if (project.TargetFrameworkPackages == null)
                 {
-                    consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, project.ProjectName));
+                    if (listPackageArgs.ReportType != ReportType.Sponsor)
+                    {
+                        consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoPackagesFoundForFrameworks, project.ProjectName));
+                    }
                     continue;
                 }
 
@@ -132,16 +135,12 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                         case ReportType.Vulnerable:
                             consoleOut.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_NoVulnerablePackagesForProject, project.ProjectName));
                             break;
-                        case ReportType.Sponsor:
-                            string message = project.HasPackages == false && !listPackageArgs.Frameworks.Any()
-                                ? Strings.ListPkg_NoPackageReferencesForProject
-                                : project.HasPackages == false
-                                    ? Strings.ListPkg_NoPackagesFoundForFrameworks
-                                    : Strings.ListPkg_NoSponsorshipForProject;
-                            string value = string.Format(CultureInfo.CurrentCulture, message, project.ProjectName);
-                            consoleOut.WriteLine(value);
-                            break;
                     }
+                }
+
+                if (listPackageArgs.ReportType == ReportType.Sponsor)
+                {
+                    continue;
                 }
 
                 printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
@@ -151,14 +150,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                 }
 
                 consoleOut.WriteLine(GetProjectHeader(project.ProjectName, listPackageArgs));
-
-                if (listPackageArgs.ReportType == ReportType.Sponsor)
-                {
-                    (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) = SponsorReportAggregator.CollapseFrameworks(project);
-                    PrintPackages(topLevel, printingTransitive: false, listPackageArgs);
-                    PrintPackages(transitive, printingTransitive: true, listPackageArgs);
-                    continue;
-                }
 
                 foreach (ListPackageReportFrameworkPackage frameworkPackages in project.TargetFrameworkPackages)
                 {
@@ -214,6 +205,22 @@ namespace NuGet.CommandLine.XPlat.ListPackage
 
             if (listPackageArgs.ReportType == ReportType.Sponsor)
             {
+                (List<ListReportPackage> topLevel, List<ListReportPackage> transitive) =
+                    SponsorReportAggregator.CollapseProjectsForConsole(projects);
+                if (topLevel.Count > 0 || transitive.Count > 0)
+                {
+                    PrintPackages(topLevel, printingTransitive: false, listPackageArgs);
+                    PrintPackages(transitive, printingTransitive: true, listPackageArgs);
+                }
+                else
+                {
+                    bool hasValidProject = projects.Any(
+                        project => project.ProjectProblems?.Any(problem => problem.ProblemType == ProblemType.Error) != true);
+                    if (hasValidProject)
+                    {
+                        consoleOut.WriteLine(Strings.ListPkg_NoSponsorshipFound);
+                    }
+                }
                 PrintSponsorshipSourceDiagnostics(consoleOut, reportModel);
             }
         }
@@ -290,8 +297,6 @@ namespace NuGet.CommandLine.XPlat.ListPackage
                     return string.Format(Strings.ListPkg_ProjectDeprecationsHeaderLog, projectName);
                 case ReportType.Vulnerable:
                     return string.Format(Strings.ListPkg_ProjectVulnerabilitiesHeaderLog, projectName);
-                case ReportType.Sponsor:
-                    return string.Format(Strings.ListPkg_ProjectSponsorHeaderLog, projectName);
                 case ReportType.Default:
                     break;
             }
