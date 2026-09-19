@@ -395,7 +395,7 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
       </trans-unit>
       <trans-unit id="Error_NotPRProject">
         <source>The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</source>
-        <target state="needs-review-translation">專案 `{0}` 會使用 NuGet 套件的 package.config，且命令僅能搭配套件參考專案使用。</target>
+        <target state="translated">專案 '{0}' 不是 PackageReference 專案。此命令僅支援 NuGet PackageReference 專案。</target>
         <note>{0} - Path to the project with the error, {Locked="PackageReference"}</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">
