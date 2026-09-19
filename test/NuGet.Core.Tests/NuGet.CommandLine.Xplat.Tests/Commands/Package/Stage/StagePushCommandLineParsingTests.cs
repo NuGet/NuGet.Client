@@ -21,8 +21,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
             string? GroupId = null,
             bool NoSymbols = false,
             string? ConfigFile = null,
-            bool Interactive = false,
-            bool AllowInsecureConnections = false);
+            bool Interactive = false);
 
         public static TheoryData<string, ExpectedStagePushArguments> ValidArgumentsTestData => new()
         {
@@ -73,11 +72,10 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
                     ConfigFile: "NuGet.Config")
             },
             {
-                "package stage push package.nupkg --interactive --allow-insecure-connections",
+                "package stage push package.nupkg --interactive",
                 new ExpectedStagePushArguments(
                     PackagePath: "package.nupkg",
-                    Interactive: true,
-                    AllowInsecureConnections: true)
+                    Interactive: true)
             },
             {
                 "package stage push \"path with spaces\\package.nupkg\" --group \"release group\"",
@@ -86,7 +84,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
                     GroupId: "release group")
             },
             {
-                "package stage push artifacts\\Contoso.1.0.0.nupkg -s staging-source -k secret --group release-group --no-symbols --configfile config\\NuGet.Config --interactive --allow-insecure-connections",
+                "package stage push artifacts\\Contoso.1.0.0.nupkg -s staging-source -k secret --group release-group --no-symbols --configfile config\\NuGet.Config --interactive",
                 new ExpectedStagePushArguments(
                     PackagePath: "artifacts\\Contoso.1.0.0.nupkg",
                     Source: "staging-source",
@@ -94,8 +92,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
                     GroupId: "release-group",
                     NoSymbols: true,
                     ConfigFile: "config\\NuGet.Config",
-                    Interactive: true,
-                    AllowInsecureConnections: true)
+                    Interactive: true)
             },
         };
 
@@ -108,6 +105,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
             "package stage push package.nupkg --group",
             "package stage push package.nupkg --configfile",
             "package stage push package.nupkg --no-symbols true",
+            "package stage push package.nupkg --allow-insecure-connections",
             "package stage push package.nupkg --unknown",
         };
 
@@ -130,7 +128,6 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package.Stage
                 args.NoSymbols.Should().Be(expected.NoSymbols);
                 args.ConfigFile.Should().Be(expected.ConfigFile);
                 args.Interactive.Should().Be(expected.Interactive);
-                args.AllowInsecureConnections.Should().Be(expected.AllowInsecureConnections);
                 return Task.FromResult(0);
             });
 

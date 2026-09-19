@@ -88,12 +88,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
                 Description = Strings.Option_ConfigFile,
             };
 
-            var allowInsecureConnectionsOption = new Option<bool>("--allow-insecure-connections")
-            {
-                Arity = ArgumentArity.Zero,
-                Description = Strings.AllowInsecureConnections_Description,
-            };
-
             pushCommand.Arguments.Add(packagePathArgument);
             pushCommand.Options.Add(sourceOption);
             pushCommand.Options.Add(apiKeyOption);
@@ -101,7 +95,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
             pushCommand.Options.Add(noSymbolsOption);
             pushCommand.Options.Add(configFileOption);
             pushCommand.Options.Add(interactiveOption);
-            pushCommand.Options.Add(allowInsecureConnectionsOption);
 
             pushCommand.SetAction(async (parseResult, cancellationToken) =>
             {
@@ -118,7 +111,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
                         NoSymbols = parseResult.GetValue(noSymbolsOption),
                         ConfigFile = parseResult.GetValue(configFileOption),
                         Interactive = parseResult.GetValue(interactiveOption),
-                        AllowInsecureConnections = parseResult.GetValue(allowInsecureConnectionsOption),
                         Logger = logger,
                         CancellationToken = cancellationToken,
                     };

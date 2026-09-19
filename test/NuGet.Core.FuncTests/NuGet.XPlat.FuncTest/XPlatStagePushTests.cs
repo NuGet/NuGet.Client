@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Globalization;
+using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -81,7 +83,6 @@ namespace NuGet.XPlat.FuncTest
                 Source = "staging",
                 ApiKey = explicitApiKey,
                 ConfigFile = pathContext.NuGetConfig,
-                AllowInsecureConnections = true,
                 Logger = new TestCommandOutputLogger(_testOutputHelper),
                 CancellationToken = CancellationToken.None,
             };
@@ -92,7 +93,8 @@ namespace NuGet.XPlat.FuncTest
                 settings,
                 packageSourceProvider,
                 sourceRepositoryProvider,
-                environmentVariableReader);
+                environmentVariableReader,
+                allowInsecureConnections: true);
 
             // Assert
             Assert.Equal(ExitCodes.Success, exitCode);
@@ -110,10 +112,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -137,10 +136,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -164,10 +160,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -188,10 +181,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -211,10 +201,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = [.. CreateArgs(pathContext, server, packagePath), "--no-symbols"];
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -234,10 +221,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, symbolsPath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -259,10 +243,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = [.. CreateArgs(pathContext, server, packagePath), "--group", "release-group"];
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -281,10 +262,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = [.. CreateArgs(pathContext, server, packagePath), "--group", "-release"];
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -306,10 +284,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = [.. CreateArgs(pathContext, server, packagePath), "--api-key", expectedApiKey];
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -333,10 +308,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = [.. CreateArgs(pathContext, server, packagePath), "--api-key", "invalid-api-key"];
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -364,10 +336,7 @@ namespace NuGet.XPlat.FuncTest
             ];
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(0, exitCode);
@@ -390,10 +359,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -417,10 +383,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -448,10 +411,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -474,10 +434,7 @@ namespace NuGet.XPlat.FuncTest
             string[] args = CreateArgs(pathContext, server, packagePath);
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
-                args,
-                log,
-                TestEnvironmentVariableReader.EmptyInstance);
+            int exitCode = RunStagePush(args, log);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -509,10 +466,10 @@ namespace NuGet.XPlat.FuncTest
             ];
 
             // Act
-            int exitCode = CommandLine.XPlat.Program.MainInternal(
+            int exitCode = RunStagePush(
                 args,
                 log,
-                TestEnvironmentVariableReader.EmptyInstance);
+                allowInsecureConnections: false);
 
             // Assert
             Assert.Equal(1, exitCode);
@@ -544,6 +501,56 @@ namespace NuGet.XPlat.FuncTest
                 "--configfile",
                 pathContext.NuGetConfig,
             ];
+        }
+
+        private static int RunStagePush(
+            string[] args,
+            TestCommandOutputLogger log,
+            IEnvironmentVariableReader? environmentVariableReader = null,
+            bool allowInsecureConnections = true)
+        {
+            environmentVariableReader ??= TestEnvironmentVariableReader.EmptyInstance;
+
+            var rootCommand = new RootCommand();
+            var packageCommand = new Command("package");
+            var stageCommand = new Command("stage");
+            rootCommand.Subcommands.Add(packageCommand);
+            packageCommand.Subcommands.Add(stageCommand);
+
+            StagePushCommand.Register(
+                stageCommand,
+                new Option<bool>("--interactive"),
+                () => log,
+                stageArgs =>
+                {
+                    ISettings settings = XPlatUtility.ProcessConfigFile(stageArgs.ConfigFile);
+                    var packageSourceProvider = new PackageSourceProvider(settings);
+                    var sourceRepositoryProvider = new CachingSourceProvider(packageSourceProvider);
+
+                    return StagePushCommandRunner.RunAsync(
+                        stageArgs,
+                        settings,
+                        packageSourceProvider,
+                        sourceRepositoryProvider,
+                        environmentVariableReader,
+                        allowInsecureConnections);
+                });
+
+            ParseResult parseResult = rootCommand.Parse(args);
+            var invocationConfig = new InvocationConfiguration
+            {
+                EnableDefaultExceptionHandler = false,
+            };
+
+            try
+            {
+                return parseResult.Invoke(invocationConfig);
+            }
+            catch (Exception ex)
+            {
+                Program.LogException(ex, log);
+                return 1;
+            }
         }
 
         private static void ConfigureSource(

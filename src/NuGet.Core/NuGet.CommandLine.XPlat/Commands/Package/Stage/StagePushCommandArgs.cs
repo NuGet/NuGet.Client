@@ -14,7 +14,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
         public bool NoSymbols { get; init; }
         public string? ConfigFile { get; init; }
         public bool Interactive { get; init; }
-        public bool AllowInsecureConnections { get; init; }
         public required ILoggerWithColor Logger { get; init; }
         public required CancellationToken CancellationToken { get; init; }
     }

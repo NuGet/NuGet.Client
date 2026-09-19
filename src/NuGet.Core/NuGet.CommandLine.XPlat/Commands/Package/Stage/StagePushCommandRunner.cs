@@ -35,7 +35,8 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
                 settings,
                 packageSourceProvider,
                 sourceRepositoryProvider,
-                EnvironmentVariableWrapper.Instance);
+                EnvironmentVariableWrapper.Instance,
+                allowInsecureConnections: false);
         }
 
         internal static async Task<int> RunAsync(
@@ -43,13 +44,13 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
             ISettings settings,
             IPackageSourceProvider packageSourceProvider,
             ISourceRepositoryProvider sourceRepositoryProvider,
-            IEnvironmentVariableReader environmentVariableReader)
+            IEnvironmentVariableReader environmentVariableReader,
+            bool allowInsecureConnections)
         {
             string packagePath = ValidatePackagePath(args.PackagePath);
             ValidateGroupId(args.GroupId);
 
             PackageSource packageSource = ResolvePackageSource(packageSourceProvider, args.Source);
-            bool allowInsecureConnections = args.AllowInsecureConnections || packageSource.AllowInsecureConnections;
 
             if (packageSource.IsHttp && !packageSource.IsHttps)
             {
@@ -61,11 +62,6 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Stage
                         "stage push",
                         packageSource.Source));
                 }
-
-                args.Logger.LogWarning(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.StagePushCommand_Warning_HttpSource,
-                    packageSource.Source));
             }
 
             SourceRepository sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);

@@ -210,10 +210,6 @@
     <value>Staged symbols package '{0}'.</value>
     <comment>0 - symbols package path</comment>
   </data>
-  <data name="StagePushCommand_Warning_HttpSource" xml:space="preserve">
-    <value>The staging source '{0}' uses an insecure HTTP connection.</value>
-    <comment>0 - package source URL</comment>
-  </data>
   <data name="Push_InvalidTimeout" xml:space="preserve">
     <value>Invalid timeout parameter value.</value>
   </data>

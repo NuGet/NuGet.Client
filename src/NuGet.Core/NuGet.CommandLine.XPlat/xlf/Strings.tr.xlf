@@ -1362,11 +1362,6 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
         <target state="new">Staged symbols package '{0}'.</target>
         <note>0 - symbols package path</note>
       </trans-unit>
-      <trans-unit id="StagePushCommand_Warning_HttpSource">
-        <source>The staging source '{0}' uses an insecure HTTP connection.</source>
-        <target state="new">The staging source '{0}' uses an insecure HTTP connection.</target>
-        <note>0 - package source URL</note>
-      </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
         <target state="translated">Sembol sunucusunun API anahtarı. Ayarlı değilse, NUGET_SYMBOL_API_KEY ortam değişkeni okunur.</target>

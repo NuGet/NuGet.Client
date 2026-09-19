@@ -1362,11 +1362,6 @@ La recherche est une comparaison de chaînes qui ne respecte pas la casse à l�
         <target state="new">Staged symbols package '{0}'.</target>
         <note>0 - symbols package path</note>
       </trans-unit>
-      <trans-unit id="StagePushCommand_Warning_HttpSource">
-        <source>The staging source '{0}' uses an insecure HTTP connection.</source>
-        <target state="new">The staging source '{0}' uses an insecure HTTP connection.</target>
-        <note>0 - package source URL</note>
-      </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
         <target state="translated">La clé API pour le serveur de symboles. Si elle n'est pas définie, la variable d'environnement NUGET_SYMBOL_API_KEY est lue.</target>

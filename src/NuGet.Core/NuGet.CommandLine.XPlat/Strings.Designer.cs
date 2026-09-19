@@ -2404,15 +2404,6 @@ namespace NuGet.CommandLine.XPlat {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The staging source '{0}' uses an insecure HTTP connection..
-        /// </summary>
-        internal static string StagePushCommand_Warning_HttpSource {
-            get {
-                return ResourceManager.GetString("StagePushCommand_Warning_HttpSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The proper command is &apos;{0}&apos;..
         /// </summary>
         internal static string Sources_Redirect {
