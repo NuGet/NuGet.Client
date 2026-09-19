@@ -11,8 +11,8 @@
   <!-- Version -->
   <PropertyGroup>
     <!-- **  Change for each new version -->
-    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">7</MajorNuGetVersion>
-    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">12</MinorNuGetVersion>
+    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">8</MajorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">0</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
 
@@ -26,8 +26,9 @@
     <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' != 'true'">int.main</VsTargetChannel>
 
     <!-- NuGet SDK VS package Semantic Version -->
-    <VsTargetMajorVersion Condition="'$(VsTargetMajorVersion)' == ''">$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
-    <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
+    <VsTargetMajorVersion Condition="'$(VsTargetMajorVersion)' == ''">18</VsTargetMajorVersion>
+    <VsTargetMinorVersion Condition="'$(VsTargetMinorVersion)' == ''">$([MSBuild]::Add($([MSBuild]::Multiply($([MSBuild]::Subtract($(MajorNuGetVersion), 7)), 12)), $(MinorNuGetVersion)))</VsTargetMinorVersion>
+    <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(VsTargetMinorVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
 
     <!-- These branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/insiders</VsTargetBranch>
