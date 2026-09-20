@@ -174,9 +174,9 @@ namespace NuGet.Tests.Apex
                 Package($"{prefix}.E", "2.0.0", ($"{prefix}.G", "[1.0.0]")),
                 Package($"{prefix}.F", "1.0.0"),
                 Package($"{prefix}.F", "2.0.0", ($"{prefix}.G", "[1.0.0]")),
-                Package($"{prefix}.B", "1.0.0", ($"{prefix}.E", "[1.0.0]"), ($"{prefix}.F", "[1.0.0]")),
-                Package($"{prefix}.C", "1.0.0", ($"{prefix}.D", "[1.0.0]")),
-                Package($"{prefix}.A", "1.0.0", ($"{prefix}.B", "[1.0.0]"), ($"{prefix}.C", "[1.0.0]")));
+                Package($"{prefix}.B", "1.0.0", ($"{prefix}.E", "[1.0.0,)"), ($"{prefix}.F", "[1.0.0,)")),
+                Package($"{prefix}.C", "1.0.0", ($"{prefix}.D", "[1.0.0,)")),
+                Package($"{prefix}.A", "1.0.0", ($"{prefix}.B", "[1.0.0,)"), ($"{prefix}.C", "[1.0.0,)")));
             var console = GetConsole(testContext.Project);
 
             Install(console, testContext.Project, $"{prefix}.A", "1.0.0", testContext.PackageSource);
@@ -210,7 +210,7 @@ namespace NuGet.Tests.Apex
                 Package($"{prefix}.C", "1.0.0"),
                 Package($"{prefix}.C", "2.0.0"),
                 Package($"{prefix}.D", "1.0.0"),
-                Package($"{prefix}.A", "1.0.0", ($"{prefix}.B", "[1.0.0]"), ($"{prefix}.C", "[1.0.0]"), ($"{prefix}.D", "[1.0.0]")),
+                Package($"{prefix}.A", "1.0.0", ($"{prefix}.B", "[1.0.0,)"), ($"{prefix}.C", "[1.0.0,)"), ($"{prefix}.D", "[1.0.0,)")),
                 Package($"{prefix}.H", "1.0.0", ($"{prefix}.C", "[1.0.0]")));
             var console = GetConsole(testContext.Project);
 
@@ -790,9 +790,11 @@ namespace NuGet.Tests.Apex
             var package = Package(id, version);
             package.AddFile(
                 "tools/install.ps1",
+                $"param ($rootPath, $toolsPath, $package, $project){System.Environment.NewLine}" +
                 $"$global:InstallPackageMessages += $project.Name + '{messageSuffix}'");
             package.AddFile(
                 "tools/uninstall.ps1",
+                $"param ($rootPath, $toolsPath, $package, $project){System.Environment.NewLine}" +
                 $"$global:UninstallPackageMessages += 'Uninstall' + $project.Name + '{messageSuffix}'");
             return package;
         }
