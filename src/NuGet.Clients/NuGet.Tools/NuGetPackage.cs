@@ -204,11 +204,6 @@ namespace NuGetVSExtension
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
-            if (NuGetExperimentationService.Value.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization))
-            {
-                AppContext.SetSwitch(NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, isEnabled: true);
-            }
-
             VSSettings vsSettings = Settings.Value as VSSettings;
             PackageSourceProvider packageSourceProvider = new(Settings.Value);
             PackageSourceMappingProvider packageSourceMappingProvider = new(Settings.Value);

@@ -46,11 +46,8 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return await IdStartsWithStjAsync(packageIdPrefix, includePrerelease, log, token);
-            }
-            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
             {
                 return await IdStartsWithStjAsync(packageIdPrefix, includePrerelease, log, token);
             }
@@ -156,12 +153,8 @@ namespace NuGet.Protocol
             Common.ILogger logger = log ?? Common.NullLogger.Instance;
 
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ?
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return await VersionStartsWithFromItemsAsync(packageId, versionPrefix, includePrerelease, sourceCacheContext, logger, token);
-            }
-
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
             {
                 return await VersionStartsWithFromItemsAsync(packageId, versionPrefix, includePrerelease, sourceCacheContext, logger, token);
             }

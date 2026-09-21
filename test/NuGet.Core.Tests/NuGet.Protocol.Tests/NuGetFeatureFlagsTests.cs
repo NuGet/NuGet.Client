@@ -17,34 +17,47 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void IsSystemTextJsonDeserializationEnabledByEnvironment_WhenEnvVarNotSet_ReturnsFalse()
+        public void IsSystemTextJsonDeserializationDisabledByEnvironment_WhenEnvVarNotSet_ReturnsFalse()
         {
-            Assert.False(NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(TestEnvironmentVariableReader.EmptyInstance));
+            Assert.False(NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByEnvironment(TestEnvironmentVariableReader.EmptyInstance));
         }
 
         [Theory]
         [InlineData("true")]
         [InlineData("True")]
         [InlineData("TRUE")]
-        public void IsSystemTextJsonDeserializationEnabledByEnvironment_WhenEnvVarSetToTrue_ReturnsTrue(string value)
+        [InlineData("0")]
+        [InlineData("1")]
+        [InlineData("anything")]
+        public void IsSystemTextJsonDeserializationDisabledByEnvironment_WhenEnvVarIsNotFalse_ReturnsFalse(string value)
         {
             var env = new TestEnvironmentVariableReader(
                 new Dictionary<string, string> { [NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar] = value });
 
-            Assert.True(NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(env));
+            Assert.False(NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByEnvironment(env));
         }
 
         [Theory]
         [InlineData("false")]
-        [InlineData("0")]
-        [InlineData("1")]
-        [InlineData("anything")]
-        public void IsSystemTextJsonDeserializationEnabledByEnvironment_WhenEnvVarSetToFalseOrUnrecognized_ReturnsFalse(string value)
+        [InlineData("False")]
+        [InlineData("FALSE")]
+        public void IsSystemTextJsonDeserializationDisabledByEnvironment_WhenEnvVarSetToFalse_ReturnsTrue(string value)
         {
             var env = new TestEnvironmentVariableReader(
                 new Dictionary<string, string> { [NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar] = value });
 
-            Assert.False(NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(env));
+            Assert.True(NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByEnvironment(env));
+        }
+
+        [Theory]
+        [InlineData("true", false)]
+        [InlineData("false", true)]
+        public void IsSystemTextJsonDeserializationDisabledByConfiguration_ReturnsExpectedResult(string value, bool expected)
+        {
+            var env = new TestEnvironmentVariableReader(
+                new Dictionary<string, string> { [NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar] = value });
+
+            Assert.Equal(expected, NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(env));
         }
     }
 }

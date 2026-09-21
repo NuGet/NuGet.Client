@@ -43,18 +43,16 @@ namespace NuGet.Protocol.Providers.Tests
             _packageSource = new PackageSource("https://unit.test");
         }
 
-        private static IEnvironmentVariableReader CreateStjEnabledEnvReader()
+        private static IEnvironmentVariableReader CreateEnvReader(bool useStj)
         {
             var mockEnvReader = new Mock<IEnvironmentVariableReader>();
             mockEnvReader.Setup(r => r.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar))
-                .Returns("true");
+                .Returns(useStj.ToString());
             return mockEnvReader.Object;
         }
 
         private RepositorySignatureResourceProvider CreateProvider(bool useStj)
-            => useStj
-                ? new RepositorySignatureResourceProvider(CreateStjEnabledEnvReader())
-                : new RepositorySignatureResourceProvider();
+            => new RepositorySignatureResourceProvider(CreateEnvReader(useStj));
 
         [Theory]
         [InlineData(false)]

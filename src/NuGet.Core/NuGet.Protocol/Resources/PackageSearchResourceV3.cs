@@ -242,11 +242,8 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return await ProcessHttpStreamWithStjAsync(httpInitialResponse, take, token);
-            }
-            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
             {
                 return await ProcessHttpStreamWithStjAsync(httpInitialResponse, take, token);
             }

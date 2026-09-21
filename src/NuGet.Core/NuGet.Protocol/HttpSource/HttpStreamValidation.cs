@@ -34,13 +34,8 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                ValidateJsonObjectWithStj(uri, stream);
-                return;
-            }
-
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(environmentVariableReader))
             {
                 ValidateJsonObjectWithStj(uri, stream);
                 return;

@@ -517,14 +517,12 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         }
 
         private ServiceIndexResourceV3Provider CreateProvider(bool useStj)
-            => useStj
-                ? new ServiceIndexResourceV3Provider(CreateStjEnabledEnvReader())
-                : new ServiceIndexResourceV3Provider();
+            => new ServiceIndexResourceV3Provider(CreateEnvReader(useStj));
 
-        private static IEnvironmentVariableReader CreateStjEnabledEnvReader()
+        private static IEnvironmentVariableReader CreateEnvReader(bool useStj)
         {
             var envReader = new Mock<IEnvironmentVariableReader>();
-            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns("true");
+            envReader.Setup(e => e.GetEnvironmentVariable(NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar)).Returns(useStj.ToString());
             return envReader.Object;
         }
 
