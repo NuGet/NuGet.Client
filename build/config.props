@@ -49,6 +49,14 @@
     <PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
   </PropertyGroup>
 
+  <!-- Offset the CI build number by 100 for the 18.12 line only, so that the produced package versions
+       don't collide with packages already published to immutable feeds after the build revision counter
+       was reset. This only ever applies when a CI BuildNumber is supplied; the local default (65534, set
+       above when no BuildNumber is provided) is a separate branch and is unaffected. -->
+  <PropertyGroup Condition="'$(BuildNumber)' != '' and '$(VsTargetMajorVersion).$(VsTargetMinorVersion)' == '18.12'">
+    <PreReleaseVersion>$([MSBuild]::Add($(BuildNumber), 100))</PreReleaseVersion>
+  </PropertyGroup>
+
   <!--Setting the product information for Beta builds-->
   <Choose>
     <!-- If we aren't excluding the build number, use the release label and the build number. -->
