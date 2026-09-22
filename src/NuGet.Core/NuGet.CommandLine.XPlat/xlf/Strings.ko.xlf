@@ -1265,6 +1265,11 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">패키지가 게시된 후 업데이트 대상으로 선택할 수 있을 때까지 필요한 최소 시간(시간 단위)입니다. 값을 제거하려면 0으로 설정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">
+        <source>The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</source>
+        <target state="new">The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</target>
+        <note>0 - the invalid number of hours. 1 - the maximum supported number of hours.</note>
+      </trans-unit>
       <trans-unit id="SourcesCommandNameDescription">
         <source>Name of the source.</source>
         <target state="translated">소스 이름입니다.</target>

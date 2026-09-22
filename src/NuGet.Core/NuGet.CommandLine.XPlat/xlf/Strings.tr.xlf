@@ -1264,6 +1264,11 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
         <target state="translated">Bir paket yayımlandıktan sonra güncelleştirme için seçilene kadar geçecek minimum saat sayısı. Değeri kaldırmak için 0 olarak ayarlayın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">
+        <source>The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</source>
+        <target state="new">The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</target>
+        <note>0 - the invalid number of hours. 1 - the maximum supported number of hours.</note>
+      </trans-unit>
       <trans-unit id="SourcesCommandNameDescription">
         <source>Name of the source.</source>
         <target state="translated">Kaynağın adı.</target>

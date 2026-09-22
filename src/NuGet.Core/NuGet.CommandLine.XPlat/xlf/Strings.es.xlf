@@ -1264,6 +1264,11 @@ La búsqueda es una comparación de cadenas que no diferencia mayúsculas de min
         <target state="translated">El número mínimo de horas después de publicar un paquete antes de que se pueda seleccionar para la actualización. Establézcalo en 0 para quitar el valor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">
+        <source>The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</source>
+        <target state="new">The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</target>
+        <note>0 - the invalid number of hours. 1 - the maximum supported number of hours.</note>
+      </trans-unit>
       <trans-unit id="SourcesCommandNameDescription">
         <source>Name of the source.</source>
         <target state="translated">Nombre del origen.</target>

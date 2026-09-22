@@ -1264,6 +1264,11 @@ A pesquisa é uma comparação de cadeia de caracteres que não faz distinção 
         <target state="translated">O número mínimo de horas após a publicação de um pacote antes que ele possa ser selecionado para atualização. Defina como 0 para remover o valor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">
+        <source>The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</source>
+        <target state="new">The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</target>
+        <note>0 - the invalid number of hours. 1 - the maximum supported number of hours.</note>
+      </trans-unit>
       <trans-unit id="SourcesCommandNameDescription">
         <source>Name of the source.</source>
         <target state="translated">Nome da origem.</target>
