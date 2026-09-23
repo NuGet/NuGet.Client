@@ -4,13 +4,16 @@ param (
     [Parameter(Mandatory=$true)]
     [int]$PMCLaunchWaitTimeInSecs,
     [Parameter(Mandatory=$true)]
-    [int]$EachTestTimoutInSecs,
+    [Alias('EachTestTimoutInSecs')]
+    [int]$EachTestTimeoutInSecs,
     [Parameter(Mandatory=$true)]
     [string]$NuGetDropPath,
     [Parameter(Mandatory=$true)]
     [string]$FuncTestRoot,
     [Parameter(Mandatory=$true)]
-    [string]$RunCounter)
+    [string]$RunCounter,
+    [Parameter(Mandatory=$false)]
+    [string]$ResultsDirectory)
 
 . "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\VSUtils.ps1"
@@ -74,7 +77,7 @@ Write-Host "Executing the provided Package manager console command: ""$PMCComman
 ExecuteCommand $dte2 "View.PackageManagerConsole" $PMCCommand "Running command: $PMCCommand ..."
 
 Write-Host "Starting functional tests with command '$PMCCommand'"
-RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
+RealTimeLogResults $NuGetTestPath $EachTestTimeoutInSecs $ResultsDirectory
 
 KillRunningInstancesOfVS $VSInstance
 
