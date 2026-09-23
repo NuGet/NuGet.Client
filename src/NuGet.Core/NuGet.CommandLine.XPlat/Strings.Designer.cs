@@ -2449,7 +2449,7 @@ namespace NuGet.CommandLine.XPlat {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The minimum number of hours after a package is published before it can be selected for update. Set to 0 to remove the value..
+        ///   Looks up a localized string similar to The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable..
         /// </summary>
         internal static string SourcesCommandMinPublishAgeHoursDescription {
             get {
