@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -93,6 +94,33 @@ namespace NuGet.Tests.Apex
             AssertSolutionPackage(testContext, $"{prefix}.B", "1.0.0", exists: false);
             AssertSolutionPackage(testContext, $"{prefix}.C", "1.0.0", exists: false);
             AssertSolutionPackage(testContext, $"{prefix}.A", "2.0.0", exists: false);
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCResolvesDependenciesAcrossEnabledSourcesAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            var dependencySource = Path.Combine(pathContext.SolutionRoot, "DependencySource");
+            Directory.CreateDirectory(dependencySource);
+            pathContext.Settings.AddSource("DependencySource", dependencySource);
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger, simpleTestPathContext: pathContext);
+            var packageName = "CrossSource.Package";
+            var dependencyName = "CrossSource.Dependency";
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                Package(packageName, "1.0.0"),
+                Package(packageName, "2.0.0", (dependencyName, "[1.0.0]")));
+            await CreatePackagesAsync(dependencySource, Package(dependencyName, "1.0.0"));
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, packageName, "1.0.0", testContext.PackageSource);
+            Update(console, testContext.Project, packageName, testContext.PackageSource);
+
+            AssertInstalled(testContext.Project, packageName, "2.0.0");
+            AssertInstalled(testContext.Project, dependencyName, "1.0.0");
             AssertNoErrors(console);
         }
 
@@ -469,6 +497,195 @@ namespace NuGet.Tests.Apex
             AssertNoErrors(console);
         }
 
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWithPackagesConfigConstraints_DoesNotChangePackagesAsync()
+        {
+            using var testContext = CreatePackagesConfigContext();
+            var consoleApp = AddProject(testContext, ProjectTemplate.ConsoleApplication, "ConsoleApp");
+            var webSite = AddProject(testContext, ProjectTemplate.WebSiteEmpty, "WebSite");
+            var classLibrary = testContext.Project;
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                Package("Constrained.A", "1.0.0", ("Constrained.B", "[1.0.0]")),
+                Package("Constrained.A", "2.0.0", ("Constrained.B", "[2.0.0]")),
+                Package("Constrained.B", "1.0.0"),
+                Package("Constrained.B", "2.0.0"),
+                Package("Constrained.C", "1.0.0", ("Constrained.D", "[1.0.0]")),
+                Package("Constrained.C", "2.0.0", ("Constrained.D", "[2.0.0]")),
+                Package("Constrained.D", "1.0.0"),
+                Package("Constrained.D", "2.0.0"),
+                Package("Constrained.E", "1.0.0", ("Constrained.F", "[1.0.0]")),
+                Package("Constrained.F", "1.0.0"),
+                Package("Constrained.F", "2.0.0"));
+            var console = GetConsole(testContext.Project);
+
+            Install(console, consoleApp, "Constrained.A", "1.0.0", testContext.PackageSource);
+            Install(console, classLibrary, "Constrained.C", "1.0.0", testContext.PackageSource);
+            Install(console, webSite, "Constrained.E", "1.0.0", testContext.PackageSource);
+            AddPackageConstraint(consoleApp, "Constrained.A", "[1.0.0,2.0.0)");
+            AddPackageConstraint(classLibrary, "Constrained.D", "[1.0.0]");
+            AddPackageConstraint(webSite, "Constrained.E", "[1.0.0]");
+
+            Update(console, consoleApp, "Constrained.A", testContext.PackageSource, "-Version 2.0.0");
+            console.GetText().Should().Contain("additional constraint", because: console.GetText());
+            Update(console, classLibrary, "Constrained.C", testContext.PackageSource);
+            console.GetText().Should().Contain("Constrained.D", because: console.GetText());
+            Update(console, webSite, "Constrained.F", testContext.PackageSource);
+            console.GetText().Should().Contain("Constrained.E", because: console.GetText());
+
+            AssertInstalled(consoleApp, "Constrained.A", "1.0.0");
+            AssertInstalled(consoleApp, "Constrained.B", "1.0.0");
+            AssertInstalled(classLibrary, "Constrained.C", "1.0.0");
+            AssertInstalled(classLibrary, "Constrained.D", "1.0.0");
+            AssertInstalled(webSite, "Constrained.E", "1.0.0");
+            AssertInstalled(webSite, "Constrained.F", "1.0.0");
+            AssertNotInstalled(consoleApp, "Constrained.A", "2.0.0");
+            AssertNotInstalled(classLibrary, "Constrained.D", "2.0.0");
+            AssertNotInstalled(webSite, "Constrained.F", "2.0.0");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCAfterPackageFolderDeleted_UpdatesPackageAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            var packageName = "MissingPackage";
+            await CreatePackagesAsync(testContext.PackageSource, Package(packageName, "1.0.0"), Package(packageName, "2.0.0"));
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, packageName, "1.0.0", testContext.PackageSource);
+            Directory.Delete(pathContext.PackagesV2, recursive: true);
+            console.Clear();
+
+            Update(console, testContext.Project, packageName, testContext.PackageSource);
+            string output = console.GetText();
+
+            output.Should().NotContain(
+                "Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph.",
+                because: output);
+            AssertInstalled(testContext.Project, packageName, "2.0.0");
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCAfterPackageFolderDeletedWithoutRestoreConsent_FailsAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            var packageName = "MissingPackage";
+            await CreatePackagesAsync(testContext.PackageSource, Package(packageName, "1.0.0"), Package(packageName, "2.0.0"));
+            var console = GetConsole(testContext.Project);
+
+            try
+            {
+                console.Execute(
+                    "[NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'false');" +
+                    "[NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'false')");
+                Install(console, testContext.Project, packageName, "1.0.0", testContext.PackageSource);
+                Directory.Delete(pathContext.PackagesV2, recursive: true);
+                console.Clear();
+
+                Update(console, testContext.Project, packageName, testContext.PackageSource);
+                string output = console.GetText();
+
+                output.Should().Contain(
+                    "Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph.",
+                    because: output);
+                AssertInstalled(testContext.Project, packageName, "1.0.0");
+            }
+            finally
+            {
+                console.Execute(
+                    "[NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'true');" +
+                    "[NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreIsAutomatic', 'true')");
+            }
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWithContentInLicenseBlocks_ReplacesProjectContentAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            var packageName = "ContentLicenseBlocks";
+            var packageV1 = Package(packageName, "1.0.0");
+            packageV1.AddFile("content/text", "This is a text file 1.0");
+            var packageV2 = Package(packageName, "2.0.0");
+            packageV2.AddFile("content/text", "This is a text file 2.0");
+            await CreatePackagesAsync(testContext.PackageSource, packageV1, packageV2);
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, packageName, "1.0.0", testContext.PackageSource);
+            var packageContentPath = Path.Combine(pathContext.PackagesV2, $"{packageName}.1.0.0", "content", "text");
+            File.WriteAllText(
+                packageContentPath,
+                "***************NUget: Begin License Text ---------dsafdsafdas" + System.Environment.NewLine +
+                "sdaflkjdsal;fj;ldsafdsa" + System.Environment.NewLine +
+                "dsaflkjdsa;lkfj;ldsafas" + System.Environment.NewLine +
+                "dsafdsafdsafsdaNuGet: End License Text-------------" + System.Environment.NewLine +
+                "This is a text file 1.0");
+
+            Update(console, testContext.Project, packageName, testContext.PackageSource);
+
+            AssertInstalled(testContext.Project, packageName, "2.0.0");
+            File.ReadAllText(Path.Combine(Path.GetDirectoryName(testContext.Project.FullPath)!, "text"))
+                .Should()
+                .Be("This is a text file 2.0");
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCPreservesRenamedPackagesConfigAsync()
+        {
+            using var testContext = CreatePackagesConfigContext();
+            var packageName = "RenamedPackagesConfig";
+            await CreatePackagesAsync(testContext.PackageSource, Package(packageName, "1.0.0"), Package(packageName, "2.0.0"));
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, packageName, "1.0.0", testContext.PackageSource);
+            var projectDirectory = Path.GetDirectoryName(testContext.Project.FullPath)!;
+            var renamedPackagesConfig = $"packages.{testContext.Project.Name}.config";
+            VisualStudio.Dte.Solution.Projects.Item(1).ProjectItems.Item("packages.config").Name = renamedPackagesConfig;
+            testContext.SolutionService.SaveAll();
+
+            Update(console, testContext.Project, packageName, testContext.PackageSource);
+
+            AssertInstalled(testContext.Project, packageName, "2.0.0");
+            File.Exists(Path.Combine(projectDirectory, renamedPackagesConfig)).Should().BeTrue();
+            File.Exists(Path.Combine(projectDirectory, "packages.config")).Should().BeFalse();
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public void UpdatePackageFromPMCWithNonStrongNamedAssemblies_DoesNotAddBindingRedirect()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger, simpleTestPathContext: pathContext);
+            var source = GetEndToEndPackagesPath();
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, "NonStrongNameB", "1.0.0.0", source);
+            Install(console, testContext.Project, "NonStrongNameA", "1.0.0.0", source);
+            Update(console, testContext.Project, "NonStrongNameB", source);
+
+            AssertInstalled(testContext.Project, "NonStrongNameB", "2.0.0.0");
+            var appConfigPath = Path.Combine(Path.GetDirectoryName(testContext.Project.FullPath)!, "app.config");
+            if (File.Exists(appConfigPath))
+            {
+                File.ReadAllText(appConfigPath).Should().NotContain("bindingRedirect");
+            }
+
+            AssertNoErrors(console);
+        }
+
         [DataTestMethod]
         [DataRow(false, "1.6.1", "1.8.13")]
         [DataRow(true, "1.5.2", "1.8.13")]
@@ -797,6 +1014,52 @@ namespace NuGet.Tests.Apex
                 $"param ($rootPath, $toolsPath, $package, $project){System.Environment.NewLine}" +
                 $"$global:UninstallPackageMessages += 'Uninstall' + $project.Name + '{messageSuffix}'");
             return package;
+        }
+
+        private static void AddPackageConstraint(ProjectTestExtension project, string packageName, string versionConstraint)
+        {
+            var projectDirectory = Directory.Exists(project.FullPath)
+                ? project.FullPath
+                : Path.GetDirectoryName(project.FullPath)!;
+            string packagesConfigPath = Path.Combine(projectDirectory, "packages.config");
+            var document = XDocument.Load(packagesConfigPath);
+            var updated = false;
+            foreach (var package in document.Root!.Elements("package"))
+            {
+                if ((string?)package.Attribute("id") == packageName)
+                {
+                    package.SetAttributeValue("allowedVersions", versionConstraint);
+                    updated = true;
+                    break;
+                }
+            }
+
+            if (!updated)
+            {
+                throw new System.InvalidOperationException($"Package '{packageName}' was not found in '{packagesConfigPath}'.");
+            }
+
+            document.Save(packagesConfigPath);
+        }
+
+        private static string GetEndToEndPackagesPath()
+        {
+            foreach (var startPath in new[] { Directory.GetCurrentDirectory(), typeof(NuGetConsoleTestCase).Assembly.Location })
+            {
+                var directory = new DirectoryInfo(File.Exists(startPath) ? Path.GetDirectoryName(startPath)! : startPath);
+                while (directory != null)
+                {
+                    var packagesPath = Path.Combine(directory.FullName, "test", "EndToEnd", "Packages");
+                    if (Directory.Exists(packagesPath))
+                    {
+                        return packagesPath;
+                    }
+
+                    directory = directory.Parent;
+                }
+            }
+
+            throw new System.InvalidOperationException("Unable to locate test\\EndToEnd\\Packages.");
         }
 
         private static Task CreatePackagesAsync(string source, params SimpleTestPackageContext[] packages)

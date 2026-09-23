@@ -51,7 +51,7 @@ scenarios use `GetPackageTestCase.cs`; for other PMC commands use `NuGetConsoleT
 | `New-WebApplication` | `ProjectTemplate.WebApplicationEmpty` | packages.config | ❌ |
 | `New-WPFApplication` | `ProjectTemplate.WPFApplication` | packages.config | ❌ |
 | `New-MvcApplication` | `ProjectTemplate.WebApplicationEmptyMvc` | packages.config | ❌ |
-| `New-FSharpLibrary` | `ProjectTemplate.FSharpLibrary` | PackageReference | ❌ |
+| `New-FSharpLibrary` | `ProjectTemplate.ConsoleApplication` + `ProjectLanguage.FSharp` | PackageReference | ✅ |
 | `New-NetCoreConsoleApp` | `ProjectTemplate.NetCoreConsoleApp` | PackageReference | ✅ |
 | `New-NetStandardClassLib` | `ProjectTemplate.NetStandardClassLib` | PackageReference | ✅ |
 
@@ -283,8 +283,9 @@ only lists conventions **specific to test migration** that supplement the common
 ## Tests that should NOT be migrated
 
 Skip PS tests that:
-- Use `Assert-BindingRedirect` — binding redirect tests are already `[SkipTest]` in PS and not
-  worth migrating.
+- Use `Assert-BindingRedirect`, unless the user explicitly asks to migrate skipped binding-redirect
+  coverage. When migrating them, prefer synthetic local packages and generated strong-named
+  assemblies over nuget.org dependencies.
 - Depend on **DTE project hierarchy semantics** (e.g., `Get-ProjectItem` to check tree structure,
   parent/child relationships). However, if the PS test only uses `Get-ProjectItem` /
   `Get-ProjectItemPath` to verify a **file exists on disk**, migrate it using filesystem assertions
@@ -419,6 +420,36 @@ This section captures lessons learned from actual migration runs that don't fit 
   `vswhere.exe -latest -prerelease -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`
   and pass `/restore`. Executing Apex tests requires a live VS host, so build-only validation is the
   realistic bar for a migration change.
+
+### 2026-09-23: Skipped binding redirect / F# E2E migration
+
+- **F# Apex projects require `ProjectLanguage.FSharp`.** `ApexTestContext` historically created
+  projects as C#. Use `ProjectTemplate.ConsoleApplication` with `ProjectLanguage.FSharp`; this is
+  the template pattern used by existing Apex F# tests. Avoid `ProjectTemplate.FSharpLibrary` unless
+  you have verified the target VS instance contains `FSharpLibrary.zip`.
+- **DGML binding redirect fixtures can be recreated in Apex.** The old E2E package graphs in
+  `test/EndToEnd/Packages/*/BindingRedirectsGraph.dgml` use link targets as default dependency
+  versions when no `Label` range is present. Generated assemblies should compile to a short temp
+  path, not under the fixture folder, to avoid CodeDom resource/path failures.
+- **Binding redirect tests need an actual assembly conflict.** Installing a package whose assembly
+  was compiled against the same dependency version it resolves does not produce a redirect. Use the
+  old graph pattern (for example install `B 2.0`, then `A 1.0` compiled against `B 1.0`) before
+  asserting `bindingRedirect`.
+
+### 2026-09-23: Finishing UpdatePackageTest.ps1 migration
+
+- **Use `CreatePackagesWithoutDependenciesAsync` for split-source dependency resolution tests.**
+  Create the root package versions in the primary source, create the dependency package in a second
+  configured source, and update with `-Source` pointing only to the primary source. This verifies
+  update can still resolve newly introduced dependencies from other enabled sources without
+  accidentally copying all dependency packages into the primary feed.
+- **Packages.config constraints migrate cleanly by editing `allowedVersions` directly.** After
+  installing packages, load the project's `packages.config`, add `allowedVersions` to the specific
+  `<package>` elements, save, and then assert failed updates leave both project and solution package
+  state unchanged.
+- **DTE item rename is still the closest match for renamed packages.config scenarios.** For
+  `packages.{ProjectName}.config`, rename `VisualStudio.Dte.Solution.Projects.Item(1).ProjectItems`
+  rather than only moving the file on disk so the classic project system keeps the item in sync.
 
 ---
 
