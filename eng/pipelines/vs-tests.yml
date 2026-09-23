@@ -52,13 +52,13 @@ resources:
   pipelines:
   - pipeline: DartLab
     source: DartLab
-    version: 20260923.1 # TODO: remove
+    version: '20260923.1' # TODO: revert
   repositories:
   # DartLab1ES/CloudTest templates repository
   - repository: DartLabTemplates
     type: git
     name: DevDiv/DartLab
-    ref: dev/nijulia/addExecutableSupport # TODO: remove
+    ref: refs/heads/main # TODO: revert
 
 variables:
   DOTNET_NOLOGO: 1
@@ -69,6 +69,7 @@ variables:
 stages:
 - stage: Build
   displayName: Build NuGet and tests
+  condition: false # TODO: revert after validating VS_EndToEnd
   jobs:
   - job: Build
     timeoutInMinutes: 170
@@ -84,8 +85,8 @@ stages:
     stageName: VS_EndToEnd
     stageDisplayName: On Windows
     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn:
-    - Build
+    dependsOn: []
+    artifactRunId: 15428374 # TODO: revert after validating VS_EndToEnd
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
     testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}
