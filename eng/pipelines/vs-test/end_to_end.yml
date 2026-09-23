@@ -19,7 +19,7 @@ parameters:
   default: C:\DartLab
 - name: testMachineHoldStrategy
   type: string
-  default: None
+  default: Completion # TODO: revert
   values:
   - None
   - Completion
@@ -73,11 +73,12 @@ stages:
     - operation: executePowerShellScript
       displayName: "Download Build artifacts"
       scriptPath: ${{parameters.dartLabInstallationPath}}\Scripts\AzureDevOps\Pipelines\Install-Artifact.ps1
-      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildID) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet\E2ETests' -ArtifactName 'E2ETests'
+      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildID) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet' -ArtifactName 'E2ETests'
       timeout: 0:0:10:0
     - operation: executePowerShellInline
       displayName: "Extract EndToEnd.zip"
       scriptBlock: |
+        $ErrorActionPreference = 'Stop'
         $zipPath = "[WorkingDirectory]\NuGet\E2ETests\EndToEnd.zip"
         $dest = "[WorkingDirectory]\NuGet\artifacts\EndToEnd"
         Write-Output "Extracting '$zipPath' to '$dest'"
@@ -89,9 +90,10 @@ stages:
     - operation: executePowerShellScript
       displayName: "Download scripts"
       scriptPath: ${{parameters.dartLabInstallationPath}}\Scripts\AzureDevOps\Pipelines\Install-Artifact.ps1
-      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildID) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet\scripts' -ArtifactName 'scripts'
+      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildID) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet' -ArtifactName 'scripts'
       timeout: 0:0:10:0
     - operation: executePowerShellScript
       displayName: "SetupFunctionalTests.ps1"
       scriptPath: '[WorkingDirectory]\NuGet\scripts\e2etests\SetupFunctionalTests.ps1'
+      scriptParameters: -NuGetTestsPSM1Path '[WorkingDirectory]\NuGet\artifacts\EndToEnd\NuGet.Tests.psm1'
       timeout: 0:0:10:0
