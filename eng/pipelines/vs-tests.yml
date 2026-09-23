@@ -86,14 +86,7 @@ stages:
     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Build
-    variables:
-    - name: VsBootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
-    - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    bootstrapperUrl: $(VsBootstrapperUrl)
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    runSettingsURI: https://vsdrop.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
     testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}
 

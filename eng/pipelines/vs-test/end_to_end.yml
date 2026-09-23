@@ -5,16 +5,13 @@ parameters:
   type: string
 - name: dependsOn
   type: object
-- name: bootstrapperUrl
-  type: string
-- name: runSettingsURI
-  type: string
 - name: DartLabEnvironment
   type: string
 - name: condition
   type: string
 - name: variables
   type: object
+  default: []
 - name: testExecutionJobTimeoutInMinutes
   type: number
 - name: dartLabInstallationPath
@@ -37,8 +34,6 @@ stages:
     displayName: 'E2E Tests ${{parameters.stageDisplayName}}'
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
-    runSettingsURI: ${{parameters.runSettingsURI}}
-    visualStudioBootstrapperURI: ${{parameters.bootstrapperUrl}}
     #visualStudioSigning: Test
     testMachineConfigurationJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Configuration'
     testExecutionJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Test Execution'
