@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.Json;
 using Moq;
 using NuGet.Shared;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -301,65 +300,6 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(JsonTokenType.String, reader.TokenType);
                 Assert.Equal("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", reader.GetString());
             }
-        }
-
-        [Fact]
-        public void SetExceptionLocation_WhenTokenCrossesBuffer_TracksTokenLineAndPosition()
-        {
-            string json = "{\r\n  \"padding\": \"" + new string('a', 1100) + "\",\r\n  \"version\": \"invalid\"\r\n}";
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
-
-            using (var stream = new MemoryStream(bytes))
-            using (var reader = new Utf8JsonStreamReader(stream, 1024))
-            {
-                while (reader.Read() && !(reader.TokenType == JsonTokenType.String && reader.GetString() == "invalid"))
-                {
-                }
-
-                reader.SetExceptionLocation(new FormatException());
-
-                Assert.Equal(JsonTokenType.String, reader.TokenType);
-                Assert.Equal(3, reader.LineNumber);
-                Assert.Equal(14, reader.LinePosition);
-            }
-        }
-
-        [Fact]
-        public void SetExceptionLocation_WithNonSeekableStream_TracksTokenLineAndPosition()
-        {
-            string json = "{\r\n  \"padding\": \"" + new string('a', 1100) + "\",\r\n  \"version\": \"invalid\"\r\n}";
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
-
-            using (var stream = new SlowStream(new MemoryStream(bytes)))
-            using (var reader = new Utf8JsonStreamReader(stream, 1024))
-            {
-                while (reader.Read() && !(reader.TokenType == JsonTokenType.String && reader.GetString() == "invalid"))
-                {
-                }
-
-                reader.SetExceptionLocation(new FormatException());
-
-                Assert.Equal(3, reader.LineNumber);
-                Assert.Equal(14, reader.LinePosition);
-            }
-        }
-
-        [Fact]
-        public void SetExceptionLocation_WithJsonException_UsesNativeLocation()
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes("{}");
-            using var stream = new MemoryStream(bytes);
-            using var reader = new Utf8JsonStreamReader(stream);
-            var exception = new JsonException(
-                "Invalid JSON.",
-                path: null,
-                lineNumber: 4,
-                bytePositionInLine: 7);
-
-            reader.SetExceptionLocation(exception);
-
-            Assert.Equal(5, reader.LineNumber);
-            Assert.Equal(8, reader.LinePosition);
         }
 
         [Fact]

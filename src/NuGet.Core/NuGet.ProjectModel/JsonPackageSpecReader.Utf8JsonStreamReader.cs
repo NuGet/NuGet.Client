@@ -101,18 +101,12 @@ namespace NuGet.ProjectModel
 
         internal static PackageSpec GetPackageSpecUtf8JsonStreamReader(Stream stream, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
-            using (Stream utf8Stream = Utf8JsonStream.Create(stream, leaveOpen: true))
-            {
-                var reader = new Utf8JsonStreamReader(utf8Stream);
-                try
-                {
-                    return GetPackageSpec(ref reader, name, packageSpecPath, environmentVariableReader, snapshotValue);
-                }
-                finally
-                {
-                    reader.Dispose();
-                }
-            }
+            var reader = new Utf8JsonStreamReader(stream);
+            var packageSpec = GetPackageSpec(ref reader, name, packageSpecPath, environmentVariableReader, snapshotValue);
+
+            reader.Dispose();
+
+            return packageSpec;
         }
 
         internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
@@ -157,8 +151,7 @@ namespace NuGet.ProjectModel
                             }
                             catch (Exception ex)
                             {
-                                jsonReader.SetExceptionLocation(ex);
-                                throw FileFormatException.Create(ex, jsonReader.LineNumber, jsonReader.LinePosition, packageSpec.FilePath);
+                                throw FileFormatException.Create(ex, version, packageSpec.FilePath);
                             }
                         }
                     }

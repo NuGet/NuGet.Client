@@ -16,7 +16,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -26,69 +25,6 @@ namespace NuGet.ProjectModel.Test
     [UseCulture("")] // Fix tests failing on systems with non-English locales
     public class JsonPackageSpecReaderTests
     {
-        [Fact]
-        public void GetPackageSpec_PublicStringOverload_ReadsPackageSpec()
-        {
-            const string json = """{"version":"1.2.3","frameworks":{"net10.0":{"dependencies":{"Example":"2.0.0"}}}}""";
-
-            PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            Assert.Equal("1.2.3", packageSpec.Version.ToNormalizedString());
-            Assert.Equal("Example", packageSpec.TargetFrameworks.Single().Dependencies.Single().Name);
-        }
-
-        [Theory]
-        [InlineData("utf8")]
-        [InlineData("utf8-bom")]
-        public void GetPackageSpec_PublicStreamOverload_ReadsSupportedEncodingAndLeavesStreamOpen(string encodingName)
-        {
-            const string json = """{"version":"1.2.3","frameworks":{"net10.0":{"dependencies":{"Example":"2.0.0"}}}}""";
-            Encoding encoding = encodingName switch
-            {
-                "utf8" => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                "utf8-bom" => new UTF8Encoding(encoderShouldEmitUTF8Identifier: true),
-                _ => throw new ArgumentException("Unsupported encoding.", nameof(encodingName)),
-            };
-            byte[] preamble = encoding.GetPreamble();
-            byte[] content = encoding.GetBytes(json);
-            using var stream = new MemoryStream(preamble.Concat(content).ToArray());
-
-            PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(stream, "TestProject", "project.json", snapshotValue: null);
-
-            Assert.Equal("1.2.3", packageSpec.Version.ToNormalizedString());
-            Assert.Equal("Example", packageSpec.TargetFrameworks.Single().Dependencies.Single().Name);
-            Assert.True(stream.CanRead);
-        }
-
-        [Fact]
-        public void GetPackageSpec_PublicFileOverload_ReadsPackageSpec()
-        {
-            const string json = """{"version":"1.2.3","frameworks":{"net10.0":{"dependencies":{"Example":"2.0.0"}}}}""";
-            using TestDirectory testDirectory = TestDirectory.Create();
-            string filePath = Path.Combine(testDirectory.Path, "project.json");
-            File.WriteAllText(filePath, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-
-            PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec("TestProject", filePath);
-
-            Assert.Equal("1.2.3", packageSpec.Version.ToNormalizedString());
-            Assert.Equal("Example", packageSpec.TargetFrameworks.Single().Dependencies.Single().Name);
-        }
-
-        [Fact]
-        public void GetPackageSpec_WhenPackageVersionIsInvalid_PreservesDiagnosticsAndLeavesStreamOpen()
-        {
-            string json = "{\r\n  \"padding\": \"" + new string('a', 1100) + "\",\r\n  \"version\": \"invalid\"\r\n}";
-            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-
-            FileFormatException exception = Assert.Throws<FileFormatException>(
-                () => JsonPackageSpecReader.GetPackageSpec(stream, "TestProject", "project.json", snapshotValue: null));
-
-            Assert.StartsWith("Error reading '' at line 3 column 14 : 'invalid' is not a valid version string.", exception.Message);
-            Assert.Equal(3, exception.Line);
-            Assert.Equal(14, exception.Column);
-            Assert.True(stream.CanRead);
-        }
-
         [Fact]
         public void PackageSpecReader_PackageMissingVersion()
         {

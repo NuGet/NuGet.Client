@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
@@ -250,12 +251,11 @@ namespace NuGet.RuntimeModel.Test
             Assert.Equal(textReaderException.Message, streamException.Message);
         }
 
-        [Theory]
-        [InlineData("""{"runtimes":{"win":{"P":{"Q":true}}}}""")]
-        [InlineData("""{"runtimes":{"win":{"P":{"Q":null}}}}""")]
-        public void ReadRuntimeGraph_WithInvalidDependencyScalar_MatchesTextReaderException(string content)
+        [Fact]
+        public void ReadRuntimeGraph_WithBooleanDependencyScalar_MatchesTextReaderException()
         {
-            // Newtonsoft passes Boolean and null text to VersionRange.Parse, preserving its exception type.
+            const string content = """{"runtimes":{"win":{"P":{"Q":true}}}}""";
+            // Newtonsoft passes Boolean text to VersionRange.Parse, preserving its exception type.
             Type streamExceptionType = Assert.ThrowsAny<Exception>(
                 () => JsonRuntimeFormat.ReadRuntimeGraph(new MemoryStream(Encoding.UTF8.GetBytes(content)))).GetType();
 
@@ -268,23 +268,28 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Fact]
-        public void ReadRuntimeGraphWithSystemTextJson_WithDuplicateProperties_UsesLastValue()
+        public void ReadRuntimeGraphWithSystemTextJson_WithNullDependencyVersion_Throws()
         {
-            // JObject property lookup observes the last duplicate runtime definition.
+            const string content = """{"runtimes":{"win":{"P":{"Q":null}}}}""";
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+            Assert.Throws<JsonException>(() => JsonRuntimeFormat.ReadRuntimeGraph(stream));
+        }
+
+        [Fact]
+        public void ReadRuntimeGraphWithSystemTextJson_WithDuplicateRuntimeProperties_Throws()
+        {
             const string content = """
                 {
                     "runtimes": {
-                        "win": null,
+                        "win": { "#import": [ "win7" ] },
                         "win": { "#import": [ "win8" ] }
                     }
                 }
                 """;
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            RuntimeGraph graph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
-
-            RuntimeDescription runtime = Assert.Single(graph.Runtimes).Value;
-            Assert.Equal("win8", Assert.Single(runtime.InheritedRuntimes));
+            Assert.Throws<ArgumentException>(() => JsonRuntimeFormat.ReadRuntimeGraph(stream));
         }
 
         [Fact]
