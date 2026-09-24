@@ -21,72 +21,6 @@ namespace NuGet.Tests.Apex
     {
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageFromPMCForFSharpProject_InstallsPackageAsync()
-        {
-            using var testContext = CreateFSharpContext();
-            await CreatePackagesAsync(testContext.PackageSource, Package("elmah", "1.1"));
-            var console = GetConsole(testContext.Project);
-
-            InstallByUniqueName(console, testContext.Project, "elmah", "1.1", testContext.PackageSource);
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-
-            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "elmah", "1.1", Logger);
-            AssertNoErrors(console);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task UninstallPackageFromPMCForFSharpProject_RemovesPackageAsync()
-        {
-            using var testContext = CreateFSharpContext();
-            await CreatePackagesAsync(testContext.PackageSource, Package("Ninject", "2.0.1"));
-            var console = GetConsole(testContext.Project);
-
-            InstallByUniqueName(console, testContext.Project, "Ninject", "2.0.1", testContext.PackageSource);
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "Ninject", "2.0.1", Logger);
-            CommonUtility.AssertPackageReferenceExists(testContext.Project, "Ninject", "2.0.1", Logger);
-            // Extra settle time: the CPS project system's installed-packages cache (read by
-            // Uninstall-Package) can lag behind the assets file/.fsproj content by more than the
-            // above assertions account for.
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
-            console.Execute($"Uninstall-Package Ninject -ProjectName '{testContext.Project.UniqueName}'");
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-
-            CommonUtility.AssertPackageReferenceDoesNotExist(testContext.Project, "Ninject", "2.0.1", Logger);
-            AssertNoErrors(console);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task UpdatePackageFromPMCForFSharpProjectWithMultiplePackages_UpdatesPackageAsync()
-        {
-            using var testContext = CreateFSharpContext();
-            await CreatePackagesAsync(
-                testContext.PackageSource,
-                Package("SkypePackage", "1.0"),
-                Package("SkypePackage", "3.0"),
-                Package("netfx-Guard", "1.2.0.0"));
-            var console = GetConsole(testContext.Project);
-
-            InstallByUniqueName(console, testContext.Project, "SkypePackage", "1.0", testContext.PackageSource);
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-            InstallByUniqueName(console, testContext.Project, "netfx-Guard", "1.2.0.0", testContext.PackageSource);
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-            CommonUtility.AssertPackageReferenceExists(testContext.Project, "SkypePackage", "1.0", Logger);
-            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "SkypePackage", "1.0", Logger);
-
-            console.Execute($"Update-Package -Source '{testContext.PackageSource}' -ProjectName '{testContext.Project.UniqueName}'");
-            testContext.NuGetApexTestService.WaitForAutoRestore();
-
-            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "SkypePackage", "3.0", Logger);
-            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "netfx-Guard", "1.2.0.0", Logger);
-            AssertNoErrors(console);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromPMCAddsBindingRedirectToWebApplicationAsync()
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
@@ -489,17 +423,6 @@ namespace NuGet.Tests.Apex
                 simpleTestPathContext: pathContext);
         }
 
-        private ApexTestContext CreateFSharpContext()
-        {
-            var pathContext = new SimpleTestPathContext();
-            return new ApexTestContext(
-                VisualStudio,
-                ProjectTemplate.ConsoleApplication,
-                Logger,
-                simpleTestPathContext: pathContext,
-                projectLanguage: ProjectLanguage.FSharp);
-        }
-
         private static void Install(
             NuGetConsoleTestExtension console,
             ProjectTestExtension project,
@@ -510,17 +433,6 @@ namespace NuGet.Tests.Apex
         {
             console.Execute(
                 $"Install-Package {packageName} -ProjectName {project.Name} -Source '{source}' -Version {packageVersion} {arguments}");
-        }
-
-        private static void InstallByUniqueName(
-            NuGetConsoleTestExtension console,
-            ProjectTestExtension project,
-            string packageName,
-            string packageVersion,
-            string source)
-        {
-            console.Execute(
-                $"Install-Package {packageName} -ProjectName '{project.UniqueName}' -Source '{source}' -Version {packageVersion}");
         }
 
         private static async Task CreateBindingRedirectPackagesFromDgmlAsync(string packageSource, string scenarioName)

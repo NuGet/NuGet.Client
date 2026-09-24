@@ -952,6 +952,33 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCForFSharpProjectWithMultiplePackages_UpdatesPackageAsync()
+        {
+            using var testContext = CreateFSharpContext();
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                Package("SkypePackage", "1.0"),
+                Package("SkypePackage", "3.0"),
+                Package("netfx-Guard", "1.2.0.0"));
+            var console = GetConsole(testContext.Project);
+
+            InstallByUniqueName(console, testContext.Project, "SkypePackage", "1.0", testContext.PackageSource);
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+            InstallByUniqueName(console, testContext.Project, "netfx-Guard", "1.2.0.0", testContext.PackageSource);
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+            CommonUtility.AssertPackageReferenceExists(testContext.Project, "SkypePackage", "1.0", Logger);
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "SkypePackage", "1.0", Logger);
+
+            console.Execute($"Update-Package -Source '{testContext.PackageSource}' -ProjectName '{testContext.Project.UniqueName}'");
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "SkypePackage", "3.0", Logger);
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "netfx-Guard", "1.2.0.0", Logger);
+            AssertNoErrors(console);
+        }
+
         private ApexTestContext CreatePackagesConfigContext()
         {
             var pathContext = new SimpleTestPathContext();
