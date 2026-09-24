@@ -52,13 +52,16 @@ resources:
   pipelines:
   - pipeline: DartLab
     source: DartLab
-    version: '20260923.1' # TODO: revert
+    branch: refs/heads/main
+    project: DevDiv
+    tags:
+    - Production
   repositories:
   # DartLab1ES/CloudTest templates repository
   - repository: DartLabTemplates
     type: git
     name: DevDiv/DartLab
-    ref: refs/heads/main # TODO: revert
+    ref: dev/nijulia/addTemplate # TODO: revert
 
 variables:
   DOTNET_NOLOGO: 1
@@ -87,7 +90,9 @@ stages:
     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn: []
     artifactRunId: 15428374 # TODO: revert after validating VS_EndToEnd
+    bootstrapperUrl: https://vsdrop.corp.microsoft.com/file/v1/Tests/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;bootstrapper/15428374/6ffd58b6-2d0c-4220-9dd3-b4ccc63647da/vs_enterprise.exe #TODO: revert
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+    runSettingsURI: https://vsdrop.microsoft.com/file/v1/RunSettings/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;NuGet.Tests.Apex.runsettings #TODO: revert
     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
     testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}
 

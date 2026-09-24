@@ -5,6 +5,10 @@ parameters:
   type: string
 - name: dependsOn
   type: object
+- name: bootstrapperUrl
+  type: string
+- name: runSettingsURI
+  type: string
 - name: artifactRunId
   type: number
 - name: DartLabEnvironment
@@ -30,12 +34,14 @@ parameters:
   - Timeout
 
 stages:
-- template: /templates/stages/single-executable.yml@DartLabTemplates
+- template: /templates/stages/visual-studio/single-executable.yml@DartLabTemplates
   parameters:
     name: ${{parameters.stageName}}
     displayName: 'E2E Tests ${{parameters.stageDisplayName}}'
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
+    runSettingsURI: ${{parameters.runSettingsURI}}
+    visualStudioBootstrapperURI: ${{parameters.bootstrapperUrl}}
     #visualStudioSigning: Test
     testMachineConfigurationJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Configuration'
     testExecutionJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Test Execution'
