@@ -1261,7 +1261,7 @@ Wyszukiwanie polega na porównywaniu łańcuchów bez rozróżniania wielkości 
       </trans-unit>
       <trans-unit id="SourcesCommandMinPublishAgeHoursDescription">
         <source>The minimum number of hours after a package is published before it can be selected for update. Set to 0 to remove the value.</source>
-        <target state="new">The minimum number of hours after a package is published before it can be selected for update. Set to 0 to remove the value.</target>
+        <target state="translated">Minimalna liczba godzin po opublikowaniu pakietu przed wybraniem go do aktualizacji. Ustaw wartość 0, aby usunąć wartość.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandNameDescription">
@@ -1311,32 +1311,32 @@ Wyszukiwanie polega na porównywaniu łańcuchów bez rozróżniania wielkości 
       </trans-unit>
       <trans-unit id="StageCommand_Description">
         <source>Manages packages in a staging environment.</source>
-        <target state="new">Manages packages in a staging environment.</target>
+        <target state="translated">Zarządza pakietami w środowisku przejściowym.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_Description">
         <source>Stages a package on the server without publishing it.</source>
-        <target state="new">Stages a package on the server without publishing it.</target>
+        <target state="translated">Etapy pakietu na serwerze bez publikowania go.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_Error_InvalidGroup">
         <source>The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</source>
-        <target state="new">The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</target>
+        <target state="translated">Identyfikator grupy musi zawierać od 1 do 64 znaków, używać tylko znaków A-Z, a-z, 0-9, „.”, „_” lub „-” oraz rozpoczynać się i kończyć literą lub cyfrą.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_Error_MissingSource">
         <source>No package source was provided and DefaultPushSource is not configured.</source>
-        <target state="new">No package source was provided and DefaultPushSource is not configured.</target>
+        <target state="translated">Nie podano żadnego źródła pakietu i nie skonfigurowano elementu DefaultPushSource.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_Error_PackageNotFound">
         <source>The package file '{0}' does not exist.</source>
-        <target state="new">The package file '{0}' does not exist.</target>
+        <target state="translated">Plik pakietu „{0}” nie istnieje.</target>
         <note>0 - package path</note>
       </trans-unit>
       <trans-unit id="StagePushCommand_Error_PackagePathRequired">
         <source>A package path is required.</source>
-        <target state="new">A package path is required.</target>
+        <target state="translated">Ścieżka pakietu jest wymagana.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_Error_ResourceNotFound">
@@ -1346,37 +1346,37 @@ Wyszukiwanie polega na porównywaniu łańcuchów bez rozróżniania wielkości 
       </trans-unit>
       <trans-unit id="StagePushCommand_Error_UnsupportedPackage">
         <source>The file '{0}' is not a supported package. Specify a .nupkg, .snupkg, or .symbols.nupkg file.</source>
-        <target state="new">The file '{0}' is not a supported package. Specify a .nupkg, .snupkg, or .symbols.nupkg file.</target>
+        <target state="translated">Plik „{0}” nie jest obsługiwanym pakietem. Określ plik .nupkg, .snupkg lub .symbols.nupkg.</target>
         <note>0 - package path</note>
       </trans-unit>
       <trans-unit id="StagePushCommand_GroupOption_Description">
         <source>Uploads the package into the specified staging group.</source>
-        <target state="new">Uploads the package into the specified staging group.</target>
+        <target state="translated">Przekazuje pakiet do określonej grupy przemieszczania.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_NoSymbolsOption_Description">
         <source>Prevents automatic discovery and staging of a sibling symbols package.</source>
-        <target state="new">Prevents automatic discovery and staging of a sibling symbols package.</target>
+        <target state="translated">Zapobiega automatycznemu odnajdowaniu i przemieszczaniu pakietu symboli równorzędnych.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_PackagePathArgument_Description">
         <source>The path to the package to stage.</source>
-        <target state="new">The path to the package to stage.</target>
+        <target state="translated">Ścieżka do pakietu do przygotowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="StagePushCommand_PackageStaged">
         <source>Staged package '{0}'.</source>
-        <target state="new">Staged package '{0}'.</target>
+        <target state="translated">Przygotowany pakiet „{0}”.</target>
         <note>0 - package path</note>
       </trans-unit>
       <trans-unit id="StagePushCommand_SymbolsFailed">
         <source>Failed to stage symbols package '{0}': {1}</source>
-        <target state="new">Failed to stage symbols package '{0}': {1}</target>
+        <target state="translated">Nie można przygotować pakietu symboli „{0}”: {1}</target>
         <note>0 - symbols package path; 1 - error message</note>
       </trans-unit>
       <trans-unit id="StagePushCommand_SymbolsStaged">
         <source>Staged symbols package '{0}'.</source>
-        <target state="new">Staged symbols package '{0}'.</target>
+        <target state="translated">Przygotowany pakiet symboli „{0}”.</target>
         <note>0 - symbols package path</note>
       </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
