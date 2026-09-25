@@ -9727,6 +9727,7 @@ namespace NuGet.CommandLine.Test
                     "proj",
                     pathContext.SolutionRoot,
                     $"net10.0-windows");
+                project.Properties.Add("DisableImplicitFrameworkReferences", bool.TrueString);
 
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
