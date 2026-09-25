@@ -169,7 +169,29 @@ function GetDTE2 {
     )
 
     Try {
-        $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject($dteName)
+        if ([System.Runtime.InteropServices.Marshal].GetMethod('GetActiveObject', [type[]]@([string]))) {
+            return [System.Runtime.InteropServices.Marshal]::GetActiveObject($dteName)
+        }
+
+        if (-not ('NuGetNativeMethods' -as [type])) {
+            Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+public static class NuGetNativeMethods
+{
+    [DllImport("oleaut32.dll", PreserveSig = false)]
+    public static extern void GetActiveObject(
+        ref Guid classId,
+        IntPtr reserved,
+        [MarshalAs(UnmanagedType.IUnknown)] out object activeObject);
+}
+'@
+        }
+
+        $classId = [Type]::GetTypeFromProgID($dteName, $true).GUID
+        $dte2 = $null
+        [NuGetNativeMethods]::GetActiveObject([ref]$classId, [IntPtr]::Zero, [ref]$dte2)
         return $dte2
     }
     Catch {

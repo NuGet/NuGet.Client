@@ -44,13 +44,16 @@ Write-Host 'Before starting the functional tests, force delete all the Results.h
 
 CleanTempFolder
 
+$dteReadyPollFrequencyInSecs = 6
+$numberOfPolls = 50
 
-$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50
+$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls
 if (-not $dte2) {
     Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'
-    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50 -ActivityLogFullPath $env:ActivityLogFullPath
+    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls -ActivityLogFullPath $env:ActivityLogFullPath
     if (-not $dte2) {
-        Write-Error "Could not obtain DTE after waiting $NumberOfPolls * $DTEReadyPollFrequencyInSecs = " $NumberOfPolls * $DTEReadyPollFrequencyInSecs " secs"
+        $totalWaitTimeInSecs = $numberOfPolls * $dteReadyPollFrequencyInSecs
+        Write-Error "Could not obtain DTE after two attempts of $totalWaitTimeInSecs seconds each."
         exit 1
     }
 }

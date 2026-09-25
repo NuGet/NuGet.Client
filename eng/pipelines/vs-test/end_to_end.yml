@@ -9,8 +9,6 @@ parameters:
   type: string
 - name: runSettingsURI
   type: string
-- name: artifactRunId
-  type: number
 - name: DartLabEnvironment
   type: string
 - name: condition
@@ -38,6 +36,7 @@ stages:
   parameters:
     name: ${{parameters.stageName}}
     displayName: 'E2E Tests ${{parameters.stageDisplayName}}'
+    testRunName: 'Run Functional Tests'
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
     runSettingsURI: ${{parameters.runSettingsURI}}
@@ -81,7 +80,7 @@ stages:
     - operation: executePowerShellScript
       displayName: "Download Build artifacts"
       scriptPath: ${{parameters.dartLabInstallationPath}}\Scripts\AzureDevOps\Pipelines\Install-Artifact.ps1
-      scriptParameters: -PipelineID $(System.DefinitionID) -RunID ${{parameters.artifactRunId}} -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet' -ArtifactName 'E2ETests'
+      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildId) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet' -ArtifactName 'E2ETests'
       timeout: 0:0:10:0
     - operation: executePowerShellInline
       displayName: "Extract EndToEnd.zip"
@@ -98,7 +97,7 @@ stages:
     - operation: executePowerShellScript
       displayName: "Download scripts"
       scriptPath: ${{parameters.dartLabInstallationPath}}\Scripts\AzureDevOps\Pipelines\Install-Artifact.ps1
-      scriptParameters: -PipelineID $(System.DefinitionID) -RunID ${{parameters.artifactRunId}} -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet' -ArtifactName 'scripts'
+      scriptParameters: -PipelineID $(System.DefinitionID) -RunID $(Build.BuildId) -ManagedIdentityClientID $(DartLab.1ES.ManagedIdentity.ClientID) -DestinationDirectory '[WorkingDirectory]\NuGet' -ArtifactName 'scripts'
       timeout: 0:0:10:0
     - operation: executePowerShellScript
       displayName: "SetupFunctionalTests.ps1"

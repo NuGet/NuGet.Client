@@ -72,7 +72,7 @@ variables:
 stages:
 - stage: Build
   displayName: Build NuGet and tests
-  condition: false # TODO: revert after validating VS_EndToEnd
+  #condition: false # TODO: revert after validating VS_EndToEnd
   jobs:
   - job: Build
     timeoutInMinutes: 170
@@ -88,8 +88,8 @@ stages:
     stageName: VS_EndToEnd
     stageDisplayName: On Windows
     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn: []
-    artifactRunId: 15428374 # TODO: revert after validating VS_EndToEnd
+    dependsOn:
+    - Build
     bootstrapperUrl: https://vsdrop.corp.microsoft.com/file/v1/Tests/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;bootstrapper/15428374/6ffd58b6-2d0c-4220-9dd3-b4ccc63647da/vs_enterprise.exe #TODO: revert
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     runSettingsURI: https://vsdrop.microsoft.com/file/v1/RunSettings/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;NuGet.Tests.Apex.runsettings #TODO: revert

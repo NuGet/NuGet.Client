@@ -281,7 +281,7 @@ function OutputResultsForCI
     $DropPathParent = $DropPathFileInfo.Parent
 
     $TestResultsPath = if ($ResultsDirectory) { $ResultsDirectory } else { Join-Path $DropPathParent.FullName 'testresults' }
-    $DestinationFileName = 'E2EResults-' + $RunCounter + '.xml'
+    $DestinationFileName = if ($ResultsDirectory) { 'JUnit.xml' } else { 'E2EResults-' + $RunCounter + '.xml' }
     $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
     Write-JunitXml -RealTimeResultsFile $RealTimeResultsFilePath -XmlResultsFilePath $DestinationPath
 }
