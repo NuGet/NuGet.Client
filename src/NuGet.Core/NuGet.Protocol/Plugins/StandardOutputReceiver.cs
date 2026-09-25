@@ -108,11 +108,8 @@ namespace NuGet.Protocol.Plugins
                 string? line = e.Line;
                 if (!IsClosed && line != null && line.Length > 0)
                 {
-                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-                    {
-                        message = System.Text.Json.JsonSerializer.Deserialize(line, PluginJsonContext.Default.Message);
-                    }
-                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                        !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
                     {
                         message = System.Text.Json.JsonSerializer.Deserialize(line, PluginJsonContext.Default.Message);
                     }

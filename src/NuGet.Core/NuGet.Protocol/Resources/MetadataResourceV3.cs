@@ -57,11 +57,8 @@ namespace NuGet.Protocol
                 IEnumerable<NuGetVersion> allVersions;
                 try
                 {
-                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-                    {
-                        allVersions = await GetVersionsFromItemsAsync(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
-                    }
-                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                        !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
                     {
                         allVersions = await GetVersionsFromItemsAsync(id, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
                     }
@@ -92,14 +89,8 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             // TODO: get the url and just check the headers?
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                RegistrationLeafItem? item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
-
-                // TODO: listed check
-                return item != null;
-            }
-            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
             {
                 RegistrationLeafItem? item = await _regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
 
@@ -135,12 +126,8 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return await GetVersionsFromItemsAsync(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
-            }
-
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
             {
                 return await GetVersionsFromItemsAsync(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
             }

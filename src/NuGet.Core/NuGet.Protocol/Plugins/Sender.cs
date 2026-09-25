@@ -137,13 +137,8 @@ namespace NuGet.Protocol.Plugins
             {
                 lock (_sendLock)
                 {
-                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-                    {
-                        string json = System.Text.Json.JsonSerializer.Serialize(message, PluginJsonContext.Default.Message);
-                        _textWriter.WriteLine(json);
-                        _textWriter.Flush();
-                    }
-                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                        !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
                     {
                         string json = System.Text.Json.JsonSerializer.Serialize(message, PluginJsonContext.Default.Message);
                         _textWriter.WriteLine(json);

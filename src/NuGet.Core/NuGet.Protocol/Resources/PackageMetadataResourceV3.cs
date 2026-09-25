@@ -179,11 +179,8 @@ namespace NuGet.Protocol
                 return default(T);
             }
 
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return await DeserializeStreamDataWithStjAsync<T>(stream, token);
-            }
-            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
             {
                 return await DeserializeStreamDataWithStjAsync<T>(stream, token);
             }

@@ -99,41 +99,37 @@ namespace NuGet.Protocol
                                 log,
                                 token);
                         }
-                        else
-                        {
-                            return await client.GetAsync(
-                                new HttpSourceCachedRequest(
-                                    serviceEntry.Uri.AbsoluteUri,
-                                    cacheKey,
-                                    cacheContext)
+
+                        return await client.GetAsync(
+                            new HttpSourceCachedRequest(
+                                serviceEntry.Uri.AbsoluteUri,
+                                cacheKey,
+                                cacheContext)
+                            {
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(repositorySignaturesResourceUri.AbsoluteUri, stream, _environmentVariableReader),
+                                MaxTries = 1,
+                                IsRetry = retry > 1,
+                                IsLastAttempt = retry == maxRetries
+                            },
+                            async httpSourceResult =>
+                            {
+                                if (!NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
                                 {
-                                    EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(repositorySignaturesResourceUri.AbsoluteUri, stream, _environmentVariableReader),
-                                    MaxTries = 1,
-                                    IsRetry = retry > 1,
-                                    IsLastAttempt = retry == maxRetries
-                                },
-                                async httpSourceResult =>
-                                {
-                                    if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
-                                    {
-                                        var model = await JsonSerializer.DeserializeAsync(
-                                            httpSourceResult.Stream!,
-                                            RepositorySignatureJsonContext.Default.RepositorySignatureModel,
-                                            token)
-                                            ?? throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri));
-                                        return new RepositorySignatureResource(model, source);
-                                    }
-                                    else
-                                    {
-                                        var json = (await httpSourceResult.Stream!.AsJObjectAsync(token))!;
+                                    var model = await JsonSerializer.DeserializeAsync(
+                                        httpSourceResult.Stream!,
+                                        RepositorySignatureJsonContext.Default.RepositorySignatureModel,
+                                        token)
+                                        ?? throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadRepositorySignature, repositorySignaturesResourceUri.AbsoluteUri));
+                                    return new RepositorySignatureResource(model, source);
+                                }
+
+                                var json = (await httpSourceResult.Stream!.AsJObjectAsync(token))!;
 #pragma warning disable IL2026, IL3050 // Legacy Newtonsoft.Json code path is unreachable when feature switch is true; ILC trims this branch in AOT
-                                        return new RepositorySignatureResource(json, source);
+                                return new RepositorySignatureResource(json, source);
 #pragma warning restore IL2026, IL3050
-                                    }
-                                },
-                                log,
-                                token);
-                        }
+                            },
+                            log,
+                            token);
                     }
                     catch (Exception ex) when (retry < maxRetries)
                     {
