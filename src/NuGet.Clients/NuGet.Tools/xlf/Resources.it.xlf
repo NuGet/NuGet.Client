@@ -238,8 +238,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_MinPublishAgeExceptions_Description">
-        <source>Package ID patterns that are exempt from minimum publish age enforcement. [Learn more](https://aka.ms/nuget/min-publish-age)</source>
-        <target state="new">Package ID patterns that are exempt from minimum publish age enforcement. [Learn more](https://aka.ms/nuget/min-publish-age)</target>
+        <source>Package ID patterns that are exempt from minimum publish age checks. [Learn more](https://aka.ms/nuget/min-publish-age)</source>
+        <target state="new">Package ID patterns that are exempt from minimum publish age checks. [Learn more](https://aka.ms/nuget/min-publish-age)</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_MinPublishAgeExceptions_Title">

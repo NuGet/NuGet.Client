@@ -21,6 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
         internal const bool DefaultNuGetAudit = false;
         internal const string MonikerPackageSources = "packageSources.notMachineWide";
         internal const string MonikerMinPublishAgeExceptions = "packageSources.minPublishAgeExceptions";
+        internal const string MonikerShowMinPublishAgeExceptions = "packageSources.showMinPublishAgeExceptions";
         internal const string MonikerAuditSources = "nuGetAudit.auditSources";
         internal const string MonikerNuGetAudit = "nuGetAudit.enableCheckbox";
         internal const string MonikerMachineWideSources = "machineWide.machineWidePackageSources";
@@ -82,6 +83,25 @@ namespace NuGet.PackageManagement.VisualStudio.Options
 
                         return GetValueMinPublishAgeExceptions<T>(exceptions);
                     }
+                case MonikerShowMinPublishAgeExceptions:
+                    {
+                        bool showMinPublishAgeExceptions = await Task.Run(
+                            () =>
+                            {
+                                IReadOnlyList<PackageSource> packageSources = LoadPackageSources(isMachineWide: false);
+                                if (packageSources.Any(packageSource => packageSource.MinPublishAge > TimeSpan.Zero))
+                                {
+                                    return true;
+                                }
+
+                                return CreateMinPublishAgeExceptionsProvider()
+                                    .GetMinPublishAgeExceptionItems()
+                                    .Count > 0;
+                            },
+                            cancellationToken);
+
+                        return await ConvertValueOrThrow<T>(showMinPublishAgeExceptions);
+                    }
                 case MonikerNuGetAudit:
                     {
                         var auditSources = await Task.Run(
@@ -128,6 +148,7 @@ namespace NuGet.PackageManagement.VisualStudio.Options
                 switch (moniker)
                 {
                     case MonikerNuGetAudit:
+                    case MonikerShowMinPublishAgeExceptions:
                         return (ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance;
                     case MonikerPackageSources:
                         var packageSourcesList = (IReadOnlyList<IDictionary<string, object>>)value;

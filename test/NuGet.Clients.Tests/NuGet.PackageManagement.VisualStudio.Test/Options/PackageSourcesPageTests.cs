@@ -172,6 +172,61 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Options
         }
 
         [Fact]
+        public async Task GetValueAsync_ShowMinPublishAgeExceptions_WithNoMinimumAgeOrExceptions_ReturnsFalseAsync()
+        {
+            _packageSources =
+            [
+                new PackageSource("https://unit.test/v3/index.json", "unit")
+            ];
+            PackageSourcesPage instance = CreateInstance(_vsSettings);
+
+            ExternalSettingOperationResult<bool> result = await instance.GetValueAsync<bool>(
+                PackageSourcesPage.MonikerShowMinPublishAgeExceptions,
+                CancellationToken.None);
+
+            result.As<ExternalSettingOperationResult<bool>.Success>().Value.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetValueAsync_ShowMinPublishAgeExceptions_WithMinimumAge_ReturnsTrueAsync()
+        {
+            _packageSources =
+            [
+                new PackageSource("https://unit.test/v3/index.json", "unit")
+                {
+                    MinPublishAge = TimeSpan.FromHours(1)
+                }
+            ];
+            PackageSourcesPage instance = CreateInstance(_vsSettings);
+
+            ExternalSettingOperationResult<bool> result = await instance.GetValueAsync<bool>(
+                PackageSourcesPage.MonikerShowMinPublishAgeExceptions,
+                CancellationToken.None);
+
+            result.As<ExternalSettingOperationResult<bool>.Success>().Value.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GetValueAsync_ShowMinPublishAgeExceptions_WithException_ReturnsTrueAsync()
+        {
+            WriteSettings(
+                """
+                <configuration>
+                    <minPublishAgeExceptions>
+                        <package pattern="System.*" />
+                    </minPublishAgeExceptions>
+                </configuration>
+                """);
+            PackageSourcesPage instance = CreateInstance(_vsSettings);
+
+            ExternalSettingOperationResult<bool> result = await instance.GetValueAsync<bool>(
+                PackageSourcesPage.MonikerShowMinPublishAgeExceptions,
+                CancellationToken.None);
+
+            result.As<ExternalSettingOperationResult<bool>.Success>().Value.Should().BeTrue();
+        }
+
+        [Fact]
         public async Task SetValueAsync_MinPublishAgeExceptions_SavesPatternsAsync()
         {
             PackageSourcesPage instance = CreateInstance(_vsSettings);

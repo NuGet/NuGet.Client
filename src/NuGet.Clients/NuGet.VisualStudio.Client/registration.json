@@ -218,6 +218,7 @@
           "type": "array",
           "title": "@Text_MinPublishAgeExceptions_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
           "description": "@Text_MinPublishAgeExceptions_Description;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "visibleWhen": "${config:packageSources.showMinPublishAgeExceptions}",
           "items": {
             "type": "object",
             "properties": {
@@ -241,6 +242,12 @@
           "allowItemEditing": true,
           "allowAdditionsAndRemovals": true,
           "helpUri": "https://aka.ms/nuget/min-publish-age"
+        },
+        "packageSources.showMinPublishAgeExceptions": {
+          "type": "boolean",
+          "title": "@Text_MinPublishAgeExceptions_Title;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "default": false,
+          "visibleWhen": "false"
         },
         "nuGetAudit.enableCheckbox": {
           "type": "boolean",
