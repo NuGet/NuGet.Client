@@ -1,9 +1,18 @@
 #nullable enable
+NuGet.Protocol.Core.Types.SourceCacheContext.SuppressHttpCacheRefreshOnMiss.get -> bool
+NuGet.Protocol.Core.Types.SourceCacheContext.SuppressHttpCacheRefreshOnMiss.set -> void
+virtual NuGet.Protocol.Core.Types.SourceCacheContext.WithSuppressHttpCacheRefreshOnMiss() -> NuGet.Protocol.Core.Types.SourceCacheContext!
+NuGet.Protocol.IVersionListCacheInfo
+NuGet.Protocol.IVersionListCacheInfo.TryGetVersionListSource(string! id, out NuGet.Protocol.VersionListFetchKind kind) -> bool
 NuGet.Protocol.PackageStagingResourceV3
 NuGet.Protocol.PackageStagingResourceV3.PushPackageAsync(string! packagePath, string? apiKey, string? groupId, System.TimeSpan requestTimeout, bool allowInsecureConnections, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 NuGet.Protocol.PackageStagingResourceV3.PushSymbolsAsync(string! packagePath, string? apiKey, string? groupId, System.TimeSpan requestTimeout, bool allowInsecureConnections, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 NuGet.Protocol.PackageStagingResourceV3.SourceUri.get -> System.Uri!
 NuGet.Protocol.PackageStagingResourceV3Provider
 NuGet.Protocol.PackageStagingResourceV3Provider.PackageStagingResourceV3Provider() -> void
+NuGet.Protocol.VersionListFetchKind
+NuGet.Protocol.VersionListFetchKind.HttpCache = 1 -> NuGet.Protocol.VersionListFetchKind
+NuGet.Protocol.VersionListFetchKind.Network = 2 -> NuGet.Protocol.VersionListFetchKind
+NuGet.Protocol.VersionListFetchKind.Unknown = 0 -> NuGet.Protocol.VersionListFetchKind
 override NuGet.Protocol.PackageStagingResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 static readonly NuGet.Protocol.ServiceTypes.PackageStaging -> string![]!

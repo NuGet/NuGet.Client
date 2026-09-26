@@ -1674,6 +1674,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The HTTP cache for package &apos;{0}&apos; does not contain a version satisfying &apos;{1}&apos;; refreshing once before failing..
+        /// </summary>
+        internal static string Log_RefreshingHttpCacheOnMiss {
+            get {
+                return ResourceManager.GetString("Log_RefreshingHttpCacheOnMiss", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restoring packages for {0}....
         /// </summary>
         internal static string Log_RestoringPackages {
