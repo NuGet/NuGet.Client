@@ -4,13 +4,16 @@ param (
     [Parameter(Mandatory=$true)]
     [int]$PMCLaunchWaitTimeInSecs,
     [Parameter(Mandatory=$true)]
-    [int]$EachTestTimoutInSecs,
+    [Alias('EachTestTimoutInSecs')]
+    [int]$EachTestTimeoutInSecs,
     [Parameter(Mandatory=$true)]
     [string]$NuGetDropPath,
     [Parameter(Mandatory=$true)]
     [string]$FuncTestRoot,
     [Parameter(Mandatory=$true)]
-    [string]$RunCounter)
+    [string]$RunCounter,
+    [Parameter(Mandatory=$false)]
+    [string]$ResultsDirectory)
 
 . "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\VSUtils.ps1"
@@ -41,13 +44,16 @@ Write-Host 'Before starting the functional tests, force delete all the Results.h
 
 CleanTempFolder
 
+$dteReadyPollFrequencyInSecs = 6
+$numberOfPolls = 50
 
-$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50
+$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls
 if (-not $dte2) {
     Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'
-    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50 -ActivityLogFullPath $env:ActivityLogFullPath
+    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls -ActivityLogFullPath $env:ActivityLogFullPath
     if (-not $dte2) {
-        Write-Error "Could not obtain DTE after waiting $NumberOfPolls * $DTEReadyPollFrequencyInSecs = " $NumberOfPolls * $DTEReadyPollFrequencyInSecs " secs"
+        $totalWaitTimeInSecs = $numberOfPolls * $dteReadyPollFrequencyInSecs
+        Write-Error "Could not obtain DTE after two attempts of $totalWaitTimeInSecs seconds each."
         exit 1
     }
 }
@@ -74,7 +80,7 @@ Write-Host "Executing the provided Package manager console command: ""$PMCComman
 ExecuteCommand $dte2 "View.PackageManagerConsole" $PMCCommand "Running command: $PMCCommand ..."
 
 Write-Host "Starting functional tests with command '$PMCCommand'"
-RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
+RealTimeLogResults $NuGetTestPath $EachTestTimeoutInSecs $ResultsDirectory
 
 KillRunningInstancesOfVS $VSInstance
 

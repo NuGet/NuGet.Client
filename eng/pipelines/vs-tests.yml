@@ -29,13 +29,16 @@ parameters:
   values:
   - Production
   - Staging
-- name: E2EAgentCleanup
-  displayName: Delete or keep E2E machine for debugging
+- name: testMachineHoldStrategy
+  displayName: Hold E2E test machine for debugging
   type: string
-  default: delete
+  default: None
   values:
-  - delete
-  - stop
+  - None
+  - Completion
+  - Execution
+  - Failure
+  - Timeout
 - name: ApexAgentCleanup
   displayName: Cleanup VS Apex test machine
   type: string
@@ -49,18 +52,16 @@ resources:
   pipelines:
   - pipeline: DartLab
     source: DartLab
-    branch: main
+    branch: refs/heads/main
+    project: DevDiv
+    tags:
+    - Production
   repositories:
-  # Legacy DTL DartLab templates repository
-  - repository: LegacyDartLabTemplates
-    type: git
-    name: DartLab.Templates
-    ref: refs/heads/main
   # DartLab1ES/CloudTest templates repository
   - repository: DartLabTemplates
     type: git
     name: DevDiv/DartLab
-    ref: refs/tags/Production
+    ref: dev/nijulia/addTemplate # TODO: revert
 
 variables:
   DOTNET_NOLOGO: 1
@@ -71,6 +72,7 @@ variables:
 stages:
 - stage: Build
   displayName: Build NuGet and tests
+  #condition: false # TODO: revert after validating VS_EndToEnd
   jobs:
   - job: Build
     timeoutInMinutes: 170
@@ -88,34 +90,29 @@ stages:
     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Build
-    variables:
-    - name: VsBootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
-    - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    bootstrapperUrl: $(VsBootstrapperUrl)
+    bootstrapperUrl: https://vsdrop.corp.microsoft.com/file/v1/Tests/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;bootstrapper/15428374/6ffd58b6-2d0c-4220-9dd3-b4ccc63647da/vs_enterprise.exe #TODO: revert
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
-    testExecutionJobTimeoutInMinutes: 100
-    testMachineCleanUpStrategy: ${{parameters.E2EAgentCleanup}}
+    runSettingsURI: https://vsdrop.microsoft.com/file/v1/RunSettings/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;NuGet.Tests.Apex.runsettings #TODO: revert
+    testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
+    testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}
 
 # Dartlab's template defines this in its own stage
-- template: vs-test/apex.yml
-  parameters:
-    condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
-    dependsOn:
-    - Build
-    variables:
-    - name: bootstrapperUrl
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
-    - name: RunSettingsDrop
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    - name: VsBootstrapperBranch
-      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
-    bootstrapperUrl: $(bootstrapperUrl)
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
-    testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
-    testMachineTotalCount: '2'
-    testCaseDistributionBatchingStrategy: OptimizeDurationForPerformance
-    testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
-    VsBootstrapperBranch: $(VsBootstrapperBranch)
+# - template: vs-test/apex.yml
+#   parameters:
+#     condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
+#     dependsOn:
+#     - Build
+#     variables:
+#     - name: bootstrapperUrl
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
+#     - name: RunSettingsDrop
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
+#     - name: VsBootstrapperBranch
+#       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VsBootstrapperBranch']]
+#     bootstrapperUrl: $(bootstrapperUrl)
+#     runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/$(RunSettingsDrop);NuGet.Tests.Apex.runsettings
+#     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
+#     testMachineTotalCount: '2'
+#     testCaseDistributionBatchingStrategy: OptimizeDurationForPerformance
+#     testDeploymentCleanupMode: ${{parameters.ApexAgentCleanup}}
+#     VsBootstrapperBranch: $(VsBootstrapperBranch)

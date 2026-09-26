@@ -102,14 +102,15 @@ function LaunchVSAndWaitForDTE {
     # https://docs.microsoft.com/en-us/visualstudio/extensibility/launch-visual-studio-dte?view=vs-2019
     $exeVersion = $VSInstance.installationVersion
     $dteName = "VisualStudio.DTE." + $exeVersion.Substring(0, $exeVersion.IndexOf('.')) + ".0"
-    Write-Host "Looking for: $dteName"
+    $dteDisplayName = "${dteName}:$($process.Id)"
+    Write-Host "Looking for: $dteDisplayName"
 
     while ($count -lt $NumberOfPolls) {
         # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
         Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
         start-sleep $DTEReadyPollFrequencyInSecs
 
-        $dte2 = GetDTE2 -dteName $dteName
+        $dte2 = GetDTE2 -DteDisplayName $dteDisplayName
         if ($dte2) {
             Write-Host 'Obtained DTE.'
             return $dte2
@@ -165,12 +166,77 @@ function LaunchVS {
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$dteName
+        [string]$DteDisplayName
     )
 
     Try {
-        $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject($dteName)
-        return $dte2
+        if (-not ('NuGetRunningObjectTable' -as [type])) {
+            Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+
+public static class NuGetRunningObjectTable
+{
+    [DllImport("ole32.dll")]
+    private static extern int CreateBindCtx(uint reserved, out IBindCtx bindContext);
+
+    public static object GetObject(string displayName)
+    {
+        IBindCtx bindContext = null;
+        IRunningObjectTable runningObjectTable = null;
+        IEnumMoniker monikerEnumerator = null;
+
+        try
+        {
+            Marshal.ThrowExceptionForHR(CreateBindCtx(0, out bindContext));
+            bindContext.GetRunningObjectTable(out runningObjectTable);
+            runningObjectTable.EnumRunning(out monikerEnumerator);
+
+            IMoniker[] monikers = new IMoniker[1];
+            while (monikerEnumerator.Next(1, monikers, IntPtr.Zero) == 0)
+            {
+                IMoniker moniker = monikers[0];
+                try
+                {
+                    string objectDisplayName = null;
+                    try
+                    {
+                        moniker.GetDisplayName(bindContext, null, out objectDisplayName);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        continue;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(objectDisplayName) &&
+                        objectDisplayName.EndsWith(displayName, StringComparison.Ordinal))
+                    {
+                        object runningObject;
+                        runningObjectTable.GetObject(moniker, out runningObject);
+                        return runningObject;
+                    }
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(moniker);
+                }
+            }
+
+            return null;
+        }
+        finally
+        {
+            if (monikerEnumerator != null) Marshal.ReleaseComObject(monikerEnumerator);
+            if (runningObjectTable != null) Marshal.ReleaseComObject(runningObjectTable);
+            if (bindContext != null) Marshal.ReleaseComObject(bindContext);
+        }
+    }
+}
+'@
+        }
+
+        return [NuGetRunningObjectTable]::GetObject($DteDisplayName)
     }
     Catch {
         return $null
