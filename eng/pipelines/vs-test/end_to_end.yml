@@ -23,7 +23,7 @@ parameters:
   default: C:\DartLab
 - name: testMachineHoldStrategy
   type: string
-  default: Completion # TODO: revert
+  default: None
   values:
   - None
   - Completion

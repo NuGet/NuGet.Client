@@ -46,11 +46,14 @@ CleanTempFolder
 
 $dteReadyPollFrequencyInSecs = 6
 $numberOfPolls = 50
+$activityLogDirectory = if ($ResultsDirectory) { $ResultsDirectory } else { $env:TEMP }
+$firstActivityLogFullPath = Join-Path $activityLogDirectory 'VisualStudio-FirstLaunch.xml'
+$secondActivityLogFullPath = Join-Path $activityLogDirectory 'VisualStudio-SecondLaunch.xml'
 
-$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls
+$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls -ActivityLogFullPath $firstActivityLogFullPath
 if (-not $dte2) {
     Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'
-    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls -ActivityLogFullPath $env:ActivityLogFullPath
+    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls -ActivityLogFullPath $secondActivityLogFullPath
     if (-not $dte2) {
         $totalWaitTimeInSecs = $numberOfPolls * $dteReadyPollFrequencyInSecs
         Write-Error "Could not obtain DTE after two attempts of $totalWaitTimeInSecs seconds each."

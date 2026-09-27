@@ -32,7 +32,7 @@ parameters:
 - name: testMachineHoldStrategy
   displayName: Hold E2E test machine for debugging
   type: string
-  default: None
+  default: Completion # todo: revert
   values:
   - None
   - Completion

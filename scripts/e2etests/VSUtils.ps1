@@ -96,6 +96,12 @@ function LaunchVSAndWaitForDTE {
     $count = 0
     Write-Host "Will wait for $NumberOfPolls times and $DTEReadyPollFrequencyInSecs seconds each time."
     Write-Host "Visual Studio was launched with process ID $($process.Id)."
+    Write-Host "PowerShell session ID: $([System.Diagnostics.Process]::GetCurrentProcess().SessionId); Visual Studio session ID: $($process.SessionId)."
+    $explorerSessionIds = @(Get-Process -Name explorer -ErrorAction SilentlyContinue | Select-Object -ExpandProperty SessionId -Unique)
+    Write-Host "Explorer session IDs: $(if ($explorerSessionIds) { $explorerSessionIds -join ', ' } else { 'none' })."
+    if ($ActivityLogFullPath) {
+        Write-Host "Visual Studio activity log: $ActivityLogFullPath"
+    }
 
     while ($count -lt $NumberOfPolls) {
         # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
@@ -119,6 +125,7 @@ function LaunchVSAndWaitForDTE {
             Write-Host "Looking for a Visual Studio DTE registered by process ID: $processIds"
 
             foreach ($visualStudioProcess in $visualStudioProcesses) {
+                Write-Host "Visual Studio process $($visualStudioProcess.Id): session=$($visualStudioProcess.SessionId), windowHandle=$($visualStudioProcess.MainWindowHandle), responding=$($visualStudioProcess.Responding), title='$($visualStudioProcess.MainWindowTitle)'"
                 $dte2 = GetDTE2 -ProcessId $visualStudioProcess.Id
                 if ($dte2) {
                     Write-Host "Obtained DTE from process ID $($visualStudioProcess.Id)."
