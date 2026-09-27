@@ -92,28 +92,39 @@ function LaunchVSAndWaitForDTE {
         return $null
     }
 
-    $VSVersionString = $VsInstance.installationVersion
-    $VSVersion = $VSVersionString.Substring(0, $VSVersionString.IndexOf("."))
-
     $dte2 = $null
     $count = 0
     Write-Host "Will wait for $NumberOfPolls times and $DTEReadyPollFrequencyInSecs seconds each time."
-
-    # https://docs.microsoft.com/en-us/visualstudio/extensibility/launch-visual-studio-dte?view=vs-2019
-    $exeVersion = $VSInstance.installationVersion
-    $dteName = "VisualStudio.DTE." + $exeVersion.Substring(0, $exeVersion.IndexOf('.')) + ".0"
-    $dteDisplayName = "${dteName}:$($process.Id)"
-    Write-Host "Looking for: $dteDisplayName"
+    Write-Host "Visual Studio was launched with process ID $($process.Id)."
 
     while ($count -lt $NumberOfPolls) {
         # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
         Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
         start-sleep $DTEReadyPollFrequencyInSecs
 
-        $dte2 = GetDTE2 -DteDisplayName $dteDisplayName
-        if ($dte2) {
-            Write-Host 'Obtained DTE.'
-            return $dte2
+        $visualStudioProcesses = @(Get-Process -Name devenv -ErrorAction SilentlyContinue | Where-Object {
+            try {
+                $_.Path.StartsWith($VSInstance.installationPath, [System.StringComparison]::OrdinalIgnoreCase)
+            }
+            catch {
+                $false
+            }
+        })
+
+        if ($visualStudioProcesses.Count -eq 0) {
+            Write-Warning "No running devenv process was found under '$($VSInstance.installationPath)'."
+        }
+        else {
+            $processIds = ($visualStudioProcesses.Id | Sort-Object) -join ', '
+            Write-Host "Looking for a Visual Studio DTE registered by process ID: $processIds"
+
+            foreach ($visualStudioProcess in $visualStudioProcesses) {
+                $dte2 = GetDTE2 -ProcessId $visualStudioProcess.Id
+                if ($dte2) {
+                    Write-Host "Obtained DTE from process ID $($visualStudioProcess.Id)."
+                    return $dte2
+                }
+            }
         }
 
         $count++
@@ -166,7 +177,7 @@ function LaunchVS {
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$DteDisplayName
+        [int]$ProcessId
     )
 
     Try {
@@ -178,14 +189,21 @@ using System.Runtime.InteropServices.ComTypes;
 
 public static class NuGetRunningObjectTable
 {
+    public sealed class RunningObjectResult
+    {
+        public object RunningObject { get; set; }
+        public string[] DteDisplayNames { get; set; }
+    }
+
     [DllImport("ole32.dll")]
     private static extern int CreateBindCtx(uint reserved, out IBindCtx bindContext);
 
-    public static object GetObject(string displayName)
+    public static RunningObjectResult GetObject(int processId)
     {
         IBindCtx bindContext = null;
         IRunningObjectTable runningObjectTable = null;
         IEnumMoniker monikerEnumerator = null;
+        var dteDisplayNames = new System.Collections.Generic.List<string>();
 
         try
         {
@@ -208,13 +226,25 @@ public static class NuGetRunningObjectTable
                     {
                         continue;
                     }
+                    catch (COMException)
+                    {
+                        continue;
+                    }
 
                     if (!string.IsNullOrWhiteSpace(objectDisplayName) &&
-                        objectDisplayName.EndsWith(displayName, StringComparison.Ordinal))
+                        objectDisplayName.IndexOf("VisualStudio.DTE.", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        object runningObject;
-                        runningObjectTable.GetObject(moniker, out runningObject);
-                        return runningObject;
+                        dteDisplayNames.Add(objectDisplayName);
+                        if (objectDisplayName.EndsWith(":" + processId, StringComparison.Ordinal))
+                        {
+                            object runningObject;
+                            runningObjectTable.GetObject(moniker, out runningObject);
+                            return new RunningObjectResult
+                            {
+                                RunningObject = runningObject,
+                                DteDisplayNames = dteDisplayNames.ToArray()
+                            };
+                        }
                     }
                 }
                 finally
@@ -223,7 +253,11 @@ public static class NuGetRunningObjectTable
                 }
             }
 
-            return null;
+            return new RunningObjectResult
+            {
+                RunningObject = null,
+                DteDisplayNames = dteDisplayNames.ToArray()
+            };
         }
         finally
         {
@@ -236,9 +270,22 @@ public static class NuGetRunningObjectTable
 '@
         }
 
-        return [NuGetRunningObjectTable]::GetObject($DteDisplayName)
+        $result = [NuGetRunningObjectTable]::GetObject($ProcessId)
+        $displayNames = $result.DteDisplayNames -join '; '
+        if ($script:LastRunningDteDisplayNames -ne $displayNames) {
+            if ($displayNames) {
+                Write-Host "Accessible Visual Studio DTE objects: $displayNames"
+            }
+            else {
+                Write-Host 'No accessible Visual Studio DTE objects are registered.'
+            }
+            $script:LastRunningDteDisplayNames = $displayNames
+        }
+
+        return $result.RunningObject
     }
     Catch {
+        Write-Warning "Failed to inspect the Running Object Table: $($_.Exception.Message)"
         return $null
     }
 }
