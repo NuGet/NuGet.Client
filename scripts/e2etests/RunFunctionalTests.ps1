@@ -44,19 +44,13 @@ Write-Host 'Before starting the functional tests, force delete all the Results.h
 
 CleanTempFolder
 
-$dteReadyPollFrequencyInSecs = 6
-$numberOfPolls = 50
-$activityLogDirectory = if ($ResultsDirectory) { $ResultsDirectory } else { $env:TEMP }
-$firstActivityLogFullPath = Join-Path $activityLogDirectory 'VisualStudio-FirstLaunch.xml'
-$secondActivityLogFullPath = Join-Path $activityLogDirectory 'VisualStudio-SecondLaunch.xml'
 
-$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls -ActivityLogFullPath $firstActivityLogFullPath
+$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50
 if (-not $dte2) {
     Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'
-    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs $dteReadyPollFrequencyInSecs -NumberOfPolls $numberOfPolls -ActivityLogFullPath $secondActivityLogFullPath
+    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50 -ActivityLogFullPath $env:ActivityLogFullPath
     if (-not $dte2) {
-        $totalWaitTimeInSecs = $numberOfPolls * $dteReadyPollFrequencyInSecs
-        Write-Error "Could not obtain DTE after two attempts of $totalWaitTimeInSecs seconds each."
+        Write-Error "Could not obtain DTE after waiting $NumberOfPolls * $DTEReadyPollFrequencyInSecs = " $NumberOfPolls * $DTEReadyPollFrequencyInSecs " secs"
         exit 1
     }
 }
