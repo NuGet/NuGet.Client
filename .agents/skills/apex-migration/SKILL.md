@@ -451,6 +451,28 @@ This section captures lessons learned from actual migration runs that don't fit 
   `packages.{ProjectName}.config`, rename `VisualStudio.Dte.Solution.Projects.Item(1).ProjectItems`
   rather than only moving the file on disk so the classic project system keeps the item in sync.
 
+### 2026-09-24: Reconciling a wholesale PS file deletion
+
+- **When deleting a whole PS test file, reconcile every deleted `Test-*` function.** Diff the list of
+  `function Test-*` names in the deleted file against the migration table. A review that only
+  compares migrated pairs cannot find functions that were silently dropped. Duplicate definitions
+  are still scenarios: map each body to its own `[DataRow]`.
+- **Fixture nuspecs under `test/EndToEnd/Packages/<Test>/` can be recreated with a custom
+  `SimpleTestPackageContext.Nuspec`.** Use this for metadata the context API does not expose, such
+  as `<language>` for satellite packages or per-framework dependency groups with version-less
+  dependencies. The E2E generator compiled a real assembly for every `lib/**/*.dll` that was not
+  `*.resources.dll`, so compile real assemblies for those files too. Placeholder bytes can break
+  DTE reference addition. Packages without files get default assets from `SimpleTestPackageUtility`,
+  so add a harmless root file such as `readme.txt`.
+- **DGML graphs such as `UpdatingPackageInstallOrdering.dgml` can reuse
+  `CreateBindingRedirectPackagesFromDgmlAsync`.** It first looks for `<scenario>.dgml` in the fixture
+  folder.
+- **Unlisted or delisted package scenarios should use `FileSystemBackedV3MockServer`.** Add the
+  package identity to `UnlistedPackages`, serve a folder other than `PackageSource`, and register
+  the server with `Settings.AddSource(name, ServiceIndexUri, allowInsecureConnectionsValue: "true")`.
+  Pass `-Source <name>` so the insecure-connection opt-in applies.
+- **`CommonUtility.WaitForFileExists` and `WaitForFileNotExists` take a `FileInfo`, not a string.**
+
 ---
 
 # Migrating PowerShell E2E Tests to Unit Tests

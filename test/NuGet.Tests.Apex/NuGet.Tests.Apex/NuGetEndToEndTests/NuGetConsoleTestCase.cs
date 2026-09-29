@@ -1661,6 +1661,8 @@ namespace NuGet.Tests.Apex
         [DataRow("1.0.0-a", " -IncludePrerelease", "1.0.1-a")]
         [DataRow("1.0.1-a", "", "1.0.1-a")]
         [DataRow("1.0.1-a", " -Version 1.0.0", "1.0.0")]
+        [DataRow("1.0.0-a", " -Safe", "1.0.0")]
+        [DataRow("1.0.0-a", " -Safe -IncludePrerelease", "1.0.1-a")]
         [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromPMCWithPrereleaseVersions_UpdatesToExpectedVersionAsync(
             string installedVersion,
@@ -1673,6 +1675,7 @@ namespace NuGet.Tests.Apex
 
             var packageName = "TestPackage";
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0-a");
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0-b");
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0");
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.1-a");
 

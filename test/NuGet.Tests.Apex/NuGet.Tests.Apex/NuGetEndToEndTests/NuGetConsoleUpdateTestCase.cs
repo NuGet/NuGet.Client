@@ -1,13 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
+using Test.Utility;
 
 namespace NuGet.Tests.Apex
 {
@@ -979,6 +985,282 @@ namespace NuGet.Tests.Apex
             AssertNoErrors(console);
         }
 
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWithFrameworkSpecificDependencies_KeepsPreviousDependencyAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            string packageName = "TestDependencyTargetFramework";
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                FixturePackage(
+                    packageName,
+                    "1.0.0",
+                    language: null,
+                    new[] { "content/NewFile.txt", "tools/net35/install.ps1", "tools/net40/_._" },
+                    DependencyGroup(".NETFramework4.0", ("TestEmptyLibFolder", null)),
+                    DependencyGroup("Silverlight4.0", ("TestEmptyContentFolder", null)),
+                    DependencyGroup(".NETFramework3.5", ("TestEmptyToolsFolder", null))),
+                FixturePackage(
+                    packageName,
+                    "2.0.0",
+                    language: null,
+                    new[] { "tools/net35/install.ps1", "tools/net40/_._", "content/NetFile2.txt" },
+                    DependencyGroup(".NETFramework3.5", ("TestEmptyLibFolder", null)),
+                    DependencyGroup("Silverlight4.0", ("TestEmptyContentFolder", null)),
+                    DependencyGroup(".NETFramework4.0", ("TestEmptyToolsFolder", null))),
+                FixturePackage("TestEmptyLibFolder", "1.0.0", language: null, new[] { "lib/net40/_._", "content/foo.txt" }),
+                FixturePackage("TestEmptyToolsFolder", "1.0.0", language: null, new[] { "tools/net35/install.ps1", "tools/net40/_._", "content/foo.txt" }),
+                FixturePackage("TestEmptyContentFolder", "1.0.0", language: null, new[] { "content/net35/NetFile.txt", "content/net40/_._" }));
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, packageName, "1.0", testContext.PackageSource);
+
+            AssertInstalled(testContext.Project, packageName, "1.0.0");
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "TestEmptyLibFolder", Logger);
+            AssertNotInstalled(testContext.Project, "TestEmptyContentFolder");
+            AssertNotInstalled(testContext.Project, "TestEmptyToolsFolder");
+
+            Update(console, testContext.Project, packageName, testContext.PackageSource, "-Version 2.0 -FileConflictAction OverwriteAll");
+
+            AssertInstalled(testContext.Project, packageName, "2.0.0");
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "TestEmptyToolsFolder", Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "TestEmptyLibFolder", Logger);
+            AssertNotInstalled(testContext.Project, "TestEmptyContentFolder");
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCForSatellitePackage_UpdatesRuntimePackageResourcesAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                LocalizedRuntimePackage("1.0", "lib/net40/Main.dll"),
+                LocalizedRuntimePackage("2.0", "lib/net40/Main.2.0.dll"),
+                LocalizedSatellitePackage("fr-Fr", "1.0"),
+                LocalizedSatellitePackage("fr-Fr", "2.0"));
+            var console = GetConsole(testContext.Project);
+
+            console.Execute($"Install-Package Localized.fr-FR -ProjectName {testContext.Project.Name} -Version 1.0 -Source '{testContext.PackageSource}'");
+
+            AssertInstalled(testContext.Project, "Localized", "1.0");
+            AssertInstalled(testContext.Project, "Localized.fr-FR", "1.0");
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.1.0", "lib", "net40", "fr-FR", "Main.1.0.resources.dll")));
+
+            console.Execute($"Update-Package Localized.fr-FR -ProjectName {testContext.Project.Name} -Source '{testContext.PackageSource}'");
+
+            AssertInstalled(testContext.Project, "Localized", "2.0");
+            AssertInstalled(testContext.Project, "Localized.fr-FR", "2.0");
+            string packageDirectory = Path.Combine(pathContext.PackagesV2, "Localized.2.0");
+            CommonUtility.WaitForFileNotExists(new FileInfo(Path.Combine(packageDirectory, "lib", "net40", "fr-FR", "Main.1.0.resources.dll")));
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(packageDirectory, "lib", "net40", "fr-FR", "Main.2.0.resources.dll")));
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWithMultipleSatelliteVersionsInstalled_UpdatesDependentGraphAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            var project1 = testContext.Project;
+            var project2 = AddProject(testContext, ProjectTemplate.ClassLibrary, "Project2");
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                LocalizedRuntimePackage("1.0", "lib/net40/Main.dll"),
+                LocalizedRuntimePackage("2.0", "lib/net40/Main.2.0.dll"),
+                LocalizedRuntimePackage("3.0", "lib/net40/Main.3.0.dll"),
+                LocalizedSatellitePackage("fr-Fr", "1.0"),
+                LocalizedSatellitePackage("fr-Fr", "2.0"),
+                LocalizedSatellitePackage("fr-Fr", "3.0"),
+                FixturePackage(
+                    "DependsOnLocalized",
+                    "1.0",
+                    language: null,
+                    new[] { "lib/net40/DependOnLocalized.dll" },
+                    DependencyGroup(targetFramework: null, ("Localized", "[2.0, 3.0)"))),
+                FixturePackage(
+                    "DependsOnLocalized",
+                    "2.0",
+                    language: null,
+                    new[] { "lib/net40/DependOnLocalized.dll" },
+                    DependencyGroup(targetFramework: null, ("Localized", "[3.0, 3.2)"))));
+            var console = GetConsole(project1);
+
+            console.Execute($"Install-Package Localized.fr-FR -ProjectName {project1.Name} -Version 1.0 -Source '{testContext.PackageSource}'");
+            console.Execute($"Install-Package Localized.fr-FR -ProjectName {project2.Name} -Version 2.0 -Source '{testContext.PackageSource}'");
+            console.Execute($"Install-Package DependsOnLocalized -ProjectName {project2.Name} -Version 1.0 -Source '{testContext.PackageSource}'");
+
+            AssertInstalled(project1, "Localized", "1.0");
+            AssertInstalled(project1, "Localized.fr-FR", "1.0");
+            AssertInstalled(project2, "Localized", "2.0");
+            AssertInstalled(project2, "Localized.fr-FR", "2.0");
+            AssertInstalled(project2, "DependsOnLocalized", "1.0");
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.1.0", "lib", "net40", "fr-FR", "Main.1.0.resources.dll")));
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.2.0", "lib", "net40", "fr-FR", "Main.2.0.resources.dll")));
+
+            console.Execute($"Update-Package DependsOnLocalized -ProjectName {project2.Name} -Source '{testContext.PackageSource}'");
+
+            AssertInstalled(project2, "Localized", "3.0");
+            AssertInstalled(project2, "Localized.fr-FR", "3.0");
+            AssertInstalled(project2, "DependsOnLocalized", "2.0");
+            AssertSolutionPackage(pathContext, "Localized", "2.0", exists: false);
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.3.0", "lib", "net40", "fr-FR", "Main.3.0.resources.dll")));
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCForLanguagePack_UpdatesSatellitePackagesAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                LocalizedRuntimePackage("1.0", "lib/net40/Main.dll"),
+                LocalizedRuntimePackage("2.0", "lib/net40/Main.2.0.dll"),
+                LocalizedSatellitePackage("fr-Fr", "1.0"),
+                LocalizedSatellitePackage("fr-Fr", "2.0"),
+                LocalizedSatellitePackage("ja-JP", "1.0"),
+                LocalizedSatellitePackage("ja-JP", "2.0"),
+                FixturePackage(
+                    "Localized.LangPack",
+                    "1.0",
+                    language: null,
+                    Array.Empty<string>(),
+                    DependencyGroup(targetFramework: null, ("Localized.fr-FR", "[1.0]"), ("Localized.ja-JP", "[1.0]"))),
+                FixturePackage(
+                    "Localized.LangPack",
+                    "2.0",
+                    language: null,
+                    Array.Empty<string>(),
+                    DependencyGroup(targetFramework: null, ("Localized.fr-FR", "[2.0]"), ("Localized.ja-JP", "[2.0]"))));
+            var console = GetConsole(testContext.Project);
+
+            console.Execute($"Install-Package Localized.LangPack -ProjectName {testContext.Project.Name} -Version 1.0 -Source '{testContext.PackageSource}'");
+
+            foreach (string packageName in new[] { "Localized", "Localized.fr-FR", "Localized.ja-JP", "Localized.LangPack" })
+            {
+                AssertInstalled(testContext.Project, packageName, "1.0");
+            }
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.1.0", "lib", "net40", "ja-JP", "Main.1.0.resources.dll")));
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.1.0", "lib", "net40", "fr-FR", "Main.1.0.resources.dll")));
+
+            console.Execute($"Update-Package Localized.LangPack -ProjectName {testContext.Project.Name} -Source '{testContext.PackageSource}'");
+
+            foreach (string packageName in new[] { "Localized", "Localized.fr-FR", "Localized.ja-JP", "Localized.LangPack" })
+            {
+                AssertInstalled(testContext.Project, packageName, "2.0");
+            }
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.2.0", "lib", "net40", "ja-JP", "Main.2.0.resources.dll")));
+            CommonUtility.WaitForFileExists(new FileInfo(Path.Combine(pathContext.PackagesV2, "Localized.2.0", "lib", "net40", "fr-FR", "Main.2.0.resources.dll")));
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCForLocalizedMetaPackage_RemovesOldSatellitePackagesAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            var packages = new List<SimpleTestPackageContext>();
+            foreach (string version in new[] { "1.0.0", "2.0.0" })
+            {
+                string exactVersion = $"[{version}]";
+                packages.Add(FixturePackage("A", version, language: null, new[] { "lib/net40/A.dll" }));
+                packages.Add(FixturePackage("A.fr", version, "fr", new[] { "lib/net40/fr/A.resource.dll" }, DependencyGroup(targetFramework: null, ("A", exactVersion))));
+                packages.Add(FixturePackage("A.es", version, "es", new[] { "lib/net40/es/A.resource.dll" }, DependencyGroup(targetFramework: null, ("A", exactVersion))));
+                packages.Add(FixturePackage(
+                    "A.localized",
+                    version,
+                    "localized",
+                    Array.Empty<string>(),
+                    DependencyGroup(targetFramework: null, ("A", exactVersion), ("A.fr", exactVersion), ("A.es", exactVersion))));
+            }
+            await CreatePackagesAsync(testContext.PackageSource, packages.ToArray());
+            var console = GetConsole(testContext.Project);
+
+            console.Execute($"Install-Package A.Localized -ProjectName {testContext.Project.Name} -Version 1.0.0 -Source '{testContext.PackageSource}'");
+
+            foreach (string packageName in new[] { "A", "A.localized", "A.fr", "A.es" })
+            {
+                AssertInstalled(testContext.Project, packageName, "1.0.0");
+            }
+
+            console.Execute($"Update-Package A.Localized -ProjectName {testContext.Project.Name} -Source '{testContext.PackageSource}'");
+
+            foreach (string packageName in new[] { "A", "A.localized", "A.fr", "A.es" })
+            {
+                AssertInstalled(testContext.Project, packageName, "2.0.0");
+            }
+            AssertSolutionPackage(pathContext, "A.Localized", "2.0.0", exists: true);
+            AssertSolutionPackage(pathContext, "A.Localized", "1.0.0", exists: false);
+            AssertSolutionPackage(pathContext, "A.fr", "1.0.0", exists: false);
+            AssertSolutionPackage(pathContext, "A.es", "1.0.0", exists: false);
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWithReorderedDependencies_UpdatesGraphAsync()
+        {
+            using var testContext = CreatePackagesConfigContext(ProjectTemplate.ConsoleApplication);
+            await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "UpdatingPackageInstallOrdering");
+            var console = GetConsole(testContext.Project);
+
+            console.Execute($"Install-Package A -Version 1.0 -Source '{testContext.PackageSource}'");
+
+            AssertInstalled(testContext.Project, "A", "1.0");
+            AssertInstalled(testContext.Project, "B", "1.0");
+            AssertInstalled(testContext.Project, "C", "1.0");
+
+            console.Execute($"Update-Package A -Source '{testContext.PackageSource}'");
+
+            foreach (string packageName in new[] { "A", "B", "C" })
+            {
+                AssertInstalled(testContext.Project, packageName, "2.0");
+                AssertNotInstalled(testContext.Project, packageName, "1.0");
+            }
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task ReinstallPackageFromPMCWhenPackageIsUnlisted_KeepsInstalledVersionAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            string httpPackagesDirectory = Path.Combine(pathContext.WorkingDirectory, "httpPackages");
+            Directory.CreateDirectory(httpPackagesDirectory);
+            string packageName = "UnlistedPackage";
+            string packageVersion = "2.2.5";
+            await CreatePackagesAsync(httpPackagesDirectory, Package(packageName, packageVersion));
+            using var mockServer = new FileSystemBackedV3MockServer(httpPackagesDirectory);
+            mockServer.UnlistedPackages.Add(new PackageIdentity(packageName, NuGetVersion.Parse(packageVersion)));
+            mockServer.Start();
+            string httpSourceName = "httpSource";
+            pathContext.Settings.AddSource(httpSourceName, mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
+            var console = GetConsole(testContext.Project);
+
+            console.Execute($"Install-Package {packageName} -ProjectName {testContext.Project.Name} -Version {packageVersion} -Source {httpSourceName}");
+            AssertInstalled(testContext.Project, packageName, packageVersion);
+
+            console.Execute($"Update-Package {packageName} -Reinstall -ProjectName {testContext.Project.Name} -Source {httpSourceName}");
+
+            AssertInstalled(testContext.Project, packageName, packageVersion);
+            AssertNoErrors(console);
+        }
+
         private ApexTestContext CreatePackagesConfigContext()
         {
             var pathContext = new SimpleTestPathContext();
@@ -999,6 +1281,96 @@ namespace NuGet.Tests.Apex
                 name);
             testContext.SolutionService.SaveAll();
             return project;
+        }
+
+        private static SimpleTestPackageContext LocalizedRuntimePackage(string version, string assemblyPath)
+        {
+            return FixturePackage("Localized", version, language: null, new[] { assemblyPath });
+        }
+
+        private static SimpleTestPackageContext LocalizedSatellitePackage(string language, string version)
+        {
+            string cultureFolder = new CultureInfo(language).Name;
+            return FixturePackage(
+                $"Localized.{language}",
+                version,
+                language,
+                new[] { $"lib/net40/{cultureFolder}/Main.{version}.resources.dll" },
+                DependencyGroup(targetFramework: null, ("Localized", $"[{version}]")));
+        }
+
+        private static SimpleTestPackageContext FixturePackage(
+            string id,
+            string version,
+            string? language,
+            IEnumerable<string> files,
+            params XElement[] dependencyGroups)
+        {
+            var metadata = new XElement("metadata",
+                new XElement("id", id),
+                new XElement("version", version),
+                new XElement("authors", "NuGet"),
+                new XElement("description", id));
+            if (language != null)
+            {
+                metadata.Add(new XElement("language", language));
+            }
+            if (dependencyGroups.Length > 0)
+            {
+                metadata.Add(new XElement("dependencies", dependencyGroups));
+            }
+
+            var package = new SimpleTestPackageContext(id, version)
+            {
+                Nuspec = new XDocument(new XElement("package", metadata)),
+                UseDefaultRuntimeAssemblies = false,
+            };
+            package.Files.Clear();
+            foreach (string file in files)
+            {
+                if (file.StartsWith("lib/", StringComparison.Ordinal) &&
+                    file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) &&
+                    !file.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase))
+                {
+                    var generatedPackage = new GeneratedPackage(id, version);
+                    var assemblyRoot = Path.Combine(Path.GetTempPath(), "NuGetApexGeneratedAssemblies", Guid.NewGuid().ToString("N"));
+                    CompileGeneratedAssembly(generatedPackage, assemblyRoot, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                    package.AddFile(file, File.ReadAllBytes(generatedPackage.AssemblyPath));
+                }
+                else
+                {
+                    package.AddFile(file, string.Empty);
+                }
+            }
+
+            // SimpleTestPackageUtility adds default assets to packages without files.
+            if (package.Files.Count == 0)
+            {
+                package.AddFile("readme.txt", string.Empty);
+            }
+
+            return package;
+        }
+
+        private static XElement DependencyGroup(string? targetFramework, params (string Id, string? VersionRange)[] dependencies)
+        {
+            var group = new XElement("group");
+            if (targetFramework != null)
+            {
+                group.SetAttributeValue("targetFramework", targetFramework);
+            }
+
+            foreach ((string dependencyId, string? versionRange) in dependencies)
+            {
+                var dependency = new XElement("dependency", new XAttribute("id", dependencyId));
+                if (versionRange != null)
+                {
+                    dependency.SetAttributeValue("version", versionRange);
+                }
+                group.Add(dependency);
+            }
+
+            return group;
         }
 
         private static SimpleTestPackageContext Package(
