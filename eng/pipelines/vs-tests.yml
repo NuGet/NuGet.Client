@@ -32,7 +32,7 @@ parameters:
 - name: testMachineHoldStrategy
   displayName: Hold E2E test machine for debugging
   type: string
-  default: Completion # todo: revert
+  default: None
   values:
   - None
   - Completion
@@ -72,7 +72,6 @@ variables:
 stages:
 - stage: Build
   displayName: Build NuGet and tests
-  #condition: false # TODO: revert after validating VS_EndToEnd
   jobs:
   - job: Build
     timeoutInMinutes: 170
@@ -92,11 +91,13 @@ stages:
     - Build
     bootstrapperUrl: https://vsdrop.corp.microsoft.com/file/v1/Tests/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;bootstrapper/15428374/6ffd58b6-2d0c-4220-9dd3-b4ccc63647da/vs_enterprise.exe #TODO: revert
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    runSettingsURI: https://vsdrop.microsoft.com/file/v1/RunSettings/DevDiv/NuGet.Client-VS/dev-nijulia-migration/15428374;NuGet.Tests.Apex.runsettings #TODO: revert
+    variables:
+    - name: VisualStudioInstallationParameters
+      value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VisualStudioInstallationParameters']]
+    visualStudioInstallationParameters: $(VisualStudioInstallationParameters)
     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
     testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}
 
-# Dartlab's template defines this in its own stage
 # - template: vs-test/apex.yml
 #   parameters:
 #     condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"

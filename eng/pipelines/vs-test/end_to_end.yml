@@ -7,7 +7,7 @@ parameters:
   type: object
 - name: bootstrapperUrl
   type: string
-- name: runSettingsURI
+- name: visualStudioInstallationParameters
   type: string
 - name: DartLabEnvironment
   type: string
@@ -39,9 +39,9 @@ stages:
     testRunName: 'Run Functional Tests'
     condition: ${{parameters.condition}}
     dependsOn: ${{parameters.dependsOn}}
-    runSettingsURI: ${{parameters.runSettingsURI}}
     visualStudioBootstrapperURI: ${{parameters.bootstrapperUrl}}
-    #visualStudioSigning: Test
+    visualStudioInstallationParameters: ${{parameters.visualStudioInstallationParameters}}
+    visualStudioSigning: Test
     testMachineConfigurationJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Configuration'
     testExecutionJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Test Execution'
     testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
