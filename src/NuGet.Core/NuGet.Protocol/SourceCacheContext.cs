@@ -50,6 +50,15 @@ namespace NuGet.Protocol.Core.Types
         public bool RefreshMemoryCache { get; set; }
 
         /// <summary>
+        /// When true, HTTP sources must not refresh the versions list on an exact-version miss.
+        /// Used for the first pass of a multi-source lookup so a miss on one feed does not
+        /// refresh while another feed can still resolve the package.
+        /// </summary>
+        public bool SuppressHttpCacheRefreshOnMiss { get; set; }
+
+        private SourceCacheContext? _suppressHttpCacheRefreshOnMiss;
+
+        /// <summary>
         /// X-NUGET-SESSION
         /// This should be unique for each package operation.
         /// </summary>
@@ -126,7 +135,8 @@ namespace NuGet.Protocol.Core.Types
                 MaxAge = MaxAge,
                 NoCache = NoCache,
                 RefreshMemoryCache = RefreshMemoryCache,
-                SessionId = SessionId
+                SessionId = SessionId,
+                SuppressHttpCacheRefreshOnMiss = SuppressHttpCacheRefreshOnMiss
             };
             clone._generatedTempFolder = _generatedTempFolder;
             return clone;
@@ -144,6 +154,35 @@ namespace NuGet.Protocol.Core.Types
             updatedContext.RefreshMemoryCache = true;
 
             return updatedContext;
+        }
+
+        /// <summary>
+        /// Returns a cache context with <see cref="SuppressHttpCacheRefreshOnMiss"/> set.
+        /// The clone is created once per instance so a large restore does not allocate per lookup.
+        /// </summary>
+        public virtual SourceCacheContext WithSuppressHttpCacheRefreshOnMiss()
+        {
+            if (SuppressHttpCacheRefreshOnMiss)
+            {
+                return this;
+            }
+
+            SourceCacheContext? cached = Volatile.Read(ref _suppressHttpCacheRefreshOnMiss);
+            if (cached != null)
+            {
+                return cached;
+            }
+
+            SourceCacheContext clone = Clone();
+            if (object.ReferenceEquals(clone, this))
+            {
+                // NullSourceCacheContext.Clone() returns Instance; do not mutate the singleton.
+                return this;
+            }
+
+            clone.SuppressHttpCacheRefreshOnMiss = true;
+            Interlocked.CompareExchange(ref _suppressHttpCacheRefreshOnMiss, clone, null);
+            return Volatile.Read(ref _suppressHttpCacheRefreshOnMiss)!;
         }
 
         public void Dispose()

@@ -45,5 +45,40 @@ namespace NuGet.Protocol.Tests
                 Assert.False(File.Exists(filePath));
             }
         }
+
+        [Fact]
+        public void WithSuppressHttpCacheRefreshOnMiss_WhenCalledTwice_ReturnsTheSameClone()
+        {
+            using var target = new SourceCacheContext();
+
+            SourceCacheContext first = target.WithSuppressHttpCacheRefreshOnMiss();
+            SourceCacheContext second = target.WithSuppressHttpCacheRefreshOnMiss();
+
+            Assert.True(first.SuppressHttpCacheRefreshOnMiss);
+            Assert.False(target.SuppressHttpCacheRefreshOnMiss);
+            Assert.Same(first, second);
+            Assert.NotSame(target, first);
+        }
+
+        [Fact]
+        public void WithSuppressHttpCacheRefreshOnMiss_WhenAlreadySuppressed_ReturnsThis()
+        {
+            using var target = new SourceCacheContext { SuppressHttpCacheRefreshOnMiss = true };
+
+            SourceCacheContext result = target.WithSuppressHttpCacheRefreshOnMiss();
+
+            Assert.Same(target, result);
+        }
+
+        [Fact]
+        public void WithSuppressHttpCacheRefreshOnMiss_WhenNullSourceCacheContext_DoesNotSetFlagOnSingleton()
+        {
+            SourceCacheContext instance = NullSourceCacheContext.Instance;
+
+            SourceCacheContext result = instance.WithSuppressHttpCacheRefreshOnMiss();
+
+            Assert.Same(instance, result);
+            Assert.False(instance.SuppressHttpCacheRefreshOnMiss);
+        }
     }
 }
