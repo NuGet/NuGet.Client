@@ -4,6 +4,7 @@
 #nullable disable
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
@@ -454,7 +455,7 @@ namespace NuGet.Packaging.Test
                 Assert.Single(urls);
                 Assert.Equal(freshestCrlUrl, urls[0]);
                 CertificateUtility.X509Certificate2ToString(certificate, Common.HashAlgorithmName.SHA256)
-                    .Should().Contain($"Freshest CRL URL: {freshestCrlUrl}");
+                    .Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateFreshestCrlUrl, freshestCrlUrl));
             }
         }
 
@@ -553,7 +554,7 @@ namespace NuGet.Packaging.Test
                 Assert.Single(urls);
                 Assert.Equal(caIssuersUrl, urls[0]);
                 CertificateUtility.X509Certificate2ToString(certificate, Common.HashAlgorithmName.SHA256)
-                    .Should().Contain($"CA Issuers URL: {caIssuersUrl}");
+                    .Should().Contain(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateCaIssuersUrl, caIssuersUrl));
             }
         }
 
