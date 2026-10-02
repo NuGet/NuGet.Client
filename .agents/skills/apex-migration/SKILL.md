@@ -451,7 +451,7 @@ This section captures lessons learned from actual migration runs that don't fit 
   `packages.{ProjectName}.config`, rename `VisualStudio.Dte.Solution.Projects.Item(1).ProjectItems`
   rather than only moving the file on disk so the classic project system keeps the item in sync.
 
-### 2026-09-24: Reconciling a wholesale PS file deletion
+### 2026-09-29: Reconciling a wholesale PS file deletion
 
 - **When deleting a whole PS test file, reconcile every deleted `Test-*` function.** Diff the list of
   `function Test-*` names in the deleted file against the migration table. A review that only
@@ -467,11 +467,26 @@ This section captures lessons learned from actual migration runs that don't fit 
 - **DGML graphs such as `UpdatingPackageInstallOrdering.dgml` can reuse
   `CreateBindingRedirectPackagesFromDgmlAsync`.** It first looks for `<scenario>.dgml` in the fixture
   folder.
-- **Unlisted or delisted package scenarios should use `FileSystemBackedV3MockServer`.** Add the
-  package identity to `UnlistedPackages`, serve a folder other than `PackageSource`, and register
-  the server with `Settings.AddSource(name, ServiceIndexUri, allowInsecureConnectionsValue: "true")`.
-  Pass `-Source <name>` so the insecure-connection opt-in applies.
+- **Preserve the original feed protocol in unlisted or delisted package scenarios.** A V2 OData
+  source and a V3 source exercise different client paths, so use `MockServer` with
+  `MockResponseBuilder.GetV2Source()` when the E2E test used V2. Use
+  `FileSystemBackedV3MockServer` only when the original scenario used V3.
+- **WebSite reference automation exposes `FullPath` instead of `Path`.** Helpers that validate
+  assembly references across project types should read `Path` for regular projects and fall back
+  to `FullPath` for WebSite references. WebSite references may also omit `Version`; read the
+  assembly version from the referenced file in that case.
 - **`CommonUtility.WaitForFileExists` and `WaitForFileNotExists` take a `FileInfo`, not a string.**
+- **Do not split a multi-project E2E scenario into isolated Apex solutions.** Separate tests can
+  prove each project type works alone while losing interactions through the shared solution,
+  packages folder, and project graph. Keep all original project types in at least one Apex test.
+- **Single-call API binding-redirect tests need a conflict inside one install operation.** Create a
+  synthetic root package whose assembly was compiled against an older dependency assembly, but
+  whose package dependency resolves the newer version. Installing only that root through the API
+  preserves both the single-call behavior and the binding conflict from the original scenario.
+- **Preserve explicit target frameworks from specialized project factories.** For example,
+  `New-ClassLibraryNET46` maps to `ProjectTemplate.ClassLibrary` with
+  `ProjectTargetFramework.V46`, not the Apex default framework. This is especially important for
+  binding-redirect scenarios, where framework unification behavior can change the result.
 
 ---
 
