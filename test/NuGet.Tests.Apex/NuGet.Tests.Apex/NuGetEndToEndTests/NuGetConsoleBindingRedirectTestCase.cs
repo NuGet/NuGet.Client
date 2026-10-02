@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.CSharp;
+using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NuGet.Test.Utility;
@@ -24,28 +25,19 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageFromPMCAddsBindingRedirectToWebApplicationAsync()
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
+            var webSite = AddProject(testContext, ProjectTemplate.WebSiteEmpty, "WebSite");
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "SimpleBindingRedirects");
             var console = GetConsole(testContext.Project);
 
-            Install(console, testContext.Project, "B", "2.0", testContext.PackageSource);
-            Install(console, testContext.Project, "A", "1.0", testContext.PackageSource);
+            foreach (var project in new[] { testContext.Project, webSite })
+            {
+                Install(console, project, "B", "2.0", testContext.PackageSource);
+                Install(console, project, "A", "1.0", testContext.PackageSource);
 
-            AssertBindingRedirect(testContext.Project, "web.config", "B", "0.0.0.0-2.0.0.0", "2.0.0.0");
-            AssertNoErrors(console);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task InstallPackageFromPMCAddsBindingRedirectToWebSiteAsync()
-        {
-            using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebSiteEmpty);
-            await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "SimpleBindingRedirects");
-            var console = GetConsole(testContext.Project);
-
-            Install(console, testContext.Project, "B", "2.0", testContext.PackageSource);
-            Install(console, testContext.Project, "A", "1.0", testContext.PackageSource);
-
-            AssertBindingRedirect(testContext.Project, "web.config", "B", "0.0.0.0-2.0.0.0", "2.0.0.0");
+                AssertAssemblyReference(project, "A", "1.0.0.0");
+                AssertAssemblyReference(project, "B", "2.0.0.0");
+                AssertBindingRedirect(project, "web.config", "B", "0.0.0.0-2.0.0.0", "2.0.0.0");
+            }
             AssertNoErrors(console);
         }
 
@@ -99,8 +91,14 @@ namespace NuGet.Tests.Apex
             var console = GetConsole(testContext.Project);
 
             Install(console, testContext.Project, "E", "1.0", testContext.PackageSource);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "E", Logger);
+            AssertAssemblyReference(testContext.Project, "E", "1.0.0.0");
+            AssertAssemblyReference(testContext.Project, "F", "1.0.0.0");
+            AssertProjectFileDoesNotExist(testContext.Project, "app.config");
+
             Update(console, testContext.Project, "F", testContext.PackageSource, "-Safe");
 
+            AssertAssemblyReference(testContext.Project, "F", "1.0.5.0");
             AssertBindingRedirect(testContext.Project, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertNoErrors(console);
         }
@@ -110,34 +108,26 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageFromPMCAddsBindingRedirectThroughProjectReferenceAsync()
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
-            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary");
-            testContext.Project.References.Dte.AddProjectReference(classLibrary);
+            var webSite = AddProject(testContext, ProjectTemplate.WebSiteEmpty, "WebSite");
+            var webApplicationLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "WebApplicationLibrary", ProjectTargetFramework.V46);
+            var webSiteLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "WebSiteLibrary", ProjectTargetFramework.V46);
+            testContext.Project.References.Dte.AddProjectReference(webApplicationLibrary);
+            AddWebSiteProjectReference(webSite, webSiteLibrary);
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "SimpleBindingRedirectsClassLibraryReference");
             var console = GetConsole(testContext.Project);
 
-            Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
-            Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
+            foreach (var classLibrary in new[] { webApplicationLibrary, webSiteLibrary })
+            {
+                Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
+                Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
 
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, classLibrary, "E", Logger);
+                AssertAssemblyReference(classLibrary, "E", "1.0.0.0");
+                AssertBindingRedirect(classLibrary, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
+                AssertProjectFileDoesNotExist(classLibrary, "web.config");
+            }
             AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
-            AssertBindingRedirect(classLibrary, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
-            AssertNoErrors(console);
-        }
-
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task InstallPackageFromPMCAddsBindingRedirectThroughWebSiteProjectReferenceAsync()
-        {
-            using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebSiteEmpty);
-            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary");
-            AddWebSiteProjectReference(testContext.Project, classLibrary);
-            await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "SimpleBindingRedirectsClassLibraryReference");
-            var console = GetConsole(testContext.Project);
-
-            Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
-            Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
-
-            AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
-            AssertBindingRedirect(classLibrary, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
+            AssertBindingRedirect(webSite, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertNoErrors(console);
         }
 
@@ -146,8 +136,8 @@ namespace NuGet.Tests.Apex
         public async Task InstallPackageFromPMCAddsBindingRedirectThroughIndirectProjectReferenceAsync()
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
-            var middleLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "MiddleLibrary");
-            var leafLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "LeafLibrary");
+            var middleLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "MiddleLibrary", ProjectTargetFramework.V46);
+            var leafLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "LeafLibrary", ProjectTargetFramework.V46);
             testContext.Project.References.Dte.AddProjectReference(middleLibrary);
             middleLibrary.References.Dte.AddProjectReference(leafLibrary);
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "SimpleBindingRedirectsIndirectReference");
@@ -159,6 +149,8 @@ namespace NuGet.Tests.Apex
             AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertBindingRedirect(middleLibrary, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertBindingRedirect(leafLibrary, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
+            AssertProjectFileDoesNotExist(middleLibrary, "web.config");
+            AssertProjectFileDoesNotExist(leafLibrary, "web.config");
             AssertNoErrors(console);
         }
 
@@ -168,7 +160,7 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
             var consoleProject = AddProject(testContext, ProjectTemplate.ConsoleApplication, "ConsoleApplication");
-            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary");
+            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary", ProjectTargetFramework.V46);
             testContext.Project.References.Dte.AddProjectReference(consoleProject);
             consoleProject.References.Dte.AddProjectReference(classLibrary);
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "BindingRedirectComplex");
@@ -177,6 +169,7 @@ namespace NuGet.Tests.Apex
             Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
             Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
 
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, classLibrary, "E", Logger);
             AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertBindingRedirect(consoleProject, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertNoErrors(console);
@@ -206,7 +199,7 @@ namespace NuGet.Tests.Apex
             ProjectTestExtension leaf = null!;
             for (var i = 0; i < 26; i++)
             {
-                leaf = AddProject(testContext, ProjectTemplate.ClassLibrary, $"ClassLibrary{i}");
+                leaf = AddProject(testContext, ProjectTemplate.ClassLibrary, $"ClassLibrary{i}", ProjectTargetFramework.V46);
                 previous.References.Dte.AddProjectReference(leaf);
                 previous = leaf;
             }
@@ -227,7 +220,7 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
             var consoleProject = AddProject(testContext, ProjectTemplate.ConsoleApplication, "ConsoleApplication");
-            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary");
+            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary", ProjectTargetFramework.V46);
             testContext.Project.References.Dte.AddProjectReference(consoleProject);
             consoleProject.References.Dte.AddProjectReference(classLibrary);
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "BindingRedirectDuplicateReferences");
@@ -238,6 +231,7 @@ namespace NuGet.Tests.Apex
             Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
             Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
 
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, classLibrary, "E", Logger);
             AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertBindingRedirect(consoleProject, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertNoErrors(console);
@@ -249,7 +243,7 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
             var consoleProject = AddProject(testContext, ProjectTemplate.ConsoleApplication, "ConsoleApplication");
-            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary");
+            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary", ProjectTargetFramework.V46);
             testContext.Project.References.Dte.AddProjectReference(classLibrary);
             consoleProject.References.Dte.AddProjectReference(classLibrary);
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "BindingRedirectClassLibraryWithDifferentDependents");
@@ -260,6 +254,7 @@ namespace NuGet.Tests.Apex
             Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
             Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
 
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, classLibrary, "E", Logger);
             AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertBindingRedirect(consoleProject, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertNoErrors(console);
@@ -271,7 +266,7 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
             var consoleProject = AddProject(testContext, ProjectTemplate.ConsoleApplication, "ConsoleApplication");
-            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary");
+            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary", ProjectTargetFramework.V46);
             testContext.Project.References.Dte.AddProjectReference(consoleProject);
             consoleProject.References.Dte.AddProjectReference(classLibrary);
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocations");
@@ -285,6 +280,7 @@ namespace NuGet.Tests.Apex
             Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
             Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
 
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, classLibrary, "E", Logger);
             AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertBindingRedirect(consoleProject, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertNoErrors(console);
@@ -296,7 +292,7 @@ namespace NuGet.Tests.Apex
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.WebApplicationEmpty);
             var consoleProject = AddProject(testContext, ProjectTemplate.ConsoleApplication, "ConsoleApplication");
-            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary");
+            var classLibrary = AddProject(testContext, ProjectTemplate.ClassLibrary, "ClassLibrary", ProjectTargetFramework.V46);
             testContext.Project.References.Dte.AddProjectReference(consoleProject);
             consoleProject.References.Dte.AddProjectReference(classLibrary);
             await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembly");
@@ -307,6 +303,7 @@ namespace NuGet.Tests.Apex
             Install(console, classLibrary, "E", "1.0", testContext.PackageSource);
             Update(console, classLibrary, "F", testContext.PackageSource, "-Safe");
 
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, classLibrary, "E", Logger);
             AssertBindingRedirect(testContext.Project, "web.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertBindingRedirect(consoleProject, "app.config", "F", "0.0.0.0-1.0.5.0", "1.0.5.0");
             AssertNoErrors(console);
@@ -327,6 +324,12 @@ namespace NuGet.Tests.Apex
             Install(console, testContext.Project, "PackageWithNonStrongNamedLibA", "1.0", testContext.PackageSource);
             Install(console, testContext.Project, "PackageWithNonStrongNamedLibB", "1.0", testContext.PackageSource);
 
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "PackageWithNonStrongNamedLibA", Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "PackageWithNonStrongNamedLibB", Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "PackageWithStrongNamedLib", "1.1", Logger);
+            AssertAssemblyReference(testContext.Project, "A", "1.0.0.0");
+            AssertAssemblyReference(testContext.Project, "B", "1.0.0.0");
+            AssertAssemblyReference(testContext.Project, "Core", "1.1.0.0");
             AssertBindingRedirect(testContext.Project, "app.config", "Core", "0.0.0.0-1.1.0.0", "1.1.0.0");
             AssertNoErrors(console);
         }
@@ -374,7 +377,15 @@ namespace NuGet.Tests.Apex
             var console = GetConsole(testContext.Project);
 
             Install(console, testContext.Project, "A", "1.0", testContext.PackageSource);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "A", "1.0", Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "B", "1.0", Logger);
             Install(console, testContext.Project, "C", "1.0", testContext.PackageSource);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "C", "1.0", Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "B", "2.0", Logger);
+            AssertSolutionPackage(testContext, "B", "1.0", exists: false);
+
+            testContext.SolutionService.Build();
+            console.Execute("Add-BindingRedirect");
 
             AssertBindingRedirect(testContext.Project, "web.config", "B", "0.0.0.0-2.0.0.0", "2.0.0.0");
             AssertNoErrors(console);
@@ -390,8 +401,11 @@ namespace NuGet.Tests.Apex
 
             Install(console, testContext.Project, "B", "2.0", testContext.PackageSource);
             Install(console, testContext.Project, "A", "1.0", testContext.PackageSource);
+            AssertBindingRedirect(testContext.Project, "web.config", "B", "0.0.0.0-2.0.0.0", "2.0.0.0");
+
             Update(console, testContext.Project, "B", testContext.PackageSource, "-Version 3.0");
 
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, "B", "3.0", Logger);
             AssertBindingRedirect(testContext.Project, "web.config", "B", "0.0.0.0-3.0.0.0", "3.0.0.0");
             AssertNoErrors(console);
         }
@@ -400,39 +414,19 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public async Task InstallPackageApiAddsBindingRedirectAsync()
         {
-            using var testContext = CreatePackagesConfigContext(ProjectTemplate.ConsoleApplication);
-            await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "SimpleBindingRedirects");
+            using var testContext = CreatePackagesConfigContext(ProjectTemplate.ClassLibrary);
+            await CreatePackagesAsync(testContext.PackageSource, CreateApiBindingRedirectPackages().ToArray());
 
             var projectUniqueName = VisualStudio.Dte.Solution.Projects.Item(1).UniqueName;
-            testContext.NuGetApexTestService.InstallPackage(testContext.PackageSource, projectUniqueName, "B", "2.0");
-            testContext.NuGetApexTestService.InstallPackage(testContext.PackageSource, projectUniqueName, "A", "1.0");
+            testContext.NuGetApexTestService.InstallPackage(
+                testContext.PackageSource,
+                projectUniqueName,
+                "TestBindingRedirectA",
+                "1.0.0");
             var console = GetConsole(testContext.Project);
 
             AssertBindingRedirect(testContext.Project, "app.config", "B", "0.0.0.0-2.0.0.0", "2.0.0.0");
             AssertNoErrors(console);
-        }
-
-        private ApexTestContext CreatePackagesConfigContext(ProjectTemplate template)
-        {
-            var pathContext = new SimpleTestPathContext();
-            pathContext.Settings.SetPackageFormatToPackagesConfig();
-            return new ApexTestContext(
-                VisualStudio,
-                template,
-                Logger,
-                simpleTestPathContext: pathContext);
-        }
-
-        private static void Install(
-            NuGetConsoleTestExtension console,
-            ProjectTestExtension project,
-            string packageName,
-            string packageVersion,
-            string source,
-            string arguments)
-        {
-            console.Execute(
-                $"Install-Package {packageName} -ProjectName {project.Name} -Source '{source}' -Version {packageVersion} {arguments}");
         }
 
         private static async Task CreateBindingRedirectPackagesFromDgmlAsync(string packageSource, string scenarioName)
@@ -474,25 +468,7 @@ namespace NuGet.Tests.Apex
                 GetPackage(node.Attribute("Id")!.Value);
             }
 
-            var assemblyRoot = Path.Combine(Path.GetTempPath(), "NuGetApexGeneratedAssemblies", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(assemblyRoot);
-            foreach (var package in packages.Values)
-            {
-                CompileGeneratedAssembly(package, assemblyRoot, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-            }
-
-            return packages.Values
-                .Select(package => CreateGeneratedPackageContext(package.Id, package.Version, package.Dependencies.Select(d => (d.Package.Id, (string?)(d.Range ?? d.Package.Version))).ToArray(), package.AssemblyPath))
-                .ToList();
-        }
-
-        private static SimpleTestPackageContext CreateGeneratedPackageContext(
-            string id,
-            string version,
-            params (string Id, string? Range)[] dependencies)
-        {
-            var package = CreateGeneratedPackageContext(id, version, dependencies, assemblyPath: null);
-            return package;
+            return CreateGeneratedPackageContexts(packages.Values);
         }
 
         private static IReadOnlyList<SimpleTestPackageContext> CreateFrameworkAssemblyBindingRedirectPackages()
@@ -502,28 +478,10 @@ namespace NuGet.Tests.Apex
             var unsafe40 = new GeneratedPackage("System.Runtime.CompilerServices.Unsafe", "4.0.0", "4.0.0");
             var unsafe50 = new GeneratedPackage("System.Runtime.CompilerServices.Unsafe", "5.0.0", "5.0.0");
             var consumer = new GeneratedPackage("FrameworkAssemblyConsumer", "1.0.0");
-            consumer.Dependencies.Add((systemNetHttp40, null));
-            consumer.Dependencies.Add((unsafe40, null));
+            consumer.Dependencies.Add((systemNetHttp40, "[4.0.0,)"));
+            consumer.Dependencies.Add((unsafe40, "[4.0.0,)"));
 
-            var assemblyRoot = Path.Combine(Path.GetTempPath(), "NuGetApexGeneratedAssemblies", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(assemblyRoot);
-            foreach (var package in new[] { systemNetHttp40, systemNetHttp42, unsafe40, unsafe50, consumer })
-            {
-                CompileGeneratedAssembly(package, assemblyRoot, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-            }
-
-            return new[]
-            {
-                CreateGeneratedPackageContext(systemNetHttp40.Id, systemNetHttp40.Version, Enumerable.Empty<(string Id, string? Range)>(), systemNetHttp40.AssemblyPath),
-                CreateGeneratedPackageContext(systemNetHttp42.Id, systemNetHttp42.Version, Enumerable.Empty<(string Id, string? Range)>(), systemNetHttp42.AssemblyPath),
-                CreateGeneratedPackageContext(unsafe40.Id, unsafe40.Version, Enumerable.Empty<(string Id, string? Range)>(), unsafe40.AssemblyPath),
-                CreateGeneratedPackageContext(unsafe50.Id, unsafe50.Version, Enumerable.Empty<(string Id, string? Range)>(), unsafe50.AssemblyPath),
-                CreateGeneratedPackageContext(
-                    consumer.Id,
-                    consumer.Version,
-                    new (string Id, string? Range)[] { ("System.Net.Http", "[4.0.0,)"), ("System.Runtime.CompilerServices.Unsafe", "[4.0.0,)") },
-                    consumer.AssemblyPath),
-            };
+            return CreateGeneratedPackageContexts(systemNetHttp40, systemNetHttp42, unsafe40, unsafe50, consumer);
         }
 
         private static IReadOnlyList<SimpleTestPackageContext> CreateNonFrameworkAssemblyBindingRedirectPackages()
@@ -533,46 +491,52 @@ namespace NuGet.Tests.Apex
             var nugetProtocol = new GeneratedPackage("NuGet.Protocol", "5.10.0");
             nugetProtocol.Dependencies.Add((newtonsoftJson12, "[12.0.3,)"));
 
-            var assemblyRoot = Path.Combine(Path.GetTempPath(), "NuGetApexGeneratedAssemblies", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(assemblyRoot);
-            foreach (var package in new[] { newtonsoftJson12, newtonsoftJson13, nugetProtocol })
-            {
-                CompileGeneratedAssembly(package, assemblyRoot, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-            }
+            return CreateGeneratedPackageContexts(newtonsoftJson12, newtonsoftJson13, nugetProtocol);
+        }
+
+        private static IReadOnlyList<SimpleTestPackageContext> CreateApiBindingRedirectPackages()
+        {
+            var b1 = new GeneratedPackage("B", "1.0", "1.0");
+            var b2 = new GeneratedPackage("B", "2.0", "2.0");
+            var root = new GeneratedPackage("TestBindingRedirectA", "1.0.0");
+            root.Dependencies.Add((b1, null));
+
+            CompileGeneratedAssemblies(root, b2);
 
             return new[]
             {
-                CreateGeneratedPackageContext(newtonsoftJson12.Id, newtonsoftJson12.Version, Enumerable.Empty<(string Id, string? Range)>(), newtonsoftJson12.AssemblyPath),
-                CreateGeneratedPackageContext(newtonsoftJson13.Id, newtonsoftJson13.Version, Enumerable.Empty<(string Id, string? Range)>(), newtonsoftJson13.AssemblyPath),
+                CreateGeneratedPackageContext(b2),
                 CreateGeneratedPackageContext(
-                    nugetProtocol.Id,
-                    nugetProtocol.Version,
-                    new (string Id, string? Range)[] { ("Newtonsoft.Json", "[12.0.3,)") },
-                    nugetProtocol.AssemblyPath),
+                    root,
+                    new (string Id, string? Range)[] { ("B", "[2.0]") }),
             };
         }
 
-        private static SimpleTestPackageContext CreateGeneratedPackageContext(
-            string id,
-            string version,
-            IEnumerable<(string Id, string? Range)> dependencies,
-            string? assemblyPath)
+        private static List<SimpleTestPackageContext> CreateGeneratedPackageContexts(
+            params GeneratedPackage[] packages)
         {
-            if (assemblyPath == null)
-            {
-                var assemblyRoot = Path.Combine(Path.GetTempPath(), "NuGetApexGeneratedAssemblies", Guid.NewGuid().ToString("N"));
-                var package = new GeneratedPackage(id, version);
-                Directory.CreateDirectory(assemblyRoot);
-                CompileGeneratedAssembly(package, assemblyRoot, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-                assemblyPath = package.AssemblyPath;
-            }
+            return CreateGeneratedPackageContexts((IEnumerable<GeneratedPackage>)packages);
+        }
 
-            var context = new SimpleTestPackageContext(id, version)
+        private static List<SimpleTestPackageContext> CreateGeneratedPackageContexts(
+            IEnumerable<GeneratedPackage> packages)
+        {
+            var packageList = packages.ToList();
+            CompileGeneratedAssemblies(packageList.ToArray());
+            return packageList.Select(package => CreateGeneratedPackageContext(package)).ToList();
+        }
+
+        private static SimpleTestPackageContext CreateGeneratedPackageContext(
+            GeneratedPackage package,
+            IEnumerable<(string Id, string? Range)>? dependencies = null)
+        {
+            var context = new SimpleTestPackageContext(package.Id, package.Version)
             {
                 UseDefaultRuntimeAssemblies = false,
             };
-            context.AddFile($"lib/net45/{id}.dll", File.ReadAllBytes(assemblyPath));
-            foreach (var dependency in dependencies)
+            context.AddFile($"lib/net45/{package.Id}.dll", File.ReadAllBytes(package.AssemblyPath));
+            foreach (var dependency in dependencies ?? package.Dependencies.Select(
+                dependency => (dependency.Package.Id, (string?)(dependency.Range ?? dependency.Package.Version))))
             {
                 context.Dependencies.Add(new SimpleTestPackageContext
                 {
@@ -582,6 +546,17 @@ namespace NuGet.Tests.Apex
             }
 
             return context;
+        }
+
+        private static void CompileGeneratedAssemblies(params GeneratedPackage[] packages)
+        {
+            var assemblyRoot = Path.Combine(Path.GetTempPath(), "NuGetApexGeneratedAssemblies", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(assemblyRoot);
+            var processed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var package in packages)
+            {
+                CompileGeneratedAssembly(package, assemblyRoot, processed);
+            }
         }
 
         private static void CompileGeneratedAssembly(GeneratedPackage package, string assemblyRoot, HashSet<string> processed)
@@ -644,29 +619,75 @@ public static class {GetTypeName(package.Id)}
             return char.IsDigit(name[0]) ? "_" + name : name;
         }
 
+        private void AssertAssemblyReference(ProjectTestExtension project, string referenceName, string expectedVersion)
+        {
+            var dteProject = GetDteProject(project);
+            dynamic references = ((dynamic)dteProject.Object).References;
+            object? matchingReference = null;
+            foreach (dynamic reference in references)
+            {
+                if (string.Equals((string)reference.Name, referenceName, StringComparison.OrdinalIgnoreCase))
+                {
+                    matchingReference = reference;
+                    break;
+                }
+            }
+
+            matchingReference.Should().NotBeNull($"reference {referenceName} should exist in {project.Name}");
+            dynamic assemblyReference = matchingReference!;
+            string? referencePath;
+            try
+            {
+                referencePath = assemblyReference.Path as string;
+            }
+            catch (RuntimeBinderException)
+            {
+                referencePath = assemblyReference.FullPath as string;
+            }
+            referencePath.Should().NotBeNullOrEmpty($"reference {referenceName} should not be broken");
+            File.Exists(referencePath).Should().BeTrue($"reference {referenceName} should point to an existing assembly");
+
+            string? version;
+            try
+            {
+                version = assemblyReference.Version?.ToString();
+            }
+            catch (RuntimeBinderException)
+            {
+                version = null;
+            }
+            var actualVersion = string.IsNullOrEmpty(version)
+                ? System.Reflection.AssemblyName.GetAssemblyName(referencePath!).Version
+                : Version.Parse(version);
+            actualVersion.Should().Be(Version.Parse(expectedVersion));
+        }
+
+        private static void AssertProjectFileDoesNotExist(ProjectTestExtension project, string fileName)
+        {
+            Directory.GetFiles(GetProjectDirectory(project), fileName, SearchOption.TopDirectoryOnly)
+                .Should().BeEmpty($"{fileName} should not be added to {project.Name}");
+        }
+
         private static void AssertBindingRedirect(ProjectTestExtension project, string configFileName, string assemblyName, string oldVersion, string newVersion)
         {
             var configPath = GetProjectFilePath(project, configFileName);
             var document = XDocument.Load(configPath);
-            XNamespace ns = "urn:schemas-microsoft-com:asm.v1";
-            var hasRedirect = document.Descendants(ns + "dependentAssembly")
-                .Any(assembly =>
-                {
-                    var identity = assembly.Element(ns + "assemblyIdentity");
-                    var redirect = assembly.Element(ns + "bindingRedirect");
-                    return (string?)identity?.Attribute("name") == assemblyName &&
-                        (string?)redirect?.Attribute("oldVersion") == oldVersion &&
-                        (string?)redirect?.Attribute("newVersion") == newVersion;
-                });
-            hasRedirect.Should().BeTrue($"expected {assemblyName} binding redirect in {configPath}. Actual: {document}");
+            HasBindingRedirect(document, assemblyName, oldVersion, newVersion)
+                .Should().BeTrue($"expected {assemblyName} binding redirect in {configPath}. Actual: {document}");
         }
 
         private static void AssertNoBindingRedirect(ProjectTestExtension project, string configFileName, string assemblyName, string oldVersion, string newVersion)
         {
             var configPath = GetProjectFilePath(project, configFileName);
             var document = XDocument.Load(configPath);
+            HasBindingRedirect(document, assemblyName, oldVersion, newVersion)
+                .Should().BeFalse($"did not expect {assemblyName} binding redirect in {configPath}. Actual: {document}");
+        }
+
+        private static bool HasBindingRedirect(XDocument document, string assemblyName, string oldVersion, string newVersion)
+        {
             XNamespace ns = "urn:schemas-microsoft-com:asm.v1";
-            var hasRedirect = document.Descendants(ns + "dependentAssembly")
+            return document.Descendants(ns + "dependentAssembly")
                 .Any(assembly =>
                 {
                     var identity = assembly.Element(ns + "assemblyIdentity");
@@ -675,27 +696,32 @@ public static class {GetTypeName(package.Id)}
                         (string?)redirect?.Attribute("oldVersion") == oldVersion &&
                         (string?)redirect?.Attribute("newVersion") == newVersion;
                 });
-            hasRedirect.Should().BeFalse($"did not expect {assemblyName} binding redirect in {configPath}. Actual: {document}");
         }
 
         private void AddWebSiteProjectReference(ProjectTestExtension webSite, ProjectTestExtension referencedProject)
         {
             // WebSite projects expose a VSWebSite automation object, not VSProject, so the Apex
             // References.Dte.AddProjectReference helper (which requires VSProject) does not work here.
-            var dteWebSite = VisualStudio.Dte.Solution.Projects
+            ((dynamic)GetDteProject(webSite).Object).References.AddFromProject(GetDteProject(referencedProject));
+        }
+
+        private EnvDTE.Project GetDteProject(ProjectTestExtension project)
+        {
+            return VisualStudio.Dte.Solution.Projects
                 .Cast<EnvDTE.Project>()
-                .Single(p => p.UniqueName == webSite.UniqueName);
-            var dteReferencedProject = VisualStudio.Dte.Solution.Projects
-                .Cast<EnvDTE.Project>()
-                .Single(p => p.UniqueName == referencedProject.UniqueName);
-            ((dynamic)dteWebSite.Object).References.AddFromProject(dteReferencedProject);
+                .Single(candidate => candidate.UniqueName == project.UniqueName);
+        }
+
+        private static string GetProjectDirectory(ProjectTestExtension project)
+        {
+            return Directory.Exists(project.FullPath)
+                ? project.FullPath
+                : Path.GetDirectoryName(project.FullPath)!;
         }
 
         private static string GetProjectFilePath(ProjectTestExtension project, string fileName)
         {
-            var projectDirectory = Directory.Exists(project.FullPath)
-                ? project.FullPath
-                : Path.GetDirectoryName(project.FullPath)!;
+            var projectDirectory = GetProjectDirectory(project);
             var file = Directory.GetFiles(projectDirectory, fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
             if (file == null)
             {
@@ -716,15 +742,18 @@ public static class {GetTypeName(package.Id)}
 
         private static string GetRepositoryRoot()
         {
-            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
-            while (directory != null)
+            foreach (var startPath in new[] { Directory.GetCurrentDirectory(), typeof(NuGetConsoleTestCase).Assembly.Location })
             {
-                if (File.Exists(Path.Combine(directory.FullName, "NuGet.sln")))
+                var directory = new DirectoryInfo(File.Exists(startPath) ? Path.GetDirectoryName(startPath)! : startPath);
+                while (directory != null)
                 {
-                    return directory.FullName;
-                }
+                    if (File.Exists(Path.Combine(directory.FullName, "NuGet.sln")))
+                    {
+                        return directory.FullName;
+                    }
 
-                directory = directory.Parent;
+                    directory = directory.Parent;
+                }
             }
 
             throw new InvalidOperationException("Unable to locate repository root.");

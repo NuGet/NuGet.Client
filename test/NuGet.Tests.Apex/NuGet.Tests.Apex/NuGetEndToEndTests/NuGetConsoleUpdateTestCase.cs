@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -507,7 +509,13 @@ namespace NuGet.Tests.Apex
         [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromPMCWithPackagesConfigConstraints_DoesNotChangePackagesAsync()
         {
-            using var testContext = CreatePackagesConfigContext();
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(
+                VisualStudio,
+                ProjectTemplate.ClassLibrary,
+                Logger,
+                simpleTestPathContext: pathContext);
             var consoleApp = AddProject(testContext, ProjectTemplate.ConsoleApplication, "ConsoleApp");
             var webSite = AddProject(testContext, ProjectTemplate.WebSiteEmpty, "WebSite");
             var classLibrary = testContext.Project;
@@ -533,12 +541,26 @@ namespace NuGet.Tests.Apex
             AddPackageConstraint(classLibrary, "Constrained.D", "[1.0.0]");
             AddPackageConstraint(webSite, "Constrained.E", "[1.0.0]");
 
-            Update(console, consoleApp, "Constrained.A", testContext.PackageSource, "-Version 2.0.0");
-            console.GetText().Should().Contain("additional constraint", because: console.GetText());
-            Update(console, classLibrary, "Constrained.C", testContext.PackageSource);
-            console.GetText().Should().Contain("Constrained.D", because: console.GetText());
-            Update(console, webSite, "Constrained.F", testContext.PackageSource);
-            console.GetText().Should().Contain("Constrained.E", because: console.GetText());
+            console.Clear();
+            console.Execute($"Update-Package Constrained.A -Version 2.0.0 -Source '{testContext.PackageSource}'");
+            string output = console.GetText();
+            output.Should().Contain(
+                "Unable to resolve 'Constrained.A'. An additional constraint '(>= 1.0.0 && < 2.0.0)' defined in packages.config prevents this operation.",
+                because: output);
+
+            console.Clear();
+            console.Execute($"Update-Package Constrained.C -Source '{testContext.PackageSource}'");
+            output = console.GetText();
+            output.Should().Contain(
+                "Unable to find a version of 'Constrained.D' that is compatible with 'Constrained.C 2.0.0 constraint: Constrained.D (= 2.0.0)'. 'Constrained.D' has an additional constraint (= 1.0.0) defined in packages.config.",
+                because: output);
+
+            console.Clear();
+            console.Execute($"Update-Package Constrained.F -Source '{testContext.PackageSource}'");
+            output = console.GetText();
+            output.Should().Contain(
+                "Unable to resolve dependencies. 'Constrained.F 2.0.0' is not compatible with 'Constrained.E 1.0.0 constraint: Constrained.F (= 1.0.0)'.",
+                because: output);
 
             AssertInstalled(consoleApp, "Constrained.A", "1.0.0");
             AssertInstalled(consoleApp, "Constrained.B", "1.0.0");
@@ -549,6 +571,92 @@ namespace NuGet.Tests.Apex
             AssertNotInstalled(consoleApp, "Constrained.A", "2.0.0");
             AssertNotInstalled(classLibrary, "Constrained.D", "2.0.0");
             AssertNotInstalled(webSite, "Constrained.F", "2.0.0");
+            foreach (string packageName in new[]
+            {
+                "Constrained.A",
+                "Constrained.B",
+                "Constrained.C",
+                "Constrained.D",
+                "Constrained.E",
+                "Constrained.F",
+            })
+            {
+                AssertSolutionPackage(pathContext, packageName, "1.0.0", exists: true);
+            }
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWithPackageSaveModeNuspec_UpdatesPackageAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            SimpleTestSettingsContext.AddSetting(pathContext.Settings.XML, "PackageSaveMode", "nuspec");
+            pathContext.Settings.Save();
+            using var testContext = new ApexTestContext(
+                VisualStudio,
+                ProjectTemplate.ClassLibrary,
+                Logger,
+                simpleTestPathContext: pathContext);
+            string packageName = "Castle.Core";
+            await CreatePackagesAsync(
+                testContext.PackageSource,
+                Package(packageName, "1.2.0"),
+                Package(packageName, "2.5.1"));
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, packageName, "1.2.0", testContext.PackageSource);
+            AssertInstalled(testContext.Project, packageName, "1.2.0");
+
+            Update(console, testContext.Project, packageName, testContext.PackageSource);
+
+            AssertInstalled(testContext.Project, packageName, "2.5.1");
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageFromPMCWhenOldPackageCannotBeDeleted_CompletesCleanupOnSolutionOpenAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(
+                VisualStudio,
+                ProjectTemplate.ConsoleApplication,
+                Logger,
+                simpleTestPathContext: pathContext);
+            string packageName = "TestUpdatePackage";
+            var packageV1 = Package(packageName, "1.0.0.0");
+            packageV1.AddFile("content/readme.txt", "version 1");
+            var packageV2 = Package(packageName, "2.0.0.0");
+            packageV2.AddFile("content/readme.txt", "version 2");
+            await CreatePackagesAsync(testContext.PackageSource, packageV1, packageV2);
+            var console = GetConsole(testContext.Project);
+
+            Install(console, testContext.Project, packageName, "1.0", testContext.PackageSource);
+            string oldPackageDirectory = Path.Combine(pathContext.PackagesV2, $"{packageName}.1.0.0.0");
+            string newPackageDirectory = Path.Combine(pathContext.PackagesV2, $"{packageName}.2.0.0.0");
+            string deleteMarkerPath = oldPackageDirectory + ".deleteme";
+            string lockedFilePath = Path.Combine(oldPackageDirectory, "content", "readme.txt");
+            using (File.Open(lockedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                Update(console, testContext.Project, packageName, testContext.PackageSource);
+
+                Directory.Exists(oldPackageDirectory).Should().BeTrue();
+                File.Exists(deleteMarkerPath).Should().BeTrue();
+                Directory.Exists(newPackageDirectory).Should().BeTrue();
+            }
+
+            string solutionPath = testContext.SolutionService.FilePath!;
+            testContext.SolutionService.Close();
+            testContext.SolutionService.WaitForFullyLoadedOnOpen = true;
+            testContext.SolutionService.Open(solutionPath);
+            testContext.SolutionService.Verify.HasProject();
+
+            CommonUtility.WaitForDirectoryNotExists(oldPackageDirectory);
+            CommonUtility.WaitForFileNotExists(new FileInfo(deleteMarkerPath));
+            CommonUtility.WaitForDirectoryExists(newPackageDirectory);
+            AssertNoErrors(console);
         }
 
         [TestMethod]
@@ -558,21 +666,21 @@ namespace NuGet.Tests.Apex
             using var pathContext = new SimpleTestPathContext();
             pathContext.Settings.SetPackageFormatToPackagesConfig();
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
-            var packageName = "MissingPackage";
-            await CreatePackagesAsync(testContext.PackageSource, Package(packageName, "1.0.0"), Package(packageName, "2.0.0"));
+            var packageName = "Castle.Core";
+            await CreatePackagesAsync(testContext.PackageSource, Package(packageName, "1.2.0"), Package(packageName, "2.5.1"));
             var console = GetConsole(testContext.Project);
 
-            Install(console, testContext.Project, packageName, "1.0.0", testContext.PackageSource);
+            Install(console, testContext.Project, packageName, "1.2.0", testContext.PackageSource);
             Directory.Delete(pathContext.PackagesV2, recursive: true);
             console.Clear();
 
-            Update(console, testContext.Project, packageName, testContext.PackageSource);
+            Update(console, testContext.Project, packageName, testContext.PackageSource, "-Version 2.5.1");
             string output = console.GetText();
 
             output.Should().NotContain(
                 "Some NuGet packages are missing from the solution. The packages need to be restored in order to build the dependency graph.",
                 because: output);
-            AssertInstalled(testContext.Project, packageName, "2.0.0");
+            AssertInstalled(testContext.Project, packageName, "2.5.1");
             AssertNoErrors(console);
         }
 
@@ -1244,11 +1352,41 @@ namespace NuGet.Tests.Apex
             string packageName = "UnlistedPackage";
             string packageVersion = "2.2.5";
             await CreatePackagesAsync(httpPackagesDirectory, Package(packageName, packageVersion));
-            using var mockServer = new FileSystemBackedV3MockServer(httpPackagesDirectory);
-            mockServer.UnlistedPackages.Add(new PackageIdentity(packageName, NuGetVersion.Parse(packageVersion)));
+            var packageIdentity = new PackageIdentity(packageName, NuGetVersion.Parse(packageVersion));
+            var packageFile = new DirectoryInfo(httpPackagesDirectory).GetFiles("*.nupkg").Single();
+            using var mockServer = new MockServer();
+            var responseBuilder = new MockResponseBuilder(mockServer.Uri.TrimEnd('/'));
+            string unlistedFeed = mockServer.ToODataFeed(
+                new[] { (packageFile, false, DateTimeOffset.UtcNow) },
+                "FindPackagesById");
+            XNamespace atom = "http://www.w3.org/2005/Atom";
+            string unlistedEntry = new XDocument(XDocument.Parse(unlistedFeed).Root!.Element(atom + "entry")).ToString();
+
+            mockServer.Get.Add(
+                responseBuilder.GetFindPackagesByIdPath(packageName),
+                _ => new Action<HttpListenerResponse>(response =>
+                {
+                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                    MockServer.SetResponseContent(response, unlistedFeed);
+                }));
+            mockServer.Get.Add(
+                responseBuilder.GetODataPath(packageIdentity),
+                _ => new Action<HttpListenerResponse>(response =>
+                {
+                    response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
+                    MockServer.SetResponseContent(response, unlistedEntry);
+                }));
+            mockServer.Get.Add(
+                $"/package/{packageName}/{packageVersion}",
+                _ => new Action<HttpListenerResponse>(response =>
+                {
+                    response.ContentType = "application/zip";
+                    MockServer.SetResponseContent(response, File.ReadAllBytes(packageFile.FullName));
+                }));
+            mockServer.Get.Add(responseBuilder.GetV2IndexPath(), _ => "OK");
             mockServer.Start();
             string httpSourceName = "httpSource";
-            pathContext.Settings.AddSource(httpSourceName, mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
+            pathContext.Settings.AddSource(httpSourceName, responseBuilder.GetV2Source(), allowInsecureConnectionsValue: "true");
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ClassLibrary, Logger, simpleTestPathContext: pathContext);
             var console = GetConsole(testContext.Project);
 
@@ -1261,23 +1399,27 @@ namespace NuGet.Tests.Apex
             AssertNoErrors(console);
         }
 
-        private ApexTestContext CreatePackagesConfigContext()
+        private ApexTestContext CreatePackagesConfigContext(ProjectTemplate template = ProjectTemplate.ClassLibrary)
         {
             var pathContext = new SimpleTestPathContext();
             pathContext.Settings.SetPackageFormatToPackagesConfig();
             return new ApexTestContext(
                 VisualStudio,
-                ProjectTemplate.ClassLibrary,
+                template,
                 Logger,
                 simpleTestPathContext: pathContext);
         }
 
-        private static ProjectTestExtension AddProject(ApexTestContext testContext, ProjectTemplate template, string name)
+        private static ProjectTestExtension AddProject(
+            ApexTestContext testContext,
+            ProjectTemplate template,
+            string name,
+            ProjectTargetFramework? targetFramework = null)
         {
             var project = testContext.SolutionService.AddProject(
                 ProjectLanguage.CSharp,
                 template,
-                CommonUtility.DefaultTargetFramework,
+                targetFramework ?? CommonUtility.DefaultTargetFramework,
                 name);
             testContext.SolutionService.SaveAll();
             return project;
@@ -1333,8 +1475,7 @@ namespace NuGet.Tests.Apex
                     !file.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase))
                 {
                     var generatedPackage = new GeneratedPackage(id, version);
-                    var assemblyRoot = Path.Combine(Path.GetTempPath(), "NuGetApexGeneratedAssemblies", Guid.NewGuid().ToString("N"));
-                    CompileGeneratedAssembly(generatedPackage, assemblyRoot, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                    CompileGeneratedAssemblies(generatedPackage);
                     package.AddFile(file, File.ReadAllBytes(generatedPackage.AssemblyPath));
                 }
                 else
@@ -1443,22 +1584,7 @@ namespace NuGet.Tests.Apex
 
         private static string GetEndToEndPackagesPath()
         {
-            foreach (var startPath in new[] { Directory.GetCurrentDirectory(), typeof(NuGetConsoleTestCase).Assembly.Location })
-            {
-                var directory = new DirectoryInfo(File.Exists(startPath) ? Path.GetDirectoryName(startPath)! : startPath);
-                while (directory != null)
-                {
-                    var packagesPath = Path.Combine(directory.FullName, "test", "EndToEnd", "Packages");
-                    if (Directory.Exists(packagesPath))
-                    {
-                        return packagesPath;
-                    }
-
-                    directory = directory.Parent;
-                }
-            }
-
-            throw new System.InvalidOperationException("Unable to locate test\\EndToEnd\\Packages.");
+            return Path.Combine(GetRepositoryRoot(), "test", "EndToEnd", "Packages");
         }
 
         private static Task CreatePackagesAsync(string source, params SimpleTestPackageContext[] packages)
@@ -1471,10 +1597,11 @@ namespace NuGet.Tests.Apex
             ProjectTestExtension project,
             string packageName,
             string version,
-            string source)
+            string source,
+            string arguments = "")
         {
             console.Execute(
-                $"Install-Package {packageName} -ProjectName {project.Name} -Version {version} -Source '{source}'");
+                $"Install-Package {packageName} -ProjectName {project.Name} -Version {version} -Source '{source}' {arguments}");
         }
 
         private static void Update(

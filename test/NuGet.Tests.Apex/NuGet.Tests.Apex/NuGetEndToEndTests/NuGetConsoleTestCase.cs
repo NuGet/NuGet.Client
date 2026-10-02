@@ -1934,7 +1934,10 @@ namespace NuGet.Tests.Apex
             await CreatePackagesAsync(testContext.PackageSource, Package("elmah", "1.1"));
             var console = GetConsole(testContext.Project);
 
-            InstallByUniqueName(console, testContext.Project, "elmah", "1.1", testContext.PackageSource);
+            testContext.SolutionService.Build();
+            console.Execute(
+                $"Get-Project -Name '{testContext.Project.Name}' | " +
+                $"Install-Package elmah -Version 1.1 -Source '{testContext.PackageSource}'");
             testContext.NuGetApexTestService.WaitForAutoRestore();
 
             CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "elmah", "1.1", Logger);
@@ -1962,6 +1965,7 @@ namespace NuGet.Tests.Apex
             testContext.NuGetApexTestService.WaitForAutoRestore();
 
             CommonUtility.AssertPackageReferenceDoesNotExist(testContext.Project, "Ninject", "2.0.1", Logger);
+            CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, "Ninject", "2.0.1", Logger);
             AssertNoErrors(console);
         }
 
