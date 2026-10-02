@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="Error_CopilotRequestFailed">
         <source>GitHub Copilot was unable to complete the request. See the Activity Log for details.</source>
-        <target state="new">GitHub Copilot was unable to complete the request. See the Activity Log for details.</target>
+        <target state="translated">GitHub Copilot n’a pas pu traiter la requête. Vérifiez le journal d’activité pour découvrir plus d’informations.</target>
         <note>Do not translate GitHub or Copilot</note>
       </trans-unit>
       <trans-unit id="Error_CopilotServiceNotAvailable">
