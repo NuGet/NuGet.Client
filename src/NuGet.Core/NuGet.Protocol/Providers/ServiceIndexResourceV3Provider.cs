@@ -197,11 +197,8 @@ namespace NuGet.Protocol
 
         private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, PackageSource source, CancellationToken token)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return await ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token);
-            }
-            else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
             {
                 return await ConsumeServiceIndexStreamStjAsync(stream, utcNow, source, token);
             }

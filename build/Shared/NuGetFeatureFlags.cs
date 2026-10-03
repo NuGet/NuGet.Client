@@ -17,34 +17,48 @@ namespace NuGet.Shared
             StaticState.BuildEnded += ResetCache;
         }
 
-        private static Lazy<bool> _isSystemTextJsonDeserializationEnabledByEnvironment =
-            new Lazy<bool>(() => IsSystemTextJsonDeserializationEnabledByEnvironment(EnvironmentVariableWrapper.Instance));
+        private static Lazy<bool> _isSystemTextJsonDeserializationDisabledByEnvironment =
+            new Lazy<bool>(() => IsSystemTextJsonDeserializationDisabledByEnvironment(EnvironmentVariableWrapper.Instance));
 
         /// <summary>Discards the cached value so it is re-read from the environment on next use.</summary>
         internal static void ResetCache() =>
-            _isSystemTextJsonDeserializationEnabledByEnvironment =
-                new Lazy<bool>(() => IsSystemTextJsonDeserializationEnabledByEnvironment(EnvironmentVariableWrapper.Instance));
+            _isSystemTextJsonDeserializationDisabledByEnvironment =
+                new Lazy<bool>(() => IsSystemTextJsonDeserializationDisabledByEnvironment(EnvironmentVariableWrapper.Instance));
 
-        /// <summary>Feature switch for System.Text.Json deserialization. Defaults to <see langword="false"/> (Newtonsoft is the default).</summary>
+        /// <summary>
+        /// Feature switch for System.Text.Json deserialization. The direct check allows the linker to trim the
+        /// Newtonsoft.Json path when the switch is explicitly set to <see langword="true"/>.
+        /// </summary>
         [FeatureSwitchDefinition(UseSystemTextJsonDeserializationSwitchName)]
         internal static bool UseSystemTextJsonDeserializationFeatureSwitch { get; } =
             AppContext.TryGetSwitch(UseSystemTextJsonDeserializationSwitchName, out bool value) && value;
 
-        /// <summary>Returns <see langword="true"/> when env var <c>NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION</c> is <c>true</c>.</summary>
+        /// <summary>Returns <see langword="true"/> when env var <c>NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION</c> is <c>false</c>.</summary>
         /// <param name="env">
         /// Pass <see langword="null"/> (or omit) in production code to use the cached <see cref="Lazy{T}"/> value,
         /// avoiding repeated allocations on .NET Framework. Pass an explicit <see cref="IEnvironmentVariableReader"/>
         /// only in tests to override the value.
         /// </param>
-        internal static bool IsSystemTextJsonDeserializationEnabledByEnvironment(IEnvironmentVariableReader? env = null)
+        internal static bool IsSystemTextJsonDeserializationDisabledByEnvironment(IEnvironmentVariableReader? env = null)
         {
             if (env is null)
             {
-                return _isSystemTextJsonDeserializationEnabledByEnvironment.Value;
+                return _isSystemTextJsonDeserializationDisabledByEnvironment.Value;
             }
 
             string? envValue = env.GetEnvironmentVariable(UseSystemTextJsonDeserializationEnvVar);
-            return string.Equals(envValue, "true", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(envValue, "false", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>Returns whether System.Text.Json is explicitly disabled by the feature switch or environment variable.</summary>
+        internal static bool IsSystemTextJsonDeserializationDisabledByConfiguration(IEnvironmentVariableReader? env = null)
+        {
+            if (AppContext.TryGetSwitch(UseSystemTextJsonDeserializationSwitchName, out bool value))
+            {
+                return !value;
+            }
+
+            return IsSystemTextJsonDeserializationDisabledByEnvironment(env);
         }
     }
 }

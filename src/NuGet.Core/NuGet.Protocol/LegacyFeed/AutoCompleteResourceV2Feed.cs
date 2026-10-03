@@ -102,35 +102,31 @@ namespace NuGet.Protocol
                     logger,
                     token);
             }
-            else
-            {
-                return await _httpSource.ProcessStreamAsync(
-                    new HttpSourceRequest(apiEndpointUri, logger),
-                    async stream =>
-                    {
-                        if (stream == null)
-                        {
-                            return Array.Empty<string>();
-                        }
 
-                        if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
-                        {
-                            var seekableStream = (await stream.AsSeekableStreamAsync(token))!;
-                            return await System.Text.Json.JsonSerializer.DeserializeAsync(seekableStream, JsonContext.Default.StringArray, token) ?? Array.Empty<string>();
-                        }
-                        else
-                        {
-                            using var reader = new StreamReader((await stream.AsSeekableStreamAsync(token))!);
-                            using var jsonReader = new JsonTextReader(reader);
+            return await _httpSource.ProcessStreamAsync(
+                new HttpSourceRequest(apiEndpointUri, logger),
+                async stream =>
+                {
+                    if (stream == null)
+                    {
+                        return Array.Empty<string>();
+                    }
+
+                    if (!NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
+                    {
+                        var seekableStream = (await stream.AsSeekableStreamAsync(token))!;
+                        return await System.Text.Json.JsonSerializer.DeserializeAsync(seekableStream, JsonContext.Default.StringArray, token) ?? Array.Empty<string>();
+                    }
+
+                    using var reader = new StreamReader((await stream.AsSeekableStreamAsync(token))!);
+                    using var jsonReader = new JsonTextReader(reader);
 #pragma warning disable IL2026, IL3050 // Legacy Newtonsoft.Json code path is unreachable when feature switch is true; ILC trims this branch in AOT
-                            var serializer = Newtonsoft.Json.JsonSerializer.Create();
-                            return serializer.Deserialize<string[]>(jsonReader) ?? Array.Empty<string>();
+                    var serializer = Newtonsoft.Json.JsonSerializer.Create();
+                    return serializer.Deserialize<string[]>(jsonReader) ?? Array.Empty<string>();
 #pragma warning restore IL2026, IL3050
-                        }
-                    },
-                    logger,
-                    token);
-            }
+                },
+                logger,
+                token);
         }
     }
 }

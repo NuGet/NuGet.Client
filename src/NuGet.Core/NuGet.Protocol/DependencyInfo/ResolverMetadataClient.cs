@@ -35,12 +35,8 @@ namespace NuGet.Protocol
             CancellationToken token,
             IEnvironmentVariableReader? env)
         {
-            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-            {
-                return await GetDependenciesFromItemsAsync(httpClient, registrationUri, packageId, range, cacheContext, log, token);
-            }
-
-            if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(env))
+            if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(env))
             {
                 return await GetDependenciesFromItemsAsync(httpClient, registrationUri, packageId, range, cacheContext, log, token);
             }
