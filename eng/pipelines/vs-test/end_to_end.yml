@@ -102,5 +102,5 @@ stages:
     - operation: executePowerShellScript
       displayName: "SetupFunctionalTests.ps1"
       scriptPath: '[WorkingDirectory]\NuGet\scripts\e2etests\SetupFunctionalTests.ps1'
-      scriptParameters: -NuGetTestsPSM1Path '[WorkingDirectory]\NuGet\artifacts\EndToEnd\NuGet.Tests.psm1'
+      scriptParameters: -NuGetTestsPSM1 '[WorkingDirectory]\NuGet\artifacts\EndToEnd\NuGet.Tests.psm1'
       timeout: 0:0:10:0

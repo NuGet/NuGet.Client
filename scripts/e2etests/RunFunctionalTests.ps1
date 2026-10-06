@@ -12,6 +12,7 @@ param (
     [string]$FuncTestRoot,
     [Parameter(Mandatory=$true)]
     [string]$RunCounter,
+    # Directory where the test results will be stored for DartLab1ES runs
     [Parameter(Mandatory=$false)]
     [string]$ResultsDirectory)
 

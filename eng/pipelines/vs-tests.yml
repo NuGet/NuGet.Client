@@ -91,11 +91,11 @@ stages:
     - Build
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
-    - name: bootstrapperUrl
+    - name: VsBootstrapperUrl
       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.bootstrapperUrl']]
     - name: VisualStudioInstallationParameters
       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.VisualStudioInstallationParameters']]
-    bootstrapperUrl: $(bootstrapperUrl)
+    bootstrapperUrl: $(VsBootstrapperUrl)
     visualStudioInstallationParameters: $(VisualStudioInstallationParameters)
     testExecutionJobTimeoutInMinutes: 412 # cloud test minimum
     testMachineHoldStrategy: ${{parameters.testMachineHoldStrategy}}

@@ -109,7 +109,7 @@ function LaunchVSAndWaitForDTE {
         Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
         start-sleep $DTEReadyPollFrequencyInSecs
 
-        $dte2 = GetDTE2 -DteName $dteName
+        $dte2 = GetDTE2 -dteName $dteName
         if ($dte2) {
             Write-Host 'Obtained DTE.'
             return $dte2
@@ -166,15 +166,14 @@ function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$DteName
+        [string]$dteName
     )
 
     Try {
-        $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject($DteName)
+        $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject($dteName)
         return $dte2
     }
-    Catch [System.Runtime.InteropServices.COMException] {
-        Write-Warning "Failed to resolve DTE '$DteName': $($_.Exception.GetType().FullName): $($_.Exception.Message)"
+    Catch {
         return $null
     }
 }

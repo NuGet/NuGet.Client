@@ -1,7 +1,8 @@
 param (
     [ValidateSet("17.0")]
     [string]$VSVersion = "17.0",
-    [string]$NuGetTestsPSM1Path)
+    # Overrides the default NuGet.Tests.psm1 path for DartLab1ES runs
+    [string]$NuGetTestsPSM1)
 
  . "$PSScriptRoot\Utils.ps1"
  . "$PSScriptRoot\VSUtils.ps1"
@@ -71,20 +72,20 @@ trap
 }
 
 
-if ([string]::IsNullOrEmpty($NuGetTestsPSM1Path))
+if ([string]::IsNullOrEmpty($NuGetTestsPSM1))
 {
     $NuGetRoot = Split-Path $PSScriptRoot -Parent
-    $NuGetTestsPSM1Path = Join-Path $NuGetRoot "NuGet.Tests.psm1"
+    $NuGetTestsPSM1 = Join-Path $NuGetRoot "NuGet.Tests.psm1"
 }
 
-Write-Host "NuGetTestsPSM1Path variable value is:" $NuGetTestsPSM1Path
+Write-Host "NuGetTestsPSM1 variable value is:" $NuGetTestsPSM1
 
 Write-Host 'If successful, this script needs to be run only once on your machine!'
 
 Write-Host 'Setting the environment variable needed to load NuGet.Tests powershell module ' `
 'for running functional tests...'
 
-[Environment]::SetEnvironmentVariable("NuGetFunctionalTestPath", $NuGetTestsPSM1Path, "User")
+[Environment]::SetEnvironmentVariable("NuGetFunctionalTestPath", $NuGetTestsPSM1, "User")
 Write-Host -ForegroundColor Cyan 'You can now call Run-Test from any instance of Visual Studio ' `
 'as soon as you open Package Manager Console!'
 

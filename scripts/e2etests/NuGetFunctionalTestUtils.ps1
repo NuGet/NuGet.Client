@@ -63,6 +63,7 @@ function RealTimeLogResults
     [string]$NuGetTestPath,
     [Parameter(Mandatory=$true)]
     [int] $EachTestTimeoutInSecs,
+    # Directory where the test results will be stored for DartLab1ES runs
     [Parameter(Mandatory=$false)]
     [string]$ResultsDirectory)
 
