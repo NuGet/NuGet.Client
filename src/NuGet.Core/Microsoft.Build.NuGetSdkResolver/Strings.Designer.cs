@@ -31,7 +31,7 @@ namespace Microsoft.Build.NuGetSdkResolver {
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Strings() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace Microsoft.Build.NuGetSdkResolver {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -123,6 +123,15 @@ namespace Microsoft.Build.NuGetSdkResolver {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Line {1}, byte position {2}..
+        /// </summary>
+        internal static string InvalidJsonWithLocation {
+            get {
+                return ResourceManager.GetString("InvalidJsonWithLocation", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Failed to resolve SDK &apos;{0}&apos;. Package restore was successful but a package with the ID of &quot;{1}&quot; was not installed..
         /// </summary>

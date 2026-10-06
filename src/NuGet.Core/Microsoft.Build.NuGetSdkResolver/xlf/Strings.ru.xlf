@@ -37,6 +37,11 @@
         <target state="translated">Не удалось прочитать файл "{0}". {1}</target>
         <note>{0} is the path to the global.json file that was attempted to be read and {1} is the exception message that occurred.</note>
       </trans-unit>
+      <trans-unit id="InvalidJsonWithLocation">
+        <source>{0} Line {1}, byte position {2}.</source>
+        <target state="new">{0} Line {1}, byte position {2}.</target>
+        <note>{0} is the System.Text.Json parse reason, {1} is the one-based line number, and {2} is the one-based byte position within the line.</note>
+      </trans-unit>
       <trans-unit id="PackageWasNotInstalled">
         <source>Failed to resolve SDK '{0}'. Package restore was successful but a package with the ID of "{1}" was not installed.</source>
         <target state="translated">Не удалось разрешить пакет SDK "{0}". Пакет был успешно восстановлен, но пакет с идентификатором "{1}" не был установлен.</target>
