@@ -165,7 +165,6 @@ function LaunchVS {
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
         [string]$dteName
     )
 
