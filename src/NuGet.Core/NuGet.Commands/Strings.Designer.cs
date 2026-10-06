@@ -2194,7 +2194,7 @@ namespace NuGet.Commands {
                 return ResourceManager.GetString("SourcesCommandInvalidSource", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to find any package source(s) matching name: {0}..
         /// </summary>

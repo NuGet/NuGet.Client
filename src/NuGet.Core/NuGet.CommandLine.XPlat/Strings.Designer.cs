@@ -2447,6 +2447,24 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("SourcesCommandFormatDescription", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable..
+        /// </summary>
+        internal static string SourcesCommandMinPublishAgeHoursDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandMinPublishAgeHoursDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}..
+        /// </summary>
+        internal static string SourcesCommandMinPublishAgeHoursOutOfRange {
+            get {
+                return ResourceManager.GetString("SourcesCommandMinPublishAgeHoursOutOfRange", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Name of the source..

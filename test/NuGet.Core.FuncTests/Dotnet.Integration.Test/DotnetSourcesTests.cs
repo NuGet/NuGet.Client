@@ -99,6 +99,37 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void Sources_WhenAddingSourceWithMinPublishAge_GotAdded()
+        {
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    $"\"{settings.ConfigPath}\"",
+                    "--min-publish-age-hours",
+                    "72"
+                };
+
+                _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("72", sourceItem.MinPublishAgeHours);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSourceWithCredentials_CredentialsWereAddedAndEncrypted()
         {
             using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
@@ -264,6 +295,47 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void Sources_WhenUpdatingNonExistentSource_Errors()
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "update",
+                    "source",
+                    "nonexistent_source",
+                    "--username",
+                    "user",
+                    "--password",
+                    "password",
+                    "--store-password-in-clear-text",
+                    "--configfile",
+                    configFilePath
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectFailure(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandNoMatchingSourcesFound, "nonexistent_source");
+                Assert.Contains(expectedError, result.AllOutput);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void Sources_WhenUpdatingHttpsSource_Succeeds()
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
@@ -314,6 +386,45 @@ namespace Dotnet.Integration.Test
                 SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
                 SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal(updateSource, sourceItem.GetValueAsPath());
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("72", "72")]
+        [InlineData("0", null)]
+        public void Sources_WhenUpdatingMinPublishAge_UpdatesAttribute(string minPublishAgeHours, string expectedValue)
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test"" minPublishAgeHours=""48"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                var args = new string[]
+                {
+                    "nuget",
+                    "update",
+                    "source",
+                    "test_source",
+                    "--configfile",
+                    $"\"{configFilePath}\"",
+                    "--min-publish-age-hours",
+                    minPublishAgeHours
+                };
+
+                _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args), testOutputHelper: _testOutputHelper);
+
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal(expectedValue, sourceItem.MinPublishAgeHours);
             }
         }
 
