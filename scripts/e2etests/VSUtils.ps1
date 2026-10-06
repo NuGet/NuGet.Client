@@ -92,46 +92,27 @@ function LaunchVSAndWaitForDTE {
         return $null
     }
 
+    $VSVersionString = $VsInstance.installationVersion
+    $VSVersion = $VSVersionString.Substring(0, $VSVersionString.IndexOf("."))
+
     $dte2 = $null
     $count = 0
     Write-Host "Will wait for $NumberOfPolls times and $DTEReadyPollFrequencyInSecs seconds each time."
-    Write-Host "Visual Studio was launched with process ID $($process.Id)."
-    Write-Host "PowerShell session ID: $([System.Diagnostics.Process]::GetCurrentProcess().SessionId); Visual Studio session ID: $($process.SessionId)."
-    $explorerSessionIds = @(Get-Process -Name explorer -ErrorAction SilentlyContinue | Select-Object -ExpandProperty SessionId -Unique)
-    Write-Host "Explorer session IDs: $(if ($explorerSessionIds) { $explorerSessionIds -join ', ' } else { 'none' })."
-    if ($ActivityLogFullPath) {
-        Write-Host "Visual Studio activity log: $ActivityLogFullPath"
-    }
+
+    # https://docs.microsoft.com/en-us/visualstudio/extensibility/launch-visual-studio-dte?view=vs-2019
+    $exeVersion = $VSInstance.installationVersion
+    $dteName = "VisualStudio.DTE." + $exeVersion.Substring(0, $exeVersion.IndexOf('.')) + ".0"
+    Write-Host "Looking for: $dteName"
 
     while ($count -lt $NumberOfPolls) {
         # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
         Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
         start-sleep $DTEReadyPollFrequencyInSecs
 
-        $visualStudioProcesses = @(Get-Process -Name devenv -ErrorAction SilentlyContinue | Where-Object {
-            try {
-                $_.Path.StartsWith($VSInstance.installationPath, [System.StringComparison]::OrdinalIgnoreCase)
-            }
-            catch {
-                $false
-            }
-        })
-
-        if ($visualStudioProcesses.Count -eq 0) {
-            Write-Warning "No running devenv process was found under '$($VSInstance.installationPath)'."
-        }
-        else {
-            $processIds = ($visualStudioProcesses.Id | Sort-Object) -join ', '
-            Write-Host "Looking for a Visual Studio DTE registered by process ID: $processIds"
-
-            foreach ($visualStudioProcess in $visualStudioProcesses) {
-                Write-Host "Visual Studio process $($visualStudioProcess.Id): session=$($visualStudioProcess.SessionId), windowHandle=$($visualStudioProcess.MainWindowHandle), responding=$($visualStudioProcess.Responding), title='$($visualStudioProcess.MainWindowTitle)'"
-                $dte2 = GetDTE2 -ProcessId $visualStudioProcess.Id
-                if ($dte2) {
-                    Write-Host "Obtained DTE from process ID $($visualStudioProcess.Id)."
-                    return $dte2
-                }
-            }
+        $dte2 = GetDTE2 -DteName $dteName
+        if ($dte2) {
+            Write-Host 'Obtained DTE.'
+            return $dte2
         }
 
         $count++
@@ -184,115 +165,16 @@ function LaunchVS {
 function GetDTE2 {
     param(
         [Parameter(Mandatory = $true)]
-        [int]$ProcessId
+        [ValidateNotNullOrEmpty()]
+        [string]$DteName
     )
 
     Try {
-        if (-not ('NuGetRunningObjectTable' -as [type])) {
-            Add-Type -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-
-public static class NuGetRunningObjectTable
-{
-    public sealed class RunningObjectResult
-    {
-        public object RunningObject { get; set; }
-        public string[] DteDisplayNames { get; set; }
+        $dte2 = [System.Runtime.InteropServices.Marshal]::GetActiveObject($DteName)
+        return $dte2
     }
-
-    [DllImport("ole32.dll")]
-    private static extern int CreateBindCtx(uint reserved, out IBindCtx bindContext);
-
-    public static RunningObjectResult GetObject(int processId)
-    {
-        IBindCtx bindContext = null;
-        IRunningObjectTable runningObjectTable = null;
-        IEnumMoniker monikerEnumerator = null;
-        var dteDisplayNames = new System.Collections.Generic.List<string>();
-
-        try
-        {
-            Marshal.ThrowExceptionForHR(CreateBindCtx(0, out bindContext));
-            bindContext.GetRunningObjectTable(out runningObjectTable);
-            runningObjectTable.EnumRunning(out monikerEnumerator);
-
-            IMoniker[] monikers = new IMoniker[1];
-            while (monikerEnumerator.Next(1, monikers, IntPtr.Zero) == 0)
-            {
-                IMoniker moniker = monikers[0];
-                try
-                {
-                    string objectDisplayName = null;
-                    try
-                    {
-                        moniker.GetDisplayName(bindContext, null, out objectDisplayName);
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        continue;
-                    }
-                    catch (COMException)
-                    {
-                        continue;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(objectDisplayName) &&
-                        objectDisplayName.IndexOf("VisualStudio.DTE.", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        dteDisplayNames.Add(objectDisplayName);
-                        if (objectDisplayName.EndsWith(":" + processId, StringComparison.Ordinal))
-                        {
-                            object runningObject;
-                            runningObjectTable.GetObject(moniker, out runningObject);
-                            return new RunningObjectResult
-                            {
-                                RunningObject = runningObject,
-                                DteDisplayNames = dteDisplayNames.ToArray()
-                            };
-                        }
-                    }
-                }
-                finally
-                {
-                    Marshal.ReleaseComObject(moniker);
-                }
-            }
-
-            return new RunningObjectResult
-            {
-                RunningObject = null,
-                DteDisplayNames = dteDisplayNames.ToArray()
-            };
-        }
-        finally
-        {
-            if (monikerEnumerator != null) Marshal.ReleaseComObject(monikerEnumerator);
-            if (runningObjectTable != null) Marshal.ReleaseComObject(runningObjectTable);
-            if (bindContext != null) Marshal.ReleaseComObject(bindContext);
-        }
-    }
-}
-'@
-        }
-
-        $result = [NuGetRunningObjectTable]::GetObject($ProcessId)
-        $displayNames = $result.DteDisplayNames -join '; '
-        if ($script:LastRunningDteDisplayNames -ne $displayNames) {
-            if ($displayNames) {
-                Write-Host "Accessible Visual Studio DTE objects: $displayNames"
-            }
-            else {
-                Write-Host 'No accessible Visual Studio DTE objects are registered.'
-            }
-            $script:LastRunningDteDisplayNames = $displayNames
-        }
-
-        return $result.RunningObject
-    }
-    Catch {
-        Write-Warning "Failed to inspect the Running Object Table: $($_.Exception.Message)"
+    Catch [System.Runtime.InteropServices.COMException] {
+        Write-Warning "Failed to resolve DTE '$DteName': $($_.Exception.GetType().FullName): $($_.Exception.Message)"
         return $null
     }
 }
