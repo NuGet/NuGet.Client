@@ -287,7 +287,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                         CultureInfo.CurrentCulture,
                         Strings.FailedToParseGlobalJson,
                         globalJsonPath,
-                        GetUserFacingExceptionMessage(e)));
+                        e.Message));
 
                     return null;
                 }
@@ -300,28 +300,5 @@ namespace Microsoft.Build.NuGetSdkResolver
             }
         }
 
-        private static string GetUserFacingExceptionMessage(Exception exception)
-        {
-            if (exception is not JsonException jsonException
-                || jsonException.LineNumber is not long lineNumber
-                || jsonException.BytePositionInLine is not long bytePositionInLine)
-            {
-                return exception.Message;
-            }
-
-            string reason = jsonException.InnerException?.Message ?? jsonException.Message;
-            int detailsStart = reason.IndexOf(" LineNumber: ", StringComparison.Ordinal);
-            if (detailsStart >= 0)
-            {
-                reason = reason.Substring(0, detailsStart);
-            }
-
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.InvalidJsonWithLocation,
-                reason,
-                lineNumber + 1,
-                bytePositionInLine + 1);
-        }
     }
 }
