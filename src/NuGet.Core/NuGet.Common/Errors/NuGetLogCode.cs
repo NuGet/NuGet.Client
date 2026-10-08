@@ -950,6 +950,7 @@ namespace NuGet.Common
         /// <summary>
         /// LegacyVersionWarning
         /// </summary>
+        [Obsolete]
         NU5105 = 5105,
 
         /// <summary>
