@@ -30,16 +30,16 @@ NuGet.ProjectModel.BuildAction.Equals(NuGet.ProjectModel.BuildAction other) -> b
 NuGet.ProjectModel.BuildAction.IsKnown.get -> bool
 NuGet.ProjectModel.BuildAction.Value.get -> string?
 NuGet.ProjectModel.CacheFile
-~NuGet.ProjectModel.CacheFile.CacheFile(string dgSpecHash) -> void
-~NuGet.ProjectModel.CacheFile.DgSpecHash.get -> string
-~NuGet.ProjectModel.CacheFile.Equals(NuGet.ProjectModel.CacheFile other) -> bool
-~NuGet.ProjectModel.CacheFile.ExpectedPackageFilePaths.get -> System.Collections.Generic.IList<string>
-~NuGet.ProjectModel.CacheFile.ExpectedPackageFilePaths.set -> void
+NuGet.ProjectModel.CacheFile.CacheFile(string? dgSpecHash) -> void
+NuGet.ProjectModel.CacheFile.DgSpecHash.get -> string?
+NuGet.ProjectModel.CacheFile.Equals(NuGet.ProjectModel.CacheFile? other) -> bool
+NuGet.ProjectModel.CacheFile.ExpectedPackageFilePaths.get -> System.Collections.Generic.IList<string!>?
+NuGet.ProjectModel.CacheFile.ExpectedPackageFilePaths.set -> void
 NuGet.ProjectModel.CacheFile.IsValid.get -> bool
-~NuGet.ProjectModel.CacheFile.LogMessages.get -> System.Collections.Generic.IList<NuGet.ProjectModel.IAssetsLogMessage>
-~NuGet.ProjectModel.CacheFile.LogMessages.set -> void
-~NuGet.ProjectModel.CacheFile.ProjectFilePath.get -> string
-~NuGet.ProjectModel.CacheFile.ProjectFilePath.set -> void
+NuGet.ProjectModel.CacheFile.LogMessages.get -> System.Collections.Generic.IList<NuGet.ProjectModel.IAssetsLogMessage!>?
+NuGet.ProjectModel.CacheFile.LogMessages.set -> void
+NuGet.ProjectModel.CacheFile.ProjectFilePath.get -> string?
+NuGet.ProjectModel.CacheFile.ProjectFilePath.set -> void
 NuGet.ProjectModel.CacheFile.Success.get -> bool
 NuGet.ProjectModel.CacheFile.Success.set -> void
 NuGet.ProjectModel.CacheFile.Version.get -> int
@@ -70,17 +70,17 @@ NuGet.ProjectModel.DependencyGraphSpec.DependencyGraphSpec(bool isReadOnly) -> v
 ~NuGet.ProjectModel.DependencyGraphSpec.WithoutRestores() -> NuGet.ProjectModel.DependencyGraphSpec
 ~NuGet.ProjectModel.DependencyGraphSpec.WithoutTools() -> NuGet.ProjectModel.DependencyGraphSpec
 NuGet.ProjectModel.ExternalProjectReference
-~NuGet.ProjectModel.ExternalProjectReference.CompareTo(NuGet.ProjectModel.ExternalProjectReference other) -> int
-~NuGet.ProjectModel.ExternalProjectReference.Equals(NuGet.ProjectModel.ExternalProjectReference other) -> bool
-~NuGet.ProjectModel.ExternalProjectReference.ExternalProjectReference(string uniqueName, NuGet.ProjectModel.PackageSpec packageSpec, string msbuildProjectPath, System.Collections.Generic.IEnumerable<string> projectReferences) -> void
-~NuGet.ProjectModel.ExternalProjectReference.ExternalProjectReference(string uniqueName, string packageSpecProjectName, string packageSpecPath, string msbuildProjectPath, System.Collections.Generic.IEnumerable<string> projectReferences) -> void
-~NuGet.ProjectModel.ExternalProjectReference.ExternalProjectReferences.get -> System.Collections.Generic.IReadOnlyList<string>
-~NuGet.ProjectModel.ExternalProjectReference.MSBuildProjectPath.get -> string
-~NuGet.ProjectModel.ExternalProjectReference.PackageSpec.get -> NuGet.ProjectModel.PackageSpec
-~NuGet.ProjectModel.ExternalProjectReference.PackageSpecProjectName.get -> string
-~NuGet.ProjectModel.ExternalProjectReference.ProjectJsonPath.get -> string
-~NuGet.ProjectModel.ExternalProjectReference.ProjectName.get -> string
-~NuGet.ProjectModel.ExternalProjectReference.UniqueName.get -> string
+NuGet.ProjectModel.ExternalProjectReference.CompareTo(NuGet.ProjectModel.ExternalProjectReference? other) -> int
+NuGet.ProjectModel.ExternalProjectReference.Equals(NuGet.ProjectModel.ExternalProjectReference? other) -> bool
+NuGet.ProjectModel.ExternalProjectReference.ExternalProjectReference(string! uniqueName, NuGet.ProjectModel.PackageSpec? packageSpec, string! msbuildProjectPath, System.Collections.Generic.IEnumerable<string!>! projectReferences) -> void
+NuGet.ProjectModel.ExternalProjectReference.ExternalProjectReference(string! uniqueName, string? packageSpecProjectName, string? packageSpecPath, string? msbuildProjectPath, System.Collections.Generic.IEnumerable<string!>! projectReferences) -> void
+NuGet.ProjectModel.ExternalProjectReference.ExternalProjectReferences.get -> System.Collections.Generic.IReadOnlyList<string!>!
+NuGet.ProjectModel.ExternalProjectReference.MSBuildProjectPath.get -> string?
+NuGet.ProjectModel.ExternalProjectReference.PackageSpec.get -> NuGet.ProjectModel.PackageSpec?
+NuGet.ProjectModel.ExternalProjectReference.PackageSpecProjectName.get -> string?
+NuGet.ProjectModel.ExternalProjectReference.ProjectJsonPath.get -> string?
+NuGet.ProjectModel.ExternalProjectReference.ProjectName.get -> string!
+NuGet.ProjectModel.ExternalProjectReference.UniqueName.get -> string!
 NuGet.ProjectModel.FileFormatException
 NuGet.ProjectModel.FileFormatException.Column.get -> int
 NuGet.ProjectModel.FileFormatException.FileFormatException(string! message) -> void
@@ -549,13 +549,13 @@ override NuGet.ProjectModel.AssetsLogMessage.GetHashCode() -> int
 override NuGet.ProjectModel.BuildAction.Equals(object? obj) -> bool
 override NuGet.ProjectModel.BuildAction.GetHashCode() -> int
 override NuGet.ProjectModel.BuildAction.ToString() -> string!
-~override NuGet.ProjectModel.CacheFile.Equals(object obj) -> bool
+override NuGet.ProjectModel.CacheFile.Equals(object? obj) -> bool
 override NuGet.ProjectModel.CacheFile.GetHashCode() -> int
 override NuGet.ProjectModel.CentralTransitiveDependencyGroup.Equals(object? obj) -> bool
 override NuGet.ProjectModel.CentralTransitiveDependencyGroup.GetHashCode() -> int
-~override NuGet.ProjectModel.ExternalProjectReference.Equals(object obj) -> bool
+override NuGet.ProjectModel.ExternalProjectReference.Equals(object? obj) -> bool
 override NuGet.ProjectModel.ExternalProjectReference.GetHashCode() -> int
-~override NuGet.ProjectModel.ExternalProjectReference.ToString() -> string
+override NuGet.ProjectModel.ExternalProjectReference.ToString() -> string!
 ~override NuGet.ProjectModel.LockFile.Equals(object obj) -> bool
 override NuGet.ProjectModel.LockFile.GetHashCode() -> int
 override NuGet.ProjectModel.LockFileDependency.Equals(object? obj) -> bool
@@ -605,9 +605,9 @@ static NuGet.ProjectModel.AssetsLogMessage.Create(NuGet.Common.IRestoreLogMessag
 static NuGet.ProjectModel.BuildAction.Parse(string! value) -> NuGet.ProjectModel.BuildAction
 static NuGet.ProjectModel.BuildAction.operator !=(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
 static NuGet.ProjectModel.BuildAction.operator ==(NuGet.ProjectModel.BuildAction left, NuGet.ProjectModel.BuildAction right) -> bool
-~static NuGet.ProjectModel.CacheFileFormat.Read(System.IO.Stream stream, NuGet.Common.ILogger log, string path) -> NuGet.ProjectModel.CacheFile
-~static NuGet.ProjectModel.CacheFileFormat.Write(System.IO.Stream stream, NuGet.ProjectModel.CacheFile cacheFile) -> void
-~static NuGet.ProjectModel.CacheFileFormat.Write(string filePath, NuGet.ProjectModel.CacheFile lockFile) -> void
+static NuGet.ProjectModel.CacheFileFormat.Read(System.IO.Stream! stream, NuGet.Common.ILogger! log, string! path) -> NuGet.ProjectModel.CacheFile!
+static NuGet.ProjectModel.CacheFileFormat.Write(System.IO.Stream! stream, NuGet.ProjectModel.CacheFile! cacheFile) -> void
+static NuGet.ProjectModel.CacheFileFormat.Write(string! filePath, NuGet.ProjectModel.CacheFile! lockFile) -> void
 ~static NuGet.ProjectModel.DependencyGraphSpec.GetDGSpecFileName(string projectName) -> string
 ~static NuGet.ProjectModel.DependencyGraphSpec.Load(string path) -> NuGet.ProjectModel.DependencyGraphSpec
 ~static NuGet.ProjectModel.DependencyGraphSpec.SortPackagesByDependencyOrder(System.Collections.Generic.IEnumerable<NuGet.ProjectModel.PackageSpec> packages) -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.PackageSpec>
