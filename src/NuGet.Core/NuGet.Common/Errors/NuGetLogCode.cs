@@ -846,6 +846,7 @@ namespace NuGet.Common
         /// <summary>
         /// https://aka.ms/malformedNuGetLicenseUrl
         /// </summary>
+        [Obsolete]
         NU5036 = 5036,
 
         /// <summary>
