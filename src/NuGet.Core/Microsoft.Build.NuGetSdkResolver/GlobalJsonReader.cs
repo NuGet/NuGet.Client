@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using NuGet.Shared;
@@ -28,16 +27,10 @@ namespace Microsoft.Build.NuGetSdkResolver
         public const string GlobalJsonFileName = "global.json";
 
         /// <summary>
-        /// The name of the section in global.json that contains MSBuild project SDK versions.
-        /// </summary>
-        public const string MSBuildSdksPropertyName = "msbuild-sdks";
-
-        /// <summary>
         /// Represents a thread-safe cache for files based on their full path and last write time.
         /// </summary>
         private static readonly ConcurrentDictionary<FileInfo, (DateTime LastWriteTime, Lazy<Dictionary<string, string>> Lazy)> FileCache = new ConcurrentDictionary<FileInfo, (DateTime, Lazy<Dictionary<string, string>>)>(FileSystemInfoFullNameEqualityComparer.Instance);
 
-        private static readonly byte[] MSBuildSdksPropertyNameUtf8 = Encoding.UTF8.GetBytes(MSBuildSdksPropertyName);
         private GlobalJsonReader()
         {
         }
@@ -184,7 +177,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                 {
                     if (reader.TokenType == JsonTokenType.PropertyName)
                     {
-                        bool isMSBuildSdksProperty = reader.ValueTextEquals(MSBuildSdksPropertyNameUtf8);
+                        bool isMSBuildSdksProperty = reader.ValueTextEquals("msbuild-sdks"u8);
 
                         reader.Read();
 
