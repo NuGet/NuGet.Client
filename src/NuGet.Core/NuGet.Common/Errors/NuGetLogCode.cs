@@ -279,6 +279,7 @@ namespace NuGet.Common
         /// <summary>
         /// Package Signature is invalid
         /// </summary>
+        [Obsolete]
         NU1410 = 1410,
 
         /// <summary>
@@ -700,6 +701,7 @@ namespace NuGet.Common
         /// <summary>
         /// Error_UnableToLocateBuildOutput
         /// </summary>
+        [Obsolete]
         NU5007 = 5007,
 
         /// <summary>
