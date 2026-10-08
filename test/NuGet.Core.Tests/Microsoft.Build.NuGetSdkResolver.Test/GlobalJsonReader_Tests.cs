@@ -194,7 +194,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         [Fact]
         public void GetMSBuildSdkVersions_ReloadsGlobalJson_WhenGlobalJsonChanges()
         {
-            // Replacing Newtonsoft must not change the last-write-time cache or its single-read concurrency behavior.
+            // Concurrent reads share the cached parse until the file's last-write time changes.
             var expectedVersions = new Dictionary<string, string>
             {
                 {"Sdk1", "1.0.0"},
