@@ -112,6 +112,10 @@
   <Target Name="GetSemanticVersion">
     <Message Text="$(SemanticVersion)" Importance="High"/>
   </Target>
+  <Target Name="ValidateNuGetVsixVersion" BeforeTargets="PrepareForBuild;GetNuGetVsixVersion">
+    <Error Condition="$(VsTargetMajorVersion) &gt; 19"
+           Text="VsTargetMajorVersion ($(VsTargetMajorVersion)) exceeds the hardcoded VSIX major version (19). Update NuGetVsixVersion in build\config.props to use $(VsTargetMajorVersion) via the VsTargetMajorVersion property instead of the hardcoded 19 prefix, and then delete this target." />
+  </Target>
   <Target Name="GetNuGetSdkVsSemanticVersion">
     <Message Text="$(NuGetSdkVsSemanticVersion)" Importance="High"/>
   </Target>
