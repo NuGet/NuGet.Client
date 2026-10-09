@@ -72,25 +72,6 @@ function Test-UninstallPackageWithNestedContentFiles {
     Assert-Null (Get-ProjectItem $p a\b\c\test.txt)
 }
 
-function Test-SimpleFSharpUninstall {
-    [SkipTest('https://github.com/NuGet/Home/issues/11982')]
-    param($context)
-
-    # Arrange
-    $p = New-FSharpLibrary
-    Build-Solution # wait for project nomination
-
-    # Act
-    Install-Package Ninject -ProjectName $p.Name -Source $context.RepositoryPath -version 2.0.1
-    Build-Solution # wait for assets file to be updated
-    Assert-NetCorePackageInLockFile $p Ninject 2.0.1
-    Uninstall-Package Ninject -ProjectName $p.Name
-    Build-Solution # wait for assets file to be updated
-
-    # Assert
-    Assert-NetCorePackageNotInLockFile $p Ninject
-}
-
 #function Test-UninstallSolutionOnlyPackage {
 function UninstallSolutionOnlyPackage {
     param(
