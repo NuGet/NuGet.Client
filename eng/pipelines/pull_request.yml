@@ -1,3 +1,7 @@
+# PrivateDev is supplemental validation for branches in NuGet/NuGet.Client.
+# Pull requests, including contributions from forks, are validated by pr.yml.
+pr: none
+
 parameters:
 - name: RunBuildForPublishing
   displayName: Build bits for publishing
