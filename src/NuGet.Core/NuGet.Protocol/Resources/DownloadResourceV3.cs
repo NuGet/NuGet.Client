@@ -102,11 +102,8 @@ namespace NuGet.Protocol
             {
                 using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
-                    {
-                        downloadUri = await GetDownloadUrlFromItemAsync(_regResource, identity, sourceCacheContext, log, token);
-                    }
-                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch ||
+                        !NuGetFeatureFlags.IsSystemTextJsonDeserializationDisabledByConfiguration(_environmentVariableReader))
                     {
                         downloadUri = await GetDownloadUrlFromItemAsync(_regResource, identity, sourceCacheContext, log, token);
                     }

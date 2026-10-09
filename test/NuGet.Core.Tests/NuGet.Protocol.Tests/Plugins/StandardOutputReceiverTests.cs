@@ -17,10 +17,11 @@ namespace NuGet.Protocol.Plugins.Tests
     public class StandardOutputReceiverTests
     {
         private static IEnvironmentVariableReader CreateEnvReader(bool useStj) =>
-            useStj
-                ? new TestEnvironmentVariableReader(
-                    new Dictionary<string, string> { [NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar] = "true" })
-                : TestEnvironmentVariableReader.EmptyInstance;
+            new TestEnvironmentVariableReader(
+                new Dictionary<string, string>
+                {
+                    [NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar] = useStj.ToString()
+                });
 
         [Fact]
         public void Constructor_ThrowsForNullProcess()

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using NuGet.Shared;
-
 namespace NuGet.VisualStudio
 {
     public class ExperimentationConstants
@@ -26,6 +24,5 @@ namespace NuGet.VisualStudio
         internal string FlightEnvironmentVariable { get; }
 
         public static readonly ExperimentationConstants PackageManagerBackgroundColor = new("nuGetPackageManagerBackgroundColor", "NUGET_PACKAGE_MANAGER_BACKGROUND_COLOR");
-        public static readonly ExperimentationConstants UseSystemTextJsonDeserialization = new(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, NuGetFeatureFlags.UseSystemTextJsonDeserializationEnvVar);
     }
 }
