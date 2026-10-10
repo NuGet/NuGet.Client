@@ -1261,7 +1261,7 @@ La ricerca viene eseguita in un confronto di stringhe senza distinzione tra maiu
       </trans-unit>
       <trans-unit id="SourcesCommandMinPublishAgeHoursDescription">
         <source>The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</source>
-        <target state="new">The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</target>
+        <target state="translated">Numero minimo di ore di pubblicazione di un pacchetto prima che possa essere selezionato per l'aggiornamento. Impostare su 0 per disabilitare.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">

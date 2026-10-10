@@ -1261,7 +1261,7 @@ Arama, sağlanan değeri kullanan büyük/küçük harfe duyarsız bir dize kar�
       </trans-unit>
       <trans-unit id="SourcesCommandMinPublishAgeHoursDescription">
         <source>The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</source>
-        <target state="new">The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</target>
+        <target state="translated">Bir paketin güncelleştirmeye seçilebilmesi için yayımlandıktan sonra geçmesi gereken minimum saat sayısı. Devre dışı bırakmak için 0 değerine ayarlayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">
