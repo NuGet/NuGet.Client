@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -24,7 +25,7 @@ namespace NuGet.Protocol
     /// <summary>
     /// A resource capable of fetching packages, package versions and package dependency information.
     /// </summary>
-    public class RemoteV2FindPackageByIdResource : FindPackageByIdResource
+    public class RemoteV2FindPackageByIdResource : FindPackageByIdResource, IVersionListCacheInfo
     {
         private static readonly XName _xnameEntry = XName.Get("entry", "http://www.w3.org/2005/Atom");
         private static readonly XName _xnameContent = XName.Get("content", "http://www.w3.org/2005/Atom");
@@ -36,11 +37,28 @@ namespace NuGet.Protocol
         private readonly HttpSource _httpSource;
 
         private readonly TaskResultCache<string, List<PackageInfo>> _packageVersionsCache = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, VersionListFetchKind> _versionListSources = new(StringComparer.OrdinalIgnoreCase);
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
         private readonly V2FeedQueryBuilder _queryBuilder;
 
         private const string ResourceTypeName = nameof(FindPackageByIdResource);
         private const string ThisTypeName = nameof(RemoteV2FindPackageByIdResource);
+
+        bool IVersionListCacheInfo.TryGetVersionListSource(string id, out VersionListFetchKind kind)
+        {
+            if (id != null && _versionListSources.TryGetValue(id, out kind))
+            {
+                return true;
+            }
+
+            kind = VersionListFetchKind.Unknown;
+            return false;
+        }
+
+        private void RecordVersionListSource(string id, HttpSourceResultStatus status)
+        {
+            VersionListSourceMap.Record(_versionListSources, id, status);
+        }
 
         /// <summary>
         /// Initializes a new <see cref="RemoteV2FindPackageByIdResource" /> class.
@@ -495,6 +513,8 @@ namespace NuGet.Protocol
                             },
                             async httpSourceResult =>
                             {
+                                RecordVersionListSource(id, httpSourceResult.Status);
+
                                 if (httpSourceResult.Status == HttpSourceResultStatus.NoContent)
                                 {
                                     // Team city returns 204 when no versions of the package exist
