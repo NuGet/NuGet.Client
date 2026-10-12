@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
@@ -69,7 +70,15 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "GeneratePathProperty");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Aliases");
 
-                entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
+                var restoreItem = new TaskItem(Guid.NewGuid().ToString(), properties);
+                if (msbuildItem is ITaskItem3 { Location: { } location } && !string.IsNullOrEmpty(location.File))
+                {
+                    // Task outputs acquire the <Output> element's location, so preserve the declaration as metadata.
+                    ((ITaskItem2)restoreItem).SetMetadataValueLiteral("NuGetSourceFile", location.File);
+                    restoreItem.SetMetadata("NuGetSourceLine", location.Line.ToString(CultureInfo.InvariantCulture));
+                    restoreItem.SetMetadata("NuGetSourceColumn", location.Column.ToString(CultureInfo.InvariantCulture));
+                }
+                entries.Add(restoreItem);
             }
 
             RestoreGraphItems = entries.ToArray();

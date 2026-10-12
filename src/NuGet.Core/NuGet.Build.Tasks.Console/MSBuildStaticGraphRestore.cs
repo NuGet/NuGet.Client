@@ -1368,6 +1368,15 @@ namespace NuGet.Build.Tasks.Console
 
                             buildCount++;
 
+                            foreach (var item in projectInstance.GetItems("PackageReference"))
+                            {
+                                if (item is ITaskItem3 { Location: { } location })
+                                {
+                                    MSBuildLogger.AddPackageReferenceLocation(projectInstance.FullPath, item.EvaluatedInclude,
+                                        (location.File, location.Line, location.Column));
+                                }
+                            }
+
                             projects.AddOrUpdate(
                                 projectInstance.FullPath,
                                 createProjectFactory,

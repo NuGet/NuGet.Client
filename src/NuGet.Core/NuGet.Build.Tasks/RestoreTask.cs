@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -214,12 +215,24 @@ namespace NuGet.Build.Tasks
             }
         }
 
-        private async Task<bool> ExecuteAsync(Common.ILogger log)
+        private async Task<bool> ExecuteAsync(MSBuildLogger log)
         {
             if (RestoreGraphItems.Length < 1 && !HideWarningsAndErrors)
             {
                 log.LogWarning(Strings.NoProjectsProvidedToTask);
                 return true;
+            }
+
+            foreach (var item in RestoreGraphItems)
+            {
+                string sourceFile = item.GetMetadata("NuGetSourceFile");
+                if (StringComparer.OrdinalIgnoreCase.Equals(item.GetMetadata("Type"), "Dependency") && !string.IsNullOrEmpty(sourceFile))
+                {
+                    log.AddPackageReferenceLocation(item.GetMetadata("ProjectUniqueName"), item.GetMetadata("Id"),
+                        (sourceFile,
+                            int.Parse(item.GetMetadata("NuGetSourceLine"), CultureInfo.InvariantCulture),
+                            int.Parse(item.GetMetadata("NuGetSourceColumn"), CultureInfo.InvariantCulture)));
+                }
             }
 
             // Convert to the internal wrapper
