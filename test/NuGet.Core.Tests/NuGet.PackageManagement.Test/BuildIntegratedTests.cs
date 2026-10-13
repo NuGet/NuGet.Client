@@ -1492,7 +1492,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task InstallPackageWithInitPS1()
+        public async Task InstallPackageDoesNotCallInitPs1()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1541,11 +1541,7 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), token);
 
             // Assert
-            Assert.Equal(2, buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count);
-            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(packageIdentity),
-                string.Join("|", buildIntegratedProject.ExecuteInitScriptAsyncCalls));
-            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().Contain(depedencyIdentity, because:
-                string.Join("|", buildIntegratedProject.ExecuteInitScriptAsyncCalls));
+            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
         }
 
         [Fact]
@@ -1600,7 +1596,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task UpdatePackageCallsInitPs1OnNewPackages()
+        public async Task UpdatePackageDoesNotCallInitPs1()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1652,8 +1648,7 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
             // Assert
-            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count.Should().Be(1);
-            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().Contain(updateIdentity);
+            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
         }
 
         [Fact]

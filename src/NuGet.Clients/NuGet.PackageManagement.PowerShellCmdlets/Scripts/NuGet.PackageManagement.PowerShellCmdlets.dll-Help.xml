@@ -1371,4 +1371,124 @@
       </maml:navigationLink>
     </maml:relatedLinks>
   </command:command>
+  <command:command
+      xmlns:maml="http://schemas.microsoft.com/maml/2004/10"
+      xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10"
+      xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Get-PackageInitScript</command:name>
+      <maml:description>
+        <maml:para>Lists installed package init scripts without executing them.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>PackageInitScript</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>Discovers tools/init.ps1 files belonging to installed packages across the solution, in dependency order. Returns Id, Version, and the absolute script path as FullName. The same package is listed only once.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-PackageInitScript</maml:name>
+        <command:parameter required="false" position="named">
+          <maml:name>Packages</maml:name>
+          <command:parameterValue required="true">string[]</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" position="named" pipelineInput="false">
+        <maml:name>Packages</maml:name>
+        <maml:description>
+          <maml:para>One or more installed package IDs. Use id@version to select a version when multiple installed versions contain init scripts. Unknown packages, invalid versions, or ambiguous IDs produce errors.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">string[]</command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type><maml:name>NuGet.PackageManagement.PowerShellCmdlets.PowerShellPackageInitScript</maml:name></dev:type>
+        <maml:description><maml:para>Objects with Id, Version, and FullName properties.</maml:para></maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <command:examples>
+      <command:example>
+        <maml:title>----------  EXAMPLE 1 ----------</maml:title>
+        <dev:code>PM&gt; Get-PackageInitScript</dev:code>
+        <dev:remarks><maml:para>Lists all installed init scripts without running them.</maml:para></dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 2 ----------</maml:title>
+        <dev:code>PM&gt; Get-PackageInitScript -Packages Package1,Package2@2.0.0</dev:code>
+        <dev:remarks><maml:para>Lists init scripts belonging to selected packages.</maml:para></dev:remarks>
+      </command:example>
+    </command:examples>
+  </command:command>
+
+  <command:command
+      xmlns:maml="http://schemas.microsoft.com/maml/2004/10"
+      xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10"
+      xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Import-PackageInitScript</command:name>
+      <maml:description>
+        <maml:para>Explicitly runs installed package init scripts.</maml:para>
+      </maml:description>
+      <command:verb>Import</command:verb>
+      <command:noun>PackageInitScript</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>With no arguments, runs all discovered tools/init.ps1 scripts. Alternatively, accepts positional or pipeline paths, objects with a FullName property, or package IDs with -Packages. Paths and -Packages cannot be combined. Only installed solution package init scripts can run; install.ps1 and uninstall.ps1 are never executed by this cmdlet. Null or empty path collections do nothing.</maml:para>
+      <maml:para>Scripts run in dependency order, once per package per invocation. NuGet also runs a package's init.ps1 before executing its applicable install.ps1 for a packages.config project. Otherwise, installing or updating a package does not automatically import its init script. Invoke this cmdlet again to import new scripts. Earlier script changes are not undone; restarting Visual Studio may be necessary when changing package versions.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem><maml:name>Import-PackageInitScript</maml:name></command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-PackageInitScript</maml:name>
+        <command:parameter required="true" position="1">
+          <maml:name>FullName</maml:name>
+          <command:parameterValue required="true">object[]</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+      <command:syntaxItem>
+        <maml:name>Import-PackageInitScript</maml:name>
+        <command:parameter required="true" position="named">
+          <maml:name>Packages</maml:name>
+          <command:parameterValue required="true">string[]</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="true" position="1" pipelineInput="true (ByValue, ByPropertyName)">
+        <maml:name>FullName</maml:name>
+        <maml:description>
+          <maml:para>Script paths or objects with a FullName property, such as Get-PackageInitScript output or FileInfo objects. Path is an alias. Inputs must identify installed tools/init.ps1 files.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">object[]</command:parameterValue>
+      </command:parameter>
+      <command:parameter required="true" position="named" pipelineInput="false">
+        <maml:name>Packages</maml:name>
+        <maml:description>
+          <maml:para>One or more installed package IDs. Ambiguous IDs require id@version. Cannot be combined with script paths.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">string[]</command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+    <command:examples>
+      <command:example>
+        <maml:title>----------  EXAMPLE 1 ----------</maml:title>
+        <dev:code>PM&gt; Import-PackageInitScript</dev:code>
+        <dev:remarks><maml:para>Imports all installed init scripts.</maml:para></dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 2 ----------</maml:title>
+        <dev:code>PM&gt; Get-PackageInitScript | Import-PackageInitScript</dev:code>
+        <dev:remarks><maml:para>Imports scripts supplied through the pipeline. Import-PackageInitScript (Get-PackageInitScript) also accepts these objects.</maml:para></dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 3 ----------</maml:title>
+        <dev:code>PM&gt; Import-PackageInitScript -Packages Package1,Package2@2.0.0</dev:code>
+        <dev:remarks><maml:para>Imports only the selected packages' init scripts.</maml:para></dev:remarks>
+      </command:example>
+    </command:examples>
+  </command:command>
 </helpItems>
