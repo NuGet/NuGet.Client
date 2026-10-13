@@ -16,6 +16,44 @@ namespace NuGet.Tests.Apex
     public partial class NuGetConsoleTestCase : SharedVisualStudioHostTestClass
     {
         [DataTestMethod]
+        [DataRow(ProjectTemplate.ConsoleApplication)]
+        [DataRow(ProjectTemplate.NetCoreConsoleApp)]
+        [Timeout(DefaultTimeout)]
+        public async Task ImportPackageInitScriptFromPMCRequiresExplicitInvocationAsync(ProjectTemplate projectTemplate)
+        {
+            using var pathContext = new SimpleTestPathContext();
+            if (projectTemplate == ProjectTemplate.ConsoleApplication)
+            {
+                pathContext.Settings.SetPackageFormatToPackagesConfig();
+            }
+
+            using var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: pathContext);
+            var first = new SimpleTestPackageContext("ExplicitInitScript", "1.0.0");
+            first.AddFile("tools/init.ps1", "$global:ExplicitInitCount++; function global:Get-ExplicitInitVersion { 'version-one' }");
+            var second = new SimpleTestPackageContext("ExplicitInitScript", "2.0.0");
+            second.AddFile("tools/init.ps1", "$global:ExplicitInitCount++; function global:Get-ExplicitInitVersion { 'version-two' }");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, first, second);
+
+            var console = GetConsole(testContext.Project);
+            console.Execute("$global:ExplicitInitCount = 0; Remove-Item function:\\Get-ExplicitInitVersion -ErrorAction Ignore");
+            console.InstallPackageFromPMC(first.Id, first.Version);
+            console.Execute("Get-PackageInitScript | Out-Null; Write-Host ('init-count:' + $global:ExplicitInitCount)");
+            Assert.IsTrue(console.IsMessageFoundInPMC("init-count:0"), console.GetText());
+
+            console.Execute("Get-PackageInitScript | Import-PackageInitScript; Get-ExplicitInitVersion");
+            Assert.IsTrue(console.IsMessageFoundInPMC("version-one"), console.GetText());
+
+            console.Clear();
+            console.UpdatePackageFromPMC(second.Id, second.Version);
+            console.Execute("Write-Host ('init-count:' + $global:ExplicitInitCount); Get-ExplicitInitVersion");
+            Assert.IsTrue(console.IsMessageFoundInPMC("init-count:1"), console.GetText());
+            Assert.IsTrue(console.IsMessageFoundInPMC("version-one"), console.GetText());
+
+            console.Execute("Import-PackageInitScript -Packages ExplicitInitScript@2.0.0; Get-ExplicitInitVersion");
+            Assert.IsTrue(console.IsMessageFoundInPMC("version-two"), console.GetText());
+        }
+
+        [DataTestMethod]
         [DynamicData(nameof(GetPackageReferenceTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
         public async Task InstallPackageFromPMCWithNoAutoRestoreVerifyAssetsFileAsync(ProjectTemplate projectTemplate)
