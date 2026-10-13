@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -462,6 +462,33 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Host_PSNotInstalled {
             get {
                 return ResourceManager.GetString("Host_PSNotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple installed versions of package &apos;{0}&apos; contain tools/init.ps1. Specify the package as id@version..
+        /// </summary>
+        internal static string InitScript_AmbiguousPackage {
+            get {
+                return ResourceManager.GetString("InitScript_AmbiguousPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts..
+        /// </summary>
+        internal static string InitScript_InvalidPath {
+            get {
+                return ResourceManager.GetString("InitScript_InvalidPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No installed tools/init.ps1 script matches package &apos;{0}&apos;. Use Get-PackageInitScript to list available scripts..
+        /// </summary>
+        internal static string InitScript_PackageNotFound {
+            get {
+                return ResourceManager.GetString("InitScript_PackageNotFound", resourceCulture);
             }
         }
         

@@ -63,6 +63,7 @@ stages:
     jobs:
     - template: /eng/common/templates-official/job/onelocbuild.yml
       parameters:
+        SkipLocProjectJsonGeneration: true
         LclSource: lclFilesfromPackage
         ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
           LclPackageId: 'LCL-JUNO-PROD-NuGetClient'
