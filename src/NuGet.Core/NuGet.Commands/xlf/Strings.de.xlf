@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../Strings.resx">
     <body>
@@ -896,6 +896,11 @@ Aktualisieren Sie Ihr .NET SDK oder entfernen Sie RestoreUseLegacyDependencyReso
         <source>Reading project file {0}.</source>
         <target state="translated">Projektdatei "{0}" wird gelesen.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Log_RefreshingHttpCacheOnMiss">
+        <source>The HTTP cache for package '{0}' does not contain a version satisfying '{1}'; refreshing once before failing.</source>
+        <target state="new">The HTTP cache for package '{0}' does not contain a version satisfying '{1}'; refreshing once before failing.</target>
+        <note>{0} - Package id, {1} - version range string</note>
       </trans-unit>
       <trans-unit id="Log_ResolverConflict">
         <source>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</source>

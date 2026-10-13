@@ -173,6 +173,102 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public async Task GetAllVersionsAsync_WhenFetchedFromNetwork_ReportsNetworkKind()
+        {
+            using (var test = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync())
+            {
+                await test.Resource.GetAllVersionsAsync(
+                    test.PackageIdentity.Id,
+                    test.SourceCacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                var cacheInfo = (IVersionListCacheInfo)test.Resource;
+                Assert.True(cacheInfo.TryGetVersionListSource(test.PackageIdentity.Id, out VersionListFetchKind kind));
+                Assert.Equal(VersionListFetchKind.Network, kind);
+            }
+        }
+
+        [Fact]
+        public async Task GetAllVersionsAsync_WhenFetchedFromHttpCache_ReportsHttpCacheKind()
+        {
+            using (var cacheDirectory = TestDirectory.Create())
+            {
+                using (var warm = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync(
+                    disableCaching: false,
+                    httpCacheDirectory: cacheDirectory.Path))
+                {
+                    await warm.Resource.GetAllVersionsAsync(
+                        warm.PackageIdentity.Id,
+                        warm.SourceCacheContext,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+
+                    Assert.True(((IVersionListCacheInfo)warm.Resource).TryGetVersionListSource(
+                        warm.PackageIdentity.Id, out VersionListFetchKind firstKind));
+                    Assert.Equal(VersionListFetchKind.Network, firstKind);
+                }
+
+                using (var cached = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync(
+                    disableCaching: false,
+                    httpCacheDirectory: cacheDirectory.Path))
+                {
+                    await cached.Resource.GetAllVersionsAsync(
+                        cached.PackageIdentity.Id,
+                        cached.SourceCacheContext,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+
+                    Assert.True(((IVersionListCacheInfo)cached.Resource).TryGetVersionListSource(
+                        cached.PackageIdentity.Id, out VersionListFetchKind kind));
+                    Assert.Equal(VersionListFetchKind.HttpCache, kind);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task GetAllVersionsAsync_WhenNetworkFollowsHttpCache_ReportsNetworkKind()
+        {
+            using (var cacheDirectory = TestDirectory.Create())
+            {
+                using (var warm = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync(
+                    disableCaching: false,
+                    httpCacheDirectory: cacheDirectory.Path))
+                {
+                    await warm.Resource.GetAllVersionsAsync(
+                        warm.PackageIdentity.Id,
+                        warm.SourceCacheContext,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+                }
+
+                using (var cached = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync(
+                    disableCaching: false,
+                    httpCacheDirectory: cacheDirectory.Path))
+                {
+                    await cached.Resource.GetAllVersionsAsync(
+                        cached.PackageIdentity.Id,
+                        cached.SourceCacheContext,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+
+                    using (var refreshed = cached.SourceCacheContext.WithRefreshCacheTrue())
+                    {
+                        await cached.Resource.GetAllVersionsAsync(
+                            cached.PackageIdentity.Id,
+                            refreshed,
+                            NullLogger.Instance,
+                            CancellationToken.None);
+                    }
+
+                    Assert.True(((IVersionListCacheInfo)cached.Resource).TryGetVersionListSource(
+                        cached.PackageIdentity.Id, out VersionListFetchKind kind));
+                    Assert.Equal(VersionListFetchKind.Network, kind);
+                }
+            }
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -639,7 +735,10 @@ namespace NuGet.Protocol.Tests
                 GC.SuppressFinalize(this);
             }
 
-            internal static async Task<HttpFileSystemBasedFindPackageByIdResourceTest> CreateAsync(TestEnvironmentVariableReader testEnvironmentVariableReader = null)
+            internal static async Task<HttpFileSystemBasedFindPackageByIdResourceTest> CreateAsync(
+                TestEnvironmentVariableReader testEnvironmentVariableReader = null,
+                bool disableCaching = true,
+                string httpCacheDirectory = null)
             {
                 var packageIdentity = new PackageIdentity(id: "DeepEqual", version: NuGetVersion.Parse("1.4.0"));
                 var testDirectory = TestDirectory.Create();
@@ -681,7 +780,11 @@ namespace NuGet.Protocol.Tests
                 };
 
                 var baseUris = new List<Uri>() { packageSource.SourceUri };
-                var httpSource = new TestHttpSource(packageSource, responses);
+                var httpSource = new TestHttpSource(packageSource, responses)
+                {
+                    DisableCaching = disableCaching,
+                    HttpCacheDirectory = httpCacheDirectory ?? testDirectory.Path
+                };
                 var resource = new HttpFileSystemBasedFindPackageByIdResource(
                     baseUris,
                     httpSource,
