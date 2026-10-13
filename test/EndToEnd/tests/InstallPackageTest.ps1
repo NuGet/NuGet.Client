@@ -1235,7 +1235,7 @@ function Test-InstallPackageTargetingNetClientAndNet {
     Assert-True ($reference.Path.Contains("net40-client"))
 }
 
-function Test-InstallWithFailingInitPs1RollsBack {
+function Test-InstallWithFailingInitPs1RequiresExplicitImport {
     param(
         $context
     )
@@ -1243,11 +1243,14 @@ function Test-InstallWithFailingInitPs1RollsBack {
     $p = New-ConsoleApplication
 
     # Act
-    Assert-Throws { $p | Install-Package PackageWithFailingInitPs1 -Source $context.RepositoryRoot } "This is an exception"
+    $p | Install-Package PackageWithFailingInitPs1 -Source $context.RepositoryRoot
 
     # Assert
-    Assert-Null (Get-ProjectPackage $p PackageWithFailingInitPs1)
-    Assert-Null (Get-SolutionPackage PackageWithFailingInitPs1)
+    Assert-Package $p PackageWithFailingInitPs1
+    Assert-SolutionPackage PackageWithFailingInitPs1
+    Assert-Throws { Import-PackageInitScript -Packages PackageWithFailingInitPs1 } "This is an exception"
+    Assert-Package $p PackageWithFailingInitPs1
+    Assert-SolutionPackage PackageWithFailingInitPs1
 }
 
 function Test-InstallPackageInvokeInstallScriptWhenProjectNameHasApostrophe {
