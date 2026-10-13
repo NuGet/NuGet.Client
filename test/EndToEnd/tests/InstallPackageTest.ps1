@@ -109,13 +109,13 @@ function Test-InstallPackageInvokeInstallScriptAndInitScript {
 
     # Arrange
     $p = New-ConsoleApplication
+    Remove-Item function:\Get-World -ErrorAction Ignore
 
     # Act
     Install-Package PackageWithScripts -Source $context.RepositoryRoot
 
     # Assert
 
-    # This asserts init.ps1 gets called
     Assert-True (Test-Path function:\Get-World)
 }
 

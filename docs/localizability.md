@@ -21,6 +21,15 @@ Therefore, all strings that are displayed to users must use resx file resources,
 If the string has words or phrases that should not be translated in any language, in the comment section of the resx, use something like `{Locked="allowUntrustedRoot"}`.
 You can have multiple locked messages by repeating the blocks, for example `{Locked="one"}{Locked="two"}`.
 
+## Localization index
+
+`eng\Localize\LocProject.json` lists the localization inputs.
+Arcade can discover `*.xlf` files automatically, but its generator does not include our additional PowerShell help files.
+We therefore maintain this index explicitly instead of using automatic generation.
+When adding a resource file, add its XLIFF input to this index as well.
+
+For configuration details, see [Arcade's OneLocBuild documentation][1].
+
 ## Fixing translation errors
 
 All translations go through Microsoft's [OneLocBuild][1] system, so do not create a pull request updating xlf files in this repo.

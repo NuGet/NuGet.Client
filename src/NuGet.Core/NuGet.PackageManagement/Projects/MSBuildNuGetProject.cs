@@ -376,32 +376,28 @@ namespace NuGet.ProjectManagement
             PackageEventsProvider.Instance.NotifyReferenceAdded(packageEventArgs);
 
             // Step-12: Execute powershell script - install.ps1
-            var anyFrameworkToolsGroup = toolItemGroups.FirstOrDefault(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework));
-            if (anyFrameworkToolsGroup != null)
-            {
-                var initPS1RelativePath = anyFrameworkToolsGroup.Items
-                    .FirstOrDefault(p =>
-                        p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase));
-                if (!string.IsNullOrEmpty(initPS1RelativePath))
-                {
-                    initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(
-                        initPS1RelativePath);
-                    await ProjectServices.ScriptService.ExecutePackageScriptAsync(
-                        packageIdentity,
-                        packageInstallPath,
-                        initPS1RelativePath,
-                        nuGetProjectContext,
-                        throwOnFailure: true,
-                        token: token);
-                }
-            }
-
             if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
             {
                 var installPS1RelativePath = compatibleToolItemsGroup.Items.FirstOrDefault(
                     p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Install, StringComparison.OrdinalIgnoreCase));
                 if (!string.IsNullOrEmpty(installPS1RelativePath))
                 {
+                    // Preserve initialization required by install.ps1, but do not initialize init-only packages.
+                    var anyFrameworkToolsGroup = toolItemGroups.FirstOrDefault(g => g.TargetFramework.Equals(NuGetFramework.AnyFramework));
+                    var initPS1RelativePath = anyFrameworkToolsGroup?.Items.FirstOrDefault(
+                        p => p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase));
+                    if (!string.IsNullOrEmpty(initPS1RelativePath))
+                    {
+                        initPS1RelativePath = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
+                        await ProjectServices.ScriptService.ExecutePackageScriptAsync(
+                            packageIdentity,
+                            packageInstallPath,
+                            initPS1RelativePath,
+                            nuGetProjectContext,
+                            throwOnFailure: true,
+                            token: token);
+                    }
+
                     await ProjectServices.ScriptService.ExecutePackageScriptAsync(
                         packageIdentity,
                         packageInstallPath,

@@ -1,0 +1,209 @@
+{
+  "Projects": [
+    {
+      "LanguageSet": "VS_Main_Languages",
+      "LocItems": [
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.CommandLine\\xlf\\NuGetCommand.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.CommandLine\\xlf\\NuGetCommand.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.CommandLine\\xlf\\NuGetResources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.CommandLine\\xlf\\NuGetResources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.Console\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.Console\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.MSSigning.Extensions\\xlf\\NuGetMSSignCommand.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.MSSigning.Extensions\\xlf\\NuGetMSSignCommand.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.PowerShellCmdlets\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.PowerShellCmdlets\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.UI\\Options\\xlf\\GeneralOptionControl.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.UI\\Options\\xlf\\GeneralOptionControl.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.UI\\Options\\xlf\\PackageSourcesOptionsControl.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.UI\\Options\\xlf\\PackageSourcesOptionsControl.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.UI\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.UI\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.VisualStudio\\xlf\\CommonResources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.VisualStudio\\xlf\\CommonResources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.VisualStudio\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.VisualStudio\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.SolutionRestoreManager\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.SolutionRestoreManager\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.Tools\\xlf\\NuGetTools.vsct.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.Tools\\xlf\\NuGetTools.vsct.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.Tools\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.Tools\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.Tools\\xlf\\VSPackage.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.Tools\\xlf\\VSPackage.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Common\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Common\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Implementation\\Resources\\xlf\\VsResources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Implementation\\Resources\\xlf\\VsResources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Implementation\\xlf\\CommonResources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Implementation\\xlf\\CommonResources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Internal.Contracts\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.VisualStudio.Internal.Contracts\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.VisualStudio\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.VisualStudio\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\Microsoft.Build.NuGetSdkResolver\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\Microsoft.Build.NuGetSdkResolver\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Build.Tasks.Pack\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Build.Tasks.Pack\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Build.Tasks\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Build.Tasks\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.CommandLine.XPlat\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.CommandLine.XPlat\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Commands\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Commands\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Common\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Common\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Configuration\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Configuration\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Credentials\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Credentials\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.DependencyResolver.Core\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.DependencyResolver.Core\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Frameworks\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Frameworks\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.LibraryModel\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.LibraryModel\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.PackageManagement\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.PackageManagement\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Packaging\\PackageCreation\\Resources\\xlf\\NuGetResources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Packaging\\PackageCreation\\Resources\\xlf\\NuGetResources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Packaging\\Rules\\xlf\\AnalysisResources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Packaging\\Rules\\xlf\\AnalysisResources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Packaging\\Signing\\DerEncoding\\xlf\\SR.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Packaging\\Signing\\DerEncoding\\xlf\\SR.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Packaging\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Packaging\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.ProjectModel\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.ProjectModel\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Protocol\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Protocol\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Resolver\\xlf\\Strings.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Resolver\\xlf\\Strings.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Core\\NuGet.Versioning\\xlf\\Resources.cs.xlf",
+          "CopyOption": "UsePlaceholders",
+          "OutputPath": ".\\src\\NuGet.Core\\NuGet.Versioning\\xlf\\Resources.{Lang}.xlf"
+        },
+        {
+          "SourceFile": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.PowerShellCmdlets\\Scripts\\about_NuGet.Cmdlets.help.txt",
+          "CopyOption": "LangIDOnPath",
+          "OutputPath": ".\\src\\NuGet.Clients\\NuGet.PackageManagement.PowerShellCmdlets\\Scripts\\"
+        }
+      ]
+    }
+  ]
+}
