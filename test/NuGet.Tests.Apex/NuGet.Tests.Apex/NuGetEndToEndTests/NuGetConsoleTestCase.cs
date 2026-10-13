@@ -37,6 +37,14 @@ namespace NuGet.Tests.Apex
             var console = GetConsole(testContext.Project);
             console.Execute("$global:ExplicitInitCount = 0; Remove-Item function:\\Get-ExplicitInitVersion -ErrorAction Ignore");
             console.InstallPackageFromPMC(first.Id, first.Version);
+            if (projectTemplate == ProjectTemplate.NetCoreConsoleApp)
+            {
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, first.Id, first.Version, Logger);
+            }
+            else
+            {
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, first.Id, first.Version, Logger);
+            }
             console.Execute("Get-PackageInitScript | Out-Null; Write-Host ('init-count:' + $global:ExplicitInitCount)");
             Assert.IsTrue(console.IsMessageFoundInPMC("init-count:0"), console.GetText());
 
@@ -45,6 +53,14 @@ namespace NuGet.Tests.Apex
 
             console.Clear();
             console.UpdatePackageFromPMC(second.Id, second.Version);
+            if (projectTemplate == ProjectTemplate.NetCoreConsoleApp)
+            {
+                CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, second.Id, second.Version, Logger);
+            }
+            else
+            {
+                CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, second.Id, second.Version, Logger);
+            }
             console.Execute("Write-Host ('init-count:' + $global:ExplicitInitCount); Get-ExplicitInitVersion");
             Assert.IsTrue(console.IsMessageFoundInPMC("init-count:1"), console.GetText());
             Assert.IsTrue(console.IsMessageFoundInPMC("version-one"), console.GetText());
