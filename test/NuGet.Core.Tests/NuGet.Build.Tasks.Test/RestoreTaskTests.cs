@@ -19,25 +19,27 @@ namespace NuGet.Build.Tasks.Test
     public class RestoreTaskTests
     {
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        [InlineData(null)]
-        public async Task Execute_PrunePackageReference_UsesDeclarationLocationWhenAvailable(bool? hasLocation)
+        [InlineData("5", "7", 5, 7)]
+        [InlineData("5", "0", 5, 0)]
+        [InlineData(null, null, 0, 0)]
+        [InlineData("invalid", "7", 0, 0)]
+        [InlineData("0", "7", 0, 0)]
+        [InlineData("-1", "7", 0, 0)]
+        [InlineData("5", "-1", 0, 0)]
+        [InlineData("5", "invalid", 0, 0)]
+        public async Task Execute_PrunePackageReference_UsesDeclarationLocationWhenAvailable(string line, string column, int expectedLine, int expectedColumn)
         {
             using var paths = new SimpleTestPathContext();
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(paths.PackageSource, new SimpleTestPackageContext("X", "1.0.0"));
             string projectPath = Path.Combine(paths.SolutionRoot, "project.csproj");
             string sourcePath = Path.Combine(paths.SolutionRoot, "references%20.props");
-            var reference = new MockTaskItem("X") { ["Version"] = "1.0.0" };
-            ITaskItem packageReference = reference;
-            if (hasLocation.HasValue)
+            var packageReference = new MockTaskItem("X")
             {
-                var item = new Mock<ITaskItem3>();
-                item.SetupGet(i => i.ItemSpec).Returns(reference.ItemSpec);
-                item.Setup(i => i.GetMetadata(It.IsAny<string>())).Returns((string name) => reference.GetMetadata(name));
-                item.SetupGet(i => i.Location).Returns(hasLocation.Value ? new TaskItemLocation(sourcePath, 5, 7) : (TaskItemLocation?)null);
-                packageReference = item.Object;
-            }
+                ["Version"] = "1.0.0",
+                ["DefiningProjectFullPath"] = sourcePath,
+                ["DefiningProjectLineNumber"] = line,
+                ["DefiningProjectColumnNumber"] = column,
+            };
 
             BuildWarningEventArgs warning = null;
             string error = null;
@@ -83,9 +85,9 @@ namespace NuGet.Build.Tasks.Test
             Assert.True(restore.Execute(), error);
             Assert.NotNull(warning);
             Assert.Equal("NU1510", warning.Code);
-            Assert.Equal(hasLocation == true ? sourcePath : projectPath, warning.File);
-            Assert.Equal(hasLocation == true ? 5 : 0, warning.LineNumber);
-            Assert.Equal(hasLocation == true ? 7 : 0, warning.ColumnNumber);
+            Assert.Equal(expectedLine > 0 ? sourcePath : projectPath, warning.File);
+            Assert.Equal(expectedLine, warning.LineNumber);
+            Assert.Equal(expectedColumn, warning.ColumnNumber);
         }
 
         // StaticState exposes process-global events, and there is no way to clear their subscriptions, so each test

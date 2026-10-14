@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Common;
@@ -60,12 +61,14 @@ namespace NuGet.Build
             _taskLogging = taskLogging ?? throw new ArgumentNullException(nameof(taskLogging));
         }
 
-        internal void AddPackageReferenceLocation(string projectPath, string packageId, (string File, int Line, int Column) location)
+        internal void AddPackageReferenceLocation(string projectPath, string packageId, string file, string line, string column)
         {
-            if (!string.IsNullOrEmpty(location.File))
+            if (!string.IsNullOrEmpty(file)
+                && int.TryParse(line, NumberStyles.None, CultureInfo.InvariantCulture, out int lineNumber) && lineNumber > 0
+                && int.TryParse(column, NumberStyles.None, CultureInfo.InvariantCulture, out int columnNumber))
             {
                 _packageReferenceLocations.GetOrAdd(projectPath,
-                    _ => new ConcurrentDictionary<string, (string File, int Line, int Column)>(StringComparer.OrdinalIgnoreCase)).TryAdd(packageId, location);
+                    _ => new ConcurrentDictionary<string, (string File, int Line, int Column)>(StringComparer.OrdinalIgnoreCase)).TryAdd(packageId, (file, lineNumber, columnNumber));
             }
         }
 

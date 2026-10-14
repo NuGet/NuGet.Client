@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
@@ -71,12 +70,14 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Aliases");
 
                 var restoreItem = new TaskItem(Guid.NewGuid().ToString(), properties);
-                if (msbuildItem is ITaskItem3 { Location: { } location } && !string.IsNullOrEmpty(location.File))
+                string sourceFile = msbuildItem.GetMetadata("DefiningProjectFullPath");
+                string sourceLine = msbuildItem.GetMetadata("DefiningProjectLineNumber");
+                if (!string.IsNullOrEmpty(sourceFile) && !string.IsNullOrEmpty(sourceLine))
                 {
                     // Task outputs acquire the <Output> element's location, so preserve the declaration as metadata.
-                    ((ITaskItem2)restoreItem).SetMetadataValueLiteral("NuGetSourceFile", location.File);
-                    restoreItem.SetMetadata("NuGetSourceLine", location.Line.ToString(CultureInfo.InvariantCulture));
-                    restoreItem.SetMetadata("NuGetSourceColumn", location.Column.ToString(CultureInfo.InvariantCulture));
+                    ((ITaskItem2)restoreItem).SetMetadataValueLiteral("NuGetSourceFile", sourceFile);
+                    restoreItem.SetMetadata("NuGetSourceLine", sourceLine);
+                    restoreItem.SetMetadata("NuGetSourceColumn", msbuildItem.GetMetadata("DefiningProjectColumnNumber") ?? string.Empty);
                 }
                 entries.Add(restoreItem);
             }

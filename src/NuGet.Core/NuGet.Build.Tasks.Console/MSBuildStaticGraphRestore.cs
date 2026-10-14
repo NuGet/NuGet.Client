@@ -1370,11 +1370,9 @@ namespace NuGet.Build.Tasks.Console
 
                             foreach (var item in projectInstance.GetItems("PackageReference"))
                             {
-                                if (item is ITaskItem3 { Location: { } location })
-                                {
-                                    MSBuildLogger.AddPackageReferenceLocation(projectInstance.FullPath, item.EvaluatedInclude,
-                                        (location.File, location.Line, location.Column));
-                                }
+                                MSBuildLogger.AddPackageReferenceLocation(projectInstance.FullPath, item.EvaluatedInclude,
+                                    item.GetMetadataValue("DefiningProjectFullPath"), item.GetMetadataValue("DefiningProjectLineNumber"),
+                                    item.GetMetadataValue("DefiningProjectColumnNumber"));
                             }
 
                             projects.AddOrUpdate(
