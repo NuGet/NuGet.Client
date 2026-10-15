@@ -783,7 +783,12 @@ namespace NuGet.Tests.Apex
             using var pathContext = new SimpleTestPathContext();
             pathContext.Settings.SetPackageFormatToPackagesConfig();
             using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger, simpleTestPathContext: pathContext);
-            var source = GetEndToEndPackagesPath();
+            CopyFixturePackagesToSource(
+                testContext.PackageSource,
+                "NonStrongNameA.1.0.0.0.nupkg",
+                "NonStrongNameB.1.0.0.0.nupkg",
+                "NonStrongNameB.2.0.0.0.nupkg");
+            var source = testContext.PackageSource;
             var console = GetConsole(testContext.Project);
 
             Install(console, testContext.Project, "NonStrongNameB", "1.0.0.0", source);
@@ -1322,7 +1327,17 @@ namespace NuGet.Tests.Apex
         public async Task UpdatePackageFromPMCWithReorderedDependencies_UpdatesGraphAsync()
         {
             using var testContext = CreatePackagesConfigContext(ProjectTemplate.ConsoleApplication);
-            await CreateBindingRedirectPackagesFromDgmlAsync(testContext.PackageSource, "UpdatingPackageInstallOrdering");
+            var a1 = new GeneratedPackage("A", "1.0");
+            var a2 = new GeneratedPackage("A", "2.0");
+            var b1 = new GeneratedPackage("B", "1.0");
+            var b2 = new GeneratedPackage("B", "2.0");
+            var c1 = new GeneratedPackage("C", "1.0");
+            var c2 = new GeneratedPackage("C", "2.0");
+            a1.Dependencies.Add((b1, null));
+            b1.Dependencies.Add((c1, null));
+            a2.Dependencies.Add((c2, null));
+            c2.Dependencies.Add((b2, null));
+            await CreatePackagesAsync(testContext.PackageSource, CreateGeneratedPackageContexts(a1, b1, c1, a2, c2, b2).ToArray());
             var console = GetConsole(testContext.Project);
 
             console.Execute($"Install-Package A -Version 1.0 -Source '{testContext.PackageSource}'");
@@ -1580,11 +1595,6 @@ namespace NuGet.Tests.Apex
             }
 
             document.Save(packagesConfigPath);
-        }
-
-        private static string GetEndToEndPackagesPath()
-        {
-            return Path.Combine(GetRepositoryRoot(), "test", "EndToEnd", "Packages");
         }
 
         private static Task CreatePackagesAsync(string source, params SimpleTestPackageContext[] packages)

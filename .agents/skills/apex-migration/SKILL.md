@@ -427,10 +427,11 @@ This section captures lessons learned from actual migration runs that don't fit 
   projects as C#. Use `ProjectTemplate.ConsoleApplication` with `ProjectLanguage.FSharp`; this is
   the template pattern used by existing Apex F# tests. Avoid `ProjectTemplate.FSharpLibrary` unless
   you have verified the target VS instance contains `FSharpLibrary.zip`.
-- **DGML binding redirect fixtures can be recreated in Apex.** The old E2E package graphs in
-  `test/EndToEnd/Packages/*/BindingRedirectsGraph.dgml` use link targets as default dependency
-  versions when no `Label` range is present. Generated assemblies should compile to a short temp
-  path, not under the fixture folder, to avoid CodeDom resource/path failures.
+- **Translate DGML fixtures into explicit C# package definitions, not a runtime DGML loader.**
+  The old E2E graphs use link targets as default dependency versions when no `Label` range is
+  present. Preserve both package dependencies and compile-time assembly references, then create
+  packages with `SimpleTestPackageContext` and `SimpleTestPackageUtility`. Generated assemblies
+  should compile to a short temp path to avoid CodeDom resource/path failures.
 - **Binding redirect tests need an actual assembly conflict.** Installing a package whose assembly
   was compiled against the same dependency version it resolves does not produce a redirect. Use the
   old graph pattern (for example install `B 2.0`, then `A 1.0` compiled against `B 1.0`) before
@@ -464,9 +465,9 @@ This section captures lessons learned from actual migration runs that don't fit 
   `*.resources.dll`, so compile real assemblies for those files too. Placeholder bytes can break
   DTE reference addition. Packages without files get default assets from `SimpleTestPackageUtility`,
   so add a harmless root file such as `readme.txt`.
-- **DGML graphs such as `UpdatingPackageInstallOrdering.dgml` can reuse
-  `CreateBindingRedirectPackagesFromDgmlAsync`.** It first looks for `<scenario>.dgml` in the fixture
-  folder.
+- **Preserve ordering graphs in C# package definitions.** For example, the old
+  `UpdatingPackageInstallOrdering.dgml` changes A → B → C into A → C → B across package versions.
+  Keep that dependency reversal when creating packages through the shared test utilities.
 - **Preserve the original feed protocol in unlisted or delisted package scenarios.** A V2 OData
   source and a V3 source exercise different client paths, so use `MockServer` with
   `MockResponseBuilder.GetV2Source()` when the E2E test used V2. Use
@@ -487,6 +488,19 @@ This section captures lessons learned from actual migration runs that don't fit 
   `New-ClassLibraryNET46` maps to `ProjectTemplate.ClassLibrary` with
   `ProjectTargetFramework.V46`, not the Apex default framework. This is especially important for
   binding-redirect scenarios, where framework unification behavior can change the result.
+
+### 2026-10-12: Apex fixture deployment
+
+- **Apex CI runs deployed binaries without a source checkout.** Never locate fixtures by searching
+  for `NuGet.sln` or walking up from the working directory or test assembly. Generate packages in
+  `SimpleTestPathContext.PackageSource`, as existing Apex tests do.
+- **Prefer package creation APIs over embedded E2E graph fixtures.** Define dependency graphs in
+  C# and create packages through the shared utilities. Embed static assets such as prebuilt
+  packages or a test signing key only when needed to preserve their assembly behavior, with
+  explicit `LogicalName` metadata and the shared `ResourceTestUtility`.
+- **Validate deployment, not just execution in the checkout.** Copy the Apex output to an isolated
+  directory outside the repository and run fixture-dependent tests there with that directory as
+  the working directory.
 
 ---
 
