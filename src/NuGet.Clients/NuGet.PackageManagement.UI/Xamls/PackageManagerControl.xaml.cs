@@ -459,7 +459,11 @@ namespace NuGet.PackageManagement.UI
             // When the control is hidden (e.g. another document is opened on top of it), refreshes
             // triggered by external changes are skipped and recorded via _refreshOnVisibleChange.
             // Apply the pending refresh now that the control is visible again.
-            if (e.NewValue is true && _loadedAndInitialized && _refreshOnVisibleChange)
+            // Also refresh packages.config projects, whose external file edits do not trigger cache updates.
+            if (e.NewValue is true
+                && _loadedAndInitialized
+                && (_refreshOnVisibleChange
+                    || Model.Context.Projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig)))
             {
                 _refreshOnVisibleChange = false;
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
