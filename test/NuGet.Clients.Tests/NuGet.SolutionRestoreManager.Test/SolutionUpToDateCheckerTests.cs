@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -12,14 +13,57 @@ using FluentAssertions;
 using NuGet.Commands;
 using NuGet.Commands.Test;
 using NuGet.Common;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
     public class SolutionUpToDateCheckerTests
     {
+        [Fact]
+        public void PerformUpToDateCheck_MovedNominatedDeclaration_RebindsWarningWithoutRestore()
+        {
+            using var directory = TestDirectory.Create();
+            string projectPath = Path.Combine(directory.Path, "project.csproj");
+            var names = new ProjectNames(projectPath, "project", "project.csproj", "project", Guid.NewGuid().ToString());
+            PackageSpec Nominate(string file, string line)
+            {
+                var nomination = new TestProjectRestoreInfoBuilder().WithTargetFrameworkInfo("net10.0", tfm =>
+                    tfm.WithItem(ProjectItems.PackageReference, "X",
+                    [
+                        new("Version", "1.0.0"), new("DefiningProjectFullPath", file),
+                        new("DefiningProjectLineNumber", line), new("DefiningProjectColumnNumber", "7")
+                    ])).Build();
+                var spec = VsSolutionRestoreService.ToPackageSpec(names, nomination).Clone();
+                spec.RestoreMetadata.OutputPath = Path.Combine(directory.Path, "obj");
+                spec.RestoreSettings.HideWarningsAndErrors = false;
+                return spec;
+            }
+            var original = Nominate(Path.Combine(directory.Path, "references.props"), "5");
+            var checker = new SolutionUpToDateChecker();
+            checker.PerformUpToDateCheck(ProjectTestHelpers.GetDGSpecForFirstProject(original), NullLogger.Instance).Should().ContainSingle();
+            CreateDummyOutputFiles(original);
+            var warning = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1510, "prune X", "X", "net10.0");
+            var collector = new RestoreCollectorLogger(NullLogger.Instance);
+            collector.ApplyRestoreInputs(original);
+            collector.Log(warning);
+            checker.SaveRestoreStatus([new RestoreSummary(true, projectPath, [], [], 0, [warning])]);
+
+            string movedPath = Path.Combine(directory.Path, "moved%20.props");
+            var moved = Nominate(movedPath, "12");
+            moved.Should().Be(original);
+            var logger = new TestLogger();
+            checker.PerformUpToDateCheck(ProjectTestHelpers.GetDGSpecForFirstProject(moved), logger).Should().BeEmpty();
+            var replayed = Assert.IsAssignableFrom<IRestoreLogMessage>(Assert.Single(logger.LogMessages));
+            replayed.ProjectPath.Should().Be(projectPath);
+            replayed.FilePath.Should().Be(movedPath);
+            replayed.StartLineNumber.Should().Be(12);
+            replayed.StartColumnNumber.Should().Be(7);
+        }
+
         [Fact]
         public void GetOutputFilePaths_GetOutputFilePaths_AllIntermediateOutputsGoToTheOutputFolder()
         {

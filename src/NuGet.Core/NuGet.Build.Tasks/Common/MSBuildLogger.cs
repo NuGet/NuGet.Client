@@ -4,8 +4,6 @@
 #nullable disable
 
 using System;
-using System.Collections.Concurrent;
-using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Common;
@@ -23,8 +21,6 @@ namespace NuGet.Build
     class MSBuildLogger : LoggerBase, Common.ILogger
     {
         private readonly TaskLoggingHelper _taskLogging;
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, (string File, int Line, int Column)>> _packageReferenceLocations =
-            new ConcurrentDictionary<string, ConcurrentDictionary<string, (string File, int Line, int Column)>>(PathUtility.GetStringComparerBasedOnOS());
 
         private delegate void LogMessageWithDetails(string subcategory,
             string code,
@@ -59,17 +55,6 @@ namespace NuGet.Build
         public MSBuildLogger(TaskLoggingHelper taskLogging)
         {
             _taskLogging = taskLogging ?? throw new ArgumentNullException(nameof(taskLogging));
-        }
-
-        internal void AddPackageReferenceLocation(string projectPath, string packageId, string file, string line, string column)
-        {
-            if (!string.IsNullOrEmpty(file)
-                && int.TryParse(line, NumberStyles.None, CultureInfo.InvariantCulture, out int lineNumber) && lineNumber > 0
-                && int.TryParse(column, NumberStyles.None, CultureInfo.InvariantCulture, out int columnNumber))
-            {
-                _packageReferenceLocations.GetOrAdd(projectPath,
-                    _ => new ConcurrentDictionary<string, (string File, int Line, int Column)>(StringComparer.OrdinalIgnoreCase)).TryAdd(packageId, (file, lineNumber, columnNumber));
-            }
         }
 
         public override void Log(ILogMessage message)
@@ -190,31 +175,19 @@ namespace NuGet.Build
             }
         }
 
-        private void LogError(INuGetLogMessage logMessage,
+        private static void LogError(INuGetLogMessage logMessage,
             LogErrorWithDetails logWithDetails,
             LogErrorAsString logAsString)
         {
             if (logMessage.Code > NuGetLogCode.Undefined)
             {
-                string file = logMessage.FilePath;
-                int line = logMessage.StartLineNumber;
-                int column = logMessage.StartColumnNumber;
-                if (logMessage is IRestoreLogMessage { Code: NuGetLogCode.NU1510, ProjectPath: { } projectPath, LibraryId: { } packageId }
-                    && _packageReferenceLocations.TryGetValue(projectPath, out var locations)
-                    && locations.TryGetValue(packageId, out var location))
-                {
-                    file = location.File;
-                    line = location.Line;
-                    column = location.Column;
-                }
-
                 // NuGet does not currently have a subcategory while throwing logs, hence string.Empty
                 logWithDetails(string.Empty,
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
                     Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
-                    file,
-                    line,
-                    column,
+                    logMessage.FilePath,
+                    logMessage.StartLineNumber,
+                    logMessage.StartColumnNumber,
                     logMessage.EndLineNumber,
                     logMessage.EndColumnNumber,
                     logMessage.Message);

@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
 using NuGet.Common;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -55,6 +57,23 @@ namespace NuGet.LibraryModel
         /// Gets or sets a value indicating a version override for any centrally defined version.
         /// </summary>
         public VersionRange? VersionOverride { get; init; }
+
+        // Invocation-only, one-based navigation data; excluded from equality, hashing and serialization.
+        internal (string File, int Line, int Column)? SourceLocation { get; init; }
+
+        internal static (string File, int Line, int Column)? ParseSourceLocation(string? file, string? line, string? column)
+        {
+            if (file is not null && !string.IsNullOrWhiteSpace(file)
+                && int.TryParse(line, NumberStyles.None, CultureInfo.InvariantCulture, out int lineNumber) && lineNumber > 0
+                && int.TryParse(column, NumberStyles.None, CultureInfo.InvariantCulture, out int columnNumber) && columnNumber >= 0
+                && Path.IsPathRooted(file) && file.IndexOfAny(Path.GetInvalidPathChars()) < 0
+                && Uri.TryCreate(file, UriKind.Absolute, out var uri) && uri.IsFile)
+            {
+                return (file, lineNumber, columnNumber);
+            }
+
+            return null;
+        }
 
         /// <summary>Initializes a new instance of the LibraryDependency class.</summary>
         /// <remarks>Required properties must be set when using this constructor.</remarks>
@@ -109,6 +128,7 @@ namespace NuGet.LibraryModel
             ReferenceType = other.ReferenceType;
             Aliases = other.Aliases;
             VersionOverride = other.VersionOverride;
+            SourceLocation = other.SourceLocation;
         }
 
         public override string ToString()

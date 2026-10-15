@@ -222,16 +222,6 @@ namespace NuGet.Build.Tasks
                 return true;
             }
 
-            foreach (var item in RestoreGraphItems)
-            {
-                string sourceFile = item.GetMetadata("NuGetSourceFile");
-                if (StringComparer.OrdinalIgnoreCase.Equals(item.GetMetadata("Type"), "Dependency") && !string.IsNullOrEmpty(sourceFile))
-                {
-                    log.AddPackageReferenceLocation(item.GetMetadata("ProjectUniqueName"), item.GetMetadata("Id"),
-                        sourceFile, item.GetMetadata("NuGetSourceLine"), item.GetMetadata("NuGetSourceColumn"));
-                }
-            }
-
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(MSBuildUtility.WrapMSBuildItem);
 

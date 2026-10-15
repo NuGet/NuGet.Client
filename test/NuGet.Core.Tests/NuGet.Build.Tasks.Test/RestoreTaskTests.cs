@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
 using NuGet.Common;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -27,7 +28,8 @@ namespace NuGet.Build.Tasks.Test
         [InlineData("-1", "7", 0, 0)]
         [InlineData("5", "-1", 0, 0)]
         [InlineData("5", "invalid", 0, 0)]
-        public async Task Execute_PrunePackageReference_UsesDeclarationLocationWhenAvailable(string line, string column, int expectedLine, int expectedColumn)
+        [InlineData("5", "7", 0, 0, true)]
+        public async Task Execute_PrunePackageReference_UsesDeclarationLocationWhenAvailable(string line, string column, int expectedLine, int expectedColumn, bool duplicate = false)
         {
             using var paths = new SimpleTestPathContext();
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(paths.PackageSource, new SimpleTestPackageContext("X", "1.0.0"));
@@ -50,7 +52,7 @@ namespace NuGet.Build.Tasks.Test
             var references = new GetRestorePackageReferencesTask
             {
                 ProjectUniqueName = projectPath,
-                PackageReferences = [packageReference],
+                PackageReferences = duplicate ? [packageReference, packageReference] : [packageReference],
             };
             Assert.True(references.Execute());
             using var restore = new RestoreTask
@@ -88,6 +90,10 @@ namespace NuGet.Build.Tasks.Test
             Assert.Equal(expectedLine > 0 ? sourcePath : projectPath, warning.File);
             Assert.Equal(expectedLine, warning.LineNumber);
             Assert.Equal(expectedColumn, warning.ColumnNumber);
+            var persisted = new LockFileFormat().Read(Path.Combine(paths.SolutionRoot, "obj", "project.assets.json")).LogMessages.Single();
+            Assert.Equal(expectedLine > 0 ? sourcePath : projectPath, persisted.FilePath);
+            Assert.Equal(expectedLine, persisted.StartLineNumber);
+            Assert.Equal(expectedColumn, persisted.StartColumnNumber);
         }
 
         // StaticState exposes process-global events, and there is no way to clear their subscriptions, so each test
