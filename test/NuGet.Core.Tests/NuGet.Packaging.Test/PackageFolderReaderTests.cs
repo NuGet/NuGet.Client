@@ -192,26 +192,22 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("package-sibling", false, false)]
-        [InlineData("package-sibling", false, true)]
-        [InlineData("package-sibling", true, false)]
-        [InlineData("package-sibling", true, true)]
-        [InlineData("other", false, false)]
-        [InlineData("other", false, true)]
-        [InlineData("other", true, false)]
-        [InlineData("other", true, true)]
-        public void GetStream_PathOutsideRoot_Throws(string siblingName, bool absolutePath, bool trailingSeparator)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void GetStream_PathOutsideRoot_Throws(bool absolutePath, bool trailingSeparator)
         {
             using (var directory = TestDirectory.Create())
             {
                 var root = Path.Combine(directory.Path, "package");
-                var sibling = Path.Combine(directory.Path, siblingName);
+                var sibling = Path.Combine(directory.Path, "package-sibling");
                 Directory.CreateDirectory(root);
                 Directory.CreateDirectory(sibling);
                 File.WriteAllText(Path.Combine(sibling, "NuGet.exe"), "outside");
                 var path = absolutePath
                     ? Path.Combine(sibling, "NuGet.exe")
-                    : Path.Combine("..", siblingName, "NuGet.exe");
+                    : Path.Combine("..", "package-sibling", "NuGet.exe");
 
                 using (var reader = new PackageFolderReader(trailingSeparator ? PathUtility.EnsureTrailingSlash(root) : root))
                 {
@@ -226,24 +222,24 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData("NuGet.exe", false)]
-        [InlineData("NuGet.exe", true)]
-        [InlineData("tools/NuGet.exe", false)]
-        [InlineData("tools/NuGet.exe", true)]
-        [InlineData("tools/../NuGet.exe", false)]
-        [InlineData("tools/../NuGet.exe", true)]
-        public void GetStream_PathInsideRoot_ReturnsContent(string path, bool trailingSeparator)
+        [InlineData("file.txt", false)]
+        [InlineData("file.txt", true)]
+        [InlineData("tools/file.txt", false)]
+        [InlineData("tools/file.txt", true)]
+        [InlineData("tools/../file.txt", false)]
+        [InlineData("tools/../file.txt", true)]
+        public void GetStream_PathInsideRoot_ReturnsContent(string filePath, bool trailingSeparator)
         {
             using (var directory = TestDirectory.Create())
             {
                 var root = Path.Combine(directory.Path, "package");
                 var tools = Path.Combine(root, "tools");
                 Directory.CreateDirectory(tools);
-                File.WriteAllText(Path.Combine(root, "NuGet.exe"), "inside");
-                File.WriteAllText(Path.Combine(tools, "NuGet.exe"), "inside");
+                File.WriteAllText(Path.Combine(root, "file.txt"), "inside");
+                File.WriteAllText(Path.Combine(tools, "file.txt"), "inside");
 
                 using (var reader = new PackageFolderReader(trailingSeparator ? PathUtility.EnsureTrailingSlash(root) : root))
-                using (var stream = reader.GetStream(path))
+                using (var stream = reader.GetStream(filePath))
                 using (var streamReader = new StreamReader(stream))
                 {
                     Assert.Equal("inside", streamReader.ReadToEnd());
