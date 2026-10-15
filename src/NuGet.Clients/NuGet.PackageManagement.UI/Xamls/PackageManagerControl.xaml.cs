@@ -460,10 +460,11 @@ namespace NuGet.PackageManagement.UI
             // triggered by external changes are skipped and recorded via _refreshOnVisibleChange.
             // Apply the pending refresh now that the control is visible again.
             // Also refresh packages.config projects, whose external file edits do not trigger cache updates.
-            if (e.NewValue is true
-                && _loadedAndInitialized
-                && (_refreshOnVisibleChange
-                    || Model.Context.Projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig)))
+            if (ShouldRefreshOnVisibleChange(
+                isVisible: e.NewValue is true,
+                loadedAndInitialized: _loadedAndInitialized,
+                refreshOnVisibleChange: _refreshOnVisibleChange,
+                projects: Model?.Context.Projects))
             {
                 _refreshOnVisibleChange = false;
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
@@ -471,6 +472,18 @@ namespace NuGet.PackageManagement.UI
                     .RunAsync(async () => await RefreshWhenNotExecutingActionAsync(RefreshOperationSource.WindowActivated, timeSpan))
                     .PostOnFailure(nameof(PackageManagerControl), nameof(OnIsVisibleChanged));
             }
+        }
+
+        internal static bool ShouldRefreshOnVisibleChange(
+            bool isVisible,
+            bool loadedAndInitialized,
+            bool refreshOnVisibleChange,
+            IEnumerable<IProjectContextInfo> projects)
+        {
+            return isVisible
+                && loadedAndInitialized
+                && (refreshOnVisibleChange
+                    || projects.Any(project => project.ProjectKind == NuGetProjectKind.PackagesConfig));
         }
 
         private async Task SolutionManager_CacheUpdatedAsync(TimeSpan timeSpan, string eventProjectFullName)
