@@ -17,6 +17,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
@@ -79,9 +80,33 @@ public class AuditUtilityTests
         // Assert
         context.Log.LogMessages.Count.Should().Be(2);
         context.Log.LogMessages.All(m => m.Code == NuGetLogCode.NU1900).Should().BeTrue();
-        context.Log.LogMessages.Where(m => m.Message.Contains("404")).Should().ContainSingle();
-        context.Log.LogMessages.Where(m => m.Message.Contains("401")).Should().ContainSingle();
+        context.Log.LogMessages.Where(m => m.Message == "Error occurred while getting package vulnerability data: 404").Should().ContainSingle();
+        context.Log.LogMessages.Where(m => m.Message == "Error occurred while getting package vulnerability data: 401").Should().ContainSingle();
         context.Log.LogMessages.All(m => m.Level == LogLevel.Warning).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Check_VulnerabilityProviderWithNestedException_WarningIncludesInnerExceptionMessage()
+    {
+        // Arrange
+        var context = new AuditTestContext();
+        var innerException = new HttpRequestException("The remote certificate is invalid.");
+        var exception = new AggregateException(
+            new FatalProtocolException("Unable to load the service index.", innerException));
+        context.WithVulnerabilityProvider().WithException(exception);
+
+        context.PackagesDependencyProvider.Package("pkga", "1.0.0");
+        context.WithRestoreTarget().DependsOn("pkga", "1.0.0");
+
+        // Act
+        _ = await context.CheckPackageVulnerabilitiesAsync(CancellationToken.None);
+
+        // Assert
+        RestoreLogMessage message = (RestoreLogMessage)context.Log.LogMessages.Should().ContainSingle().Which;
+        message.Code.Should().Be(NuGetLogCode.NU1900);
+        message.Level.Should().Be(LogLevel.Warning);
+        message.Message.Should().Be(
+            $"Error occurred while getting package vulnerability data: Unable to load the service index.{Environment.NewLine}  The remote certificate is invalid.");
     }
 
     [Fact]
