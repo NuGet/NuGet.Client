@@ -89,7 +89,8 @@
     <PackageVersion Include="SharpZipLib" Version="1.4.2" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
-    <PackageVersion Include="System.Collections.Immutable" Version="$(Net10PackagesVersion)" />
+    <!-- Match VSSDK BuildTools' copy to avoid a CreatePkgDef type-loading failure. -->
+    <PackageVersion Include="System.Collections.Immutable" Version="10.0.8" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1PackageVersion)" />
@@ -109,7 +110,7 @@
     Once the packages depending on these packages are upgraded, these PackageVersions can be removed.
   -->
   <ItemGroup>
-    <PackageVersion Include="MessagePack" Version="2.5.302" />
+    <PackageVersion Include="MessagePack" Version="2.5.305" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="5.7.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
   </ItemGroup>
