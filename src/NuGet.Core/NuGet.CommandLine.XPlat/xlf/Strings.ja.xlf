@@ -938,8 +938,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped">
         <source>Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</source>
-        <target state="translated">パッケージ '{0}'.をダウンロードできません。PackageSourceMapping は有効ですが、このパッケージにはマップされたソースが見つかりませんでした。次のソースは考慮されませんでした: {1}。</target>
-        <note>{0} = package ID 
+        <target state="needs-review-translation">パッケージ '{0}'.をダウンロードできません。PackageSourceMapping は有効ですが、このパッケージにはマップされたソースが見つかりませんでした。次のソースは考慮されませんでした: {1}。</target>
+        <note>{0} = package ID
 {1} = comma-separated list of all configured sources </note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSuchSource">
@@ -1280,8 +1280,8 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandProtocolVersionDescription">
-        <source>The NuGet server protocol version to be used. Currently supported versions are 2 and 3. See https://learn.microsoft.com/nuget/api/overview for information about the version 3 protocol. Defaults to 2 if not specified.</source>
-        <target state="translated">使用する NuGet サーバー プロトコル バージョン。現在サポートされているバージョンは 2 と 3 です。バージョン 3 プロトコルの詳細については、https://learn.microsoft.com/nuget/api/overview を参照してください。指定しない場合、既定は 2 になります。</target>
+        <source>The NuGet server protocol version to be used. When the URL ends in .json, it defaults to "3", and defaults to "2" otherwise.</source>
+        <target state="needs-review-translation">使用する NuGet サーバー プロトコル バージョン。現在サポートされているバージョンは 2 と 3 です。バージョン 3 プロトコルの詳細については、https://learn.microsoft.com/nuget/api/overview を参照してください。指定しない場合、既定は 2 になります。</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandSourceDescription">

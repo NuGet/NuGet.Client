@@ -938,8 +938,8 @@ Pour plus d’informations, consultez https://docs.nuget.org/docs/reference/comm
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSourcesMapped">
         <source>Unable to download package '{0}'. PackageSourceMapping is enabled, but no mapped sources were found for this package. The following source(s) were not considered: {1}.</source>
-        <target state="translated">Désolé, nous ne pouvons pas télécharger le package « {0} ». PackageSourceMapping est activé, mais aucune source mappée n’a été trouvée pour ce package. La ou les sources suivantes n’ont pas été prises en compte : {1}.</target>
-        <note>{0} = package ID 
+        <target state="needs-review-translation">Désolé, nous ne pouvons pas télécharger le package « {0} ». PackageSourceMapping est activé, mais aucune source mappée n’a été trouvée pour ce package. La ou les sources suivantes n’ont pas été prises en compte : {1}.</target>
+        <note>{0} = package ID
 {1} = comma-separated list of all configured sources </note>
       </trans-unit>
       <trans-unit id="PackageDownloadCommand_PackageSourceMapping_NoSuchSource">
@@ -1280,8 +1280,8 @@ La recherche est une comparaison de chaînes qui ne respecte pas la casse à l�
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandProtocolVersionDescription">
-        <source>The NuGet server protocol version to be used. Currently supported versions are 2 and 3. See https://learn.microsoft.com/nuget/api/overview for information about the version 3 protocol. Defaults to 2 if not specified.</source>
-        <target state="translated">Version du protocole serveur NuGet à utiliser. Les versions actuellement prises en charge sont 2 et 3. Consultez https://learn.microsoft.com/nuget/api/overview pour plus d’informations sur le protocole version 3. La valeur par défaut est 2 si elle n’est pas spécifiée.</target>
+        <source>The NuGet server protocol version to be used. When the URL ends in .json, it defaults to "3", and defaults to "2" otherwise.</source>
+        <target state="needs-review-translation">Version du protocole serveur NuGet à utiliser. Les versions actuellement prises en charge sont 2 et 3. Consultez https://learn.microsoft.com/nuget/api/overview pour plus d’informations sur le protocole version 3. La valeur par défaut est 2 si elle n’est pas spécifiée.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourcesCommandSourceDescription">
