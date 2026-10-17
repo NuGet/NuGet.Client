@@ -230,6 +230,21 @@
         <target state="translated">Błąd: konsola menedżera pakietów (Package Manager Console) wymaga środowiska uruchomieniowego programu PowerShell 2.0, którego nie wykryto na tym komputerze. Zainstaluj program PowerShell 2.0 dostępny na stronie http://support.microsoft.com/kb/968929 i ponownie uruchom program Visual Studio.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitScript_AmbiguousPackage">
+        <source>Multiple installed versions of package '{0}' contain tools/init.ps1. Specify the package as id@version.</source>
+        <target state="new">Multiple installed versions of package '{0}' contain tools/init.ps1. Specify the package as id@version.</target>
+        <note>{0} is the package ID supplied by the user. Do not localize tools/init.ps1 or id@version.</note>
+      </trans-unit>
+      <trans-unit id="InitScript_InvalidPath">
+        <source>'{0}' is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts.</source>
+        <target state="new">'{0}' is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts.</target>
+        <note>{0} is the input path. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
+      </trans-unit>
+      <trans-unit id="InitScript_PackageNotFound">
+        <source>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</source>
+        <target state="new">No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</target>
+        <note>{0} is the package selector supplied by the user. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
+      </trans-unit>
       <trans-unit id="PowerShellHostTitle">
         <source>Package Manager Console Host Version {0}</source>
         <target state="translated">Host konsoli menedżera pakietów w wersji {0}</target>

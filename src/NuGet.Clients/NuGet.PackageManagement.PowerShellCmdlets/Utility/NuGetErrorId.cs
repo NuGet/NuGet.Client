@@ -20,5 +20,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public const string NuspecFileNotFound = "NuGetNuspecFileNotFound";
         public const string CmdletUnhandledException = "NuGetCmdletUnhandledException";
         public const string MissingPackages = "NuGetMissingPackages";
+        public const string AmbiguousPackageInitScript = "NuGetAmbiguousPackageInitScript";
+        public const string PackageInitScriptNotFound = "NuGetPackageInitScriptNotFound";
+        public const string InvalidPackageInitScript = "NuGetInvalidPackageInitScript";
     }
 }
