@@ -23,6 +23,7 @@ namespace NuGet.Commands
         private readonly bool _hideWarningsAndErrors;
         private IEnumerable<RestoreTargetGraph> _restoreTargetGraphs;
         private PackageSpec _projectSpec;
+        private TargetFrameworkInformation[] _sourceFrameworks;
         private WarningPropertiesCollection _transitiveWarningPropertiesCollection;
 
         public string ProjectPath => _projectSpec?.RestoreMetadata?.ProjectPath;
@@ -66,6 +67,8 @@ namespace NuGet.Commands
         public void ApplyRestoreInputs(PackageSpec projectSpec)
         {
             _projectSpec = projectSpec;
+            // Pruning replaces target framework dependencies later in restore.
+            _sourceFrameworks = projectSpec.TargetFrameworks.ToArray();
 
             ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
                 projectSpec.RestoreMetadata?.ProjectWideWarningProperties,
@@ -134,6 +137,7 @@ namespace NuGet.Commands
 
         public void Log(IRestoreLogMessage message)
         {
+            ApplySourceLocation(message);
             // check if the message is a warning and it is suppressed 
             if (!IsWarningSuppressed(message))
             {
@@ -164,6 +168,7 @@ namespace NuGet.Commands
 
         public Task LogAsync(IRestoreLogMessage message)
         {
+            ApplySourceLocation(message);
             // check if the message is a warning and it is suppressed 
             if (!IsWarningSuppressed(message))
             {
@@ -192,6 +197,17 @@ namespace NuGet.Commands
             }
 
             return Task.CompletedTask;
+        }
+
+        private void ApplySourceLocation(IRestoreLogMessage message)
+        {
+            // NU1603/NU1605 opt in at a causal root edge. Rebind persisted locations on no-op replay.
+            if (_sourceFrameworks != null && (message.Code == NuGetLogCode.NU1510
+                || (message.Code == NuGetLogCode.NU1603 || message.Code == NuGetLogCode.NU1605) && message.StartLineNumber > 0))
+            {
+                message.ProjectPath ??= ProjectPath;
+                PackageReferenceSourceLocations.Apply(_sourceFrameworks, message);
+            }
         }
 
         public override void Log(ILogMessage message)

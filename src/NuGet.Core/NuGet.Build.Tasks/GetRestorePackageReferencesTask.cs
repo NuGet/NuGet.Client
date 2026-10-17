@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
@@ -38,6 +39,8 @@ namespace NuGet.Build.Tasks
         {
             var entries = new List<ITaskItem>();
             var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var duplicateIds = PackageReferences.GroupBy(item => item.ItemSpec, StringComparer.OrdinalIgnoreCase)
+                .Where(group => group.Skip(1).Any()).Select(group => group.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             foreach (var msbuildItem in PackageReferences)
             {
@@ -69,7 +72,17 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "GeneratePathProperty");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Aliases");
 
-                entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
+                var restoreItem = new TaskItem(Guid.NewGuid().ToString(), properties);
+                string sourceFile = msbuildItem.GetMetadata("DefiningProjectFullPath");
+                string sourceLine = msbuildItem.GetMetadata("DefiningProjectLineNumber");
+                if (!duplicateIds.Contains(packageId) && !string.IsNullOrEmpty(sourceFile) && !string.IsNullOrEmpty(sourceLine))
+                {
+                    // Task outputs acquire the <Output> element's location, so preserve the declaration as metadata.
+                    ((ITaskItem2)restoreItem).SetMetadataValueLiteral("NuGetSourceFile", sourceFile);
+                    restoreItem.SetMetadata("NuGetSourceLine", sourceLine);
+                    restoreItem.SetMetadata("NuGetSourceColumn", msbuildItem.GetMetadata("DefiningProjectColumnNumber") ?? string.Empty);
+                }
+                entries.Add(restoreItem);
             }
 
             RestoreGraphItems = entries.ToArray();

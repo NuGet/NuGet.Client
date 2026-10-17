@@ -714,6 +714,11 @@ namespace NuGet.Commands
                 return true;
             }
 
+            spec.TargetFrameworks[index] = new TargetFrameworkInformation(frameworkInfo)
+            {
+                Dependencies = dependencies.Select(d => StringComparer.OrdinalIgnoreCase.Equals(d.Name, dependency.Name)
+                    ? new LibraryDependency(d) { SourceLocation = null } : d).ToImmutableArray()
+            };
             return false;
         }
 
@@ -779,6 +784,8 @@ namespace NuGet.Commands
                         IncludeType = includeType,
                         SuppressParent = suppressParent,
                         VersionCentrallyManaged = isCentrallyManaged,
+                        SourceLocation = LibraryDependency.ParseSourceLocation(
+                            item.GetProperty("NuGetSourceFile"), item.GetProperty("NuGetSourceLine"), item.GetProperty("NuGetSourceColumn")),
                     };
 
                     AddDependencyIfNotExist(spec, framework, dependency);

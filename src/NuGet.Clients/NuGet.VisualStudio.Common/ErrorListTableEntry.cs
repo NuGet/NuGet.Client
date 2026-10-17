@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System;
 using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -80,7 +81,7 @@ namespace NuGet.VisualStudio.Common
 
                     if (Message is RestoreLogMessage)
                     {
-                        content = (Message as RestoreLogMessage).StartLineNumber;
+                        content = Math.Max(0, (Message as RestoreLogMessage).StartLineNumber - 1);
                         return true;
                     }
 
@@ -89,13 +90,17 @@ namespace NuGet.VisualStudio.Common
 
                     if (Message is RestoreLogMessage)
                     {
-                        content = (Message as RestoreLogMessage).StartColumnNumber;
+                        content = Math.Max(0, (Message as RestoreLogMessage).StartColumnNumber - 1);
                         return true;
                     }
 
                     return false;
                 case StandardTableKeyNames.DocumentName:
-                    var documentName = GetProjectFile(Message);
+                    var documentName = (Message as INuGetLogMessage)?.FilePath;
+                    if (string.IsNullOrEmpty(documentName))
+                    {
+                        documentName = GetProjectFile(Message);
+                    }
 
                     if (!string.IsNullOrEmpty(documentName))
                     {

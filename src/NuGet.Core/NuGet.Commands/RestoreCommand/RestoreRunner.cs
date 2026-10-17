@@ -325,7 +325,7 @@ namespace NuGet.Commands
             }
             // Remote the summary messages from the assets file.
             var messages = restoreResult.Result.LogMessages
-                .Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message)) ?? Enumerable.Empty<RestoreLogMessage>();
+                .Select(e => e.AsRestoreLogMessage()) ?? Enumerable.Empty<RestoreLogMessage>();
 
             // Build the summary
             return new RestoreSummary(
