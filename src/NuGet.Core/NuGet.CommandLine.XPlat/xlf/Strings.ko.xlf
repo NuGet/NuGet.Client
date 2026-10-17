@@ -449,7 +449,7 @@ NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGe
       </trans-unit>
       <trans-unit id="Error_TrustFingerPrintAlreadyExist">
         <source>The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</source>
-        <target state="new">The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</target>
+        <target state="translated">추가하려는 인증서 지문이 이미 인증서 지문 목록에 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_TrustedRepoAlreadyExists">

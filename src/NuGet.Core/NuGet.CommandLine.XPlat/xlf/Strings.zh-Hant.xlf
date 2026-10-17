@@ -449,7 +449,7 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
       </trans-unit>
       <trans-unit id="Error_TrustFingerPrintAlreadyExist">
         <source>The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</source>
-        <target state="new">The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</target>
+        <target state="translated">您嘗試新增的憑證指紋已在憑證指紋清單中。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_TrustedRepoAlreadyExists">

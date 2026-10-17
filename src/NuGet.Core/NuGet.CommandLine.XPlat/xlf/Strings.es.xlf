@@ -449,7 +449,7 @@ NuGet requiere orígenes HTTPS. Para usar orígenes HTTP, es necesario establece
       </trans-unit>
       <trans-unit id="Error_TrustFingerPrintAlreadyExist">
         <source>The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</source>
-        <target state="new">The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</target>
+        <target state="translated">La huella digital de certificado que intentas agregar ya está en la lista de huellas digitales de certificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_TrustedRepoAlreadyExists">
