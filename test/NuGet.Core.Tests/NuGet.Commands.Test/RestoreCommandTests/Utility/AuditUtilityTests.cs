@@ -80,8 +80,10 @@ public class AuditUtilityTests
         // Assert
         context.Log.LogMessages.Count.Should().Be(2);
         context.Log.LogMessages.All(m => m.Code == NuGetLogCode.NU1900).Should().BeTrue();
-        context.Log.LogMessages.Where(m => m.Message == "Error occurred while getting package vulnerability data: 404").Should().ContainSingle();
-        context.Log.LogMessages.Where(m => m.Message == "Error occurred while getting package vulnerability data: 401").Should().ContainSingle();
+        context.Log.LogMessages.Where(m => m.Message == string.Format(Strings.Error_VulnerabilityDataFetch, "404"))
+            .Should().ContainSingle();
+        context.Log.LogMessages.Where(m => m.Message == string.Format(Strings.Error_VulnerabilityDataFetch, "401"))
+            .Should().ContainSingle();
         context.Log.LogMessages.All(m => m.Level == LogLevel.Warning).Should().BeTrue();
     }
 
@@ -91,8 +93,8 @@ public class AuditUtilityTests
         // Arrange
         var context = new AuditTestContext();
         var innerException = new HttpRequestException("The remote certificate is invalid.");
-        var exception = new AggregateException(
-            new FatalProtocolException("Unable to load the service index.", innerException));
+        var protocolException = new FatalProtocolException("Unable to load the service index.", innerException);
+        var exception = new AggregateException(protocolException);
         context.WithVulnerabilityProvider().WithException(exception);
 
         context.PackagesDependencyProvider.Package("pkga", "1.0.0");
@@ -105,8 +107,9 @@ public class AuditUtilityTests
         RestoreLogMessage message = (RestoreLogMessage)context.Log.LogMessages.Should().ContainSingle().Which;
         message.Code.Should().Be(NuGetLogCode.NU1900);
         message.Level.Should().Be(LogLevel.Warning);
-        message.Message.Should().Be(
-            $"Error occurred while getting package vulnerability data: Unable to load the service index.{Environment.NewLine}  The remote certificate is invalid.");
+        message.Message.Should().Be(string.Format(
+            Strings.Error_VulnerabilityDataFetch,
+            $"{protocolException.Message}{Environment.NewLine}  {innerException.Message}"));
     }
 
     [Fact]
