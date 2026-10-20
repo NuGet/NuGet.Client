@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Versioning;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
 using NuGetConsole.Host.PowerShell;
 
@@ -52,22 +52,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var selected = new HashSet<PowerShellPackageInitScript>();
             foreach (var package in packages)
             {
-                var separator = package.LastIndexOf('@');
-                var id = separator < 0 ? package : package.Substring(0, separator);
-                NuGetVersion? version = null;
-                if (separator >= 0 && !NuGetVersion.TryParse(package.Substring(separator + 1), out version))
+                PackageIdentity identity;
+                try
                 {
-                    WriteInvalidPackageError(package, writeError);
+                    identity = PackageIdentity.ParseAtSeparated(package);
+                }
+                catch (ArgumentException ex)
+                {
+                    WriteInvalidPackageError(package, ex);
                     continue;
                 }
 
                 var matches = scripts.Where(script =>
-                    StringComparer.OrdinalIgnoreCase.Equals(script.Id, id)
-                    && (version == null || script.Version == version)).ToList();
+                    StringComparer.OrdinalIgnoreCase.Equals(script.Id, identity.Id)
+                    && (!identity.HasVersion || script.Version == identity.Version)).ToList();
 
                 if (matches.Count == 0)
                 {
-                    WriteInvalidPackageError(package, writeError);
+                    WriteInvalidPackageError(package);
                 }
                 else if (matches.Count > 1)
                 {
@@ -82,13 +84,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             return scripts.Where(selected.Contains);
-        }
 
-        private static void WriteInvalidPackageError(string package, Action<ErrorRecord> writeError)
-        {
-            writeError(new ErrorRecord(
-                new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InitScript_PackageNotFound, package)),
-                NuGetErrorId.PackageInitScriptNotFound, ErrorCategory.ObjectNotFound, package));
+            void WriteInvalidPackageError(string package, Exception? innerException = null)
+            {
+                writeError(new ErrorRecord(
+                    new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.InitScript_PackageNotFound, package),
+                        innerException),
+                    NuGetErrorId.PackageInitScriptNotFound, ErrorCategory.ObjectNotFound, package));
+            }
         }
     }
 }
