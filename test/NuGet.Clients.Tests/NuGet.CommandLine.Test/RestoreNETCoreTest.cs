@@ -9728,6 +9728,10 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     $"net10.0-windows");
 
+                // This test only restores packages; SDK packs are not needed.
+                project.Properties.Add("EnableTargetingPackDownload", "false");
+                project.Properties.Add("EnableAppHostPackDownload", "false");
+
                 project.AddPackageToAllFrameworks(packageX);
                 solution.Projects.Add(project);
                 solution.Create();
