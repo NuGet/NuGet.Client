@@ -13,6 +13,10 @@ LONG DESCRIPTION
 
         Cmdlet					Description
         ------------------		----------------------------------------------
+        Add-BindingRedirect		Examines all assemblies within the output path for a project
+                                and adds binding redirects to the application (or web)
+                                configuration file where necessary.
+
         Find-Package            Get the set of packages available from the package source,
 		                        based on the package Id/keyword. This is a new command that
 								will replace Get-Package -ListAvailable.
@@ -20,11 +24,13 @@ LONG DESCRIPTION
 		Get-Package				Gets the set of installed packages. With -Updates switch,
                                 gets the set of package updates available from the package source.
 
-        Install-Package			Installs a package and its dependencies into the project.
-
         Get-PackageInitScript    Lists installed tools/init.ps1 scripts without running them.
                                 Returns Id, Version, and the absolute path as FullName.
                                 Use -Packages Id,Id@Version to select packages.
+
+        Get-Project				Returns a reference to the DTE (Development Tools Environment)
+                                for the specified project. If none is specifed, returns the
+                                default project selected in the Package Manager Console.
 
         Import-PackageInitScript Runs installed tools/init.ps1 scripts explicitly.
                                 With no arguments, imports all discovered scripts.
@@ -33,34 +39,28 @@ LONG DESCRIPTION
                                 Null or empty path collections do nothing. Scripts run in
                                 dependency order, once per package per invocation.
 
+        Install-Package			Installs a package and its dependencies into the project.
+
+        Register-TabExpansion	Registers a tab expansion for the parameters of a command.
+
+		Sync-Package            Get the version of installed package from specified/default project
+		                        and sync the version to the rest of projects in the solution.
+
         Uninstall-Package		Uninstalls a package. If other packages depend on this package,
                                 the command will fail unless the –Force option is specified.
 
         Update-Package			Updates a package and its dependencies to a newer version.
 
-		Sync-Package            Get the version of installed package from specified/default project
-		                        and sync the version to the rest of projects in the solution.
-
-        Add-BindingRedirect		Examines all assemblies within the output path for a project
-                                and adds binding redirects to the application (or web)
-                                configuration file where necessary.
-
-        Get-Project				Returns a reference to the DTE (Development Tools Environment)
-                                for the specified project. If none is specifed, returns the
-                                default project selected in the Package Manager Console.
-
-        Register-TabExpansion	Registers a tab expansion for the parameters of a command.
-
 SEE ALSO
     Online documentation: http://go.microsoft.com/fwlink/?LinkID=206619
+    Add-BindingRedirect
 	Find-Package
     Get-Package
     Get-PackageInitScript
+    Get-Project
     Import-PackageInitScript
     Install-Package
+    Register-TabExpansion
+	Sync-Package
     Uninstall-Package
     Update-Package
-	Sync-Package
-    Add-BindingRedirect
-    Get-Project
-    Register-TabExpansion

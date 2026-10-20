@@ -186,6 +186,28 @@ namespace NuGetConsole.Host.PowerShell.Test
             fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
         }
 
+        [Theory]
+        [InlineData("Get-PackageInitScript", "Root@")]
+        [InlineData("Get-PackageInitScript", "Root@invalid")]
+        [InlineData("Get-PackageInitScript", "@1.0.0")]
+        [InlineData("Import-PackageInitScript", "Root@")]
+        [InlineData("Import-PackageInitScript", "Root@invalid")]
+        [InlineData("Import-PackageInitScript", "@1.0.0")]
+        public async Task PackageInitScript_InvalidSelectorPreservesParserExceptionAsync(string command, string selector)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+            var expected = Assert.Throws<ArgumentException>(() => PackageIdentity.ParseAtSeparated(selector));
+
+            fixture.InvokeScript($"{command} -Packages '{selector}'");
+
+            var error = fixture.Errors.Should().ContainSingle().Which;
+            error.FullyQualifiedErrorId.Should().StartWith("NuGetPackageInitScriptNotFound");
+            error.Exception.InnerException.Should().BeOfType<ArgumentException>()
+                .Which.Message.Should().Be(expected.Message);
+        }
+
         [Fact]
         public async Task ImportPackageInitScript_ParameterSetsAreExclusiveAsync()
         {
