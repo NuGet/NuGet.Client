@@ -87,6 +87,71 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void GetPackageSourceMappingConfiguration_WithDisabledSource_IgnoresItsPatterns()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""release"" value=""https://contoso.org/release/index.json"" />
+        <add key=""debug"" value=""C:\debug-packages"" />
+    </packageSources>
+    <disabledPackageSources>
+        <add key=""debug"" value=""true"" />
+    </disabledPackageSources>
+    <packageSourceMapping>
+        <packageSource key=""release"">
+            <package pattern=""*"" />
+        </packageSource>
+        <packageSource key=""debug"">
+            <package pattern=""Contoso.Library"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1 });
+
+            // Act & Assert
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            packageSourceMapping.IsEnabled.Should().BeTrue();
+            packageSourceMapping.Patterns.Keys.Should().BeEquivalentTo(new string[] { "release" });
+            packageSourceMapping.GetConfiguredPackageSources("Contoso.Library").Should().BeEquivalentTo(new string[] { "release" });
+        }
+
+        [Fact]
+        public void GetPackageSourceMappingConfiguration_WithSourceDisabledInAnotherConfig_IgnoresItsPatterns()
+        {
+            // Arrange
+            using var mockBaseDirectory = TestDirectory.Create();
+            var configPath1 = Path.Combine(mockBaseDirectory, "NuGet.Config");
+            SettingsTestUtils.CreateConfigurationFile(configPath1, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <disabledPackageSources>
+        <add key=""debug"" value=""true"" />
+    </disabledPackageSources>
+</configuration>");
+            var configPath2 = Path.Combine(mockBaseDirectory, "NuGet.Config.2");
+            SettingsTestUtils.CreateConfigurationFile(configPath2, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSourceMapping>
+        <packageSource key=""release"">
+            <package pattern=""*"" />
+        </packageSource>
+        <packageSource key=""debug"">
+            <package pattern=""Contoso.*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+            var settings = Settings.LoadSettingsGivenConfigPaths(new string[] { configPath1, configPath2 });
+
+            // Act & Assert
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            packageSourceMapping.Patterns.Keys.Should().BeEquivalentTo(new string[] { "release" });
+            packageSourceMapping.GetConfiguredPackageSources("Contoso.Library").Should().BeEquivalentTo(new string[] { "release" });
+        }
+
+        [Fact]
         public void GetPackageSourceMappingConfiguration_WithMultipleConfigs_WhenMatchingKeys_PicksClosestOne()
         {
             // Arrange

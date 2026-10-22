@@ -71,10 +71,21 @@ namespace NuGet.Configuration
 
             var packageSourceMappingProvider = new PackageSourceMappingProvider(settings);
 
+            // A disabled source is never used, so a pattern mapped to it would only keep the package from resolving to an enabled source.
+            // Any source listed in disabledPackageSources is disabled, whatever its value, same as in PackageSourceProvider.
+            var disabledSources = new HashSet<string>(
+                settings.GetSection(ConfigurationConstants.DisabledPackageSources)?.Items.OfType<AddItem>().Select(item => item.Key)
+                ?? Enumerable.Empty<string>());
+
             var patterns = new Dictionary<string, IReadOnlyList<string>>();
 
             foreach (PackageSourceMappingSourceItem packageSourceNamespaceItem in packageSourceMappingProvider.GetPackageSourceMappingItems())
             {
+                if (disabledSources.Contains(packageSourceNamespaceItem.Key))
+                {
+                    continue;
+                }
+
                 patterns.Add(packageSourceNamespaceItem.Key, new List<string>(packageSourceNamespaceItem.Patterns.Select(e => e.Pattern)));
             }
 
