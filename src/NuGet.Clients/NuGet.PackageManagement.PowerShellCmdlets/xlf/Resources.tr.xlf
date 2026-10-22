@@ -230,6 +230,21 @@
         <target state="translated">Hata: Package Manager Console, bu makinede algılanmayan PowerShell 2.0 çalışma zamanını gerektirir. http://support.microsoft.com/kb/968929 adresinden PowerShell 2.0'yi yükleyin ve Visual Studio'yu yeniden başlatın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitScript_AmbiguousPackage">
+        <source>Multiple installed versions of package '{0}' contain tools/init.ps1. Specify the package as id@version.</source>
+        <target state="new">Multiple installed versions of package '{0}' contain tools/init.ps1. Specify the package as id@version.</target>
+        <note>{0} is the package ID supplied by the user. Do not localize tools/init.ps1 or id@version.</note>
+      </trans-unit>
+      <trans-unit id="InitScript_InvalidPath">
+        <source>'{0}' is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts.</source>
+        <target state="new">'{0}' is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts.</target>
+        <note>{0} is the input path. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
+      </trans-unit>
+      <trans-unit id="InitScript_PackageNotFound">
+        <source>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</source>
+        <target state="new">No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</target>
+        <note>{0} is the package selector supplied by the user. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
+      </trans-unit>
       <trans-unit id="PowerShellHostTitle">
         <source>Package Manager Console Host Version {0}</source>
         <target state="translated">Paket Yöneticisi Konsolu Konak Sürümü {0}</target>
