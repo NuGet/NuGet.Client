@@ -27,6 +27,11 @@ namespace NuGet.Protocol
 #if NET5_0_OR_GREATER
         [RequiresUnreferencedCode("Uses Newtonsoft.Json reflection-based deserialization.")]
         [RequiresDynamicCode("Uses Newtonsoft.Json reflection-based deserialization.")]
+        // Newtonsoft.Json materializes these models through reflection, which the trimmer cannot
+        // discover statically. Preserve their members so that trimmed apps that do not enable the
+        // NuGet.UseSystemTextJsonDeserialization feature switch (the default) keep working.
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(RepositoryCertificateInfo))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Fingerprints))]
 #endif
         public RepositorySignatureResource(JObject repoSignInformationContent, SourceRepository source)
         {
