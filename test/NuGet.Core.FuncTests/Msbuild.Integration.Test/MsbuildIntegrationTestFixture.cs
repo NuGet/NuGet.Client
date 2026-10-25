@@ -20,7 +20,6 @@ namespace Msbuild.Integration.Test
 
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["DOTNET_MULTILEVEL_LOOKUP"] = "0",
             // Uncomment to debug the msbuild call
             //["DEBUG_RESTORE_TASK"] = bool.TrueString,
             ["UNIT_TEST_RESTORE_TASK"] = bool.TrueString,
@@ -103,12 +102,14 @@ namespace Msbuild.Integration.Test
         internal CommandRunnerResult RunMsBuild(string workingDirectory, string args, bool ignoreExitCode = false, ITestOutputHelper testOutputHelper = null, IReadOnlyDictionary<string, string> environmentVariables = null)
         {
             var restoreDllPath = Path.Combine(_testDir, "NuGet.Build.Tasks.dll");
+            var packDllPath = Path.Combine(_testDir, "NuGet.Build.Tasks.Pack.dll");
             var nugetRestorePropsPath = Path.Combine(_testDir, "NuGet.props");
             var nugetRestoreTargetsPath = Path.Combine(_testDir, "NuGet.targets");
+            var nugetPackTargetsPath = Path.Combine(_testDir, "NuGet.Build.Tasks.Pack.targets");
 
             var result = CommandRunner.Run(_msbuildPath.Value,
                 workingDirectory,
-                $"/p:NuGetPropsFile={nugetRestorePropsPath} /p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",
+                $"/p:NuGetPropsFile={nugetRestorePropsPath} /p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:NuGetPackTaskAssemblyFile={packDllPath} /p:NuGetBuildTasksPackTargets={nugetPackTargetsPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",
                 environmentVariables: environmentVariables ?? DefaultProcessEnvironmentVariables,
                 testOutputHelper: testOutputHelper);
 

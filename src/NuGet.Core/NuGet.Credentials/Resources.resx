@@ -142,13 +142,17 @@
     <value>Credential plugin {0} returned {1} with an unreadable payload.</value>
   </data>
   <data name="PluginWarning_PluginIsBeingDeprecated" xml:space="preserve">
-    <value>The credential plugin model used by '{0}' is deprecated. Please contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</value>
+    <value>The credential plugin model used by '{0}' is deprecated. Contact the provider of the plugin for an alternative. More information about the recommended plugin model can be found at '{1}'.</value>
   </data>
   <data name="ProviderException_InvalidCredentialResponse" xml:space="preserve">
     <value>Could not create credential response object because the response was invalid.</value>
   </data>
   <data name="ProviderException_MalformedResponse" xml:space="preserve">
     <value>Credential provider gave an invalid response.</value>
+  </data>
+  <data name="SecurePluginException_ConnectionClosed" xml:space="preserve">
+    <value>The connection to credential plugin '{0}' was closed before it answered the credential request. The plugin process may have exited or been shut down while the request was in flight.</value>
+    <comment>{0} - plugin path</comment>
   </data>
   <data name="SecurePluginNotice_UsingPluginAsProvider" xml:space="preserve">
     <value>Using {0} as a credential provider plugin.</value>

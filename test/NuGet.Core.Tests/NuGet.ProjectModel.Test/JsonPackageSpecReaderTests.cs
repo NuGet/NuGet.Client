@@ -26,6 +26,19 @@ namespace NuGet.ProjectModel.Test
     public class JsonPackageSpecReaderTests
     {
         [Fact]
+        public void GetPackageSpec_WhenVersionIsInvalid_ThrowsWithoutLineInfo()
+        {
+            const string json = """{"version":"invalid"}""";
+
+            FileFormatException exception = Assert.Throws<FileFormatException>(
+                () => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
+
+            Assert.StartsWith("Error reading '' : 'invalid' is not a valid version string.", exception.Message);
+            Assert.Equal(0, exception.Line);
+            Assert.Equal(0, exception.Column);
+        }
+
+        [Fact]
         public void PackageSpecReader_PackageMissingVersion()
         {
             // Arrange
@@ -195,6 +208,35 @@ namespace NuGet.ProjectModel.Test
 
             var expected = LibraryIncludeFlags.Analyzers;
             Assert.Equal(expected, dep.IncludeType);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsAnalyzerDependencyAssetFlags()
+        {
+            // Arrange
+            var json = @"{
+                           ""frameworks"": {
+                             ""net46"": {
+                               ""dependencies"": {
+                                 ""analyzerPackage"": {
+                                   ""version"": ""1.0.0"",
+                                   ""include"": ""compile, analyzers"",
+                                   ""exclude"": ""compile"",
+                                   ""suppressParent"": ""analyzers""
+                                 }
+                               }
+                             }
+                            }
+                        }";
+
+            // Act
+            var actual = GetPackageSpec(json, "TestProject", "project.json", null);
+
+            // Assert
+            var dep = actual.TargetFrameworks[0].Dependencies.FirstOrDefault(d => d.Name.Equals("analyzerPackage"));
+            Assert.NotNull(dep);
+            Assert.Equal(LibraryIncludeFlags.Analyzers, dep.IncludeType);
+            Assert.Equal(LibraryIncludeFlags.Analyzers, dep.SuppressParent);
         }
 
         [Fact]
@@ -2954,6 +2996,35 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             packageSpec.RestoreMetadata.UseLegacyDependencyResolver.Should().Be(useLegacyDependencyResolver);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void GetPackageSpec_WithRestoreEnableAnalyzerAssets_ReturnsRestoreEnableAnalyzerAssets(
+            bool restoreEnableAnalyzerAssets)
+        {
+            // Arrange
+            var json = $"{{\"restore\":{{\"restoreEnableAnalyzerAssets\":{restoreEnableAnalyzerAssets.ToString().ToLowerInvariant()}}}}}";
+
+            // Act
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            // Assert
+            packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().Be(restoreEnableAnalyzerAssets);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithNoRestoreEnableAnalyzerAssetsValuePassed_DefaultsFalse()
+        {
+            // Arrange
+            var json = "{\"restore\":{}}";
+
+            // Act
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            // Assert
+            packageSpec.RestoreMetadata.RestoreEnableAnalyzerAssets.Should().BeFalse();
         }
 
         [Fact]

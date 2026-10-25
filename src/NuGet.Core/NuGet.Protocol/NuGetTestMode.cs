@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -12,11 +13,25 @@ namespace NuGet.Protocol.Core.Types
 
         static NuGetTestMode()
         {
-            // cached for the life-time of the app domain
-            Enabled = FromEnvironmentVariable();
+            StaticState.BuildEnded += ResetCache;
         }
 
-        public static bool Enabled { get; private set; }
+        private static bool? s_enabled;
+
+        public static bool Enabled
+        {
+            get
+            {
+                // Computed on first use rather than in the reset, so a process reused across builds reads
+                // NuGetTestModeEnabled from the environment of the build that uses it.
+                s_enabled ??= FromEnvironmentVariable();
+                return s_enabled.Value;
+            }
+            private set => s_enabled = value;
+        }
+
+        /// <summary>Discards the cached <c>NuGetTestModeEnabled</c> value so it is re-read on next use.</summary>
+        internal static void ResetCache() => s_enabled = null;
 
         private static bool FromEnvironmentVariable()
         {

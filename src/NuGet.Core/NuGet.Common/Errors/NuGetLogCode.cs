@@ -154,6 +154,11 @@ namespace NuGet.Common
         NU1019 = 1019,
 
         /// <summary>
+        /// Floating package versions are not allowed when package source cooldown is enabled.
+        /// </summary>
+        NU1020 = 1020,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -274,6 +279,7 @@ namespace NuGet.Common
         /// <summary>
         /// Package Signature is invalid
         /// </summary>
+        [Obsolete]
         NU1410 = 1410,
 
         /// <summary>
@@ -337,6 +343,11 @@ namespace NuGet.Common
         NU1511 = 1511,
 
         /// <summary>
+        /// RestoreLockedMode and RestoreForceEvaluate are both set to true; RestoreForceEvaluate takes precedence and locked mode is ignored.
+        /// </summary>
+        NU1512 = 1512,
+
+        /// <summary>
         /// Dependency bumped up
         /// </summary>
         NU1601 = 1601,
@@ -381,7 +392,8 @@ namespace NuGet.Common
         NU1702 = 1702,
 
         /// <summary>
-        /// MacCatalyst platform fell back to xamarin.ios - Added in 6.0, removed in 6.1.
+        /// Package uses a deprecated legacy Xamarin framework (e.g. MonoAndroid) instead of a modern .NET TFM.
+        /// Originally added in 6.0 for MacCatalyst/Xamarin.iOS (removed in 6.1), reused for MonoAndroid in 11.0.
         /// </summary>
         NU1703 = 1703,
 
@@ -689,6 +701,7 @@ namespace NuGet.Common
         /// <summary>
         /// Error_UnableToLocateBuildOutput
         /// </summary>
+        [Obsolete]
         NU5007 = 5007,
 
         /// <summary>
@@ -835,6 +848,7 @@ namespace NuGet.Common
         /// <summary>
         /// https://aka.ms/malformedNuGetLicenseUrl
         /// </summary>
+        [Obsolete]
         NU5036 = 5036,
 
         /// <summary>
@@ -865,6 +879,7 @@ namespace NuGet.Common
         /// <summary>
         /// Error_ProjectJsonPack_Deprecated_And_Disabled
         /// </summary>
+        [Obsolete]
         NU5042 = 5042,
 
         /// <summary>
@@ -903,6 +918,11 @@ namespace NuGet.Common
         NU5051 = 5051,
 
         /// <summary>
+        /// Package ID does not adhere to the restricted set of characters
+        /// </summary>
+        NU5052 = 5052,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
@@ -930,6 +950,7 @@ namespace NuGet.Common
         /// <summary>
         /// LegacyVersionWarning
         /// </summary>
+        [Obsolete]
         NU5105 = 5105,
 
         /// <summary>
@@ -1030,6 +1051,7 @@ namespace NuGet.Common
         ///<summary>
         /// ProjectJsonPack_Deprecated
         /// </summary>
+        [Obsolete]
         NU5126 = 5126,
 
         /// <summary>
@@ -1076,5 +1098,10 @@ namespace NuGet.Common
         /// InvalidUndottedFrameworkWarning
         /// </summary>
         NU5501 = 5501,
+
+        /// <summary>
+        /// Invalid deterministic timestamp
+        /// </summary>
+        NU5502 = 5502,
     }
 }

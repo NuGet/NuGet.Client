@@ -117,6 +117,48 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void PackCommand_PackageFromNuspecWithNonStandardPackageId_EmitsNU5052()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using var workingDirectory = TestDirectory.Create();
+
+            // Arrange
+            Util.CreateFile(
+                workingDirectory,
+                "content.txt",
+                "content");
+
+            Util.CreateFile(
+                workingDirectory,
+                "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>Contöso.Utilities</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+  </metadata>
+  <files>
+    <file src=""content.txt"" target=""content"" />
+  </files>
+</package>");
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingDirectory,
+                "pack packageA.nuspec",
+                testOutputHelper: _testOutputHelper);
+
+            // Assert
+            r.Success.Should().BeTrue(because: r.AllOutput);
+            r.AllOutput.Should().Contain("NU5052");
+        }
+
+        [Fact]
         public void PackCommand_AutomaticallyExcludeNuspecs()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -6296,7 +6338,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             }
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/8601")]
+        [Fact]
         public void PackCommand_Deterministic_MultiplePackInvocations_CreateIdenticalPackages()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -6329,7 +6371,11 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   </metadata>
 </package>");
 
-                var command = "pack packageA.nuspec -Deterministic -OutputDirectory {0}";
+                var timestamp = new DateTimeOffset(year: 2020, month: 1, day: 1,
+                                                   hour: 0, minute: 0, second: 0,
+                                                   offset: TimeSpan.Zero);
+
+                var command = "pack packageA.nuspec -Deterministic -DeterministicTimestamp {0} -OutputDirectory {1}";
                 byte[][] packageBytes = new byte[2][];
 
                 for (var i = 0; i < 2; i++)
@@ -6340,7 +6386,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var r = CommandRunner.Run(
                         nugetexe,
                         workingDirectory,
-                        string.Format(command, path),
+                        string.Format(command, timestamp.ToString("o"), path),
                         testOutputHelper: _testOutputHelper);
                     Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
@@ -6609,64 +6655,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     testOutputHelper: _testOutputHelper);
                 Util.VerifyResultSuccess(r2);
                 Assert.True(File.Exists(Path.Combine(proj3Directory, "proj3.0.0.0.nupkg")));
-            }
-        }
-
-
-        [PlatformFact(Platform.Windows)]
-        public void PackCommand_WhenUsingSemver2Version_NU5105_IsNotRaised()
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                var proj1Directory = Path.Combine(workingDirectory, "proj1");
-
-                // create project 1
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1.csproj",
-    $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1_file1.cs",
-    @"using System;
-
-namespace Proj1
-{
-    public class Class1
-    {
-        public int A { get; set; }
-    }
-}");
-                Util.CreateFile(
-                    proj1Directory,
-                    "proj1_file2.txt",
-                    "file2");
-
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    proj1Directory,
-                    $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
-                    testOutputHelper: _testOutputHelper);
-                r.Success.Should().BeTrue(because: r.AllOutput);
-                r.AllOutput.Should().NotContain(NuGetLogCode.NU5105.ToString());
             }
         }
 

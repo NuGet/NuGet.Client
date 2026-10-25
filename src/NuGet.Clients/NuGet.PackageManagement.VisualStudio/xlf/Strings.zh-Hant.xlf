@@ -22,6 +22,16 @@
         <target state="translated">NuGet 作業失敗</target>
         <note />
       </trans-unit>
+      <trans-unit id="CredentialPrompt_PackageSourceCaption">
+        <source>NuGet Package Source Authentication</source>
+        <target state="translated">NuGet 套件來源驗證</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CredentialPrompt_PackageSourceMessage">
+        <source>Enter credentials for the package source '{0}'.</source>
+        <target state="translated">輸入套件來源「{0}」的認證資訊。</target>
+        <note>{0} is the package source URI.</note>
+      </trans-unit>
       <trans-unit id="CredentialProviderFailed_DefaultCredentialsCredentialProvider">
         <source>The default credentials credential provider failed to load.</source>
         <target state="translated">無法載入預設認證的認證提供者。</target>
@@ -218,8 +228,8 @@
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
-        <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
-        <target state="translated">未儲存解決方案。請先儲存解決方案，再管理 NuGet 套件。</target>
+        <source>Solution is not saved. Save your solution before managing NuGet packages.</source>
+        <target state="translated">未儲存解決方案。先儲存解決方案，再管理 NuGet 套件。</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink">
@@ -233,7 +243,7 @@
         <note>This test goes immediately after the document link.</note>
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink_Before">
-        <source>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the</source>
+        <source>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, refer to the</source>
         <target state="translated">因為有一或多個套件與您的專案不相容，所以 NuGet 作業失敗。'{0}' ('{1}') 專案架構已淘汰。如需如何將專案移轉至支援架構的相關詳細資訊，請參閱</target>
         <note>This text goes immediately before the document link.
 {0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").

@@ -22,6 +22,16 @@
         <target state="translated">Сбой операции NuGet</target>
         <note />
       </trans-unit>
+      <trans-unit id="CredentialPrompt_PackageSourceCaption">
+        <source>NuGet Package Source Authentication</source>
+        <target state="translated">Проверка подлинности источника пакета NuGet</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CredentialPrompt_PackageSourceMessage">
+        <source>Enter credentials for the package source '{0}'.</source>
+        <target state="translated">Введите учетные данные для источника пакетов "{0}".</target>
+        <note>{0} is the package source URI.</note>
+      </trans-unit>
       <trans-unit id="CredentialProviderFailed_DefaultCredentialsCredentialProvider">
         <source>The default credentials credential provider failed to load.</source>
         <target state="translated">Не удалось загрузить поставщик учетных данных с учетными данными по умолчанию.</target>
@@ -218,8 +228,8 @@
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
-        <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
-        <target state="translated">Решение не сохранено. Сохраните свое решение, прежде чем управлять пакетами NuGet.</target>
+        <source>Solution is not saved. Save your solution before managing NuGet packages.</source>
+        <target state="translated">Решение не сохранено. Сохраните решение перед управлением пакетами NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink">
@@ -233,8 +243,8 @@
         <note>This test goes immediately after the document link.</note>
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink_Before">
-        <source>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the</source>
-        <target state="translated">Произошел сбой операции NuGet, так как часть пакетов несовместима с вашим проектом. Платформа проекта "{0}" ("{1}") устарела. Дополнительные сведения о переносе своих проектов на поддерживаемую платформу см. в</target>
+        <source>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, refer to the</source>
+        <target state="translated">Произошел сбой операции NuGet, так как часть пакетов несовместима с вашим проектом. Платформа проекта "{0}" ("{1}") устарела. Для получения более подробных сведений о том, как перевести ваши проекты на поддерживаемую платформу, обратитесь к</target>
         <note>This text goes immediately before the document link.
 {0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").
 {1} is the short folder representation of the framework (e.g. "net45").</note>

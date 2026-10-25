@@ -183,7 +183,7 @@
         <note />
       </trans-unit>
       <trans-unit id="Delete_MissingArguments">
-        <source>Please provide arguments for package id and package version.</source>
+        <source>Provide arguments for package id and package version.</source>
         <target state="translated">Geben Sie Argumente für Paket-ID und Paketversion an.</target>
         <note />
       </trans-unit>
@@ -270,8 +270,8 @@
         <note>0 - package id</note>
       </trans-unit>
       <trans-unit id="Error_AssetsFileNotFound">
-        <source>No assets file was found for `{0}`. Please run restore before running this command.</source>
-        <target state="translated">Für "{0}" wurden keine Assetdateien gefunden. Führen Sie eine Wiederherstellung durch, bevor Sie diesen Befehl ausführen.</target>
+        <source>No assets file was found for `{0}`. Run restore before running this command.</source>
+        <target state="translated">Für `{0}` wurden keine Assetdateien gefunden. Führen Sie eine Wiederherstellung durch, bevor Sie diesen Befehl ausführen.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotObtainSearchSource">
@@ -369,8 +369,8 @@ NuGet erfordert HTTPS-Quellen. Um HTTP-Quellen zu verwenden, müssen Sie „allo
         <note>{0} - Project/csproj path</note>
       </trans-unit>
       <trans-unit id="Error_MultipleProjectOrSolutionFilesInDirectory">
-        <source>The directory '{0}' contains multiple project or solution files. Please specify which project or solution file to use.</source>
-        <target state="translated">Das Verzeichnis "{0}" enthält mehrere Projekt- oder Projektmappendateien. Geben Sie an, welches Projekt oder welche Projektmappendatei verwendet werden soll.</target>
+        <source>The directory '{0}' contains multiple project or solution files. Specify which project or solution file to use.</source>
+        <target state="translated">Das Verzeichnis „{0}“ enthält mehrere Projekt- oder Projektmappendateien. Geben Sie an, welches Projekt oder welche Lösungsdatei verwendet werden soll.</target>
         <note>{0} - Directory</note>
       </trans-unit>
       <trans-unit id="Error_NoDgSpec">
@@ -394,14 +394,21 @@ NuGet erfordert HTTPS-Quellen. Um HTTP-Quellen zu verwenden, müssen Sie „allo
         <note>{0} - PackageID</note>
       </trans-unit>
       <trans-unit id="Error_NotPRProject">
-        <source>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</source>
-        <target state="translated">Das Projekt "{0}" verwendet "package.config" für NuGet-Pakete, der Befehl funktioniert jedoch nur mit Projekten mit Paketverweis.</target>
-        <note />
+        <source>The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</source>
+        <target state="needs-review-translation">Das Projekt "{0}" verwendet "package.config" für NuGet-Pakete, der Befehl funktioniert jedoch nur mit Projekten mit Paketverweis.</target>
+        <note>{0} - Path to the project with the error, {Locked="PackageReference"}</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">
         <source>Unable to find a valid package version</source>
         <target state="translated">Es konnte keine gültige Paketversion gefunden werden.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Error_PackagePublishDateMissing">
+        <source>Package source '{0}' did not provide a publish date for package '{1}' version '{2}', which is required because the source has a minimum publish age configured.</source>
+        <target state="new">Package source '{0}' did not provide a publish date for package '{1}' version '{2}', which is required because the source has a minimum publish age configured.</target>
+        <note>{0} - package source name
+{1} - package ID
+{2} - package version</note>
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
         <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
@@ -409,8 +416,8 @@ NuGet erfordert HTTPS-Quellen. Um HTTP-Quellen zu verwenden, müssen Sie „allo
         <note>{0} - package id</note>
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
-        <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</source>
-        <target state="translated">Fehlende oder ungültige Eingabe „{0}“. Geben Sie einen Pfad zu einem Projekt, einer Projektmappendatei, einer dateibasierten App oder einem Projektverzeichnis an.</target>
+        <source>Missing or invalid path '{0}'. Provide a path to a project, solution file, file-based app, or project directory.</source>
+        <target state="translated">Fehlende oder ungültige Eingabe „{0}“. Geben Sie einen Pfad zu einem Projekt, einer Lösungsdatei, einer dateibasierten App oder einem Projektverzeichnis an.</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -441,8 +448,8 @@ NuGet erfordert HTTPS-Quellen. Um HTTP-Quellen zu verwenden, müssen Sie „allo
         <note>{0} - Path to the project with the error</note>
       </trans-unit>
       <trans-unit id="Error_TrustFingerPrintAlreadyExist">
-        <source>The certificate finger you're trying to add is already in the certificate fingerprint list.</source>
-        <target state="translated">Der Zertifikatfinger, den Sie hinzufügen möchten, befindet sich bereits in der Zertifikatfingerabdruckliste.</target>
+        <source>The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</source>
+        <target state="needs-review-translation">Der Zertifikatfinger, den Sie hinzufügen möchten, befindet sich bereits in der Zertifikatfingerabdruckliste.</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_TrustedRepoAlreadyExists">
@@ -557,13 +564,13 @@ NuGet erfordert HTTPS-Quellen. Um HTTP-Quellen zu verwenden, müssen Sie „allo
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ErrorReadingAssetsFile">
-        <source>Unable to read the assets file `{0}`. Please make sure the file has the write format.</source>
-        <target state="translated">Die Assetdatei "{0}" kann nicht gelesen werden. Stellen Sie sicher, dass die Datei im Schreibformat vorliegt.</target>
+        <source>Unable to read the assets file `{0}`. Make sure the file has the correct format.</source>
+        <target state="translated">Die Assetdatei `{0}` kann nicht gelesen werden. Überprüfen Sie, ob die Datei das richtige Format aufweist.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ErrorReadingReferenceFromProject">
-        <source>Unable to read a package reference from the project `{0}`. Please make sure that your project file and project.assets.json file are in sync by running restore.</source>
-        <target state="translated">Ein Paketverweis aus dem Projekt "{0}" kann nicht gelesen werden. Stellen Sie sicher, dass Ihre Projektdatei und die Datei "project.assets.json" synchronisiert sind, indem Sie eine Wiederherstellung ausführen.</target>
+        <source>Unable to read a package reference from the project `{0}`. Make sure that your project file and project.assets.json file are in sync by running restore.</source>
+        <target state="translated">Ein Paketverweis aus dem Projekt `{0}` kann nicht gelesen werden. Stellen Sie sicher, dass Ihre Projektdatei und die Datei „project.assets.json“ synchronisiert sind, indem Sie eine Wiederherstellung ausführen.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_FrameworkDescription">
@@ -789,7 +796,7 @@ NuGet erfordert HTTPS-Quellen. Um HTTP-Quellen zu verwenden, müssen Sie „allo
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_MultipleOperations">
-        <source>Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
+        <source>Both operations, --list and --clear, are not supported in the same command. Specify only one operation.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
         <target state="translated">Die gleichzeitige Verwendung der Vorgänge --list und --clear in demselben Befehl wird nicht unterstützt. Geben Sie nur einen Vorgang an.
@@ -807,12 +814,12 @@ Weitere Informationen finden Sie unter: https://docs.nuget.org/docs/reference/co
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_NoOperation">
-        <source>Please specify an operation i.e. --list or --clear.
+        <source>Specify an operation i.e. --list or --clear.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">Geben Sie einen Vorgang an, d. h. --list oder --clear.
+        <target state="translated">Geben Sie einen Vorgang an, d. h. „--list“ oder „--clear“.
 Syntax: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
-Weitere Informationen finden Sie unter: https://docs.nuget.org/docs/reference/command-line-reference.</target>
+Weitere Informationen finden Sie unter https://docs.nuget.org/docs/reference/command-line-reference.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoServiceEndpoint_Description">
@@ -1032,6 +1039,11 @@ Weitere Informationen finden Sie unter: https://docs.nuget.org/docs/reference/co
         <target state="translated">Paketverweis in Form eines Paketbezeichners wie „Newtonsoft.Json“ oder Paketbezeichner und -version getrennt durch „@“ wie „Newtonsoft.Json@13.0.3“.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_PackagesAwaitingCooldown">
+        <source>Packages with newer versions that have not reached the configured minimum publish age: {0}.</source>
+        <target state="new">Packages with newer versions that have not reached the configured minimum publish age: {0}.</target>
+        <note>{0}: Comma-separated package IDs with newer versions that have not reached the configured minimum publish age</note>
+      </trans-unit>
       <trans-unit id="PackageUpdate_PreviewRestore">
         <source>Running preview restore to check package compatibility.</source>
         <target state="translated">Vorschauwiederherstellung wird ausgeführt, um die Paketkompatibilität zu überprüfen.</target>
@@ -1085,8 +1097,8 @@ Weitere Informationen finden Sie unter: https://docs.nuget.org/docs/reference/co
         <note />
       </trans-unit>
       <trans-unit id="Push_MissingArguments">
-        <source>Please specify the path to the package.</source>
-        <target state="translated">Geben Sie den Pfad zum Paket an.</target>
+        <source>Specify the path to the package.</source>
+        <target state="translated">Hiermit geben Sie den Pfad zum Paket an.</target>
         <note />
       </trans-unit>
       <trans-unit id="Push_Package_ApiKey_Description">
@@ -1203,8 +1215,8 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <note />
       </trans-unit>
       <trans-unit id="SignCommandNoTimestamperWarning">
-        <source>The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools</source>
-        <target state="translated">Die Option "-timestamper" wurde nicht angegeben, daher wird das signierte Paket nicht mit einem Zeitstempel versehen. Weitere Informationen zu dieser Option finden Sie unter https://docs.microsoft.com/dotnet/core/tools</target>
+        <source>The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, visit https://docs.microsoft.com/dotnet/core/tools</source>
+        <target state="translated">Die Option „--timestamper“ wurde nicht angegeben. Daher wird das signierte Paket nicht mit einem Zeitstempel versehen. Weitere Informationen zu dieser Option finden Sie unter https://docs.microsoft.com/dotnet/core/tools</target>
         <note>Please don't localize '--timestamper'</note>
       </trans-unit>
       <trans-unit id="SignCommandOutputDirectoryDescription">
@@ -1246,6 +1258,16 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <source>The format of the list command output: `Detailed` (the default) and `Short`.</source>
         <target state="translated">Das Format der Ausgabe des Auflistungsbefehls: "Detailed" (Standardwert) und "Short".</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursDescription">
+        <source>The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</source>
+        <target state="new">The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">
+        <source>The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</source>
+        <target state="new">The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</target>
+        <note>0 - the invalid number of hours. 1 - the maximum supported number of hours.</note>
       </trans-unit>
       <trans-unit id="SourcesCommandNameDescription">
         <source>Name of the source.</source>
@@ -1291,6 +1313,76 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <source>The proper command is '{0}'.</source>
         <target state="translated">Der richtige Befehl lautet "{0}".</target>
         <note />
+      </trans-unit>
+      <trans-unit id="StageCommand_Description">
+        <source>Manages packages in a staging environment.</source>
+        <target state="new">Manages packages in a staging environment.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Description">
+        <source>Stages a package on the server without publishing it.</source>
+        <target state="new">Stages a package on the server without publishing it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_InvalidGroup">
+        <source>The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</source>
+        <target state="new">The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_MissingSource">
+        <source>No package source was provided and DefaultPushSource is not configured.</source>
+        <target state="new">No package source was provided and DefaultPushSource is not configured.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_PackageNotFound">
+        <source>The package file '{0}' does not exist.</source>
+        <target state="new">The package file '{0}' does not exist.</target>
+        <note>0 - package path</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_PackagePathRequired">
+        <source>A package path is required.</source>
+        <target state="new">A package path is required.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_ResourceNotFound">
+        <source>The source '{0}' does not advertise a supported package staging resource.</source>
+        <target state="new">The source '{0}' does not advertise a supported package staging resource.</target>
+        <note>0 - package source</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_UnsupportedPackage">
+        <source>The file '{0}' is not a supported package. Specify a .nupkg, .snupkg, or .symbols.nupkg file.</source>
+        <target state="new">The file '{0}' is not a supported package. Specify a .nupkg, .snupkg, or .symbols.nupkg file.</target>
+        <note>0 - package path</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_GroupOption_Description">
+        <source>Uploads the package into the specified staging group.</source>
+        <target state="new">Uploads the package into the specified staging group.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_NoSymbolsOption_Description">
+        <source>Prevents automatic discovery and staging of a sibling symbols package.</source>
+        <target state="new">Prevents automatic discovery and staging of a sibling symbols package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_PackagePathArgument_Description">
+        <source>The path to the package to stage.</source>
+        <target state="new">The path to the package to stage.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_PackageStaged">
+        <source>Staged package '{0}'.</source>
+        <target state="new">Staged package '{0}'.</target>
+        <note>0 - package path</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_SymbolsFailed">
+        <source>Failed to stage symbols package '{0}': {1}</source>
+        <target state="new">Failed to stage symbols package '{0}': {1}</target>
+        <note>0 - symbols package path; 1 - error message</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_SymbolsStaged">
+        <source>Staged symbols package '{0}'.</source>
+        <target state="new">Staged symbols package '{0}'.</target>
+        <note>0 - symbols package path</note>
       </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
@@ -1393,8 +1485,8 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <note />
       </trans-unit>
       <trans-unit id="Unsupported_UpdatePackageWithDifferentPerTfmVersions">
-        <source>The package {0} references different versions of the package for different target frameworks. This is not supported by this command. Please edit the project file directly. ({1})</source>
-        <target state="translated">Das Paket {0} verweist für verschiedene Zielframeworks auf unterschiedliche Versionen des Pakets. Dies wird von diesem Befehl nicht unterstützt. Bitte bearbeiten Sie die Projektdatei direkt. ({1})</target>
+        <source>The package {0} references different versions of the package for different target frameworks. This is not supported by this command. Edit the project file directly. ({1})</source>
+        <target state="translated">Das Paket {0} verweist für verschiedene Zielframeworks auf unterschiedliche Versionen des Pakets. Dies wird von diesem Befehl nicht unterstützt. Bearbeiten Sie die Projektdatei direkt. ({1})</target>
         <note>0 - The package id
 1 - The project path</note>
       </trans-unit>
@@ -1448,6 +1540,11 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <target state="translated">Hiermit geben Sie den Pfad zum Paket an.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Warn_AddPkgNonCompliantPackageId">
+        <source>The package ID '{0}' does not meet NuGet package ID standards. Package IDs must be no more than 100 characters, start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_). Dots and dashes cannot appear consecutively or at the end.</source>
+        <target state="new">The package ID '{0}' does not meet NuGet package ID standards. Package IDs must be no more than 100 characters, start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_). Dots and dashes cannot appear consecutively or at the end.</target>
+        <note>{0} - Package Id</note>
+      </trans-unit>
       <trans-unit id="Warn_AddPkgWithoutRestore">
         <source>--no-restore|-n flag was used. No compatibility check will be done and the added package reference will be unconditional.</source>
         <target state="translated">Das Kennzeichen "--no-restore|-n" wurde verwendet. Es wird keine Kompatibilitätsprüfung durchgeführt, und der hinzugefügte Paketverweis ist nicht an Bedingungen gebunden.</target>
@@ -1486,8 +1583,13 @@ Bei der Suche handelt es sich um einen ungültigen Zeichenfolgenvergleich mit de
         <target state="translated">"dotnet nuget why" kann nicht ausgeführt werden. {0}</target>
         <note>{0} - Exception mssage</note>
       </trans-unit>
+      <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
+        <source>Internal error: Assets file is inconsistent</source>
+        <target state="translated">Interner Fehler: Die Assets-Datei ist inkonsistent.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
-        <source>The file '{0}' does not appear to be a NuGet assets file. Please run restore for project '{1}' before running this command.</source>
+        <source>The file '{0}' does not appear to be a NuGet assets file. Run restore for project '{1}' before running this command.</source>
         <target state="translated">Die Datei „{0}“ scheint keine NuGet-Ressourcendatei zu sein. Führen Sie die Wiederherstellung für das Projekt „{1}“ aus, bevor Sie diesen Befehl ausführen.</target>
         <note>{0} - Assets file path, {1} - Project name</note>
       </trans-unit>

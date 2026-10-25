@@ -18,7 +18,6 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -890,6 +889,89 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Theory]
+        [InlineData("../outside.txt")]
+        [InlineData("%2e%2e/outside.txt")]
+        [InlineData("%2e%2e%2foutside.txt")]
+        [InlineData("../destination-sibling/outside.txt")]
+        [InlineData(".")]
+        [InlineData("%2e")]
+        [InlineData("subdir/../..")]
+        public async Task CopyFiles_UnsafeEntry_ThrowsBeforeInvokingExtractionDelegate(string packageFile)
+        {
+            using (var root = TestDirectory.Create())
+            {
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                    root,
+                    identity.Id,
+                    identity.Version.ToString(),
+                    entryModifiedTime: DateTimeOffset.Now,
+                    packageFile);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var extractionDelegateInvoked = false;
+
+                    Assert.Throws<UnsafePackageEntryException>(() => packageReader.CopyFiles(
+                        Path.Combine(root.Path, "destination"),
+                        new[] { Uri.UnescapeDataString(packageFile) },
+                        (source, target, stream) =>
+                        {
+                            extractionDelegateInvoked = true;
+                            return null;
+                        },
+                        NullLogger.Instance,
+                        CancellationToken.None));
+
+                    Assert.False(extractionDelegateInvoked);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("content/a.txt", "content/a.txt")]
+        [InlineData("content/a%20b.txt", "content/a b.txt")]
+        [InlineData("content/../a.txt", "a.txt")]
+        [InlineData("content/%2e%2e/a.txt", "a.txt")]
+        [InlineData("content%2fa.txt", "content/a.txt")]
+        [InlineData("/content/a.txt", "content/a.txt")]
+        public async Task CopyFiles_SafeEntry_UsesValidatedCanonicalPath(string packageFile, string relativeTargetPath)
+        {
+            using (var root = TestDirectory.Create())
+            {
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                    root,
+                    identity.Id,
+                    identity.Version.ToString(),
+                    entryModifiedTime: DateTimeOffset.Now,
+                    packageFile);
+                var destination = Path.Combine(root.Path, "destination");
+                var expectedFilePath = Path.Combine(destination, relativeTargetPath.Replace('/', Path.DirectorySeparatorChar));
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var packageReader = new PackageArchiveReader(packageStream))
+                {
+                    var files = packageReader.CopyFiles(
+                        destination,
+                        new[] { Uri.UnescapeDataString(packageFile) },
+                        (source, target, stream) =>
+                        {
+                            Assert.Equal(expectedFilePath, target);
+                            Directory.CreateDirectory(Path.GetDirectoryName(target));
+                            return ExtractFile(source, target, stream);
+                        },
+                        NullLogger.Instance,
+                        CancellationToken.None);
+
+                    Assert.Equal(expectedFilePath, Assert.Single(files));
+                    Assert.True(File.Exists(expectedFilePath));
+                }
+            }
+        }
+
         [Fact]
         public async Task CopyFiles_ContainsInvalidEntry_Fail()
         {
@@ -1033,7 +1115,7 @@ namespace NuGet.Packaging.Test
                             NullLogger.Instance,
                             CancellationToken.None);
 
-                        var expectedFilePath = Path.Combine(destination.Path.ToUpper(), "readme~.txt");
+                        var expectedFilePath = Path.GetFullPath(Path.Combine(destination.Path.ToUpper(), "readme~.txt"));
 
                         Assert.Equal(1, files.Count());
                         Assert.Equal(expectedFilePath, files.Single());
@@ -1863,48 +1945,6 @@ namespace NuGet.Packaging.Test
                 var expectedResult = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(test.Stream));
 
                 Assert.Equal(expectedResult, result);
-            }
-        }
-
-        [NetFxCIOnlyFact]
-        public async Task GetContentHash_IsSameForUnsignedAndSignedPackageAsync()
-        {
-            // this test will create an unsigned package, copy it, then sign it. then compare the contentHash
-            var nupkg = new SimpleTestPackageContext("Package.Content.Hash.Test", "1.0.0");
-
-            using (var unsignedDir = TestDirectory.Create())
-            {
-                var nupkgFileName = $"{nupkg.Identity.Id}.{nupkg.Identity.Version}.nupkg";
-                var nupkgFileInfo = await nupkg.CreateAsFileAsync(unsignedDir, nupkgFileName);
-
-                using (var signedDir = TestDirectory.Create())
-                {
-                    Uri timestampService = null;
-                    var signatureHashAlgorithm = HashAlgorithmName.SHA256;
-                    var timestampHashAlgorithm = HashAlgorithmName.SHA256;
-
-                    var signedPackagePath = Path.Combine(signedDir.Path, nupkgFileName);
-
-                    using (var trustedCert = SigningTestUtility.GenerateTrustedTestCertificate())
-                    using (var originalPackage = File.OpenRead(nupkgFileInfo.FullName))
-                    using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                    using (var request = new AuthorSignPackageRequest(
-                        trustedCert.Source.Cert,
-                        signatureHashAlgorithm,
-                        timestampHashAlgorithm))
-                    {
-                        await SignedArchiveTestUtility.CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
-                    }
-
-                    using (var unsignedReader = new PackageArchiveReader(nupkgFileInfo.FullName))
-                    using (var signedReader = new PackageArchiveReader(signedPackagePath))
-                    {
-                        var contentHashUnsigned = unsignedReader.GetContentHash(CancellationToken.None);
-                        var contentHashSigned = signedReader.GetContentHash(CancellationToken.None);
-
-                        Assert.Equal(contentHashUnsigned, contentHashSigned);
-                    }
-                }
             }
         }
 

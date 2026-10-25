@@ -73,9 +73,8 @@ internal interface IPackageUpdateIO
     /// <see langword="null"/> if package source mapping is not configured.</param>
     /// <param name="logger">Output logger</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The <see cref="NuGetVersion"/> of the highest version of the package available.
-    /// <see langword="null"/> if no versions of the package are found.</returns>
-    Task<NuGetVersion?> GetLatestVersionAsync(
+    /// <returns>The highest eligible version and the highest version still in cooldown.</returns>
+    Task<PackageVersionLookupResult> GetLatestVersionAsync(
         string packageId,
         bool includePrerelease,
         IReadOnlyList<string>? allowedSources,
@@ -90,9 +89,10 @@ internal interface IPackageUpdateIO
     /// <param name="allowedVersions">The version range allowed by the project reference.</param>
     /// <param name="logger">Output logger</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The <see cref="NuGetVersion"/> of the highest version of the package available in the allowed range.
-    /// <see langword="null"/> if no versions of the package are found.</returns>
-    Task<NuGetVersion?> GetLatestVersionAsync(
+    /// <returns>The highest eligible version within the allowed range and the highest version within
+    /// the allowed range still in cooldown. <see cref="PackageVersionLookupResult.Version"/> is
+    /// <see langword="null"/> when no version of the package is available in the allowed range.</returns>
+    Task<PackageVersionLookupResult> GetLatestVersionAsync(
         string packageId,
         bool includePrerelease,
         IReadOnlyList<string>? allowedSources,
@@ -117,10 +117,8 @@ internal interface IPackageUpdateIO
     /// <param name="logger">Output logger</param>
     /// <param name="knownVulnerabilities">The known vulnerabilities list.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The <see cref="NuGetVersion"/> of the lowest version without a known vulnerability.
-    /// <see langword="null"/> if the package name can't be found on the source(s), or if all the versions
-    /// available on the source(s) have known vulnerabilities.</returns>
-    Task<NuGetVersion?> GetNonVulnerableAsync(
+    /// <returns>The lowest eligible non-vulnerable version and the lowest non-vulnerable version still in cooldown.</returns>
+    Task<PackageVersionLookupResult> GetNonVulnerableAsync(
         string packageId,
         IReadOnlyList<string>? allowedSources,
         NuGetVersion minVersion,
@@ -150,4 +148,24 @@ internal interface IPackageUpdateIO
         /// </summary>
         public abstract bool Success { get; }
     }
+
 }
+
+/// <summary>
+/// Contains the results of "get package versions" lookup operation. For "get latest", Version represents the
+/// highest version that is not in cooldown, and VersionInCooldown represents the highest version that is still
+/// in cooldown. For "get non-vulnerable", Version represents the lowest version that is not in cooldown, and
+/// VersionInCooldown represents the lowest version that is still in cooldown, but only when it is lower than
+/// Version and would therefore have been preferred if it were eligible.
+/// </summary>
+/// <param name="Version">
+/// A version that satisfies the lookup criteria and the minimum publish age configured for at least one source.
+/// <see langword="null"/> when no source provides a matching version that has reached its minimum publish age.
+/// </param>
+/// <param name="VersionInCooldown">
+/// A version that satisfies the lookup criteria but has not reached a source's configured minimum publish age.
+/// <see langword="null"/> when no such version would be preferred over <paramref name="Version"/>.
+/// </param>
+internal readonly record struct PackageVersionLookupResult(
+    NuGetVersion? Version,
+    NuGetVersion? VersionInCooldown);

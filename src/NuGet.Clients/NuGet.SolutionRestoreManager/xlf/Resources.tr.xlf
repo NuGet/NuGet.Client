@@ -83,8 +83,8 @@ Eksik paketler: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFailedForProject">
-        <source>NuGet Package restore failed for project {0}: {1}. Please see Error List window for detailed warnings and errors.</source>
-        <target state="translated">NuGet Paket geri yüklemesi {0} projesi için başarısız oldu: {1}. Ayrıntılı uyarı ve hatalar için lütfen Hata listesi penceresine bakın.</target>
+        <source>NuGet Package restore failed for project {0}: {1}. See the Error List window for detailed warnings and errors.</source>
+        <target state="translated">NuGet Paket geri yüklemesi {0} projesi için başarısız oldu: {1}. Ayrıntılı uyarılar ve hatalar için Hata listesi penceresine bakın.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFinished">
@@ -98,8 +98,8 @@ Eksik paketler: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreFinishedWithError">
-        <source>NuGet package restore failed. Please see Error List window for detailed warnings and errors.</source>
-        <target state="translated">NuGet paketi geri yüklemesi başarısız oldu. Ayrıntılı uyarılar ve hatalar için lütfen Hata listesi penceresine bakın.</target>
+        <source>NuGet package restore failed. See the Error List window for detailed warnings and errors.</source>
+        <target state="translated">NuGet paketi geri yüklemesi başarısız oldu. Ayrıntılı uyarılar ve hatalar için Hata listesi penceresine bakın.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreOptOutMessage">
@@ -109,14 +109,19 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
 NuGet'in derleme sırasında paketleri geri yüklemesini önlemek için Visual Studio Seçenekleri iletişim kutusunu açın, NuGet Paket Yöneticisi düğümüne tıklayın ve 'NuGet'in derleme sırasında eksik kalan paketleri indirmesine izin ver' öğesinin işaretini kaldırın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Prompt_ResolveSupplyChainSecurityNUCode">
+        <source>Resolve {0} by reviewing my NuGet supply chain security configuration.</source>
+        <target state="translated">NuGet tedarik zinciri güvenliği yapılandırmamı gözden geçirerek {0} öğesini çözün.</target>
+        <note>Do not translate NuGet</note>
+      </trans-unit>
       <trans-unit id="PropertyDoesNotHaveSingleValue">
         <source>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</source>
         <target state="translated">{0} özelliğinin tüm hedef Framework’lerde tek bir değer alması bekleniyordu ancak bunun yerine şu değerleri aldı: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RelativeGlobalPackagesFolder">
-        <source>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Please save your solution or configure a 'globalPackagesFolder' which is a full path.</source>
-        <target state="translated">nuget.config dosyasındaki 'globalPackagesFolder' veya ortam değişkeni '{0}'. Göreli yol ve çözüm kayıtlı değil. Çözümünüzü kaydedin veya tam yol olan bir 'globalPackagesFolder' yapılandırın.</target>
+        <source>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Save your solution or configure a 'globalPackagesFolder' which is a full path.</source>
+        <target state="translated">nuget.config dosyasındaki 'globalPackagesFolder' veya ortam değişkeni '{0}', göreli bir yoldur ve çözüm kaydedilmemiştir. Çözümünüzü kaydedin veya tam yol olan bir 'globalPackagesFolder' yapılandırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoredPackage">
@@ -130,9 +135,19 @@ NuGet'in derleme sırasında paketleri geri yüklemesini önlemek için Visual S
         <note />
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
-        <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
-        <target state="translated">Çözüm kaydedilmedi. Lütfen NuGet paketlerini yönetmeden önce çözümünüzü kaydedin.</target>
+        <source>Solution is not saved. Save your solution before managing NuGet packages.</source>
+        <target state="translated">Çözüm kaydedilmedi. NuGet paketlerini yönetmeden önce çözümünüzü kaydedin.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Title_AskCopilotForFix">
+        <source>Ask Copilot for a fix</source>
+        <target state="translated">Copilot’tan düzeltme iste</target>
+        <note>Do not translate Copilot</note>
+      </trans-unit>
+      <trans-unit id="Title_FixVulnerabilitiesWithCopilot">
+        <source>Ask Copilot to fix NuGet package vulnerabilities</source>
+        <target state="translated">Copilot’tan NuGet paketi güvenlik açıklarını düzeltmesini isteyin</target>
+        <note>Do not translate Copilot or NuGet</note>
       </trans-unit>
     </body>
   </file>

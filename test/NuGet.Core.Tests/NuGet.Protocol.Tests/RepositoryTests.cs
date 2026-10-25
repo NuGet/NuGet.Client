@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void Provider_WhenSettingNull_Throws()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => Repository.Provider = null);
+            var exception = Assert.Throws<ArgumentNullException>(() => Repository.Provider = null!);
 
             Assert.Equal("value", exception.ParamName);
         }
@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Tests
 
             int actualCount = resourceProviders.Count();
 
-            Assert.Equal(49, actualCount);
+            Assert.Equal(50, actualCount);
         }
     }
 }

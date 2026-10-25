@@ -157,6 +157,36 @@ namespace NuGet.Configuration
             return decryptedString;
         }
 
+        /// <summary>
+        /// Gets the API key configured for an endpoint or its package source.
+        /// </summary>
+        /// <param name="settings">The settings containing configured API keys.</param>
+        /// <param name="endpoint">The endpoint URL used for the operation.</param>
+        /// <param name="source">The package source URL associated with the endpoint.</param>
+        /// <returns>The configured API key, or <see langword="null"/> when no matching key exists.</returns>
+        public static string? GetApiKey(ISettings settings, string endpoint, string source)
+        {
+            string? apiKey = GetDecryptedValueForAddItem(
+                settings,
+                ConfigurationConstants.ApiKeys,
+                endpoint);
+
+            apiKey ??= GetDecryptedValueForAddItem(
+                settings,
+                ConfigurationConstants.ApiKeys,
+                source);
+
+            if (apiKey is null && UriUtility.IsNuGetOrg(source))
+            {
+                apiKey = GetDecryptedValueForAddItem(
+                    settings,
+                    ConfigurationConstants.ApiKeys,
+                    NuGetConstants.DefaultGalleryServerUrl);
+            }
+
+            return apiKey;
+        }
+
         public static void SetEncryptedValueForAddItem(ISettings settings, string section, string key, string? value)
         {
             if (settings == null)
@@ -242,9 +272,9 @@ namespace NuGet.Configuration
         public static string GetGlobalPackagesFolder(ISettings settings)
         {
             return GetGlobalPackagesFolder(settings, EnvironmentVariableWrapper.Instance);
-
         }
-        internal static string GetGlobalPackagesFolder(ISettings settings, IEnvironmentVariableReader environmentVariableReader)
+
+        public static string GetGlobalPackagesFolder(ISettings settings, IEnvironmentVariableReader environmentVariableReader)
         {
             if (settings == null)
             {
@@ -283,7 +313,7 @@ namespace NuGet.Configuration
             return GetFallbackPackageFolders(settings, EnvironmentVariableWrapper.Instance);
         }
 
-        internal static IReadOnlyList<string> GetFallbackPackageFolders(ISettings settings, IEnvironmentVariableReader environmentVariableReader)
+        public static IReadOnlyList<string> GetFallbackPackageFolders(ISettings settings, IEnvironmentVariableReader environmentVariableReader)
         {
             if (settings == null)
             {

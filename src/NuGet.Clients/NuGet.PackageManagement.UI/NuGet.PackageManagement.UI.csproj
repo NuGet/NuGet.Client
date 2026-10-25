@@ -25,10 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Copilot" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Markdown.Platform" />
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Styles" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +41,7 @@
 
   <ItemGroup Label="NuGet Shared">
     <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

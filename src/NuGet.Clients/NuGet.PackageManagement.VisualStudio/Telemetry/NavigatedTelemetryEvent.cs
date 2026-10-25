@@ -84,11 +84,25 @@ namespace NuGet.PackageManagement.Telemetry
         }
 
         /// <summary>
-        /// Navigating from the Vulnerability InfoBar to Fix Vulnerabilities with GitHub Copilot.
+        /// Navigating to Fix Vulnerabilities with GitHub Copilot from a specific origin.
         /// </summary>
-        public static NavigatedTelemetryEvent CreateWithVulnerabilityInfoBarFixWithCopilot(FixVulnerabilitiesWithCopilotErrorType errorType)
+        public static NavigatedTelemetryEvent CreateWithFixVulnerabilitiesWithCopilot(
+            NavigationOrigin navigationOrigin,
+            FixVulnerabilitiesWithCopilotErrorType errorType)
         {
-            NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, NavigationOrigin.VulnerabilityInfoBar_FixVulnerabilitiesWithCopilot);
+            NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, navigationOrigin);
+            navigatedTelemetryEvent[ErrorTypePropertyName] = errorType;
+            return navigatedTelemetryEvent;
+        }
+
+        /// <summary>
+        /// Navigating to resolve supply chain security with GitHub Copilot from a specific origin.
+        /// </summary>
+        public static NavigatedTelemetryEvent CreateWithResolveSupplyChainSecurity(
+            NavigationOrigin navigationOrigin,
+            CopilotToolSessionError errorType)
+        {
+            NavigatedTelemetryEvent navigatedTelemetryEvent = new(NavigationType.Button, navigationOrigin);
             navigatedTelemetryEvent[ErrorTypePropertyName] = errorType;
             return navigatedTelemetryEvent;
         }

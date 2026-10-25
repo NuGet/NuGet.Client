@@ -3,6 +3,10 @@ parameters:
   displayName: Build bits for publishing
   type: boolean
   default: true
+- name: RunOptProf
+  displayName: Run optimization profiling
+  type: boolean
+  default: true
 - name: SigningType
   displayName: Type of signing to use
   type: string
@@ -31,7 +35,7 @@ extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
     settings:
-      networkIsolationPolicy: Permissive,CFSClean
+      networkIsolationPolicy: Preferred,CFSClean,CFSClean2,CFSClean3,GitHub,AzureStorage
     sdl:
       sourceAnalysisPool: VSEng-MicroBuildVSStable
       binskim:
@@ -54,5 +58,6 @@ extends:
       parameters:
         isOfficialBuild: true
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
+        RunOptProf: ${{ parameters.RunOptProf }}
         SigningType: ${{ parameters.SigningType }}
         TryRunOneLocBuild: true

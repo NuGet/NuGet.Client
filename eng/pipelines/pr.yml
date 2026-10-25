@@ -23,6 +23,10 @@ parameters:
   displayName: Run functional tests on MacOS
   type: boolean
   default: true
+- name: RunSdkNextTests
+  displayName: Run SDK Next integration tests
+  type: boolean
+  default: false
 - name: RunSourceBuild
   displayName: Run a SourceBuild build
   type: boolean
@@ -60,7 +64,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Unit
@@ -77,7 +81,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Unit
@@ -94,7 +98,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Functional
@@ -112,7 +116,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Functional
@@ -131,7 +135,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Functional
@@ -151,7 +155,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Functional
@@ -169,12 +173,32 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Functional
         testTargetFramework: net10.0
         testProjectName: Dotnet.Integration.Test
+        timeoutInMinutes: 60
+
+- ${{ if and(eq(parameters.RunFunctionalTestsOnWindows, true), eq(parameters.RunSdkNextTests, true)) }}:
+  - stage:
+    displayName: Dotnet.Integration.Test on Windows (SDK Next)
+    dependsOn: []
+    jobs:
+    - template: pr.job.yml
+      parameters:
+        displayName: Dotnet.Integration.Test on Windows (SDK Next)
+        osName: Windows
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEng-MicroBuildVSStable
+        testType: Functional
+        testTargetFramework: sdkNext
+        testProjectName: Dotnet.Integration.Test
+        useDotNetBuild: true
         timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
@@ -188,7 +212,7 @@ stages:
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
-          agentDemands: ImageOverride -equals Windows.VS2022.Amd64.Open
+          agentDemands: ImageOverride -equals Windows.VS2026.Amd64.Open
         ${{ else }}:
           agentPool: VSEng-MicroBuildVSStable
         testType: Functional
@@ -222,6 +246,21 @@ stages:
         testTargetFramework: net10.0
         timeoutInMinutes: 30
 
+- ${{ if and(eq(parameters.RunFunctionalTestsOnLinux, true), eq(parameters.RunSdkNextTests, true)) }}:
+  - stage:
+    displayName: Dotnet.Integration.Test on Linux (SDK Next)
+    dependsOn: []
+    jobs:
+    - template: pr.job.yml
+      parameters:
+        displayName: Dotnet.Integration.Test on Linux (SDK Next)
+        osName: Linux
+        vmImage: ubuntu-latest
+        testType: Functional
+        testTargetFramework: sdkNext
+        testProjectName: Dotnet.Integration.Test
+        timeoutInMinutes: 60
+
 - ${{ if eq(parameters.RunUnitTestsOnMacOS, true) }}:
   - stage:
     displayName: Unit Tests on MacOS (.NET 10.0)
@@ -249,6 +288,21 @@ stages:
         testTargetFramework: net10.0
         timeoutInMinutes: 30
 
+- ${{ if and(eq(parameters.RunFunctionalTestsOnMacOS, true), eq(parameters.RunSdkNextTests, true)) }}:
+  - stage:
+    displayName: Dotnet.Integration.Test on MacOS (SDK Next)
+    dependsOn: []
+    jobs:
+    - template: pr.job.yml
+      parameters:
+        displayName: Dotnet.Integration.Test on MacOS (SDK Next)
+        osName: MacOS
+        vmImage: macos-14
+        testType: Functional
+        testTargetFramework: sdkNext
+        testProjectName: Dotnet.Integration.Test
+        timeoutInMinutes: 60
+
 - ${{ if or(eq(parameters.RunSourceBuild, true), eq(parameters.RunStaticAnalysis, true)) }}:
   - stage:
     displayName: Source Build and Static Analysis
@@ -274,7 +328,8 @@ stages:
         displayName: Run Static Analysis
         timeoutInMinutes: 30
         pool:
-          vmImage: windows-latest
+          name: NetCore-Public
+          demands: ImageOverride -equals Windows.VS2026.Amd64.Open
         steps:
         - task: PowerShell@2
           displayName: Run configure.ps1
@@ -308,6 +363,13 @@ stages:
                 Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
                 exit 1
               }
+
+        - script: dotnet publish test\NuGet.AotCompatibility.TestApp\NuGet.AotCompatibility.TestApp.csproj --configuration Release --output artifacts\AotCompatibility
+          displayName: Publish AOT compatibility test app
+          condition: succeededOrFailed()
+        - script: artifacts\AotCompatibility\NuGet.AotCompatibility.TestApp.exe
+          displayName: Run AOT compatibility test app
+          condition: succeededOrFailed()
 
         - task: MSBuild@1
           displayName: Restore and Build

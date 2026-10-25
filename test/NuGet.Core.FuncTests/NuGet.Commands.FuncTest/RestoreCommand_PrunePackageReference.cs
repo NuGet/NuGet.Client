@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -204,8 +205,7 @@ namespace NuGet.Commands.FuncTest
                 result.LockFile.LogMessages.Should().HaveCount(1);
                 result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1510);
                 result.LockFile.LogMessages[0].LibraryId.Should().Be("C");
-                result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(1);
-                result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be(framework);
+                result.LockFile.LogMessages[0].TargetGraphs.Should().ContainSingle().Which.Should().Be(framework);
             }
             else
             {
@@ -526,8 +526,7 @@ namespace NuGet.Commands.FuncTest
                 result.LockFile.LogMessages.Should().HaveCount(1);
                 result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1511);
                 result.LockFile.LogMessages[0].LibraryId.Should().Be("Project2");
-                result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(1);
-                result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be(framework);
+                result.LockFile.LogMessages[0].TargetGraphs.Should().ContainSingle().Which.Should().Be(framework);
             }
             ISet<LibraryIdentity> installedPackages = result.GetAllInstalled();
             installedPackages.Should().HaveCount(1);
@@ -1160,8 +1159,7 @@ namespace NuGet.Commands.FuncTest
                 result.LockFile.LogMessages.Should().HaveCount(1);
                 result.LockFile.LogMessages[0].Code.Should().Be(NuGetLogCode.NU1510);
                 result.LockFile.LogMessages[0].LibraryId.Should().Be("C");
-                result.LockFile.LogMessages[0].TargetGraphs.Should().HaveCount(1);
-                result.LockFile.LogMessages[0].TargetGraphs[0].Should().Be("net10.0");
+                result.LockFile.LogMessages[0].TargetGraphs.Should().ContainSingle().Which.Should().Be("net10.0");
             }
             else
             {
@@ -1330,6 +1328,8 @@ namespace NuGet.Commands.FuncTest
             var restoreLogMessage = (RestoreLogMessage)testLogger.LogMessages.Single();
             restoreLogMessage.Code.Should().Be(NuGetLogCode.NU1510);
             restoreLogMessage.LibraryId.Should().Be("A");
+            restoreLogMessage.Message.Should().Be(
+                string.Format(CultureInfo.InvariantCulture, Strings.Error_RestorePruningDirectPackageReference, "A"));
 
             testEvent["Pruning.RemovablePackages.Count"].Should().Be(1);
             testEvent["Pruning.Pruned.Direct.Count"].Should().Be(1);

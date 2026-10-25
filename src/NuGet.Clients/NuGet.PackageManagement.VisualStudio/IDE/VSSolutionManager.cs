@@ -82,8 +82,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public INuGetProjectContext NuGetProjectContext { get; set; }
 
-        public Task InitializationTask { get; set; }
-
         public bool IsInitialized
         {
             get
@@ -209,13 +207,9 @@ namespace NuGet.PackageManagement.VisualStudio
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
-            HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(() =>
-            {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    return await _credentialServiceProvider.GetCredentialServiceAsync();
-                });
-            });
+            HttpHandlerResourceV3.CredentialService = CreateCredentialService(
+                _credentialServiceProvider.GetCredentialServiceAsync,
+                NuGetUIThreadHelper.JoinableTaskFactory);
 
             _vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
 
@@ -261,6 +255,22 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
 
             _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
+        }
+
+        internal static Lazy<ICredentialService> CreateCredentialService(
+            Func<Task<ICredentialService>> credentialServiceFactory,
+            JoinableTaskFactory joinableTaskFactory)
+        {
+            Assumes.Present(joinableTaskFactory);
+
+            var credentialService = new Microsoft.VisualStudio.Threading.AsyncLazy<ICredentialService>(
+                credentialServiceFactory,
+                joinableTaskFactory);
+
+            // Allow each caller to join the AsyncLazy task instead of blocking on the outer Lazy's monitor.
+            return new Lazy<ICredentialService>(
+                credentialService.GetValue,
+                LazyThreadSafetyMode.PublicationOnly);
         }
 
         private void UpdateSolutionDirectory()
@@ -322,8 +332,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<IEnumerable<NuGetProject>> GetNuGetProjectsAsync()
         {
-            InitializationTask = EnsureInitializeAsync();
-            await InitializationTask;
+            await EnsureInitializeAsync();
 
             // In certain cases project cache is populated with incomplete project data
             // Filter out null entries here.
@@ -332,7 +341,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(p => p != null)
                 .ToList();
 
-            InitializationTask = null;
             return projects;
         }
 
@@ -840,7 +848,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Refresh the adapter in the cache after migration.
                 if (projectJsonNuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out projectJsonUniqueName))
                 {
-                    RemoveVsProjectAdapterFromCache(projectJsonUniqueName);
+                    // AddVsProjectAdapterToCacheAsync replaces the project when it already exists, so no need to remove.
                     IVsProjectAdapter vsProjectAdapterMigrated = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
                     await AddVsProjectAdapterToCacheAsync(vsProjectAdapterMigrated);
                 }
@@ -1127,12 +1135,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _projectSystemCache.TryGetProjectNames(projectName, out var projectNames);
 
-            RemoveVsProjectAdapterFromCache(projectName);
-
+            // AddProject replaces the project when it already exists, so no need to remove.
             var nuGetProject = await _projectSystemFactory.CreateNuGetProjectAsync<LegacyPackageReferenceProject>(
                 vsProjectAdapter, optionalContext: null);
 
-            var added = _projectSystemCache.AddProject(projectNames, vsProjectAdapter, nuGetProject);
+            _projectSystemCache.AddProject(projectNames, vsProjectAdapter, nuGetProject);
 
             if (DefaultNuGetProjectName == null)
             {

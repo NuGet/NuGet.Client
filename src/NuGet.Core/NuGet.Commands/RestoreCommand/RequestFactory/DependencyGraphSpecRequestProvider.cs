@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
@@ -172,6 +173,7 @@ namespace NuGet.Commands
             var auditSources = GetAuditSources(restoreArgs.CachingSourceProvider);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            var minPublishAgeExceptions = MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings);
             var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
@@ -181,7 +183,8 @@ namespace NuGet.Commands
                 auditSources,
                 restoreArgs.CacheContext,
                 restoreArgs.Log,
-                updateLastAccess);
+                updateLastAccess,
+                EnvironmentVariableWrapper.Instance);
 
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
@@ -204,6 +207,7 @@ namespace NuGet.Commands
                 DependencyGraphSpec = projectDgSpec,
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 AdditionalMessages = projectAdditionalMessages,
+                MinPublishAgeExceptions = minPublishAgeExceptions,
                 UpdatePackageLastAccessTime = updateLastAccess,
             };
 

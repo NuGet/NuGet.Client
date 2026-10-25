@@ -8,13 +8,95 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Common.Test;
 using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Core.FuncTest
 {
-    public class ConcurrencyUtilitiesTests
+    [Collection(nameof(NotThreadSafeResourceCollection))]
+    public class ConcurrencyUtilitiesTests : IDisposable
     {
+        private readonly string? _originalScratch = Environment.GetEnvironmentVariable("NUGET_SCRATCH");
+        private readonly string? _originalHome = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME");
+        private readonly string? _originalDeleteOnClose = Environment.GetEnvironmentVariable("NUGET_ConcurrencyUtils_DeleteOnClose");
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable("NUGET_SCRATCH", _originalScratch);
+            Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", _originalHome);
+            Environment.SetEnvironmentVariable("NUGET_ConcurrencyUtils_DeleteOnClose", _originalDeleteOnClose);
+            StaticState.RaiseBuildEnded();
+        }
+
+        [PlatformFact(Platform.Windows, Platform.Darwin)]
+        public void ExecuteWithFileLocked_OnWindowsOrMac_UsesNuGetScratch()
+        {
+            using var testDirectory = TestDirectory.Create();
+            Environment.SetEnvironmentVariable("NUGET_SCRATCH", null);
+            StaticState.RaiseBuildEnded();
+
+            var lockDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
+            var existingFiles = Directory.Exists(lockDirectory) ? Directory.GetFiles(lockDirectory) : Array.Empty<string>();
+            ConcurrencyUtilities.ExecuteWithFileLocked(
+                Path.Combine(testDirectory, "package"),
+                () => Assert.NotEmpty(Directory.GetFiles(lockDirectory).Except(existingFiles)));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteWithFileLocked_UsesScratchOverrideAndDeletesLockFileAsync(bool asynchronous)
+        {
+            using var testDirectory = TestDirectory.Create();
+            var scratchPath = Path.Combine(testDirectory, "scratch");
+            var lockDirectory = Path.Combine(scratchPath, "lock");
+            var filePath = Path.Combine(testDirectory, "package");
+            Environment.SetEnvironmentVariable("NUGET_SCRATCH", scratchPath);
+            Environment.SetEnvironmentVariable("NUGET_ConcurrencyUtils_DeleteOnClose", null);
+            StaticState.RaiseBuildEnded();
+
+            Action assertLockFile = () => Assert.Single(Directory.GetFiles(lockDirectory));
+            if (asynchronous)
+            {
+                await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                    filePath,
+                    _ =>
+                    {
+                        assertLockFile();
+                        return TaskResult.True;
+                    },
+                    CancellationToken.None);
+            }
+            else
+            {
+                ConcurrencyUtilities.ExecuteWithFileLocked(filePath, assertLockFile);
+            }
+
+            Assert.Empty(Directory.GetFiles(lockDirectory));
+        }
+
+#if IS_CORECLR
+        [PlatformFact(Platform.Linux)]
+        public void ExecuteWithFileLocked_OnLinux_UsesNuGetHomeAfterBuildEnded()
+        {
+            using var testDirectory = TestDirectory.Create();
+            var filePath = Path.Combine(testDirectory, "package");
+            Environment.SetEnvironmentVariable("NUGET_SCRATCH", null);
+
+            foreach (var home in new[] { "first", "second" })
+            {
+                var homePath = Path.Combine(testDirectory, home);
+                Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", homePath);
+                StaticState.RaiseBuildEnded();
+                var lockDirectory = Path.Combine(homePath, ".nuget", "lock");
+                ConcurrencyUtilities.ExecuteWithFileLocked(
+                    filePath,
+                    () => Assert.Single(Directory.GetFiles(lockDirectory)));
+            }
+        }
+#endif
+
         [Fact]
         public async Task ConcurrencyUtilities_LockStressSynchronous()
         {
@@ -126,6 +208,48 @@ namespace NuGet.Core.FuncTest
                 // Assert
                 Assert.Equal(threads * iterations, results.Length);
                 Assert.DoesNotContain(false, results);
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteWithFileLockedAsync_WhenStaticStateIsResetConcurrently_DoesNotThrow()
+        {
+            // Arrange
+            using var testDirectory = TestDirectory.Create();
+            using var resetCancellationTokenSource = new CancellationTokenSource();
+
+            var path = Path.Combine(testDirectory, nameof(ExecuteWithFileLockedAsync_WhenStaticStateIsResetConcurrently_DoesNotThrow));
+
+            await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                path,
+                _ => Task.FromResult(true),
+                CancellationToken.None);
+
+            Task resetTask = Task.Run(() =>
+            {
+                while (!resetCancellationTokenSource.IsCancellationRequested)
+                {
+                    StaticState.RaiseBuildEnded();
+                }
+            });
+
+            try
+            {
+                Func<int, Task<bool>> lockAsync = _ => ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                    path,
+                    _ => Task.FromResult(true),
+                    CancellationToken.None);
+
+                // Act
+                var results = await Task.WhenAll(Enumerable.Range(0, 200).Select(lockAsync));
+
+                // Assert that all lock tasks completed; Task.WhenAll throws if the concurrent reset causes the lock to fail.
+                Assert.Equal(200, results.Length);
+            }
+            finally
+            {
+                resetCancellationTokenSource.Cancel();
+                await resetTask;
             }
         }
 

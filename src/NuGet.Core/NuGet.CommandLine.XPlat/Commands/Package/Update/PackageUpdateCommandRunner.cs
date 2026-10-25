@@ -25,6 +25,14 @@ namespace NuGet.CommandLine.XPlat.Commands.Package.Update;
 
 internal static class PackageUpdateCommandRunner
 {
+    private static readonly NuGetLogCode[] AuditWarningCodes =
+    {
+        NuGetLogCode.NU1901,
+        NuGetLogCode.NU1902,
+        NuGetLogCode.NU1903,
+        NuGetLogCode.NU1904,
+    };
+
     // This overload sets static state, so should not be used in tests.
     internal static Task<int> Run(PackageUpdateArgs args, IVirtualProjectBuilder? virtualProjectBuilder, CancellationToken cancellationToken)
     {
@@ -79,7 +87,7 @@ internal static class PackageUpdateCommandRunner
         // Source provider will be needed to find the package version and to restore, so create it here.
         logger.LogVerbose(Strings.PackageUpdate_FindingUpdateVersions);
 
-        var (exitCode, projectPackageUpdates, totalPackagesScanned) = await SelectPackagesToUpdateAsync(args, dgSpec, logger, packageUpdateIO, cancellationToken);
+        var (exitCode, projectPackageUpdates, totalPackagesScanned, _) = await SelectPackagesToUpdateAsync(args, dgSpec, logger, packageUpdateIO, cancellationToken);
         if (exitCode.HasValue)
         {
             return exitCode.Value;
@@ -124,7 +132,7 @@ internal static class PackageUpdateCommandRunner
         return ExitCodes.Success;
     }
 
-    private static async Task<(List<PackageUpdateResult> vulnerablePackages, HashSet<string> packagesScanned)> SelectVulnerablePackagesToUpdateAsync(
+    private static async Task<(List<PackageUpdateResult>? vulnerablePackages, HashSet<string> packagesScanned, HashSet<string> packagesAwaitingCooldown)> SelectVulnerablePackagesToUpdateAsync(
         IReadOnlyList<PackageWithVersionRange>? packages,
         DependencyGraphSpec dgSpec,
         string projectPath,
@@ -132,7 +140,13 @@ internal static class PackageUpdateCommandRunner
         IPackageUpdateIO packageUpdateIO,
         CancellationToken cancellationToken)
     {
-        LockFile assetsFile = await packageUpdateIO.GetProjectAssetsFileAsync(dgSpec, projectPath, logger, cancellationToken);
+        // A lot of people use TreatWarningsAsErrors, and when restore failed because of audit warnings, we need a way for them to fix it.
+        // If the project's restore is already up to date, disabling warnings as errors will cause no-op checks to fail, making the restore longer than
+        // necessary. But if there's a real failure, the assets file might be stale, and we don't want to use it. While it's possible
+        // there are non-vulnerability related warnings that be treated as errors, customers are unlikely to run dotnet package update --vulnerable when
+        // restore fails for other reasons. So, it's a good enough compromise.
+        DependencyGraphSpec scanDgSpec = CreateDgSpecForVulnerabilityScan(dgSpec);
+        LockFile assetsFile = await packageUpdateIO.GetProjectAssetsFileAsync(scanDgSpec, projectPath, logger, cancellationToken);
         PackageSpec projectSpec = assetsFile.PackageSpec;
 
         bool auditModeAll = IsNuGetAuditModeSetToAll(projectSpec);
@@ -163,6 +177,7 @@ internal static class PackageUpdateCommandRunner
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var packagesToUpdateResult = new List<PackageUpdateResult>();
+        var packagesAwaitingCooldown = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         if (packageIdsWithVulnerabilities.Count > 0)
         {
@@ -186,37 +201,67 @@ internal static class PackageUpdateCommandRunner
                 .ToList();
 
             PackageSourceMapping sourceMapping = packageUpdateIO.GetPackageSourceMapping();
+            bool successful = true;
             foreach (var (packageIdentity, tfmAliases) in packagesToUpdate)
             {
                 IReadOnlyList<string>? mappedSources = sourceMapping.IsEnabled ? sourceMapping.GetConfiguredPackageSources(packageIdentity.Id) : null;
                 if (mappedSources is not null && mappedSources.Count == 0)
                 {
                     logger.LogError(Messages.Error_PackageSourceMappingNotFound(packageIdentity.Id));
+                    successful = false;
                     continue;
                 }
 
-                var nonVulnerableVersion = await packageUpdateIO.GetNonVulnerableAsync(packageIdentity.Id, mappedSources, packageIdentity.Version, NullLogger.Instance, knownVulnerabilities, cancellationToken);
-                if (nonVulnerableVersion is null)
+                PackageVersionLookupResult versionLookup;
+                try
                 {
-                    logger.LogMinimal(Format.PackageUpdate_AllVersionsHaveAdvisories(packageIdentity.Id), ConsoleColor.Yellow);
+                    versionLookup = await packageUpdateIO.GetNonVulnerableAsync(packageIdentity.Id, mappedSources, packageIdentity.Version, NullLogger.Instance, knownVulnerabilities, cancellationToken);
+                }
+                catch (PackageUpdateException exception)
+                {
+                    logger.LogError(exception.Message);
+                    successful = false;
+                    continue;
+                }
+
+                if (versionLookup.Version is null)
+                {
+                    if (versionLookup.VersionInCooldown is not null)
+                    {
+                        packagesAwaitingCooldown.Add(packageIdentity.Id);
+                    }
+                    else
+                    {
+                        logger.LogMinimal(Format.PackageUpdate_AllVersionsHaveAdvisories(packageIdentity.Id), ConsoleColor.Yellow);
+                    }
                 }
                 else
                 {
+                    if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown < versionLookup.Version)
+                    {
+                        packagesAwaitingCooldown.Add(packageIdentity.Id);
+                    }
+
                     packagesToUpdateResult.Add(new PackageUpdateResult
                     {
                         Package = new PackageToUpdate
                         {
                             Id = packageIdentity.Id,
                             CurrentVersion = new VersionRange(packageIdentity.Version),
-                            NewVersion = VersionRange.Parse(nonVulnerableVersion.OriginalVersion!)
+                            NewVersion = VersionRange.Parse(versionLookup.Version.OriginalVersion!)
                         },
                         TargetFrameworkAliases = tfmAliases
                     });
                 }
             }
+
+            if (!successful)
+            {
+                return (null, scannedPackages, packagesAwaitingCooldown);
+            }
         }
 
-        return (packagesToUpdateResult, scannedPackages);
+        return (packagesToUpdateResult, scannedPackages, packagesAwaitingCooldown);
 
         bool PackageHasVulnerability(string packageId, NuGetVersion version, IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities)
         {
@@ -242,7 +287,63 @@ internal static class PackageUpdateCommandRunner
         }
     }
 
-    private static async Task<(int? exitCode, Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates, int totalPackagesScanned)>
+    internal static DependencyGraphSpec CreateDgSpecForVulnerabilityScan(DependencyGraphSpec dgSpec)
+    {
+        if (!dgSpec.Projects.Any(ProjectWillFailOnAuditWarnings))
+        {
+            return dgSpec;
+        }
+
+        var scanDgSpec = new DependencyGraphSpec();
+
+        foreach (PackageSpec project in dgSpec.Projects)
+        {
+            if (ProjectWillFailOnAuditWarnings(project))
+            {
+                PackageSpec projectClone = project.Clone();
+                WarningProperties warningProperties = projectClone.RestoreMetadata.ProjectWideWarningProperties;
+                warningProperties.AllWarningsAsErrors = false;
+                warningProperties.WarningsAsErrors.ExceptWith(AuditWarningCodes);
+                scanDgSpec.AddProject(projectClone);
+            }
+            else
+            {
+                scanDgSpec.AddProject(project);
+            }
+        }
+
+        foreach (string restoreEntry in dgSpec.Restore)
+        {
+            scanDgSpec.AddRestore(restoreEntry);
+        }
+
+        return scanDgSpec;
+
+        bool ProjectWillFailOnAuditWarnings(PackageSpec project)
+        {
+            WarningProperties warningProperties = project.RestoreMetadata.ProjectWideWarningProperties;
+
+            bool allAuditWarningsAreNotErrors =
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1901) &&
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1902) &&
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1903) &&
+                warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1904);
+
+            if (allAuditWarningsAreNotErrors)
+            {
+                return false;
+            }
+
+            if (warningProperties.AllWarningsAsErrors)
+            {
+                return true;
+            }
+
+            return warningProperties.WarningsAsErrors.Overlaps(AuditWarningCodes);
+        }
+    }
+
+    private static async Task<(int? exitCode, Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates, int totalPackagesScanned, HashSet<string> packagesAwaitingCooldown)>
         SelectPackagesToUpdateAsync(
             PackageUpdateArgs args,
             DependencyGraphSpec dgSpec,
@@ -255,6 +356,7 @@ internal static class PackageUpdateCommandRunner
 
         int? exitCode;
         int totalPackagesScanned;
+        HashSet<string> packagesAwaitingCooldown;
 
         if (args.Vulnerable)
         {
@@ -264,69 +366,75 @@ internal static class PackageUpdateCommandRunner
                 if (!NuGetAuditEnabled(projectSpec))
                 {
                     logger.LogError(Strings.PackageUpdate_AuditDisabled);
-                    return (ExitCodes.InvalidArgs, projectPackageUpdates, 0);
+                    return (ExitCodes.InvalidArgs, projectPackageUpdates, 0, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
                 }
             }
 
-            (exitCode, totalPackagesScanned) = await ProcessProjectsInParallelAsync(
+            (exitCode, totalPackagesScanned, packagesAwaitingCooldown) = await ProcessProjectsInParallelAsync(
                 dgSpec,
                 projectPackageUpdates,
                 async (projectPath, ct) =>
                 {
-                    (List<PackageUpdateResult> packagesToUpdate, HashSet<string> scannedPackages) =
+                    (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages, HashSet<string> awaitingCooldown) =
                         await SelectVulnerablePackagesToUpdateAsync(args.Packages, dgSpec, projectPath, logger, packageUpdateIO, ct);
 
-                    return (packagesToUpdate, scannedPackages, null);
+                    int? errorCode = packagesToUpdate is null ? ExitCodes.Error : null;
+                    return (packagesToUpdate, scannedPackages, awaitingCooldown, errorCode);
                 },
                 cancellationToken);
 
             if (exitCode.HasValue)
             {
-                return (exitCode.Value, projectPackageUpdates, totalPackagesScanned);
+                return (exitCode.Value, projectPackageUpdates, totalPackagesScanned, packagesAwaitingCooldown);
             }
         }
         else if (noPackagesSpecified)
         {
-            (exitCode, totalPackagesScanned) = await ProcessProjectsInParallelAsync(
+            (exitCode, totalPackagesScanned, packagesAwaitingCooldown) = await ProcessProjectsInParallelAsync(
                 dgSpec,
                 projectPackageUpdates,
                 async (projectPath, ct) =>
                 {
                     PackageSpec projectSpec = dgSpec.GetProjectSpec(projectPath);
-                    (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages) =
+                    (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages, HashSet<string> awaitingCooldown) =
                         await SelectAllPackagesWithUpdatesAsync(projectSpec, logger, packageUpdateIO, ct);
 
                     // SelectAllPackagesWithUpdatesAsync logs the error when returning null
                     int? errorCode = packagesToUpdate is null ? ExitCodes.Error : null;
-                    return (packagesToUpdate, scannedPackages, errorCode);
+                    return (packagesToUpdate, scannedPackages, awaitingCooldown, errorCode);
                 },
                 cancellationToken);
 
             if (exitCode.HasValue)
             {
-                return (exitCode.Value, projectPackageUpdates, totalPackagesScanned);
+                return (exitCode.Value, projectPackageUpdates, totalPackagesScanned, packagesAwaitingCooldown);
             }
         }
         else
         {
-            (exitCode, totalPackagesScanned) = await ProcessProjectsInParallelAsync(
+            (exitCode, totalPackagesScanned, packagesAwaitingCooldown) = await ProcessProjectsInParallelAsync(
                 dgSpec,
                 projectPackageUpdates,
                 async (projectPath, ct) =>
                 {
                     PackageSpec projectSpec = dgSpec.GetProjectSpec(projectPath);
-                    (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages) =
+                    (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages, HashSet<string> awaitingCooldown) =
                         await SelectSpecificPackagesToUpdateAsync(args.Packages!, projectSpec, logger, packageUpdateIO, ct);
 
                     int? errorCode = packagesToUpdate is null ? ExitCodes.Error : null;
-                    return (packagesToUpdate, scannedPackages, errorCode);
+                    return (packagesToUpdate, scannedPackages, awaitingCooldown, errorCode);
                 },
                 cancellationToken);
 
             if (exitCode.HasValue)
             {
-                return (exitCode.Value, projectPackageUpdates, totalPackagesScanned);
+                return (exitCode.Value, projectPackageUpdates, totalPackagesScanned, packagesAwaitingCooldown);
             }
+        }
+
+        if (packagesAwaitingCooldown.Count > 0)
+        {
+            logger.LogMinimal(Format.PackageUpdate_PackagesAwaitingCooldown(packagesAwaitingCooldown), ConsoleColor.Yellow);
         }
 
         // Check if any packages were found to update
@@ -335,25 +443,26 @@ internal static class PackageUpdateCommandRunner
             if (args.Vulnerable)
             {
                 logger.LogMinimal(Strings.PackageUpdate_NoVulnerablePackages, ConsoleColor.Green);
-                return (ExitCodes.Success, projectPackageUpdates, totalPackagesScanned);
+                return (ExitCodes.Success, projectPackageUpdates, totalPackagesScanned, packagesAwaitingCooldown);
             }
             else
             {
                 logger.LogMinimal(Strings.PackageUpdate_AlreadyUpToDate, ConsoleColor.Green);
-                return (ExitCodes.NoPackagesNeedUpdating, projectPackageUpdates, totalPackagesScanned);
+                return (ExitCodes.NoPackagesNeedUpdating, projectPackageUpdates, totalPackagesScanned, packagesAwaitingCooldown);
             }
         }
 
-        return (null, projectPackageUpdates, totalPackagesScanned);
+        return (null, projectPackageUpdates, totalPackagesScanned, packagesAwaitingCooldown);
     }
 
-    private static async Task<(int? exitCode, int totalPackagesScanned)> ProcessProjectsInParallelAsync(
+    private static async Task<(int? exitCode, int totalPackagesScanned, HashSet<string> packagesAwaitingCooldown)> ProcessProjectsInParallelAsync(
         DependencyGraphSpec dgSpec,
         Dictionary<string, List<PackageUpdateResult>> projectPackageUpdates,
-        Func<string, CancellationToken, Task<(List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages, int? errorExitCode)>> processProject,
+        Func<string, CancellationToken, Task<(List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages, HashSet<string> packagesAwaitingCooldown, int? errorExitCode)>> processProject,
         CancellationToken cancellationToken)
     {
         var scannedPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var packagesAwaitingCooldown = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var lockObject = new object();
         int? exitCode = null;
 
@@ -365,7 +474,7 @@ internal static class PackageUpdateCommandRunner
 
         await Parallel.ForEachAsync(dgSpec.Restore, parallelOptions, async (projectPath, ct) =>
         {
-            (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> projectScannedPackages, int? errorExitCode) =
+            (List<PackageUpdateResult>? packagesToUpdate, HashSet<string> projectScannedPackages, HashSet<string> projectPackagesAwaitingCooldown, int? errorExitCode) =
                 await processProject(projectPath, ct);
 
             lock (lockObject)
@@ -377,6 +486,7 @@ internal static class PackageUpdateCommandRunner
                 }
 
                 scannedPackages.UnionWith(projectScannedPackages);
+                packagesAwaitingCooldown.UnionWith(projectPackagesAwaitingCooldown);
 
                 if (packagesToUpdate is not null && packagesToUpdate.Count > 0)
                 {
@@ -385,10 +495,10 @@ internal static class PackageUpdateCommandRunner
             }
         });
 
-        return (exitCode, scannedPackages.Count);
+        return (exitCode, scannedPackages.Count, packagesAwaitingCooldown);
     }
 
-    internal static async Task<(List<PackageUpdateResult>?, HashSet<string> scannedPackages)> SelectSpecificPackagesToUpdateAsync(
+    internal static async Task<(List<PackageUpdateResult>?, HashSet<string> scannedPackages, HashSet<string> packagesAwaitingCooldown)> SelectSpecificPackagesToUpdateAsync(
         IReadOnlyList<PackageWithVersionRange> packages,
         PackageSpec project,
         ILoggerWithColor logger,
@@ -403,6 +513,7 @@ internal static class PackageUpdateCommandRunner
         var sourceMapping = packageUpdateIO.GetPackageSourceMapping();
         var packagesToUpdate = new List<PackageUpdateResult>();
         var scannedPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var packagesAwaitingCooldown = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         bool hasErrors = false;
 
         foreach (var package in packages)
@@ -448,22 +559,60 @@ internal static class PackageUpdateCommandRunner
             else
             {
                 bool usePrerelease = existingVersion.HasLowerBound && existingVersion.MinVersion.IsPrerelease;
-                var allowedUpdateRange = GetAllowedUpdateRange(existingVersion);
-                var latestVersion = allowedUpdateRange == null
-                    ? await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken)
-                    : await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, allowedUpdateRange, NullLogger.Instance, cancellationToken);
-
-                if (latestVersion is null)
+                PackageVersionLookupResult versionLookup;
+                try
                 {
-                    logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
+                    var allowedUpdateRange = GetAllowedUpdateRange(existingVersion);
+                    versionLookup = allowedUpdateRange is null
+                        ? await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken)
+                        : await packageUpdateIO.GetLatestVersionAsync(package.Id, usePrerelease, mappedSources, allowedUpdateRange, NullLogger.Instance, cancellationToken);
+                }
+                catch (PackageUpdateException exception)
+                {
+                    logger.LogError(exception.Message);
                     hasErrors = true;
                     continue;
                 }
 
-                upgradeVersion = GetVersionRangeForUpdate(existingVersion, latestVersion);
+                if (versionLookup.Version is null)
+                {
+                    if (versionLookup.VersionInCooldown is not null)
+                    {
+                        if (!existingVersion.HasLowerBound || versionLookup.VersionInCooldown > existingVersion.MinVersion)
+                        {
+                            packagesAwaitingCooldown.Add(package.Id);
+                        }
+                    }
+                    else
+                    {
+                        logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.Id), ConsoleColor.Red);
+                        hasErrors = true;
+                    }
+                    continue;
+                }
+
+                if (existingVersion.HasLowerBound && versionLookup.Version <= existingVersion.MinVersion)
+                {
+                    if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown > existingVersion.MinVersion)
+                    {
+                        packagesAwaitingCooldown.Add(package.Id);
+                    }
+                    else
+                    {
+                        logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, versionLookup.Version.OriginalVersion!, project.FilePath), ConsoleColor.Yellow);
+                    }
+                    continue;
+                }
+
+                if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown > versionLookup.Version)
+                {
+                    packagesAwaitingCooldown.Add(package.Id);
+                }
+
+                upgradeVersion = GetVersionRangeForUpdate(existingVersion, versionLookup.Version);
                 if (upgradeVersion == existingVersion)
                 {
-                    logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, latestVersion.OriginalVersion!, project.FilePath), ConsoleColor.Yellow);
+                    logger.LogMinimal(Messages.Warning_AlreadyHighestVersion(package.Id, versionLookup.Version.OriginalVersion!, project.FilePath), ConsoleColor.Yellow);
                     continue;
                 }
             }
@@ -481,7 +630,7 @@ internal static class PackageUpdateCommandRunner
             });
         }
 
-        return (hasErrors ? null : packagesToUpdate, scannedPackages);
+        return (hasErrors ? null : packagesToUpdate, scannedPackages, packagesAwaitingCooldown);
     }
 
     /// <summary>Gets the package's referenced version range and TFMs which it's referenced in.</summary>
@@ -588,7 +737,7 @@ internal static class PackageUpdateCommandRunner
         return requestedVersionRange.IsSubSetOrEqualTo(currentVersionRange);
     }
 
-    internal static async Task<(List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages)> SelectAllPackagesWithUpdatesAsync(
+    internal static async Task<(List<PackageUpdateResult>? packagesToUpdate, HashSet<string> scannedPackages, HashSet<string> packagesAwaitingCooldown)> SelectAllPackagesWithUpdatesAsync(
         PackageSpec project,
         ILoggerWithColor logger,
         IPackageUpdateIO packageUpdateIO,
@@ -597,12 +746,13 @@ internal static class PackageUpdateCommandRunner
         var allProjectPackages = GetAllPackagesReferencedByProject(project, logger);
         if (allProjectPackages is null)
         {
-            return (null, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+            return (null, new HashSet<string>(StringComparer.OrdinalIgnoreCase), new HashSet<string>(StringComparer.OrdinalIgnoreCase));
         }
 
         var sourceMapping = packageUpdateIO.GetPackageSourceMapping();
         var packagesToUpdate = new List<PackageUpdateResult>();
         var scannedPackages = new HashSet<string>(allProjectPackages.Select(p => p.identity.Id), StringComparer.OrdinalIgnoreCase);
+        var packagesAwaitingCooldown = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         bool successful = true;
 
         foreach (var package in allProjectPackages)
@@ -618,19 +768,53 @@ internal static class PackageUpdateCommandRunner
             // package.identity.VersionRange is the project's referenced version.
             Debug.Assert(package.identity.VersionRange != null);
             bool usePrerelease = package.identity.VersionRange.HasLowerBound && package.identity.VersionRange.MinVersion.IsPrerelease;
-            var allowedUpdateRange = GetAllowedUpdateRange(package.identity.VersionRange);
-            var latestVersion = allowedUpdateRange == null
-                ? await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken)
-                : await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, allowedUpdateRange, NullLogger.Instance, cancellationToken);
-
-            if (latestVersion is null)
+            PackageVersionLookupResult versionLookup;
+            try
             {
-                logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.identity.Id), ConsoleColor.Red);
+                var allowedUpdateRange = GetAllowedUpdateRange(package.identity.VersionRange);
+                versionLookup = allowedUpdateRange is null
+                    ? await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, NullLogger.Instance, cancellationToken)
+                    : await packageUpdateIO.GetLatestVersionAsync(package.identity.Id, usePrerelease, mappedSources, allowedUpdateRange, NullLogger.Instance, cancellationToken);
+            }
+            catch (PackageUpdateException exception)
+            {
+                logger.LogError(exception.Message);
                 successful = false;
                 continue;
             }
 
-            var upgradeVersion = GetVersionRangeForUpdate(package.identity.VersionRange, latestVersion);
+            if (versionLookup.Version is null)
+            {
+                if (versionLookup.VersionInCooldown is not null)
+                {
+                    if (!package.identity.VersionRange.HasLowerBound || versionLookup.VersionInCooldown > package.identity.VersionRange.MinVersion)
+                    {
+                        packagesAwaitingCooldown.Add(package.identity.Id);
+                    }
+                }
+                else
+                {
+                    logger.LogMinimal(Messages.Error_NoVersionsAvailable(package.identity.Id), ConsoleColor.Red);
+                    successful = false;
+                }
+                continue;
+            }
+
+            if (package.identity.VersionRange.HasLowerBound && versionLookup.Version <= package.identity.VersionRange.MinVersion)
+            {
+                if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown > package.identity.VersionRange.MinVersion)
+                {
+                    packagesAwaitingCooldown.Add(package.identity.Id);
+                }
+                continue;
+            }
+
+            if (versionLookup.VersionInCooldown is not null && versionLookup.VersionInCooldown > versionLookup.Version)
+            {
+                packagesAwaitingCooldown.Add(package.identity.Id);
+            }
+
+            var upgradeVersion = GetVersionRangeForUpdate(package.identity.VersionRange, versionLookup.Version);
             if (upgradeVersion.ToString() == package.identity.VersionRange.ToString())
             {
                 // Already using the highest version.
@@ -650,7 +834,9 @@ internal static class PackageUpdateCommandRunner
             packagesToUpdate.Add(result);
         }
 
-        return successful ? (packagesToUpdate, scannedPackages) : (null, scannedPackages);
+        return successful
+            ? (packagesToUpdate, scannedPackages, packagesAwaitingCooldown)
+            : (null, scannedPackages, packagesAwaitingCooldown);
     }
 
     private static List<(PackageWithVersionRange identity, List<string> tfms)>? GetAllPackagesReferencedByProject(PackageSpec project, ILoggerWithColor logger)
@@ -797,6 +983,12 @@ internal static class PackageUpdateCommandRunner
         internal static string PackageUpdate_FinalSummary(int updatedCount, int scannedCount)
         {
             return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_FinalSummary, updatedCount, scannedCount);
+        }
+
+        internal static string PackageUpdate_PackagesAwaitingCooldown(IEnumerable<string> packageIds)
+        {
+            string packageList = string.Join(", ", packageIds.OrderBy(packageId => packageId, StringComparer.OrdinalIgnoreCase));
+            return string.Format(CultureInfo.CurrentCulture, Strings.PackageUpdate_PackagesAwaitingCooldown, packageList);
         }
 
         internal static string PackageUpdate_AllVersionsHaveAdvisories(string packageId)

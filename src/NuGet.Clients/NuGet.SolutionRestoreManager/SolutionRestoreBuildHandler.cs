@@ -8,6 +8,7 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -15,7 +16,6 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using SystemTask = System.Threading.Tasks.Task;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.SolutionRestoreManager
@@ -30,19 +30,31 @@ namespace NuGet.SolutionRestoreManager
     /// UpdateSolution_Cancel
     /// UpdateSolution_Done
     /// </remarks>
+    [Export]
     public sealed class SolutionRestoreBuildHandler
         : IVsUpdateSolutionEvents5, IDisposable
     {
         private const uint VSCOOKIE_NIL = 0;
 
-        [Import]
-        private Lazy<ISettings> Settings { get; set; }
-
-        [Import]
         private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
 
-        [Import]
         private Lazy<ISolutionRestoreChecker> SolutionRestoreChecker { get; set; }
+
+        private IComponentModel _componentModel;
+        private ISettings Settings
+        {
+            get
+            {
+                if (field is null)
+                {
+                    field = _componentModel.GetService<ISettings>();
+                    Assumes.Present(field);
+                }
+
+                return field;
+            }
+            set;
+        }
 
         /// <summary>
         /// The <see cref="IVsSolutionBuildManager3"/> object controlling the update solution events.
@@ -54,12 +66,14 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         private uint _updateSolutionEventsCookieEx;
 
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider _serviceProvider;
-
-        private bool _isMEFInitialized;
-
-        private SolutionRestoreBuildHandler()
+        [ImportingConstructor]
+        internal SolutionRestoreBuildHandler(Lazy<ISolutionRestoreWorker> restoreWorker, Lazy<ISolutionRestoreChecker> solutionRestoreChecker)
         {
+            Assumes.Present(restoreWorker);
+            Assumes.Present(solutionRestoreChecker);
+
+            SolutionRestoreWorker = restoreWorker;
+            SolutionRestoreChecker = solutionRestoreChecker;
         }
 
         // A constructor utilized for running unit-tests
@@ -74,12 +88,10 @@ namespace NuGet.SolutionRestoreManager
             Assumes.Present(buildManager);
             Assumes.Present(solutionRestoreChecker);
 
-            Settings = new Lazy<ISettings>(() => settings);
+            Settings = settings;
             SolutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(() => restoreWorker);
             SolutionRestoreChecker = new Lazy<ISolutionRestoreChecker>(() => solutionRestoreChecker);
             _solutionBuildManager = buildManager;
-
-            _isMEFInitialized = true;
         }
 
         public void Dispose()
@@ -97,23 +109,15 @@ namespace NuGet.SolutionRestoreManager
         }
 
         // A factory method invoked internally only
-        internal static async Task<IDisposable> InitializeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
+        internal async Task InitializeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider, IComponentModel componentModel)
         {
             Assumes.Present(serviceProvider);
+            Assumes.Present(componentModel);
 
-            var instance = new SolutionRestoreBuildHandler();
+            _componentModel = componentModel;
 
-            await instance.SubscribeAsync(serviceProvider);
-
-            return instance;
-        }
-
-        private async SystemTask SubscribeAsync(Microsoft.VisualStudio.Shell.IAsyncServiceProvider serviceProvider)
-        {
             // Don't use CPS thread helper because of RPS perf regression
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            _serviceProvider = serviceProvider;
 
             _solutionBuildManager = await serviceProvider.GetServiceAsync<SVsSolutionBuildManager, IVsSolutionBuildManager3>();
             Assumes.Present(_solutionBuildManager);
@@ -125,19 +129,9 @@ namespace NuGet.SolutionRestoreManager
 
         public void UpdateSolution_QueryDelayBuildAction(uint dwAction, out IVsTask pDelayTask)
         {
-            if (!_isMEFInitialized)
-            {
-                ThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    var componentModel = await _serviceProvider.GetComponentModelAsync();
-                    componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
-                });
-
-                _isMEFInitialized = true;
-            }
-
             pDelayTask = SolutionRestoreWorker.Value.JoinableTaskFactory.RunAsyncAsVsTask(
-                VsTaskRunContext.UIThreadBackgroundPriority, (token) => RestoreAsync(dwAction, token));
+                VsTaskRunContext.UIThreadBackgroundPriority,
+                async (token) => await RestoreAsync(dwAction, token));
         }
 
         #endregion IVsUpdateSolutionEvents5
@@ -156,7 +150,7 @@ namespace NuGet.SolutionRestoreManager
             }
             else if ((buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD) != 0 &&
                     (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0 &&
-                    ShouldRestoreOnBuild)
+                    ShouldRestoreOnBuild())
             {
                 // start a restore task
                 var forceRestore = (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE) != 0;
@@ -171,16 +165,11 @@ namespace NuGet.SolutionRestoreManager
             }
 
             return true;
-        }
 
-        /// <summary>
-        /// Returns true if automatic package restore on build is enabled.
-        /// </summary>
-        private bool ShouldRestoreOnBuild
-        {
-            get
+            // Returns true if automatic package restore on build is enabled.
+            bool ShouldRestoreOnBuild()
             {
-                var packageRestoreConsent = new PackageRestoreConsent(Settings.Value);
+                var packageRestoreConsent = new PackageRestoreConsent(Settings);
                 return packageRestoreConsent.IsAutomatic;
             }
         }

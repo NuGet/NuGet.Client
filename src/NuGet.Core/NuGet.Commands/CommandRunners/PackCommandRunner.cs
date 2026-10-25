@@ -116,6 +116,18 @@ namespace NuGet.Commands
             outputPath = outputPath ?? GetOutputPath(builder, _packArgs, false, builder.Version);
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
+            // Warn if the package ID doesn't adhere to the restricted character set (NU5052)
+            if (!symbolsPackage &&
+                (!_packArgs.UsingMicrosoftNETSdk ||
+                 SdkAnalysisLevelMinimums.IsEnabled(_packArgs.SdkAnalysisLevel, _packArgs.UsingMicrosoftNETSdk, SdkAnalysisLevelMinimums.V11_0_100)) &&
+                !PackageIdValidator.IsValidPackageId(builder.Id, useRestrictedCharacterSet: true))
+            {
+                _packArgs.Logger.Log(
+                    PackagingLogMessage.CreateWarning(
+                        string.Format(CultureInfo.CurrentCulture, Strings.RestrictedPackageIdWarning, builder.Id),
+                        NuGetLogCode.NU5052));
+            }
+
             // Track if the package file was already present on disk
             bool isExistingPackage = File.Exists(outputPath);
             try
@@ -212,19 +224,22 @@ namespace NuGet.Commands
                         _packArgs.Path));
             }
 
-            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files
-            // to the package directory with a guid would break some build tools caching
             var manifest = new Manifest(new ManifestMetadata(builder), files: null);
-            string tempOutputPath = Path.Combine(
-                NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                Path.GetRandomFileName());
-
-            using (var stream = new FileStream(tempOutputPath, FileMode.Create))
+            // Keep staging files outside the package directory to avoid breaking build tools' caching.
+            string tempOutputPath = Path.GetTempFileName();
+            try
             {
-                manifest.Save(stream);
-            }
+                using (var stream = new FileStream(tempOutputPath, FileMode.Create))
+                {
+                    manifest.Save(stream);
+                }
 
-            FileUtility.Replace(tempOutputPath, resolvedNuSpecOutputPath);
+                FileUtility.Replace(tempOutputPath, resolvedNuSpecOutputPath);
+            }
+            finally
+            {
+                File.Delete(tempOutputPath);
+            }
         }
 
         /// <summary>
@@ -238,12 +253,6 @@ namespace NuGet.Commands
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             string sha512OutputPath = Path.Combine(outputPath + ".sha512");
-
-            // We must use the Path.GetTempPath() which NuGetFolderPath.Temp uses as a root because writing temp files
-            // to the package directory with a guid would break some build tools caching
-            string tempOutputPath = Path.Combine(
-                NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                Path.GetRandomFileName());
 
             _packArgs.Logger.Log(
                 PackagingLogMessage.CreateMessage(
@@ -262,8 +271,17 @@ namespace NuGet.Commands
                 sha512hash = cryptoHashProvider.CalculateHash(fileStream);
             }
 
-            File.WriteAllText(tempOutputPath, Convert.ToBase64String(sha512hash));
-            FileUtility.Replace(tempOutputPath, sha512OutputPath);
+            // Keep staging files outside the package directory to avoid breaking build tools' caching.
+            string tempOutputPath = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempOutputPath, Convert.ToBase64String(sha512hash));
+                FileUtility.Replace(tempOutputPath, sha512OutputPath);
+            }
+            finally
+            {
+                File.Delete(tempOutputPath);
+            }
         }
 
         private void InitCommonPackageBuilderProperties(PackageBuilder builder)
@@ -459,7 +477,10 @@ namespace NuGet.Commands
                     !_packArgs.ExcludeEmptyDirectories,
                     _packArgs.Deterministic,
                     _packArgs.Logger,
-                    _packArgs.Version);
+                    _packArgs.Version)
+                {
+                    DeterministicTimestamp = _packArgs.DeterministicTimestamp,
+                };
             }
 
             return new PackageBuilder(
@@ -469,7 +490,10 @@ namespace NuGet.Commands
                 !_packArgs.ExcludeEmptyDirectories,
                 _packArgs.Deterministic,
                 _packArgs.Logger,
-                _packArgs.Version);
+                _packArgs.Version)
+            {
+                DeterministicTimestamp = _packArgs.DeterministicTimestamp,
+            };
         }
 
         private bool BuildFromProjectFile(string path)

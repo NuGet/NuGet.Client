@@ -19,10 +19,18 @@ namespace NuGet.ProjectModel
 {
     public class DependencyGraphSpec
     {
+        static DependencyGraphSpec()
+        {
+            StaticState.BuildEnded += ResetCache;
+        }
+
         /// <summary>
         /// Allows a user to enable the legacy SHA512 hash function for dgSpec files which is used by no-op.
         /// </summary>
         private static bool? UseLegacyHashFunction;
+
+        /// <summary>Clears the cached legacy-hash env flag so it is re-read on the next construction.</summary>
+        internal static void ResetCache() => UseLegacyHashFunction = null;
 
         private const string DGSpecFileNameExtension = "{0}.nuget.dgspec.json";
 
@@ -376,7 +384,7 @@ namespace NuGet.ProjectModel
             // Preserve default sort order
             foreach (var restoreName in _restore)
             {
-                writer.WriteObjectStart(restoreName);
+                writer.WriteObjectStart(PackageSpecWriter.NormalizePathForHashing(restoreName, hashing));
                 writer.WriteObjectEnd();
             }
 
@@ -389,7 +397,7 @@ namespace NuGet.ProjectModel
             {
                 var project = pair.Value;
 
-                writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
+                writer.WriteObjectStart(PackageSpecWriter.NormalizePathForHashing(project.RestoreMetadata.ProjectUniqueName, hashing));
                 writeAction.Invoke(project, writer, hashing, EnvironmentVariableWrapper.Instance);
                 writer.WriteObjectEnd();
             }

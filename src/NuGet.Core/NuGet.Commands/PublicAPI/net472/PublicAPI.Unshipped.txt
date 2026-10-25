@@ -1,2 +1,8 @@
 #nullable enable
-const NuGet.Commands.Restore.Utility.PackageSpecFactory.EnvironmentVariableName = "NUGET_USE_NEW_PACKAGESPEC_FACTORY" -> string!
+*REMOVED*~NuGet.Commands.CommandException.CommandException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) -> void
+NuGet.Commands.AddSourceArgs.MinPublishAgeHours.get -> uint?
+NuGet.Commands.AddSourceArgs.MinPublishAgeHours.set -> void
+NuGet.Commands.UpdateSourceArgs.MinPublishAgeHours.get -> uint?
+NuGet.Commands.UpdateSourceArgs.MinPublishAgeHours.set -> void
+~NuGet.Commands.RestoreRequest.MinPublishAgeExceptions.get -> NuGet.Configuration.MinPublishAgeExceptions
+~NuGet.Commands.RestoreRequest.MinPublishAgeExceptions.init -> void

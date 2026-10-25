@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace NuGet.CommandLine.XPlat
             _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
         }
 
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
         public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
             IReportRenderer reportRenderer = listPackageArgs.Renderer;
@@ -48,6 +50,7 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
         internal async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
         {
             // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
@@ -87,6 +90,7 @@ namespace NuGet.CommandLine.XPlat
             return (exitCode, listPackageReportModel);
         }
 
+        [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
         private async Task GetProjectMetadataAsync(
             string projectPath,
             ListPackageReportModel listPackageReportModel,
@@ -612,8 +616,16 @@ namespace NuGet.CommandLine.XPlat
                                 .Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs))
                                 .Max(i => i.Identity.Version);
 
-                            transitivePackage.LatestPackageMetadata = matchingPackage.First(p => p.Identity.Version == latestVersion);
-                            transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedPackageMetadata.Identity.Version, transitivePackage.LatestPackageMetadata.Identity.Version);
+                            if (latestVersion is not null)
+                            {
+                                transitivePackage.LatestPackageMetadata = matchingPackage.First(p => p.Identity.Version == latestVersion);
+                                transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedPackageMetadata.Identity.Version, transitivePackage.LatestPackageMetadata.Identity.Version);
+                            }
+                            else // no latest version available with the given constraints
+                            {
+                                transitivePackage.LatestPackageMetadata = null;
+                                transitivePackage.UpdateLevel = UpdateLevel.NoUpdate;
+                            }
                         }
 
                         var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(

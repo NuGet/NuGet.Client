@@ -1,16 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable
-
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
+using NuGet.Protocol.Model;
+using NuGet.Shared;
 
 namespace NuGet.Protocol
 {
@@ -20,47 +21,53 @@ namespace NuGet.Protocol
     public class DownloadResourceV3 : DownloadResource
     {
         private readonly string _source;
-        private readonly RegistrationResourceV3 _regResource;
+        private readonly RegistrationResourceV3? _regResource;
         private readonly HttpSource _client;
-        private readonly string _packageBaseAddressUrl;
+        private readonly string? _packageBaseAddressUrl;
+        private readonly IEnvironmentVariableReader? _environmentVariableReader;
 
         /// <summary>
         /// Download packages using the download url found in the registration resource.
         /// </summary>
         public DownloadResourceV3(string source, HttpSource client, RegistrationResourceV3 regResource)
-            : this(client)
+            : this(source, client, regResource, environmentVariableReader: null)
+        {
+        }
+
+        internal DownloadResourceV3(string source, HttpSource client, RegistrationResourceV3 regResource, IEnvironmentVariableReader? environmentVariableReader)
+            : this(source, client)
         {
             if (regResource == null)
             {
                 throw new ArgumentNullException(nameof(regResource));
             }
 
-            _source = source;
             _regResource = regResource;
+            _environmentVariableReader = environmentVariableReader;
         }
 
         /// <summary>
         /// Download packages using the package base address container resource.
         /// </summary>
         public DownloadResourceV3(string source, HttpSource client, string packageBaseAddress)
-            : this(client)
+            : this(source, client)
         {
             if (packageBaseAddress == null)
             {
                 throw new ArgumentNullException(nameof(packageBaseAddress));
             }
 
-            _source = source;
             _packageBaseAddressUrl = packageBaseAddress.TrimEnd('/');
         }
 
-        private DownloadResourceV3(HttpSource client)
+        private DownloadResourceV3(string source, HttpSource client)
         {
             if (client == null)
             {
                 throw new ArgumentNullException(nameof(client));
             }
 
+            _source = source;
             _client = client;
         }
 
@@ -70,11 +77,11 @@ namespace NuGet.Protocol
         /// 2. A url will be constructed for the flat container location if the source has that resource.
         /// 3. The download url will be found in the registration blob as a fallback.
         /// </summary>
-        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, ILogger log, CancellationToken token)
+        private async Task<Uri?> GetDownloadUrl(PackageIdentity identity, ILogger log, CancellationToken token)
         {
             PackageIdValidator.Validate(identity.Id);
 
-            Uri downloadUri = null;
+            Uri? downloadUri = null;
             var sourcePackage = identity as SourcePackageDependencyInfo;
 
             if (sourcePackage?.DownloadUri != null)
@@ -95,18 +102,44 @@ namespace NuGet.Protocol
             {
                 using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    // Read the url from the registration information
-                    var blob = await _regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
-
-                    if (blob != null
-                        && blob["packageContent"] != null)
+                    if (NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch)
                     {
-                        downloadUri = new Uri(blob["packageContent"].ToString());
+                        downloadUri = await GetDownloadUrlFromItemAsync(_regResource, identity, sourceCacheContext, log, token);
+                    }
+                    else if (NuGetFeatureFlags.IsSystemTextJsonDeserializationEnabledByEnvironment(_environmentVariableReader))
+                    {
+                        downloadUri = await GetDownloadUrlFromItemAsync(_regResource, identity, sourceCacheContext, log, token);
+                    }
+                    else
+                    {
+                        downloadUri = await GetDownloadUrlFromJObjectAsync(_regResource, identity, sourceCacheContext, log, token);
                     }
                 }
             }
 
             return downloadUri;
+        }
+
+        private static async Task<Uri?> GetDownloadUrlFromItemAsync(RegistrationResourceV3 regResource, PackageIdentity identity, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
+        {
+            // Read the url from the registration information
+            RegistrationLeafItem? leaf = await regResource.GetPackageMetadataItemAsync(identity, sourceCacheContext, log, token);
+
+            return leaf?.PackageContent;
+        }
+
+        private static async Task<Uri?> GetDownloadUrlFromJObjectAsync(RegistrationResourceV3 regResource, PackageIdentity identity, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
+        {
+            // Read the url from the registration information
+            JObject? blob = await regResource.GetPackageMetadata(identity, sourceCacheContext, log, token);
+
+            if (blob != null
+                && blob["packageContent"] != null)
+            {
+                return new Uri(blob["packageContent"]!.ToString());
+            }
+
+            return null;
         }
 
         public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(

@@ -23,9 +23,9 @@ namespace NuGet.PackageManagement.VisualStudio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -96,6 +96,24 @@ namespace NuGet.PackageManagement.VisualStudio {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet Package Source Authentication.
+        /// </summary>
+        public static string CredentialPrompt_PackageSourceCaption {
+            get {
+                return ResourceManager.GetString("CredentialPrompt_PackageSourceCaption", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Enter credentials for the package source &apos;{0}&apos;..
+        /// </summary>
+        public static string CredentialPrompt_PackageSourceMessage {
+            get {
+                return ResourceManager.GetString("CredentialPrompt_PackageSourceMessage", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to The default credentials credential provider failed to load..
         /// </summary>
@@ -439,7 +457,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
+        ///   Looks up a localized string similar to Solution is not saved. Save your solution before managing NuGet packages..
         /// </summary>
         public static string SolutionIsNotSaved {
             get {
@@ -466,7 +484,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet operation failed due to one or more packages being incompatible with your project. The &apos;{0}&apos; (&apos;{1}&apos;) project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the.
+        ///   Looks up a localized string similar to The NuGet operation failed due to one or more packages being incompatible with your project. The &apos;{0}&apos; (&apos;{1}&apos;) project framework is deprecated. For more information about how to migrate your projects to a supported framework, refer to the.
         /// </summary>
         public static string Text_DeprecatedFramework_DocumentLink_Before {
             get {

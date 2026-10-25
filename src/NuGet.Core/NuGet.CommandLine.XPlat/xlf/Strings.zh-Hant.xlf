@@ -183,8 +183,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Delete_MissingArguments">
-        <source>Please provide arguments for package id and package version.</source>
-        <target state="translated">請提供套件識別碼與套件版本的引數。</target>
+        <source>Provide arguments for package id and package version.</source>
+        <target state="translated">提供套件識別碼與套件版本的引數。</target>
         <note />
       </trans-unit>
       <trans-unit id="Delete_PackageIdAndVersion_Description">
@@ -270,8 +270,8 @@
         <note>0 - package id</note>
       </trans-unit>
       <trans-unit id="Error_AssetsFileNotFound">
-        <source>No assets file was found for `{0}`. Please run restore before running this command.</source>
-        <target state="translated">找不到任何 `{0}` 的資產檔案。請在執行此命令前執行還原。</target>
+        <source>No assets file was found for `{0}`. Run restore before running this command.</source>
+        <target state="translated">找不到任何 `{0}` 的資產檔案。在執行此命令前執行還原。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_CannotObtainSearchSource">
@@ -369,8 +369,8 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <note>{0} - Project/csproj path</note>
       </trans-unit>
       <trans-unit id="Error_MultipleProjectOrSolutionFilesInDirectory">
-        <source>The directory '{0}' contains multiple project or solution files. Please specify which project or solution file to use.</source>
-        <target state="translated">目錄 '{0}' 包含多個專案檔或方案檔。請指定要使用的專案檔或方案檔。</target>
+        <source>The directory '{0}' contains multiple project or solution files. Specify which project or solution file to use.</source>
+        <target state="translated">目錄 '{0}' 包含多個專案檔或方案檔。指定要使用的專案檔或方案檔。</target>
         <note>{0} - Directory</note>
       </trans-unit>
       <trans-unit id="Error_NoDgSpec">
@@ -394,14 +394,21 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <note>{0} - PackageID</note>
       </trans-unit>
       <trans-unit id="Error_NotPRProject">
-        <source>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</source>
-        <target state="translated">專案 `{0}` 會使用 NuGet 套件的 package.config，且命令僅能搭配套件參考專案使用。</target>
-        <note />
+        <source>The project '{0}' is not a PackageReference project. This command only supports NuGet PackageReference projects.</source>
+        <target state="needs-review-translation">專案 `{0}` 會使用 NuGet 套件的 package.config，且命令僅能搭配套件參考專案使用。</target>
+        <note>{0} - Path to the project with the error, {Locked="PackageReference"}</note>
       </trans-unit>
       <trans-unit id="Error_PackageDownload_VersionNotFound">
         <source>Unable to find a valid package version</source>
         <target state="translated">找不到有效的套件版本</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Error_PackagePublishDateMissing">
+        <source>Package source '{0}' did not provide a publish date for package '{1}' version '{2}', which is required because the source has a minimum publish age configured.</source>
+        <target state="new">Package source '{0}' did not provide a publish date for package '{1}' version '{2}', which is required because the source has a minimum publish age configured.</target>
+        <note>{0} - package source name
+{1} - package ID
+{2} - package version</note>
       </trans-unit>
       <trans-unit id="Error_PackageSourceMappingNotFound">
         <source>Package source mapping is enabled, but no mapping for package {0} was found. See https://aka.ms/nuget/psm for more information.</source>
@@ -409,8 +416,8 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <note>{0} - package id</note>
       </trans-unit>
       <trans-unit id="Error_PathIsMissingOrInvalid">
-        <source>Missing or invalid path '{0}'. Please provide a path to a project, solution file, file-based app, or project directory.</source>
-        <target state="translated">路徑 '{0}' 遺漏或無效。請提供專案、解決方案檔案、檔案型應用程式或專案目錄的路徑。</target>
+        <source>Missing or invalid path '{0}'. Provide a path to a project, solution file, file-based app, or project directory.</source>
+        <target state="translated">路徑 '{0}' 遺漏或無效。提供專案、解決方案檔案、檔案型應用程式或專案目錄的路徑。</target>
         <note>{0} - Input path argument</note>
       </trans-unit>
       <trans-unit id="Error_PathNotFound">
@@ -441,8 +448,8 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <note>{0} - Path to the project with the error</note>
       </trans-unit>
       <trans-unit id="Error_TrustFingerPrintAlreadyExist">
-        <source>The certificate finger you're trying to add is already in the certificate fingerprint list.</source>
-        <target state="translated">您嘗試新增的憑證手指已在憑證指紋清單中。</target>
+        <source>The certificate fingerprint you're trying to add is already in the certificate fingerprint list.</source>
+        <target state="needs-review-translation">您嘗試新增的憑證手指已在憑證指紋清單中。</target>
         <note />
       </trans-unit>
       <trans-unit id="Error_TrustedRepoAlreadyExists">
@@ -557,13 +564,13 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ErrorReadingAssetsFile">
-        <source>Unable to read the assets file `{0}`. Please make sure the file has the write format.</source>
-        <target state="translated">無法讀取資產檔案 `{0}`。請確認檔案有寫入格式。</target>
+        <source>Unable to read the assets file `{0}`. Make sure the file has the correct format.</source>
+        <target state="translated">無法讀取資產檔案 `{0}`。確保檔案的格式正確。</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_ErrorReadingReferenceFromProject">
-        <source>Unable to read a package reference from the project `{0}`. Please make sure that your project file and project.assets.json file are in sync by running restore.</source>
-        <target state="translated">無法從專案 `{0}` 讀取套件參考。請執行還原來確保專案檔與 project.assets.json 檔案有同步。</target>
+        <source>Unable to read a package reference from the project `{0}`. Make sure that your project file and project.assets.json file are in sync by running restore.</source>
+        <target state="translated">無法從專案 `{0}` 讀取套件參考。執行還原來確保專案檔與 project.assets.json 檔案有同步。</target>
         <note />
       </trans-unit>
       <trans-unit id="ListPkg_FrameworkDescription">
@@ -789,11 +796,11 @@ NuGet 需要 HTTPS 來源。您必須在 NuGet.Config 檔案中將 'allowInsecur
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_MultipleOperations">
-        <source>Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
+        <source>Both operations, --list and --clear, are not supported in the same command. Specify only one operation.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">相同命令中不支援同時出現 --list 與 --clear 作業。請只指定一項作業。
-usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+        <target state="translated">相同命令中不支援同時出現 --list 與 --clear 作業。僅指定一項作業。
+使用方式: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 如需詳細資訊，請瀏覽 https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
       </trans-unit>
@@ -807,10 +814,10 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <note />
       </trans-unit>
       <trans-unit id="LocalsCommand_NoOperation">
-        <source>Please specify an operation i.e. --list or --clear.
+        <source>Specify an operation i.e. --list or --clear.
 usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</source>
-        <target state="translated">請指定一項作業，亦即 --list 或 --clear。
+        <target state="translated">指定作業，即 --list 或 --clear。
 使用方式: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
 如需詳細資訊，請瀏覽 https://docs.nuget.org/docs/reference/command-line-reference</target>
         <note />
@@ -1032,6 +1039,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <target state="translated">套件參考的格式為套件識別碼，例如 'Newtonsoft.Json'，或是以 '@' 分隔的套件識別碼和版本，例如 'Newtonsoft.Json@13.0.3'。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageUpdate_PackagesAwaitingCooldown">
+        <source>Packages with newer versions that have not reached the configured minimum publish age: {0}.</source>
+        <target state="new">Packages with newer versions that have not reached the configured minimum publish age: {0}.</target>
+        <note>{0}: Comma-separated package IDs with newer versions that have not reached the configured minimum publish age</note>
+      </trans-unit>
       <trans-unit id="PackageUpdate_PreviewRestore">
         <source>Running preview restore to check package compatibility.</source>
         <target state="translated">正在執行預覽還原以檢查套件的相容性。</target>
@@ -1085,8 +1097,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
         <note />
       </trans-unit>
       <trans-unit id="Push_MissingArguments">
-        <source>Please specify the path to the package.</source>
-        <target state="translated">請指定到達套件的路徑。</target>
+        <source>Specify the path to the package.</source>
+        <target state="translated">指定連到套件的路徑</target>
         <note />
       </trans-unit>
       <trans-unit id="Push_Package_ApiKey_Description">
@@ -1203,7 +1215,7 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <note />
       </trans-unit>
       <trans-unit id="SignCommandNoTimestamperWarning">
-        <source>The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, please visit https://docs.microsoft.com/dotnet/core/tools</source>
+        <source>The '--timestamper' option was not provided. The signed package will not be timestamped. To learn more about this option, visit https://docs.microsoft.com/dotnet/core/tools</source>
         <target state="translated">未提供任何 '--timestamper' 選項。簽署的封裝不會加上時間戳記。若要深入了解這個選項，請瀏覽 https://docs.microsoft.com/dotnet/core/tools</target>
         <note>Please don't localize '--timestamper'</note>
       </trans-unit>
@@ -1246,6 +1258,16 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <source>The format of the list command output: `Detailed` (the default) and `Short`.</source>
         <target state="translated">list 命令輸出的格式: `Detailed` (預設) 與 `Short`。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursDescription">
+        <source>The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</source>
+        <target state="new">The minimum number of hours a package must have been published before it can be selected for update. Set to 0 to disable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourcesCommandMinPublishAgeHoursOutOfRange">
+        <source>The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</source>
+        <target state="new">The minimum publish age of {0} hours is invalid. The value must be between 0 and {1}.</target>
+        <note>0 - the invalid number of hours. 1 - the maximum supported number of hours.</note>
       </trans-unit>
       <trans-unit id="SourcesCommandNameDescription">
         <source>Name of the source.</source>
@@ -1291,6 +1313,76 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <source>The proper command is '{0}'.</source>
         <target state="translated">正確的命令是 '{0}'。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="StageCommand_Description">
+        <source>Manages packages in a staging environment.</source>
+        <target state="new">Manages packages in a staging environment.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Description">
+        <source>Stages a package on the server without publishing it.</source>
+        <target state="new">Stages a package on the server without publishing it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_InvalidGroup">
+        <source>The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</source>
+        <target state="new">The group ID must be 1-64 characters, use only A-Z, a-z, 0-9, '.', '_', or '-', and start and end with a letter or digit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_MissingSource">
+        <source>No package source was provided and DefaultPushSource is not configured.</source>
+        <target state="new">No package source was provided and DefaultPushSource is not configured.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_PackageNotFound">
+        <source>The package file '{0}' does not exist.</source>
+        <target state="new">The package file '{0}' does not exist.</target>
+        <note>0 - package path</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_PackagePathRequired">
+        <source>A package path is required.</source>
+        <target state="new">A package path is required.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_ResourceNotFound">
+        <source>The source '{0}' does not advertise a supported package staging resource.</source>
+        <target state="new">The source '{0}' does not advertise a supported package staging resource.</target>
+        <note>0 - package source</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_Error_UnsupportedPackage">
+        <source>The file '{0}' is not a supported package. Specify a .nupkg, .snupkg, or .symbols.nupkg file.</source>
+        <target state="new">The file '{0}' is not a supported package. Specify a .nupkg, .snupkg, or .symbols.nupkg file.</target>
+        <note>0 - package path</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_GroupOption_Description">
+        <source>Uploads the package into the specified staging group.</source>
+        <target state="new">Uploads the package into the specified staging group.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_NoSymbolsOption_Description">
+        <source>Prevents automatic discovery and staging of a sibling symbols package.</source>
+        <target state="new">Prevents automatic discovery and staging of a sibling symbols package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_PackagePathArgument_Description">
+        <source>The path to the package to stage.</source>
+        <target state="new">The path to the package to stage.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StagePushCommand_PackageStaged">
+        <source>Staged package '{0}'.</source>
+        <target state="new">Staged package '{0}'.</target>
+        <note>0 - package path</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_SymbolsFailed">
+        <source>Failed to stage symbols package '{0}': {1}</source>
+        <target state="new">Failed to stage symbols package '{0}': {1}</target>
+        <note>0 - symbols package path; 1 - error message</note>
+      </trans-unit>
+      <trans-unit id="StagePushCommand_SymbolsStaged">
+        <source>Staged symbols package '{0}'.</source>
+        <target state="new">Staged symbols package '{0}'.</target>
+        <note>0 - symbols package path</note>
       </trans-unit>
       <trans-unit id="SymbolApiKey_Description">
         <source>The API key for the symbol server. If not set, the NUGET_SYMBOL_API_KEY environment variable is read.</source>
@@ -1393,8 +1485,8 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <note />
       </trans-unit>
       <trans-unit id="Unsupported_UpdatePackageWithDifferentPerTfmVersions">
-        <source>The package {0} references different versions of the package for different target frameworks. This is not supported by this command. Please edit the project file directly. ({1})</source>
-        <target state="translated">針對不同目標架構，套件 {0} 會參照不同版本的套件。這個命令不支援此作業。請直接編輯專案檔案。({1})</target>
+        <source>The package {0} references different versions of the package for different target frameworks. This is not supported by this command. Edit the project file directly. ({1})</source>
+        <target state="translated">針對不同目標架構，套件 {0} 會參照不同版本的套件。這個命令不支援此作業。直接編輯專案檔案。({1})</target>
         <note>0 - The package id
 1 - The project path</note>
       </trans-unit>
@@ -1448,6 +1540,11 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">請指定連到套件的路徑。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Warn_AddPkgNonCompliantPackageId">
+        <source>The package ID '{0}' does not meet NuGet package ID standards. Package IDs must be no more than 100 characters, start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_). Dots and dashes cannot appear consecutively or at the end.</source>
+        <target state="new">The package ID '{0}' does not meet NuGet package ID standards. Package IDs must be no more than 100 characters, start with a letter, digit, or underscore, and contain only ASCII letters, digits, dots (.), dashes (-), and underscores (_). Dots and dashes cannot appear consecutively or at the end.</target>
+        <note>{0} - Package Id</note>
+      </trans-unit>
       <trans-unit id="Warn_AddPkgWithoutRestore">
         <source>--no-restore|-n flag was used. No compatibility check will be done and the added package reference will be unconditional.</source>
         <target state="translated">使用了 --no-restore|-n 旗標。將不會進行任何相容性檢查，且新增的套件參考將會無條件。</target>
@@ -1486,8 +1583,13 @@ The search is a case-insensitive string comparison using the supplied value, whi
         <target state="translated">無法執行 'dotnet nuget why'。{0}</target>
         <note>{0} - Exception mssage</note>
       </trans-unit>
+      <trans-unit id="WhyCommand_Error_InconsistentAssetsFile">
+        <source>Internal error: Assets file is inconsistent</source>
+        <target state="translated">內部錯誤: 資產檔案不一致</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WhyCommand_Error_InvalidAssetsFile_WithProject">
-        <source>The file '{0}' does not appear to be a NuGet assets file. Please run restore for project '{1}' before running this command.</source>
+        <source>The file '{0}' does not appear to be a NuGet assets file. Run restore for project '{1}' before running this command.</source>
         <target state="translated">檔案 '{0}' 似乎不是 NuGet 資產檔案。執行此命令之前，請先執行專案 '{1}' 的還原。</target>
         <note>{0} - Assets file path, {1} - Project name</note>
       </trans-unit>

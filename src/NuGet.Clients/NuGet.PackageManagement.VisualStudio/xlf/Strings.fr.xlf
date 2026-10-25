@@ -22,6 +22,16 @@
         <target state="translated">Échec de l'opération NuGet</target>
         <note />
       </trans-unit>
+      <trans-unit id="CredentialPrompt_PackageSourceCaption">
+        <source>NuGet Package Source Authentication</source>
+        <target state="translated">Authentification de la source de package NuGet</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CredentialPrompt_PackageSourceMessage">
+        <source>Enter credentials for the package source '{0}'.</source>
+        <target state="translated">Entrez les informations d’identification de la source de package « {0} ».</target>
+        <note>{0} is the package source URI.</note>
+      </trans-unit>
       <trans-unit id="CredentialProviderFailed_DefaultCredentialsCredentialProvider">
         <source>The default credentials credential provider failed to load.</source>
         <target state="translated">Échec du chargement du fournisseur d'informations d'identification par défaut.</target>
@@ -218,8 +228,8 @@
         <note>0 - property name</note>
       </trans-unit>
       <trans-unit id="SolutionIsNotSaved">
-        <source>Solution is not saved. Please save your solution before managing NuGet packages.</source>
-        <target state="translated">La solution n'est pas enregistrée. Enregistrez votre solution avant de gérer des packages NuGet.</target>
+        <source>Solution is not saved. Save your solution before managing NuGet packages.</source>
+        <target state="translated">La solution n’est pas enregistrée. Enregistrez votre solution avant de gérer des packages NuGet.</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink">
@@ -233,8 +243,8 @@
         <note>This test goes immediately after the document link.</note>
       </trans-unit>
       <trans-unit id="Text_DeprecatedFramework_DocumentLink_Before">
-        <source>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the</source>
-        <target state="translated">L'opération NuGet a échoué car un ou plusieurs packages sont incompatibles avec votre projet. Le framework de projet '{0}' ('{1}') est déprécié. Pour plus d'informations sur la migration de vos projets vers un framework pris en charge, consultez le</target>
+        <source>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, refer to the</source>
+        <target state="translated">Nous n’avons pas pu effectuer l’opération NuGet, car un ou plusieurs packages sont incompatibles avec votre projet. Le framework de projet « {0} » (« {1} ») est déconseillé. Pour découvrir plus d’informations sur la migration de vos projets vers un framework pris en charge, consultez le</target>
         <note>This text goes immediately before the document link.
 {0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").
 {1} is the short folder representation of the framework (e.g. "net45").</note>
