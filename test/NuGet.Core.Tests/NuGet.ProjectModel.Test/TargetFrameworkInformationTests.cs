@@ -18,6 +18,94 @@ namespace NuGet.ProjectModel.Test
     public class TargetFrameworkInformationTests
     {
         [Fact]
+        public void GetSerializedPackageReferences_ReusesContentUntilDictionariesChange()
+        {
+            var central = new Dictionary<string, CentralPackageVersion>
+            {
+                ["Package"] = new CentralPackageVersion("Package", VersionRange.Parse("1.0.0"))
+            };
+            var pruning = new Dictionary<string, PrunePackageReference>
+            {
+                ["Pruned"] = PrunePackageReference.Create("Pruned", "1.0.0")
+            };
+            var framework = new TargetFrameworkInformation { CentralPackageVersions = central, PackagesToPrune = pruning };
+            using var writer = new HashObjectWriter(new FnvHash64Function());
+            int centralSerializations = 0;
+            int pruningSerializations = 0;
+
+            Assert.Null(framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Null(framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Null(framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Null(framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Equal(0, centralSerializations);
+            Assert.Equal(0, pruningSerializations);
+
+            string originalCentral = framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _);
+            string originalPruning = framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _);
+            Assert.Same(originalCentral, framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Same(originalPruning, framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Equal(1, centralSerializations);
+            Assert.Equal(1, pruningSerializations);
+
+            central["Package"] = new CentralPackageVersion("Package", VersionRange.Parse("2.0.0"));
+            pruning["Pruned"] = PrunePackageReference.Create("Pruned", "2.0.0");
+            Assert.Null(framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Null(framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Null(framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Null(framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.NotEqual(originalCentral, framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.NotEqual(originalPruning, framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Equal(2, centralSerializations);
+            Assert.Equal(2, pruningSerializations);
+
+            central.Clear();
+            pruning.Clear();
+            Assert.Null(framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Null(framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Equal(2, centralSerializations);
+            Assert.Equal(2, pruningSerializations);
+
+            central["Package"] = new CentralPackageVersion("Package", VersionRange.Parse("3.0.0"));
+            pruning["Pruned"] = PrunePackageReference.Create("Pruned", "3.0.0");
+            Assert.Null(framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Null(framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Null(framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.Null(framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.NotEqual(originalCentral, framework.GetSerializedCentralPackageVersions(SerializeCentral, writer, out _));
+            Assert.NotEqual(originalPruning, framework.GetSerializedPackagesToPrune(SerializePruning, writer, out _));
+            Assert.Equal(3, centralSerializations);
+            Assert.Equal(3, pruningSerializations);
+
+            SerializedPackageReferences<CentralPackageVersion> SerializeCentral(KeyValuePair<string, CentralPackageVersion>[] items, HashObjectWriter state)
+            {
+                return Assert.IsType<SerializedPackageReferences<CentralPackageVersion>>(state.GetOrSerializeCentralPackageVersions(items, WriteCentralValues));
+            }
+
+            SerializedPackageReferences<PrunePackageReference> SerializePruning(KeyValuePair<string, PrunePackageReference>[] items, HashObjectWriter state)
+            {
+                return Assert.IsType<SerializedPackageReferences<PrunePackageReference>>(state.GetOrSerializePackagesToPrune(items, WritePruningValues));
+            }
+
+            void WriteCentralValues(NuGet.RuntimeModel.IObjectWriter output, KeyValuePair<string, CentralPackageVersion>[] items)
+            {
+                centralSerializations++;
+                foreach (var item in items)
+                {
+                    output.WriteNameValue(item.Value.Name, PackageSpecWriter.GetVersionString(item.Value.VersionRange));
+                }
+            }
+
+            void WritePruningValues(NuGet.RuntimeModel.IObjectWriter output, KeyValuePair<string, PrunePackageReference>[] items)
+            {
+                pruningSerializations++;
+                foreach (var item in items)
+                {
+                    output.WriteNameValue(item.Key, PackageSpecWriter.GetVersionString(item.Value.VersionRange));
+                }
+            }
+        }
+
+        [Fact]
         public void GetOrderedCentralPackageVersions_PreservesStableNameOrderingAndReusesUnchangedSnapshot()
         {
             var references = new Dictionary<string, CentralPackageVersion>(StringComparer.Ordinal)

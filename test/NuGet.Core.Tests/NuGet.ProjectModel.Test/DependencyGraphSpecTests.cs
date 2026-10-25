@@ -64,6 +64,8 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(expectedHash, GetHash(graph, useLegacyHashFunction));
             Assert.Equal(expectedHash, GetHash(graph, useLegacyHashFunction));
+            Assert.Equal(expectedHash, GetHash(graph, useLegacyHashFunction));
+            Assert.Equal(expectedHash, GetHash(graph, useLegacyHashFunction));
         }
 
         [Theory]
@@ -89,6 +91,8 @@ namespace NuGet.ProjectModel.Test
             };
             DependencyGraphSpec graph = CreateDependencyGraphSpecWithCentralDependencies(framework);
             string originalHash = GetHash(graph, useLegacyHashFunction);
+            Assert.Equal(originalHash, GetHash(graph, useLegacyHashFunction));
+            Assert.Equal(originalHash, GetHash(graph, useLegacyHashFunction));
 
             if (changePruning)
             {

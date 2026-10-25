@@ -369,7 +369,7 @@ namespace NuGet.ProjectModel
             }
 
             using IHashFunction hashFunc = getHashFunction();
-            using var writer = new HashObjectWriter(hashFunc);
+            using var writer = new HashObjectWriter(hashFunc, _projects);
             Write(writer, hashing: true, PackageSpecWriter.Write);
             return writer.GetHash();
         }

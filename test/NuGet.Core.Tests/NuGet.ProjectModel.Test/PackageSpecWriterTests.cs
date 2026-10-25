@@ -5,6 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Newtonsoft.Json;
@@ -13,6 +16,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using Test.Utility;
@@ -23,6 +27,281 @@ namespace NuGet.ProjectModel.Test
     public class PackageSpecWriterTests
     {
         private static readonly PackageSpec EmptyPackageSpec = JsonPackageSpecReader.GetPackageSpec("{}", null, null);
+
+        [Theory]
+        [InlineData(false, 0)]
+        [InlineData(false, 1023)]
+        [InlineData(false, 1024)]
+        [InlineData(false, 4095)]
+        [InlineData(false, 4096)]
+        [InlineData(false, 8192)]
+        [InlineData(true, 0)]
+        [InlineData(true, 1023)]
+        [InlineData(true, 1024)]
+        [InlineData(true, 4095)]
+        [InlineData(true, 4096)]
+        [InlineData(true, 8192)]
+        public void Write_WithCachedPackageSections_PreservesHashAcrossBufferBoundaries(bool useLegacyHashFunction, int prefixLength)
+        {
+            string specialName = "Quote\"Backslash\\Newline\nTab\t\u00e9\u6f22\u2028\u2029\ud83d\ude00" + new string('x', 2500);
+            var framework = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net10.0"),
+                TargetAlias = "net10.0",
+                CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.Ordinal)
+                {
+                    ["FirstKey"] = new CentralPackageVersion(specialName, VersionRange.Parse("[1.0,2.0)")),
+                    ["SecondKey"] = new CentralPackageVersion("AnotherPackage", new VersionRange(new NuGetVersion(1, 0, 0)))
+                },
+                PackagesToPrune = new Dictionary<string, PrunePackageReference>(StringComparer.Ordinal)
+                {
+                    [specialName] = PrunePackageReference.Create("DifferentName", "10.0.0"),
+                    ["AnotherPackage"] = PrunePackageReference.Create("IgnoredName", "9.0.0")
+                }
+            };
+            var spec = new PackageSpec([framework]);
+            string originalJson = GetJsonString(spec);
+            string prefix = new string('p', prefixLength);
+
+            foreach (bool useLegacyWriter in new[] { false, true })
+            {
+                string expected = GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter, prefix, useCache: false);
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter, prefix, useCache: true));
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter, prefix, useCache: true));
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter, prefix, useCache: true));
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter, prefix, useCache: true));
+            }
+            Assert.Equal(originalJson, GetJsonString(spec));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Write_WithInvalidUnicodeInCachedSection_PreservesEncodingFailure(bool useLegacyHashFunction)
+        {
+            var framework = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net10.0"),
+                PackagesToPrune = new Dictionary<string, PrunePackageReference>
+                {
+                    ["Invalid\ud800"] = PrunePackageReference.Create("Pruned", "10.0.0")
+                }
+            };
+            var spec = new PackageSpec([framework]);
+
+            Assert.Throws<EncoderFallbackException>(() =>
+                GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: false));
+            Assert.Throws<EncoderFallbackException>(() =>
+                GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+            Assert.Throws<EncoderFallbackException>(() =>
+                GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+            Assert.Throws<EncoderFallbackException>(() =>
+                GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+            Assert.Throws<EncoderFallbackException>(() =>
+                GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Write_WithConcurrentCachedSectionReaders_PreservesHash(bool useLegacyHashFunction)
+        {
+            var framework = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net10.0"),
+                CentralPackageVersions = new Dictionary<string, CentralPackageVersion>
+                {
+                    ["Package"] = new CentralPackageVersion("Package", VersionRange.Parse("1.0.0"))
+                },
+                PackagesToPrune = new Dictionary<string, PrunePackageReference>
+                {
+                    ["Pruned"] = PrunePackageReference.Create("Pruned", "10.0.0")
+                }
+            };
+            var spec = new PackageSpec([framework]);
+            string expected = GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: false);
+
+            Parallel.For(0, 32, _ =>
+            {
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+            });
+        }
+
+        [Theory]
+        [InlineData("add", false)]
+        [InlineData("add", true)]
+        [InlineData("remove", false)]
+        [InlineData("remove", true)]
+        [InlineData("replace", false)]
+        [InlineData("replace", true)]
+        [InlineData("case", false)]
+        [InlineData("case", true)]
+        [InlineData("reorder", false)]
+        [InlineData("reorder", true)]
+        [InlineData("clear", false)]
+        [InlineData("clear", true)]
+        public void Write_AfterWarmPackageSectionsChange_ReflectsCurrentContents(string change, bool changePruning)
+        {
+            foreach (bool useLegacyHashFunction in new[] { false, true })
+            {
+                var central = new Dictionary<string, CentralPackageVersion>(StringComparer.Ordinal)
+                {
+                    ["z"] = new CentralPackageVersion("z", VersionRange.Parse("1.0.0")),
+                    ["a"] = new CentralPackageVersion("a", VersionRange.Parse("1.0.0")),
+                    ["A"] = new CentralPackageVersion("A", VersionRange.Parse("1.0.0"))
+                };
+                var pruning = new Dictionary<string, PrunePackageReference>(StringComparer.Ordinal)
+                {
+                    ["z"] = PrunePackageReference.Create("z", "1.0.0"),
+                    ["a"] = PrunePackageReference.Create("a", "1.0.0"),
+                    ["A"] = PrunePackageReference.Create("A", "1.0.0")
+                };
+                var framework = new TargetFrameworkInformation
+                {
+                    FrameworkName = NuGetFramework.Parse("net10.0"),
+                    CentralPackageVersions = central,
+                    PackagesToPrune = pruning
+                };
+                var spec = new PackageSpec([framework]);
+                string original = GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true);
+                Assert.Equal(original, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+                Assert.Equal(original, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+                Assert.Equal(original, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+
+                if (changePruning)
+                {
+                    MutatePackageReferences(pruning, change, static name => PrunePackageReference.Create(name, "2.0.0"));
+                }
+                else
+                {
+                    MutatePackageReferences(central, change, static name => new CentralPackageVersion(name, VersionRange.Parse("2.0.0")));
+                }
+
+                var freshSpec = new PackageSpec([new TargetFrameworkInformation(framework)]);
+                string expected = GetPackageSpecHash(freshSpec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: false);
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+                Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+            }
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void GetHash_WithEquivalentSections_SeedsExistingContentBeforeProjectOrder(bool useLegacyHashFunction, bool changeOriginalInput)
+        {
+            TargetFrameworkInformation existing = CreateSharingFramework("1.0.0", out var central, out var pruning);
+            var existingSpec = new PackageSpec([existing])
+            {
+                Name = "SHARED",
+                RestoreMetadata = new ProjectRestoreMetadata { ProjectUniqueName = "SHARED" }
+            };
+            GetPackageSpecHash(existingSpec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true);
+            GetPackageSpecHash(existingSpec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true);
+            GetPackageSpecHash(existingSpec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true);
+            SerializedPackageReferences<CentralPackageVersion> cachedCentral = existing.GetCachedCentralPackageVersions();
+            SerializedPackageReferences<PrunePackageReference> cachedPruning = existing.GetCachedPackagesToPrune();
+            Assert.NotNull(cachedCentral);
+            Assert.NotNull(cachedPruning);
+
+            if (changeOriginalInput)
+            {
+                central["CentralKey"] = new CentralPackageVersion("Package", VersionRange.Parse("2.0.0"));
+                pruning["Pruned"] = PrunePackageReference.Create("IgnoredName", "2.0.0");
+            }
+
+            TargetFrameworkInformation root = CreateSharingFramework("1.0.0", out _, out _);
+            var rootSpec = new PackageSpec([root])
+            {
+                Name = "ROOT",
+                RestoreMetadata = new ProjectRestoreMetadata { ProjectUniqueName = "ROOT" }
+            };
+            GetPackageSpecHash(rootSpec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true);
+            GetPackageSpecHash(rootSpec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true);
+            Assert.Null(root.GetCachedCentralPackageVersions());
+            Assert.Null(root.GetCachedPackagesToPrune());
+
+            var graph = new DependencyGraphSpec();
+            graph.AddRestore("ROOT");
+            graph.AddProject(rootSpec);
+            graph.AddProject(existingSpec);
+            string actual = GetGraphHash(graph, useLegacyHashFunction);
+
+            Assert.Same(cachedCentral, root.GetCachedCentralPackageVersions());
+            Assert.Same(cachedPruning, root.GetCachedPackagesToPrune());
+
+            PackageSpec freshRoot = rootSpec.Clone();
+            freshRoot.TargetFrameworks[0] = new TargetFrameworkInformation(root);
+            PackageSpec freshExisting = existingSpec.Clone();
+            freshExisting.TargetFrameworks[0] = new TargetFrameworkInformation(existing);
+            var freshGraph = new DependencyGraphSpec();
+            freshGraph.AddRestore("ROOT");
+            freshGraph.AddProject(freshRoot);
+            freshGraph.AddProject(freshExisting);
+            string expected = GetGraphHash(freshGraph, useLegacyHashFunction);
+            Assert.Equal(expected, actual);
+            Assert.Equal(expected, GetGraphHash(graph, useLegacyHashFunction));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetHash_WithConcurrentEquivalentSections_PreservesPerOperationIsolation(bool useLegacyHashFunction)
+        {
+            var graph = new DependencyGraphSpec();
+            for (int i = 0; i < 4; i++)
+            {
+                TargetFrameworkInformation framework = CreateSharingFramework("1.0.0", out _, out _);
+                string name = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                graph.AddProject(new PackageSpec([framework])
+                {
+                    Name = name,
+                    RestoreMetadata = new ProjectRestoreMetadata { ProjectUniqueName = name }
+                });
+            }
+            graph.AddRestore("0");
+            string expected = GetGraphHash(graph, useLegacyHashFunction);
+            Parallel.For(0, 32, _ => Assert.Equal(expected, GetGraphHash(graph, useLegacyHashFunction)));
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void Write_WithMutableGeneratedVersionText_ReflectsFormatterChanges(bool useLegacyHashFunction, bool changePruning)
+        {
+            TargetFrameworkInformation framework = CreateSharingFramework("1.0.0", out var central, out var pruning);
+            var range = new MutableFormattedVersionRange();
+            if (changePruning)
+            {
+                pruning["Pruned"] = new PrunePackageReference("IgnoredName", range);
+            }
+            else
+            {
+                central["CentralKey"] = new CentralPackageVersion("Package", range);
+            }
+            var spec = new PackageSpec([framework]);
+            string original = GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true);
+            Assert.Equal(original, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+            Assert.Equal(original, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+
+            range.FormattedText = "2.0.0";
+            string expected = GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: false);
+            Assert.NotEqual(original, expected);
+            Assert.Equal(expected, GetPackageSpecHash(spec, useLegacyHashFunction, useLegacyWriter: false, prefix: "", useCache: true));
+            if (changePruning)
+            {
+                Assert.Null(framework.GetCachedPackagesToPrune());
+            }
+            else
+            {
+                Assert.Null(framework.GetCachedCentralPackageVersions());
+            }
+        }
 
         [Fact]
         public void RoundTripAutoReferencedProperty()
@@ -897,6 +1176,106 @@ namespace NuGet.ProjectModel.Test
 
             // Act & Assert
             VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        private sealed class MutableFormattedVersionRange : VersionRange
+        {
+            public string FormattedText { get; set; } = "1.0.0";
+
+            public override string ToNormalizedString() => FormattedText;
+        }
+
+        private static TargetFrameworkInformation CreateSharingFramework(
+            string version,
+            out Dictionary<string, CentralPackageVersion> central,
+            out Dictionary<string, PrunePackageReference> pruning)
+        {
+            central = new Dictionary<string, CentralPackageVersion>
+            {
+                ["CentralKey"] = new CentralPackageVersion("Package", VersionRange.Parse(version))
+            };
+            pruning = new Dictionary<string, PrunePackageReference>
+            {
+                ["Pruned"] = PrunePackageReference.Create("IgnoredName", version)
+            };
+            return new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net10.0"),
+                CentralPackageVersions = central,
+                PackagesToPrune = pruning
+            };
+        }
+
+        private static string GetGraphHash(DependencyGraphSpec graph, bool useLegacyHashFunction)
+        {
+            return useLegacyHashFunction
+                ? graph.GetHash(static () => new Sha512HashFunction())
+                : graph.GetHash(static () => new FnvHash64Function());
+        }
+
+        private static void MutatePackageReferences<T>(Dictionary<string, T> references, string change, Func<string, T> createReference)
+        {
+            switch (change)
+            {
+                case "add":
+                    references.Add("b", createReference("b"));
+                    break;
+                case "remove":
+                    references.Remove("a");
+                    break;
+                case "replace":
+                    references["a"] = createReference("a");
+                    break;
+                case "case":
+                    T value = references["z"];
+                    references.Remove("z");
+                    references.Add("Z", value);
+                    break;
+                case "reorder":
+                    KeyValuePair<string, T>[] entries = references.ToArray();
+                    references.Clear();
+                    for (int i = entries.Length - 1; i >= 0; i--)
+                    {
+                        references.Add(entries[i].Key, entries[i].Value);
+                    }
+                    break;
+                case "clear":
+                    references.Clear();
+                    break;
+                default:
+                    throw new ArgumentException("Unknown dictionary mutation.", nameof(change));
+            }
+        }
+
+        private static string GetPackageSpecHash(PackageSpec spec, bool useLegacyHashFunction, bool useLegacyWriter, string prefix, bool useCache)
+        {
+            using IHashFunction hash = useLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function();
+            using var writer = new HashObjectWriter(hash);
+            writer.WriteObjectStart();
+            writer.WriteNameValue("prefix", prefix);
+            IObjectWriter objectWriter = useCache ? writer : new UncachedObjectWriter(writer);
+            PackageSpecWriter.Write(spec, objectWriter, hashing: true, EnvironmentVariableWrapper.Instance, useLegacyWriter);
+            writer.WriteNameValue("tail", "After the cached sections");
+            writer.WriteObjectEnd();
+            return writer.GetHash();
+        }
+
+        private sealed class UncachedObjectWriter : IObjectWriter
+        {
+            private readonly IObjectWriter _inner;
+
+            public UncachedObjectWriter(IObjectWriter inner) => _inner = inner;
+
+            public void WriteObjectStart() => _inner.WriteObjectStart();
+            public void WriteObjectStart(string name) => _inner.WriteObjectStart(name);
+            public void WriteObjectEnd() => _inner.WriteObjectEnd();
+            public void WriteNameValue(string name, int value) => _inner.WriteNameValue(name, value);
+            public void WriteNameValue(string name, bool value) => _inner.WriteNameValue(name, value);
+            public void WriteNameValue(string name, string value) => _inner.WriteNameValue(name, value);
+            public void WriteNameArray(string name, IEnumerable<string> values) => _inner.WriteNameArray(name, values);
+            public void WriteNonEmptyNameArray(string name, IEnumerable<string> values) => _inner.WriteNonEmptyNameArray(name, values);
+            public void WriteArrayStart(string name) => _inner.WriteArrayStart(name);
+            public void WriteArrayEnd() => _inner.WriteArrayEnd();
         }
 
         private static string GetJsonString(PackageSpec packageSpec)

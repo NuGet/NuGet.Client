@@ -151,26 +151,56 @@ namespace NuGet.ProjectModel
 
         internal KeyValuePair<string, CentralPackageVersion>[] GetOrderedCentralPackageVersions()
         {
-            return GetOrderedPackageReferences(ref _orderedCentralPackageVersions, CentralPackageVersions, static item => item.Value.Name);
+            return GetOrderedPackageReferences(ref _orderedCentralPackageVersions, CentralPackageVersions, static item => item.Value.Name, out _);
         }
 
         internal KeyValuePair<string, PrunePackageReference>[] GetOrderedPackagesToPrune()
         {
-            return GetOrderedPackageReferences(ref _orderedPackagesToPrune, PackagesToPrune, static item => item.Key);
+            return GetOrderedPackageReferences(ref _orderedPackagesToPrune, PackagesToPrune, static item => item.Key, out _);
+        }
+
+        internal string GetSerializedCentralPackageVersions(
+            Func<KeyValuePair<string, CentralPackageVersion>[], HashObjectWriter, SerializedPackageReferences<CentralPackageVersion>> serialize,
+            HashObjectWriter writer,
+            out KeyValuePair<string, CentralPackageVersion>[] references)
+        {
+            references = GetOrderedPackageReferences(ref _orderedCentralPackageVersions, CentralPackageVersions, static item => item.Value.Name, out var ordered);
+            return ordered?.GetSerializedObject(serialize, writer);
+        }
+
+        internal string GetSerializedPackagesToPrune(
+            Func<KeyValuePair<string, PrunePackageReference>[], HashObjectWriter, SerializedPackageReferences<PrunePackageReference>> serialize,
+            HashObjectWriter writer,
+            out KeyValuePair<string, PrunePackageReference>[] references)
+        {
+            references = GetOrderedPackageReferences(ref _orderedPackagesToPrune, PackagesToPrune, static item => item.Key, out var ordered);
+            return ordered?.GetSerializedObject(serialize, writer);
+        }
+
+        internal SerializedPackageReferences<CentralPackageVersion> GetCachedCentralPackageVersions()
+        {
+            return Volatile.Read(ref _orderedCentralPackageVersions)?.CachedSerializedObject;
+        }
+
+        internal SerializedPackageReferences<PrunePackageReference> GetCachedPackagesToPrune()
+        {
+            return Volatile.Read(ref _orderedPackagesToPrune)?.CachedSerializedObject;
         }
 
         private static KeyValuePair<string, T>[] GetOrderedPackageReferences<T>(
             ref OrderedPackageReferences<T> cache,
             IReadOnlyDictionary<string, T> references,
-            Func<KeyValuePair<string, T>, string> getName) where T : class
+            Func<KeyValuePair<string, T>, string> getName,
+            out OrderedPackageReferences<T> ordered) where T : class
         {
             if (references.Count == 0)
             {
                 Volatile.Write(ref cache, null);
+                ordered = null;
                 return Array.Empty<KeyValuePair<string, T>>();
             }
 
-            OrderedPackageReferences<T> ordered = Volatile.Read(ref cache);
+            ordered = Volatile.Read(ref cache);
             if (ordered == null || !ordered.Matches(references))
             {
                 ordered = new OrderedPackageReferences<T>(references, getName);
@@ -238,6 +268,8 @@ namespace NuGet.ProjectModel
 
         private sealed class OrderedPackageReferences<T> where T : class
         {
+            private const int MinimumSerializationRequests = 3;
+
             private static readonly IComparer<(string Name, int Index)> NameComparer =
                 Comparer<(string Name, int Index)>.Create(static (left, right) =>
                 {
@@ -246,8 +278,12 @@ namespace NuGet.ProjectModel
                 });
 
             private readonly int[] _sourceOrder;
+            private int _serializationRequests;
+            private int _serializationDisabled;
+            private SerializedPackageReferences<T> _serializedObject;
 
             public KeyValuePair<string, T>[] Items { get; }
+            public SerializedPackageReferences<T> CachedSerializedObject => Volatile.Read(ref _serializedObject);
 
             public OrderedPackageReferences(
                 IReadOnlyDictionary<string, T> references,
@@ -299,6 +335,34 @@ namespace NuGet.ProjectModel
                 }
 
                 return index == Items.Length;
+            }
+
+            public string GetSerializedObject(
+                Func<KeyValuePair<string, T>[], HashObjectWriter, SerializedPackageReferences<T>> serialize,
+                HashObjectWriter writer)
+            {
+                SerializedPackageReferences<T> serialized = Volatile.Read(ref _serializedObject);
+                if (serialized == null)
+                {
+                    if (Volatile.Read(ref _serializationDisabled) != 0)
+                    {
+                        return null;
+                    }
+                    // One- and two-use sections do not amortize the cost of retaining JSON.
+                    if (Interlocked.Increment(ref _serializationRequests) < MinimumSerializationRequests)
+                    {
+                        return null;
+                    }
+
+                    serialized = serialize(Items, writer);
+                    if (serialized == null)
+                    {
+                        Volatile.Write(ref _serializationDisabled, 1);
+                        return null;
+                    }
+                    Interlocked.CompareExchange(ref _serializedObject, serialized, null);
+                }
+                return serialized.Json;
             }
         }
     }
