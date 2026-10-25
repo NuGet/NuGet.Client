@@ -33,6 +33,78 @@ namespace NuGet.ProjectModel.Test
         private const string PackageSpecName = "x";
         private const string PackageSpecPath = @"c:\fake\project.json";
 
+        [Theory]
+        [InlineData(false, "VOBMd7tbyac=")]
+        [InlineData(true, "QA4Zf/j8fcbXBSWv4LlUa4M6gr1iKESHyNjX2MMMwTOez+t2rciUaMyD6e/QWQorVE2QwrPtyNzyuFIMBbFrrQ==")]
+        public void GetHash_WithCentralVersionsAndPruning_PreservesHashFormat(bool useLegacyHashFunction, string expectedHash)
+        {
+            var framework = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net10.0"),
+                TargetAlias = "net10.0",
+                CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.Ordinal)
+                {
+                    ["FirstKey"] = new CentralPackageVersion("z.Package", VersionRange.Parse("[2.0,3.0)")),
+                    ["SecondKey"] = new CentralPackageVersion("A.Package", VersionRange.Parse("1.0.0"))
+                },
+                PackagesToPrune = new Dictionary<string, PrunePackageReference>(StringComparer.Ordinal)
+                {
+                    ["z.Pruned"] = PrunePackageReference.Create("DifferentName", "2.0.0"),
+                    ["A.Pruned"] = PrunePackageReference.Create("AnotherName", "1.0.0")
+                }
+            };
+            var project = new PackageSpec([framework])
+            {
+                Name = "PROJECT",
+                RestoreMetadata = new ProjectRestoreMetadata { ProjectUniqueName = "PROJECT" }
+            };
+            var graph = new DependencyGraphSpec();
+            graph.AddProject(project);
+            graph.AddRestore("PROJECT");
+
+            Assert.Equal(expectedHash, GetHash(graph, useLegacyHashFunction));
+            Assert.Equal(expectedHash, GetHash(graph, useLegacyHashFunction));
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void GetHash_AfterPackageVersionChanges_InvalidatesCachedOrdering(bool useLegacyHashFunction, bool changePruning)
+        {
+            var central = new Dictionary<string, CentralPackageVersion>
+            {
+                ["Package"] = new CentralPackageVersion("Package", VersionRange.Parse("1.0.0"))
+            };
+            var pruning = new Dictionary<string, PrunePackageReference>
+            {
+                ["Pruned"] = PrunePackageReference.Create("Pruned", "1.0.0")
+            };
+            var framework = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net10.0"),
+                CentralPackageVersions = central,
+                PackagesToPrune = pruning
+            };
+            DependencyGraphSpec graph = CreateDependencyGraphSpecWithCentralDependencies(framework);
+            string originalHash = GetHash(graph, useLegacyHashFunction);
+
+            if (changePruning)
+            {
+                pruning["Pruned"] = PrunePackageReference.Create("Pruned", "2.0.0");
+            }
+            else
+            {
+                central["Package"] = new CentralPackageVersion("Package", VersionRange.Parse("2.0.0"));
+            }
+
+            DependencyGraphSpec freshGraph = CreateDependencyGraphSpecWithCentralDependencies(new TargetFrameworkInformation(framework));
+            string updatedHash = GetHash(graph, useLegacyHashFunction);
+            Assert.NotEqual(originalHash, updatedHash);
+            Assert.Equal(GetHash(freshGraph, useLegacyHashFunction), updatedHash);
+        }
+
         [Fact]
         public void GetParents_WhenCalledOnChild_ReturnsParents()
         {

@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -25,6 +27,8 @@ namespace NuGet.ProjectModel
         private IReadOnlyCollection<FrameworkDependency> _frameworkReferences;
         private ImmutableArray<NuGetFramework> _imports;
         private IReadOnlyDictionary<string, PrunePackageReference> _packagesToPrune;
+        private OrderedPackageReferences<CentralPackageVersion> _orderedCentralPackageVersions;
+        private OrderedPackageReferences<PrunePackageReference> _orderedPackagesToPrune;
 
         public string TargetAlias { get; init; } = string.Empty;
 
@@ -145,6 +149,37 @@ namespace NuGet.ProjectModel
             PackagesToPrune = cloneFrom.PackagesToPrune;
         }
 
+        internal KeyValuePair<string, CentralPackageVersion>[] GetOrderedCentralPackageVersions()
+        {
+            return GetOrderedPackageReferences(ref _orderedCentralPackageVersions, CentralPackageVersions, static item => item.Value.Name);
+        }
+
+        internal KeyValuePair<string, PrunePackageReference>[] GetOrderedPackagesToPrune()
+        {
+            return GetOrderedPackageReferences(ref _orderedPackagesToPrune, PackagesToPrune, static item => item.Key);
+        }
+
+        private static KeyValuePair<string, T>[] GetOrderedPackageReferences<T>(
+            ref OrderedPackageReferences<T> cache,
+            IReadOnlyDictionary<string, T> references,
+            Func<KeyValuePair<string, T>, string> getName) where T : class
+        {
+            if (references.Count == 0)
+            {
+                Volatile.Write(ref cache, null);
+                return Array.Empty<KeyValuePair<string, T>>();
+            }
+
+            OrderedPackageReferences<T> ordered = Volatile.Read(ref cache);
+            if (ordered == null || !ordered.Matches(references))
+            {
+                ordered = new OrderedPackageReferences<T>(references, getName);
+                Volatile.Write(ref cache, ordered);
+            }
+
+            return ordered.Items;
+        }
+
         public override string ToString()
         {
             return FrameworkName.GetShortFolderName();
@@ -199,6 +234,72 @@ namespace NuGet.ProjectModel
                    EqualityUtility.OrderedEquals(PackagesToPrune.Values, other.PackagesToPrune.Values, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
                    PathUtility.GetStringComparerBasedOnOS().Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
                    StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias);
+        }
+
+        private sealed class OrderedPackageReferences<T> where T : class
+        {
+            private static readonly IComparer<(string Name, int Index)> NameComparer =
+                Comparer<(string Name, int Index)>.Create(static (left, right) =>
+                {
+                    int result = StringComparer.OrdinalIgnoreCase.Compare(left.Name, right.Name);
+                    return result != 0 ? result : left.Index.CompareTo(right.Index);
+                });
+
+            private readonly int[] _sourceOrder;
+
+            public KeyValuePair<string, T>[] Items { get; }
+
+            public OrderedPackageReferences(
+                IReadOnlyDictionary<string, T> references,
+                Func<KeyValuePair<string, T>, string> getName)
+            {
+                Items = references.ToArray();
+                _sourceOrder = Array.Empty<int>();
+                if (Items.Length > 1)
+                {
+                    var names = new (string Name, int Index)[Items.Length];
+                    for (int i = 0; i < Items.Length; i++)
+                    {
+                        names[i] = (getName(Items[i]), i);
+                    }
+
+                    // Original indices preserve OrderBy's stable ordering when names compare equally.
+                    Array.Sort(names, Items, NameComparer);
+                    _sourceOrder = new int[Items.Length];
+                    for (int i = 0; i < names.Length; i++)
+                    {
+                        _sourceOrder[names[i].Index] = i;
+                    }
+                }
+            }
+
+            public bool Matches(IReadOnlyDictionary<string, T> references)
+            {
+                if (references.Count != Items.Length)
+                {
+                    return false;
+                }
+
+                // Read-only dictionaries can wrap mutable collections. Validate source order as well
+                // so changes in casing and the stable ordering of case-insensitive ties remain visible.
+                int index = 0;
+                foreach (KeyValuePair<string, T> item in references)
+                {
+                    if (index == Items.Length)
+                    {
+                        return false;
+                    }
+
+                    KeyValuePair<string, T> original = Items[_sourceOrder.Length == 0 ? index : _sourceOrder[index]];
+                    if (!ReferenceEquals(item.Key, original.Key) || !ReferenceEquals(item.Value, original.Value))
+                    {
+                        return false;
+                    }
+                    index++;
+                }
+
+                return index == Items.Length;
+            }
         }
     }
 }

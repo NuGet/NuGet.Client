@@ -539,7 +539,7 @@ namespace NuGet.ProjectModel
                     SetValue(writer, "framework", framework.FrameworkName.GetShortFolderName());
                     SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
                     SetDependencies(writer, framework.Dependencies);
-                    SetCentralDependencies(writer, framework.CentralPackageVersions.Count, framework.CentralPackageVersions.Values, hashing);
+                    SetCentralDependencies(writer, framework.GetOrderedCentralPackageVersions());
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfNotNull(writer, "secondaryFramework",
@@ -548,7 +548,7 @@ namespace NuGet.ProjectModel
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
                     SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);
-                    SetPackagesToPrune(writer, framework.PackagesToPrune, hashing);
+                    SetPackagesToPrune(writer, framework.GetOrderedPackagesToPrune());
                     writer.WriteObjectEnd();
                 }
 
@@ -588,33 +588,34 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetCentralDependencies(IObjectWriter writer, int count, IEnumerable<CentralPackageVersion> centralPackageVersions, bool hashing)
+        private static void SetCentralDependencies(IObjectWriter writer, KeyValuePair<string, CentralPackageVersion>[] centralPackageVersions)
         {
-            if (count == 0)
+            if (centralPackageVersions.Length == 0)
             {
                 return;
             }
 
             writer.WriteObjectStart("centralPackageVersions");
 
-            foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name, StringComparer.OrdinalIgnoreCase))
+            foreach (var entry in centralPackageVersions)
             {
+                CentralPackageVersion dependency = entry.Value;
                 writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.OriginalString ?? dependency.VersionRange.ToNormalizedString());
             }
 
             writer.WriteObjectEnd();
         }
 
-        private static void SetPackagesToPrune(IObjectWriter writer, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune, bool hashing)
+        private static void SetPackagesToPrune(IObjectWriter writer, KeyValuePair<string, PrunePackageReference>[] packagesToPrune)
         {
-            if (packagesToPrune.Count == 0)
+            if (packagesToPrune.Length == 0)
             {
                 return;
             }
 
             writer.WriteObjectStart("packagesToPrune");
 
-            foreach (var dependency in packagesToPrune.OrderBy(dep => dep.Key, StringComparer.OrdinalIgnoreCase))
+            foreach (var dependency in packagesToPrune)
             {
                 writer.WriteNameValue(name: dependency.Key, value: dependency.Value.VersionRange.OriginalString ?? dependency.Value.VersionRange.ToNormalizedString());
             }

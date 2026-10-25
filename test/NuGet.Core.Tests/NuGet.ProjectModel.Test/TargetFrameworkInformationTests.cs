@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -16,6 +17,218 @@ namespace NuGet.ProjectModel.Test
 {
     public class TargetFrameworkInformationTests
     {
+        [Fact]
+        public void GetOrderedCentralPackageVersions_PreservesStableNameOrderingAndReusesUnchangedSnapshot()
+        {
+            var references = new Dictionary<string, CentralPackageVersion>(StringComparer.Ordinal)
+            {
+                ["First"] = new CentralPackageVersion("z.Package", VersionRange.All),
+                ["Second"] = new CentralPackageVersion("a.Package", VersionRange.All),
+                ["Third"] = new CentralPackageVersion("A.Package", VersionRange.All)
+            };
+            var framework = new TargetFrameworkInformation { CentralPackageVersions = references };
+
+            KeyValuePair<string, CentralPackageVersion>[] ordered = framework.GetOrderedCentralPackageVersions();
+
+            Assert.Equal(references.OrderBy(item => item.Value.Name, StringComparer.OrdinalIgnoreCase), ordered);
+            Assert.Same(ordered, framework.GetOrderedCentralPackageVersions());
+        }
+
+        [Fact]
+        public void GetOrderedPackagesToPrune_PreservesStableKeyOrderingAndReusesUnchangedSnapshot()
+        {
+            var references = new Dictionary<string, PrunePackageReference>(StringComparer.Ordinal)
+            {
+                ["z.Package"] = PrunePackageReference.Create("First", "1.0.0"),
+                ["a.Package"] = PrunePackageReference.Create("Second", "1.0.0"),
+                ["A.Package"] = PrunePackageReference.Create("Third", "1.0.0")
+            };
+            var framework = new TargetFrameworkInformation { PackagesToPrune = references };
+
+            KeyValuePair<string, PrunePackageReference>[] ordered = framework.GetOrderedPackagesToPrune();
+
+            Assert.Equal(references.OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase), ordered);
+            Assert.Same(ordered, framework.GetOrderedPackagesToPrune());
+        }
+
+        [Theory]
+        [InlineData("add")]
+        [InlineData("remove")]
+        [InlineData("replace")]
+        [InlineData("case")]
+        [InlineData("reorder")]
+        [InlineData("clear")]
+        public void GetOrderedCentralPackageVersions_AfterDictionaryChanges_ReflectsCurrentEntries(string change)
+        {
+            var references = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["b"] = new CentralPackageVersion("b", VersionRange.All),
+                ["A"] = new CentralPackageVersion("A", VersionRange.All)
+            };
+            var framework = new TargetFrameworkInformation { CentralPackageVersions = references };
+            KeyValuePair<string, CentralPackageVersion>[] original = framework.GetOrderedCentralPackageVersions();
+
+            switch (change)
+            {
+                case "add":
+                    references.Add("c", new CentralPackageVersion("c", VersionRange.All));
+                    break;
+                case "remove":
+                    references.Remove("A");
+                    break;
+                case "replace":
+                    references["A"] = new CentralPackageVersion("z", VersionRange.Parse("2.0.0"));
+                    break;
+                case "case":
+                    CentralPackageVersion value = references["A"];
+                    references.Remove("A");
+                    references.Add("a", value);
+                    break;
+                case "reorder":
+                    KeyValuePair<string, CentralPackageVersion>[] entries = references.ToArray();
+                    references.Clear();
+                    for (int i = entries.Length - 1; i >= 0; i--)
+                    {
+                        KeyValuePair<string, CentralPackageVersion> entry = entries[i];
+                        references.Add(entry.Key, entry.Value);
+                    }
+                    break;
+                case "clear":
+                    references.Clear();
+                    break;
+            }
+
+            KeyValuePair<string, CentralPackageVersion>[] ordered = framework.GetOrderedCentralPackageVersions();
+            Assert.NotSame(original, ordered);
+            Assert.Equal(references.OrderBy(item => item.Value.Name, StringComparer.OrdinalIgnoreCase), ordered);
+        }
+
+        [Theory]
+        [InlineData("add")]
+        [InlineData("remove")]
+        [InlineData("replace")]
+        [InlineData("case")]
+        [InlineData("reorder")]
+        [InlineData("clear")]
+        public void GetOrderedPackagesToPrune_AfterDictionaryChanges_ReflectsCurrentEntries(string change)
+        {
+            var references = new Dictionary<string, PrunePackageReference>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["b"] = PrunePackageReference.Create("b", "1.0.0"),
+                ["A"] = PrunePackageReference.Create("A", "1.0.0")
+            };
+            var framework = new TargetFrameworkInformation { PackagesToPrune = references };
+            KeyValuePair<string, PrunePackageReference>[] original = framework.GetOrderedPackagesToPrune();
+
+            switch (change)
+            {
+                case "add":
+                    references.Add("c", PrunePackageReference.Create("c", "1.0.0"));
+                    break;
+                case "remove":
+                    references.Remove("A");
+                    break;
+                case "replace":
+                    references["A"] = PrunePackageReference.Create("A", "2.0.0");
+                    break;
+                case "case":
+                    PrunePackageReference value = references["A"];
+                    references.Remove("A");
+                    references.Add("a", value);
+                    break;
+                case "reorder":
+                    KeyValuePair<string, PrunePackageReference>[] entries = references.ToArray();
+                    references.Clear();
+                    for (int i = entries.Length - 1; i >= 0; i--)
+                    {
+                        KeyValuePair<string, PrunePackageReference> entry = entries[i];
+                        references.Add(entry.Key, entry.Value);
+                    }
+                    break;
+                case "clear":
+                    references.Clear();
+                    break;
+            }
+
+            KeyValuePair<string, PrunePackageReference>[] ordered = framework.GetOrderedPackagesToPrune();
+            Assert.NotSame(original, ordered);
+            Assert.Equal(references.OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase), ordered);
+        }
+
+        [Fact]
+        public void GetOrderedPackageReferences_WithImmutableDictionaries_ReusesSnapshots()
+        {
+            var framework = new TargetFrameworkInformation
+            {
+                CentralPackageVersions = ImmutableDictionary<string, CentralPackageVersion>.Empty
+                    .Add("b", new CentralPackageVersion("b", VersionRange.All))
+                    .Add("A", new CentralPackageVersion("A", VersionRange.All)),
+                PackagesToPrune = ImmutableDictionary<string, PrunePackageReference>.Empty
+                    .Add("b", PrunePackageReference.Create("b", "1.0.0"))
+                    .Add("A", PrunePackageReference.Create("A", "1.0.0"))
+            };
+
+            Assert.Equal(new[] { "A", "b" }, framework.GetOrderedCentralPackageVersions().Select(item => item.Value.Name));
+            Assert.Equal(new[] { "A", "b" }, framework.GetOrderedPackagesToPrune().Select(item => item.Key));
+            Assert.Same(framework.GetOrderedCentralPackageVersions(), framework.GetOrderedCentralPackageVersions());
+            Assert.Same(framework.GetOrderedPackagesToPrune(), framework.GetOrderedPackagesToPrune());
+        }
+
+        [Fact]
+        public void GetOrderedPackageReferences_OnCloneWithOverrides_UsesNewCollections()
+        {
+            var framework = new TargetFrameworkInformation
+            {
+                CentralPackageVersions = new Dictionary<string, CentralPackageVersion>
+                {
+                    ["A"] = new CentralPackageVersion("A", VersionRange.All)
+                },
+                PackagesToPrune = new Dictionary<string, PrunePackageReference>
+                {
+                    ["A"] = PrunePackageReference.Create("A", "1.0.0")
+                }
+            };
+            framework.GetOrderedCentralPackageVersions();
+            framework.GetOrderedPackagesToPrune();
+            var clone = new TargetFrameworkInformation(framework)
+            {
+                CentralPackageVersions = new Dictionary<string, CentralPackageVersion>
+                {
+                    ["b"] = new CentralPackageVersion("b", VersionRange.All)
+                },
+                PackagesToPrune = null!
+            };
+
+            Assert.Equal("b", Assert.Single(clone.GetOrderedCentralPackageVersions()).Value.Name);
+            Assert.Empty(clone.GetOrderedPackagesToPrune());
+            Assert.Equal("A", Assert.Single(framework.GetOrderedCentralPackageVersions()).Value.Name);
+            Assert.Equal("A", Assert.Single(framework.GetOrderedPackagesToPrune()).Key);
+        }
+
+        [Fact]
+        public void GetOrderedPackageReferences_WithConcurrentReaders_PublishesCompleteSnapshots()
+        {
+            var framework = new TargetFrameworkInformation
+            {
+                CentralPackageVersions = new Dictionary<string, CentralPackageVersion>
+                {
+                    ["b"] = new CentralPackageVersion("b", VersionRange.All),
+                    ["A"] = new CentralPackageVersion("A", VersionRange.All)
+                },
+                PackagesToPrune = new Dictionary<string, PrunePackageReference>
+                {
+                    ["b"] = PrunePackageReference.Create("b", "1.0.0"),
+                    ["A"] = PrunePackageReference.Create("A", "1.0.0")
+                }
+            };
+
+            Parallel.For(0, 64, _ =>
+            {
+                Assert.Equal(new[] { "A", "b" }, framework.GetOrderedCentralPackageVersions().Select(item => item.Value.Name));
+                Assert.Equal(new[] { "A", "b" }, framework.GetOrderedPackagesToPrune().Select(item => item.Key));
+            });
+        }
+
         [Fact]
         public void Equals_WithSameObject_ReturnsTrue()
         {
