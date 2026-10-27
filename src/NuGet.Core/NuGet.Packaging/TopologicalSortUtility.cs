@@ -45,9 +45,8 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(getDependencies));
             }
 
-            // De-dupe and create a lookup table for mapping items back after sorting
-            var lookup = new Dictionary<string, T>(comparer);
-            var itemInfos = new List<ItemDependencyInfo>();
+            var lookup = new Dictionary<string, ItemDependencyInfo<T>>(comparer);
+            var itemInfos = new List<ItemDependencyInfo<T>>();
 
             foreach (var item in items)
             {
@@ -56,22 +55,13 @@ namespace NuGet.Packaging
 
                 if (!lookup.ContainsKey(id))
                 {
-                    lookup.Add(id, item);
-                    itemInfos.Add(new ItemDependencyInfo(id, deps));
+                    var itemInfo = new ItemDependencyInfo<T>(id, deps, item);
+                    lookup.Add(id, itemInfo);
+                    itemInfos.Add(itemInfo);
                 }
             }
 
-            // Sort
-            var sortedInfos = SortPackagesByDependencyOrder(itemInfos, comparer);
-
-            // ItemInfo -> Original item
-            var sorted = new List<T>(sortedInfos.Count);
-            foreach (var item in sortedInfos)
-            {
-                sorted.Add(lookup[item.Id]);
-            }
-
-            return sorted;
+            return SortPackagesByDependencyOrder(itemInfos, lookup, comparer);
         }
 
         /// <summary>
@@ -90,40 +80,42 @@ namespace NuGet.Packaging
         /// <summary>
         /// Order dependencies by children first.
         /// </summary>
-        private static List<ItemDependencyInfo> SortPackagesByDependencyOrder(List<ItemDependencyInfo> items, StringComparer comparer)
+        private static IReadOnlyList<T> SortPackagesByDependencyOrder<T>(
+            List<ItemDependencyInfo<T>> items,
+            Dictionary<string, ItemDependencyInfo<T>> lookup,
+            StringComparer comparer) where T : class
         {
-            var lookup = new Dictionary<string, ItemDependencyInfo>(comparer);
-            var itemComparer = new PackageInfoComparer(comparer);
+            var itemComparer = new PackageInfoComparer<T>(comparer);
+            var sorted = new List<T>(items.Count);
 
-            //Deduplicate references
-            foreach (var item in items)
+            CalculateRelationships(items, lookup);
+
+            for (var i = 0; i < items.Count; i++)
             {
-                // These are deduped before they are added here
-                lookup.Add(item.Id, item);
-            }
+                var selectedIndex = i;
+                for (var candidateIndex = i + 1; candidateIndex < items.Count; candidateIndex++)
+                {
+                    if (itemComparer.Compare(items[candidateIndex], items[selectedIndex]) < 0)
+                    {
+                        selectedIndex = candidateIndex;
+                    }
+                }
 
-            // Extract the deduplicated values
-            var toSort = lookup.Values.ToArray();
-            var sorted = new List<ItemDependencyInfo>(toSort.Length);
+                var package = items[selectedIndex];
+                items[selectedIndex] = items[i];
+                items[i] = package;
 
-            CalculateRelationships(toSort, lookup);
-
-            for (var i = 0; i < toSort.Length; i++)
-            {
-                Array.Sort(toSort, i, toSort.Length - i, itemComparer);
-                // take the child with the lowest number of children
-                var package = toSort[i];
-                sorted.Add(package);
+                sorted.Add(package.Item);
                 UpdateChildCounts(package);
             }
 
-            // the list is ordered by parents first, reverse to run children first
+            // The packages are selected parents first, so reverse to run children first.
             sorted.Reverse();
 
             return sorted;
         }
 
-        private static void UpdateChildCounts(ItemDependencyInfo package)
+        private static void UpdateChildCounts<T>(ItemDependencyInfo<T> package) where T : class
         {
             // Decrement the parent count for each child of this package.
             var children = package.Children;
@@ -137,7 +129,9 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void CalculateRelationships(ItemDependencyInfo[] packages, Dictionary<string, ItemDependencyInfo> lookup)
+        private static void CalculateRelationships<T>(
+            List<ItemDependencyInfo<T>> packages,
+            Dictionary<string, ItemDependencyInfo<T>> lookup) where T : class
         {
             foreach (var package in packages)
             {
@@ -148,30 +142,18 @@ namespace NuGet.Packaging
                     var id = dependencies[i];
                     if (lookup.TryGetValue(id, out var dependencyPackage))
                     {
-                        // Mark the current package as a parent
-                        var parents = dependencyPackage.Parents;
-                        if (parents == null)
-                        {
-                            parents = new List<ItemDependencyInfo>();
-                            dependencyPackage.Parents = parents;
-                        }
-                        parents.Add(package);
+                        dependencyPackage.ActiveParents++;
 
                         // Add a child package for the current package
                         var packageChildren = package.Children;
                         if (packageChildren == null)
                         {
-                            packageChildren = new List<ItemDependencyInfo>(dependencies.Length - i);
+                            packageChildren = new List<ItemDependencyInfo<T>>(dependencies.Length - i);
                             package.Children = packageChildren;
                         }
                         packageChildren.Add(dependencyPackage);
                     }
                 }
-            }
-
-            foreach (var package in packages)
-            {
-                package.ActiveParents = package.Parents?.Count ?? 0;
             }
         }
 
@@ -186,7 +168,7 @@ namespace NuGet.Packaging
             return info.Dependencies.Select(e => e.Id).ToArray();
         }
 
-        private class PackageInfoComparer : IComparer<ItemDependencyInfo>
+        private class PackageInfoComparer<T> : IComparer<ItemDependencyInfo<T>> where T : class
         {
             private readonly StringComparer _comparer;
 
@@ -195,7 +177,7 @@ namespace NuGet.Packaging
                 _comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
             }
 
-            public int Compare(ItemDependencyInfo? x, ItemDependencyInfo? y)
+            public int Compare(ItemDependencyInfo<T>? x, ItemDependencyInfo<T>? y)
             {
                 // Order packages by parent count
                 if (x!.ActiveParents < y!.ActiveParents)
@@ -212,21 +194,22 @@ namespace NuGet.Packaging
         }
 
         [DebuggerDisplay("{Package.Id} Active: {ActiveParents}")]
-        private sealed class ItemDependencyInfo
+        private sealed class ItemDependencyInfo<T> where T : class
         {
-            public ItemDependencyInfo(string id, string[] dependencyIds)
+            public ItemDependencyInfo(string id, string[] dependencyIds, T item)
             {
                 ActiveParents = 0;
                 Id = id;
                 DependencyIds = dependencyIds;
+                Item = item;
             }
 
             public string Id;
             public string[] DependencyIds;
+            public T Item;
 
             public int ActiveParents;
-            public List<ItemDependencyInfo>? Parents;
-            public List<ItemDependencyInfo>? Children;
+            public List<ItemDependencyInfo<T>>? Children;
         }
     }
 }
