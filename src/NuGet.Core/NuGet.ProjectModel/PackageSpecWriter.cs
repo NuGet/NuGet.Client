@@ -539,7 +539,7 @@ namespace NuGet.ProjectModel
                     SetValue(writer, "framework", framework.FrameworkName.GetShortFolderName());
                     SetValueIfNotNull(writer, "targetAlias", framework.TargetAlias);
                     SetDependencies(writer, framework.Dependencies);
-                    SetCentralDependencies(writer, framework.CentralPackageVersions.Count, framework.CentralPackageVersions.Values, hashing);
+                    SetCentralDependencies(writer, framework);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfNotNull(writer, "secondaryFramework",
@@ -548,7 +548,7 @@ namespace NuGet.ProjectModel
                     SetDownloadDependencies(writer, framework.DownloadDependencies);
                     SetFrameworkReferences(writer, framework.FrameworkReferences);
                     SetValueIfNotNull(writer, "runtimeIdentifierGraphPath", framework.RuntimeIdentifierGraphPath);
-                    SetPackagesToPrune(writer, framework.PackagesToPrune, hashing);
+                    SetPackagesToPrune(writer, framework);
                     writer.WriteObjectEnd();
                 }
 
@@ -588,38 +588,88 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetCentralDependencies(IObjectWriter writer, int count, IEnumerable<CentralPackageVersion> centralPackageVersions, bool hashing)
+        private static void SetCentralDependencies(IObjectWriter writer, TargetFrameworkInformation framework)
         {
-            if (count == 0)
+            KeyValuePair<string, CentralPackageVersion>[] centralPackageVersions;
+            if (writer is HashObjectWriter hashWriter)
+            {
+                string json = framework.GetSerializedCentralPackageVersions(SerializeCentralPackageVersions, hashWriter, out centralPackageVersions);
+                if (json != null)
+                {
+                    hashWriter.WriteNameRawValue("centralPackageVersions", json);
+                    return;
+                }
+            }
+            else
+            {
+                centralPackageVersions = framework.GetOrderedCentralPackageVersions();
+            }
+            if (centralPackageVersions.Length == 0)
             {
                 return;
             }
 
             writer.WriteObjectStart("centralPackageVersions");
-
-            foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.OriginalString ?? dependency.VersionRange.ToNormalizedString());
-            }
-
+            WriteCentralPackageVersionValues(writer, centralPackageVersions);
             writer.WriteObjectEnd();
         }
 
-        private static void SetPackagesToPrune(IObjectWriter writer, IReadOnlyDictionary<string, PrunePackageReference> packagesToPrune, bool hashing)
+        private static void WriteCentralPackageVersionValues(IObjectWriter writer, KeyValuePair<string, CentralPackageVersion>[] centralPackageVersions)
         {
-            if (packagesToPrune.Count == 0)
+            foreach (var entry in centralPackageVersions)
+            {
+                CentralPackageVersion dependency = entry.Value;
+                writer.WriteNameValue(name: dependency.Name, value: GetVersionString(dependency.VersionRange));
+            }
+        }
+
+        private static void SetPackagesToPrune(IObjectWriter writer, TargetFrameworkInformation framework)
+        {
+            KeyValuePair<string, PrunePackageReference>[] packagesToPrune;
+            if (writer is HashObjectWriter hashWriter)
+            {
+                string json = framework.GetSerializedPackagesToPrune(SerializePackagesToPrune, hashWriter, out packagesToPrune);
+                if (json != null)
+                {
+                    hashWriter.WriteNameRawValue("packagesToPrune", json);
+                    return;
+                }
+            }
+            else
+            {
+                packagesToPrune = framework.GetOrderedPackagesToPrune();
+            }
+            if (packagesToPrune.Length == 0)
             {
                 return;
             }
 
             writer.WriteObjectStart("packagesToPrune");
-
-            foreach (var dependency in packagesToPrune.OrderBy(dep => dep.Key, StringComparer.OrdinalIgnoreCase))
-            {
-                writer.WriteNameValue(name: dependency.Key, value: dependency.Value.VersionRange.OriginalString ?? dependency.Value.VersionRange.ToNormalizedString());
-            }
-
+            WritePackagesToPruneValues(writer, packagesToPrune);
             writer.WriteObjectEnd();
+        }
+
+        private static void WritePackagesToPruneValues(IObjectWriter writer, KeyValuePair<string, PrunePackageReference>[] packagesToPrune)
+        {
+            foreach (var dependency in packagesToPrune)
+            {
+                writer.WriteNameValue(name: dependency.Key, value: GetVersionString(dependency.Value.VersionRange));
+            }
+        }
+
+        internal static string GetVersionString(VersionRange versionRange)
+        {
+            return versionRange.OriginalString ?? versionRange.ToNormalizedString();
+        }
+
+        private static SerializedPackageReferences<CentralPackageVersion> SerializeCentralPackageVersions(KeyValuePair<string, CentralPackageVersion>[] references, HashObjectWriter writer)
+        {
+            return writer.GetOrSerializeCentralPackageVersions(references, WriteCentralPackageVersionValues);
+        }
+
+        private static SerializedPackageReferences<PrunePackageReference> SerializePackagesToPrune(KeyValuePair<string, PrunePackageReference>[] references, HashObjectWriter writer)
+        {
+            return writer.GetOrSerializePackagesToPrune(references, WritePackagesToPruneValues);
         }
 
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
