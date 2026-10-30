@@ -618,7 +618,9 @@ namespace NuGet.Commands
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     bool success = true;
                     // Replay Warnings and Errors from an existing lock file in case of a no-op.
-                    await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(cacheFile.LogMessages, _logger);
+                    var messages = cacheFile.LogMessages?.Select(m => m.AsRestoreLogMessage()).ToList() ?? [];
+                    await _logger.LogMessagesAsync(messages);
+                    cacheFile.LogMessages = messages.Select(AssetsLogMessage.Create).ToList();
 
                     telemetry.EndIntervalMeasure(NoOpReplayLogsDuration);
 
@@ -1889,7 +1891,7 @@ namespace NuGet.Commands
             if (success)
             {
                 // Log downgrades if everything else was successful
-                await LogDowngradeWarningsOrErrorsAsync(graphs, logger);
+                await LogDowngradeWarningsOrErrorsAsync(graphs, logger, _request.Project);
             }
 
             return success;
@@ -1960,7 +1962,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Log downgrade warnings from the graphs.
         /// </summary>
-        internal static Task LogDowngradeWarningsOrErrorsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        internal static Task LogDowngradeWarningsOrErrorsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger, PackageSpec project = null)
         {
             var messages = new List<RestoreLogMessage>();
 
@@ -2005,7 +2007,12 @@ namespace NuGet.Commands
                             }
                             else
                             {
-                                messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
+                                var warning = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName);
+                                if (project != null && graph.Graphs.Any(root => ReferenceEquals(root, downgradedBy.OuterNode)))
+                                {
+                                    PackageReferenceSourceLocations.Apply(project.TargetFrameworks, warning);
+                                }
+                                messages.Add(warning);
                             }
                         }
                     }

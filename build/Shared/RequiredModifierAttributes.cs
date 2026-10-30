@@ -17,6 +17,9 @@ namespace System.Runtime.CompilerServices
     /// <summary>Specifies that a type has required members or that a member is required.</summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     [EditorBrowsable(EditorBrowsableState.Never)]
+#if NUGET_EMBEDDED_INTERNALS
+    [Microsoft.CodeAnalysis.Embedded]
+#endif
     internal sealed class RequiredMemberAttribute : Attribute
     { }
 }
@@ -30,6 +33,9 @@ namespace System.Runtime.CompilerServices
     /// Indicates that compiler support for a particular feature is required for the location where this attribute is applied.
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+#if NUGET_EMBEDDED_INTERNALS
+    [Microsoft.CodeAnalysis.Embedded]
+#endif
     internal sealed class CompilerFeatureRequiredAttribute : Attribute
     {
         public CompilerFeatureRequiredAttribute(string featureName)
@@ -69,6 +75,9 @@ namespace System.Diagnostics.CodeAnalysis
     /// do not need to set any required members themselves.
     /// </summary>
     [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+#if NUGET_EMBEDDED_INTERNALS
+    [Microsoft.CodeAnalysis.Embedded]
+#endif
     internal sealed class SetsRequiredMembersAttribute : Attribute
     { }
 }

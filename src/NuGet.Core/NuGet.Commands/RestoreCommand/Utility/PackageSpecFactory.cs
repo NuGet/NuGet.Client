@@ -641,14 +641,14 @@ namespace NuGet.Commands.Restore.Utility
         /// <returns>A <see cref="List{LibraryDependency}" /> containing the package references for the specified project.</returns>
         internal static ImmutableArray<LibraryDependency> GetPackageReferences(ITargetFramework project, bool isCentralPackageVersionManagementEnabled, IReadOnlyDictionary<string, CentralPackageVersion>? centralPackageVersions)
         {
-            // Get the distinct PackageReference items, ignoring duplicates
-            List<IItem> packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
+            var packageReferenceGroups = (project.GetItems("PackageReference") ?? Enumerable.Empty<IItem>())
+                .GroupBy(item => item.Identity, StringComparer.OrdinalIgnoreCase).ToList();
 
-            var libraryDependencies = new LibraryDependency[packageReferenceItems.Count];
+            var libraryDependencies = new LibraryDependency[packageReferenceGroups.Count];
 
-            for (int i = 0; i < packageReferenceItems.Count; i++)
+            for (int i = 0; i < packageReferenceGroups.Count; i++)
             {
-                var packageReferenceItem = packageReferenceItems[i];
+                var packageReferenceItem = packageReferenceGroups[i].First();
                 bool autoReferenced = packageReferenceItem.IsMetadataTrue("IsImplicitlyDefined");
                 string? version = packageReferenceItem.GetMetadata("Version");
 
@@ -686,6 +686,10 @@ namespace NuGet.Commands.Restore.Utility
                     VersionOverride = versionOverrideRange,
                     NoWarn = noWarn,
                     VersionCentrallyManaged = isCentrallyManaged,
+                    SourceLocation = packageReferenceGroups[i].Skip(1).Any() ? null : LibraryDependency.ParseSourceLocation(
+                        packageReferenceItem.GetMetadata("DefiningProjectFullPath"),
+                        packageReferenceItem.GetMetadata("DefiningProjectLineNumber"),
+                        packageReferenceItem.GetMetadata("DefiningProjectColumnNumber")),
                 };
             }
 

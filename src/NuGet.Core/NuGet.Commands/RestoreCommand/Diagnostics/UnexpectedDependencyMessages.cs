@@ -49,7 +49,7 @@ namespace NuGet.Commands
                 // 2. Detect dependency and source issues across the entire graph 
                 //    where the minimum version was not matched exactly.
                 //    Ignore packages already logged by #1
-                var missingMinimums = GetMissingLowerBounds(graphList, ignoreIds);
+                var missingMinimums = GetMissingLowerBounds(graphList, ignoreIds, project);
                 ignoreIds.UnionWith(missingMinimums.Select(e => e.LibraryId));
                 await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(missingMinimums));
             }
@@ -70,6 +70,11 @@ namespace NuGet.Commands
         /// </summary>
         public static IEnumerable<RestoreLogMessage> GetMissingLowerBounds(IEnumerable<IRestoreTargetGraph> graphs, ISet<string> ignoreIds)
         {
+            return GetMissingLowerBounds(graphs, ignoreIds, project: null);
+        }
+
+        private static IEnumerable<RestoreLogMessage> GetMissingLowerBounds(IEnumerable<IRestoreTargetGraph> graphs, ISet<string> ignoreIds, PackageSpec project)
+        {
             var messages = new List<RestoreLogMessage>();
 
             foreach (var graph in graphs)
@@ -80,7 +85,16 @@ namespace NuGet.Commands
                                             .OrderBy(e => e.Child.Name, StringComparer.OrdinalIgnoreCase)
                                             .ThenBy(e => e.Child.Version)
                                             .ThenBy(e => e.Parent.Name, StringComparer.OrdinalIgnoreCase)
-                                            .Select(e => GetMissingLowerBoundMessage(e, graph.TargetGraphName)));
+                                            .Select(e =>
+                                            {
+                                                var message = GetMissingLowerBoundMessage(e, graph.TargetGraphName);
+                                                if (message.Code == NuGetLogCode.NU1603 && project != null
+                                                    && graph.Graphs.Any(root => root.Item?.Key.Equals(e.Parent) == true))
+                                                {
+                                                    PackageReferenceSourceLocations.Apply(project.TargetFrameworks, message);
+                                                }
+                                                return message;
+                                            }));
             }
 
             return messages;

@@ -622,6 +622,10 @@ namespace NuGet.SolutionRestoreManager
                 IncludeType = includeType,
                 SuppressParent = suppressParent,
                 VersionCentrallyManaged = isCentrallyManaged,
+                SourceLocation = LibraryDependency.ParseSourceLocation(
+                    GetPropertyValueOrNull(item, "DefiningProjectFullPath"),
+                    GetPropertyValueOrNull(item, "DefiningProjectLineNumber"),
+                    GetPropertyValueOrNull(item, "DefiningProjectColumnNumber")),
             };
 
             return dependency;

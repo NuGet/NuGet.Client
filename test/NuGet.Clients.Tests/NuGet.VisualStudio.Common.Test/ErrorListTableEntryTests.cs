@@ -144,8 +144,8 @@ namespace NuGet.VisualStudio.Common.Test
         }
 
         [Theory]
-        [InlineData(StandardTableKeyNames.Line, _testLineNumber)]
-        [InlineData(StandardTableKeyNames.Column, _testColumnNumber)]
+        [InlineData(StandardTableKeyNames.Line, _testLineNumber - 1)]
+        [InlineData(StandardTableKeyNames.Column, _testColumnNumber - 1)]
         public void TryGetValue_IntContent_ReturnsValues(string key, int content)
         {
             // Arrange
@@ -180,6 +180,30 @@ namespace NuGet.VisualStudio.Common.Test
             entry.Should().NotBeNull();
             entry.TryGetValue(key, out var result).Should().BeFalse();
             result.Should().BeNull();
+        }
+
+        [Theory]
+        [InlineData(1, 1, 0, 0)]
+        [InlineData(12, 5, 11, 4)]
+        [InlineData(0, 0, 0, 0)]
+        public void TryGetValue_SourceDocument_PreservesProjectIdentity(int line, int column, int expectedLine, int expectedColumn)
+        {
+            var entry = new ErrorListTableEntry(new RestoreLogMessage(LogLevel.Warning, NuGetLogCode.NU1603, _testMessage)
+            {
+                ProjectPath = _testProjectPath,
+                FilePath = @"unit\test\references%20.props",
+                StartLineNumber = line,
+                StartColumnNumber = column
+            });
+
+            entry.TryGetValue(StandardTableKeyNames.DocumentName, out var document).Should().BeTrue();
+            document.Should().Be(@"unit\test\references%20.props");
+            entry.TryGetValue(StandardTableKeyNames.ProjectName, out var project).Should().BeTrue();
+            project.Should().Be(_testProjectName);
+            entry.TryGetValue(StandardTableKeyNames.Line, out var actualLine).Should().BeTrue();
+            actualLine.Should().Be(expectedLine);
+            entry.TryGetValue(StandardTableKeyNames.Column, out var actualColumn).Should().BeTrue();
+            actualColumn.Should().Be(expectedColumn);
         }
     }
 }
