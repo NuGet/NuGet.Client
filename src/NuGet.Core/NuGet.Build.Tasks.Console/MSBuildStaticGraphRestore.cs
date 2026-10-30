@@ -1254,7 +1254,7 @@ namespace NuGet.Build.Tasks.Console
 #if NET
         [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
 #endif
-        private ConcurrentDictionary<string, TProject> LoadProjects<TProject>(
+        internal ConcurrentDictionary<string, TProject> LoadProjects<TProject>(
             IEnumerable<ProjectGraphEntryPoint> entryProjects,
             bool interactive,
             string binaryLoggerParameters,
@@ -1320,6 +1320,9 @@ namespace NuGet.Build.Tasks.Console
 
                 int buildCount = 0;
                 int failedBuildSubmissionCount = 0;
+                int pendingBuildCallbacks = 1;
+                using var buildCallbacksCompleted = new ManualResetEventSlim();
+                var callbackExceptions = new ConcurrentQueue<Exception>();
 
                 var buildParameters = new BuildParameters(projectCollection)
                 {
@@ -1358,28 +1361,63 @@ namespace NuGet.Build.Tasks.Console
                                 // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
                                 BuildRequestDataFlags.SkipNonexistentTargets));
 
-                        buildSubmission.ExecuteAsync((submission) =>
+                        Interlocked.Increment(ref pendingBuildCallbacks);
+                        try
                         {
-                            BuildResult result = submission.BuildResult;
-                            if (result.OverallResult == BuildResultCode.Failure)
+                            buildSubmission.ExecuteAsync((submission) =>
                             {
-                                failedBuildSubmissionCount++;
-                            }
+                                try
+                                {
+                                    if (submission.BuildResult.OverallResult == BuildResultCode.Failure)
+                                    {
+                                        Interlocked.Increment(ref failedBuildSubmissionCount);
+                                    }
 
-                            buildCount++;
+                                    Interlocked.Increment(ref buildCount);
 
-                            projects.AddOrUpdate(
-                                projectInstance.FullPath,
-                                createProjectFactory,
-                                updateProjectFactory,
-                                (projectInstance, targetFramework));
-                        }, context: null);
+                                    projects.AddOrUpdate(
+                                        projectInstance.FullPath,
+                                        createProjectFactory,
+                                        updateProjectFactory,
+                                        (projectInstance, targetFramework));
+                                }
+#pragma warning disable CA1031 // Callback exceptions are rethrown on the calling thread after all callbacks complete.
+                                catch (Exception e)
+#pragma warning restore CA1031
+                                {
+                                    callbackExceptions.Enqueue(e);
+                                }
+                                finally
+                                {
+                                    SignalBuildCallbackCompleted();
+                                }
+                            }, context: null);
+                        }
+                        catch
+                        {
+                            SignalBuildCallbackCompleted();
+                            throw;
+                        }
                     }
                 }
                 finally
                 {
-                    // EndBuild blocks until all builds are complete
-                    BuildManager.DefaultBuildManager.EndBuild();
+                    try
+                    {
+                        // EndBuild blocks until all builds are complete but does not wait for callbacks to complete.  The callbacks are used to update the projects dictionary and count the number of builds that failed.
+                        BuildManager.DefaultBuildManager.EndBuild();
+                    }
+                    finally
+                    {
+                        // Wait for all callbacks to complete
+                        SignalBuildCallbackCompleted();
+                        buildCallbacksCompleted.Wait();
+                    }
+                }
+
+                if (!callbackExceptions.IsEmpty)
+                {
+                    throw new AggregateException(callbackExceptions);
                 }
 
                 sw.Stop();
@@ -1402,6 +1440,14 @@ namespace NuGet.Build.Tasks.Console
 
                 // Just return the projects not the whole dictionary as it was just used to group the projects together
                 return projects;
+
+                void SignalBuildCallbackCompleted()
+                {
+                    if (Interlocked.Decrement(ref pendingBuildCallbacks) == 0)
+                    {
+                        buildCallbacksCompleted.Set();
+                    }
+                }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
@@ -1507,4 +1553,3 @@ namespace NuGet.Build.Tasks.Console
         }
     }
 }
-

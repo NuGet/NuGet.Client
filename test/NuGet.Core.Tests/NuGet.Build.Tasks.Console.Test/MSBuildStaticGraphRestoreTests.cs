@@ -8,7 +8,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Build.Graph;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -25,6 +28,118 @@ namespace NuGet.Build.Tasks.Console.Test
 {
     public class MSBuildStaticGraphRestoreTests
     {
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task LoadProjects_WhenProjectFactoryIsDelayed_FinalizesProjectBeforeReturning(bool failBuild)
+        {
+            using var testDirectory = TestDirectory.Create();
+            string projectPath = Path.Combine(testDirectory, "test.proj");
+            File.WriteAllText(projectPath, $"""
+                <Project>
+                  <Target Name="_IsProjectRestoreSupported" />
+                  <Target Name="_CollectRestoreInputs" DependsOnTargets="{(failBuild ? "MissingTarget" : "")}" />
+                </Project>
+                """);
+
+            using var factoryStarted = new ManualResetEventSlim();
+            using var releaseFactory = new ManualResetEventSlim();
+            using var restore = new MSBuildStaticGraphRestore();
+            bool finalized = false;
+            var loadTask = Task.Factory.StartNew(
+                () => restore.LoadProjects(
+                    new[] { new ProjectGraphEntryPoint(projectPath) },
+                    interactive: false,
+                    binaryLoggerParameters: null,
+                    createProjectFactory: (path, _) =>
+                    {
+                        factoryStarted.Set();
+                        releaseFactory.Wait(TimeSpan.FromSeconds(30)).Should().BeTrue();
+                        return path;
+                    },
+                    updateProjectFactory: (_, project, _) => project,
+                    projectFinalizeDelegate: _ => finalized = true),
+                CancellationToken.None,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
+
+            try
+            {
+                factoryStarted.Wait(TimeSpan.FromSeconds(30)).Should().BeTrue();
+                Task completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1)));
+                completedTask.Should().NotBeSameAs(loadTask);
+                finalized.Should().BeFalse();
+            }
+            finally
+            {
+                releaseFactory.Set();
+                await loadTask;
+            }
+
+            var projects = await loadTask;
+            finalized.Should().BeTrue();
+            if (failBuild)
+            {
+                projects.Should().BeNull();
+            }
+            else
+            {
+                projects.Should().ContainSingle().Which.Should().Be(
+                    new KeyValuePair<string, string>(projectPath, projectPath));
+            }
+        }
+
+        [Theory]
+        [InlineData("net10.0")]
+        [InlineData("net9.0;net10.0")]
+        public void LoadProjects_WithInnerBuilds_GroupsAllTargetFrameworksBeforeFinalizing(string targetFrameworks)
+        {
+            using var testDirectory = TestDirectory.Create();
+            string projectPath = Path.Combine(testDirectory, "test.proj");
+            File.WriteAllText(projectPath, $"""
+                <Project>
+                  <PropertyGroup>
+                    <TargetFrameworks>{targetFrameworks}</TargetFrameworks>
+                    <InnerBuildProperty>TargetFramework</InnerBuildProperty>
+                    <InnerBuildPropertyValues>TargetFrameworks</InnerBuildPropertyValues>
+                  </PropertyGroup>
+                  <Target Name="_IsProjectRestoreSupported" />
+                  <Target Name="_CollectRestoreInputs" />
+                </Project>
+                """);
+
+            using var restore = new MSBuildStaticGraphRestore();
+            int finalizedCount = 0;
+            var projects = restore.LoadProjects(
+                new[] { new ProjectGraphEntryPoint(projectPath) },
+                interactive: false,
+                binaryLoggerParameters: null,
+                createProjectFactory: (path, build) =>
+                {
+                    (var projectInstance, var targetFramework) = build;
+                    var project = new RestoreProjectAdapter(path, projectInstance.GlobalProperties);
+                    project.AddTargetFramework(targetFramework, new TargetFrameworkAdapter(projectInstance));
+                    return project;
+                },
+                updateProjectFactory: (_, project, build) =>
+                {
+                    (var projectInstance, var targetFramework) = build;
+                    project.AddTargetFramework(targetFramework, new TargetFrameworkAdapter(projectInstance));
+                    return project;
+                },
+                projectFinalizeDelegate: project =>
+                {
+                    project.OuterBuild.Should().NotBeNull();
+                    project.TargetFrameworks.Keys.Should().BeEquivalentTo(targetFrameworks.Split(';'));
+                    project.Prepare();
+                    finalizedCount++;
+                });
+
+            projects.Should().ContainSingle().Which.Key.Should().Be(projectPath);
+            projects[projectPath].TargetFrameworks.Keys.Should().BeEquivalentTo(targetFrameworks.Split(';'));
+            finalizedCount.Should().Be(1);
+        }
+
         [Theory]
         [InlineData(true, "", "", "LogFile=nuget.binlog")]
         [InlineData(true, "", "LogFile=custom.binlog%3BProjectImports=zip", "LogFile=custom.binlog%3BProjectImports=zip")]
