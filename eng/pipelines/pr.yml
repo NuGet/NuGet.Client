@@ -374,6 +374,13 @@ stages:
           displayName: Run AOT compatibility test app
           condition: succeededOrFailed()
 
+        - script: dotnet publish test\NuGet.TrimCompatibility.TestApp\NuGet.TrimCompatibility.TestApp.csproj --configuration Release --runtime win-x64 --self-contained --output artifacts\TrimCompatibility
+          displayName: Publish trim compatibility test app
+          condition: succeededOrFailed()
+        - script: artifacts\TrimCompatibility\NuGet.TrimCompatibility.TestApp.exe
+          displayName: Run trim compatibility test app
+          condition: succeededOrFailed()
+
         - task: MSBuild@1
           displayName: Restore and Build
           condition: "and(succeededOrFailed(), ne(variables['SkipNupkgDependenciesCheck'], 'true'))"
