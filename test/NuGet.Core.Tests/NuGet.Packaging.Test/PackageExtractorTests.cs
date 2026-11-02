@@ -273,12 +273,15 @@ namespace NuGet.Packaging.Test
                 It.IsAny<SignedPackageVerifierSettings>(), It.IsAny<CancellationToken>(), It.IsAny<Guid>()))
                 .ReturnsAsync(new VerifySignaturesResult(verificationValid, isSigned,
                     isSigned ? new[] { trustResult } : Array.Empty<PackageVerificationResult>()));
+            Mock<IEnvironmentVariableReader> environment = new(MockBehavior.Strict);
+            environment.Setup(value => value.GetEnvironmentVariable(SignatureVerificationEnvironmentVariable)).Returns("TRUE");
 
             using (TestDirectory root = TestDirectory.Create())
             {
                 SimpleTestPackageContext package = new("A", "1.0.0");
                 FileInfo packageFile = await SimpleTestPackageUtility.CreateFullPackageAsync(root, package);
                 using FileStream stream = File.OpenRead(packageFile.FullName);
+                using PackageArchiveReader packageReader = new(stream, environmentVariableReader: environment.Object);
                 PackageExtractionContext context = new(PackageSaveMode.Nuspec | PackageSaveMode.Files,
                     PackageExtractionBehavior.XmlDocFileSaveMode, DefaultContext, logger)
                 {
@@ -287,7 +290,7 @@ namespace NuGet.Packaging.Test
                 try
                 {
                     TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
-                    Task extraction = PackageExtractor.ExtractPackageAsync(root, stream, new PackagePathResolver(root), context, CancellationToken.None);
+                    Task extraction = PackageExtractor.ExtractPackageAsync(root, packageReader, new PackagePathResolver(root), context, CancellationToken.None);
                     bool blocked = !verificationValid || (isSigned && (preexistingError
                         || (warningsAsErrors && !noWarn && !warningsNotAsErrors && (revocationWarning || otherWarning || parsingFailure))));
                     if (blocked)
