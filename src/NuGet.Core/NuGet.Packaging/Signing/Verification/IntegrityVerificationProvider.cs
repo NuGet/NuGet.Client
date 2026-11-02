@@ -47,7 +47,10 @@ namespace NuGet.Packaging.Signing
                 issues.Add(SignatureLog.DebugLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureDebug_HashOidFound, signatureHashOid)));
             }
 
-            return new SignedPackageVerificationResult(status, signature, issues);
+            return new SignedPackageVerificationResult(status, signature, issues)
+            {
+                HasNonX509Rejection = status != SignatureVerificationStatus.Valid
+            };
         }
 
     }

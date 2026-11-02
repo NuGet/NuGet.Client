@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -79,7 +80,7 @@ namespace NuGet.Packaging
 
                     await VerifyPackageSignatureAsync(
                         source,
-                        telemetry.OperationId,
+                        telemetry,
                         packageIdentityFromNuspec,
                         packageExtractionContext,
                         packageReader,
@@ -199,7 +200,7 @@ namespace NuGet.Packaging
 
                 await VerifyPackageSignatureAsync(
                     source,
-                    telemetry.OperationId,
+                    telemetry,
                     packageIdentityFromNuspec,
                     packageExtractionContext,
                     packageReader,
@@ -305,7 +306,7 @@ namespace NuGet.Packaging
 
                 await VerifyPackageSignatureAsync(
                     source,
-                    telemetry.OperationId,
+                    telemetry,
                     packageIdentityFromNuspec,
                     packageExtractionContext,
                     packageReader,
@@ -474,7 +475,7 @@ namespace NuGet.Packaging
 
                                             await VerifyPackageSignatureAsync(
                                                 source,
-                                                telemetry.OperationId,
+                                                telemetry,
                                                 packageIdentity,
                                                 packageExtractionContext,
                                                 packageReader,
@@ -737,7 +738,7 @@ namespace NuGet.Packaging
 
                                     await VerifyPackageSignatureAsync(
                                         packageDownloader.Source,
-                                        telemetry.OperationId,
+                                        telemetry,
                                         packageIdentity,
                                         packageExtractionContext,
                                         packageDownloader.SignedPackageReader,
@@ -1028,7 +1029,7 @@ namespace NuGet.Packaging
 
         private static async Task VerifyPackageSignatureAsync(
             string source,
-            Guid parentId,
+            TelemetryActivity telemetry,
             PackageIdentity package,
             PackageExtractionContext packageExtractionContext,
             ISignedPackageReader signedPackageReader,
@@ -1096,7 +1097,18 @@ namespace NuGet.Packaging
                        signedPackageReader,
                        verificationSettings,
                        token,
-                       parentId);
+                       telemetry.OperationId);
+
+                (X509ChainStatusFlags verificationDecisionFlags, X509ChainStatusFlags verificationRejectionFlags, bool verificationHasNonX509Rejection) =
+                    PackageSigningTelemetryEvent.SetRevocationInformation(telemetry.TelemetryEvent, verifyResult.Results, verificationSettings.RevocationMode);
+                telemetry.TelemetryEvent["PackageSignType"] = verifyResult.IsSigned ? PackageSignType.Signed : PackageSignType.Unsigned;
+                telemetry.TelemetryEvent["SignatureVerificationStatus"] = verifyResult.IsValid ? NuGetOperationStatus.Succeeded : NuGetOperationStatus.Failed;
+                // Verification can succeed before warnings are promoted to errors by the extraction logger.
+                telemetry.TelemetryEvent["SignatureAcceptanceStatus"] = NuGetOperationStatus.Failed;
+                telemetry.TelemetryEvent["AcceptanceRejectionReasons"] = telemetry.TelemetryEvent["VerificationRejectionReasons"];
+                telemetry.TelemetryEvent["AcceptanceRevocationRejectionFlags"] = telemetry.TelemetryEvent["VerificationRevocationRejectionFlags"];
+                telemetry.TelemetryEvent["WarningPromotionReasons"] = (int)SignatureVerificationRejectionReasons.None;
+                telemetry.TelemetryEvent["WarningPromotionRevocationFlags"] = 0;
 
                 if (verifyResult.IsSigned || !verifyResult.IsValid)
                 {
@@ -1110,18 +1122,54 @@ namespace NuGet.Packaging
                     if (verifyResult.IsValid)
                     {
                         // log any warnings
-                        var warnings = verifyResult.Results.SelectMany(r => r.GetWarningIssues());
+                        List<(SignatureLog Signature, ILogMessage Message)> warnings = new();
 
-                        foreach (var warning in warnings)
+                        foreach (SignatureLog warning in verifyResult.Results.SelectMany(r => r.GetWarningIssues()))
                         {
+                            warning.RestoreMessage = null;
                             await packageExtractionContext.Logger.LogAsync(warning);
+                            // Warning promotion mutates the logger's converted copy, not necessarily the SignatureLog.
+                            warnings.Add((warning, warning.RestoreMessage ?? (ILogMessage)warning));
                         }
 
                         if (packageExtractionContext.Logger is ICollectorLogger collectorLogger)
                         {
                             // collectorLogger.Errors is a collection of errors and warnings, we just need to fail if there are errors.
-                            if (collectorLogger.Errors.Any(e => e.Level >= LogLevel.Error))
+                            List<IRestoreLogMessage> errors = collectorLogger.Errors.Where(e => e.Level >= LogLevel.Error).ToList();
+                            if (errors.Count != 0)
                             {
+                                SignatureVerificationRejectionReasons rejectionReasons = SignatureVerificationRejectionReasons.None;
+                                SignatureVerificationRejectionReasons promotionReasons = SignatureVerificationRejectionReasons.None;
+                                X509ChainStatusFlags revocationRejectionFlags = X509ChainStatusFlags.NoError;
+                                X509ChainStatusFlags promotedChainStatusFlags = X509ChainStatusFlags.NoError;
+                                bool promotedNonX509Rejection = false;
+                                foreach (IRestoreLogMessage error in errors)
+                                {
+                                    SignatureLog? warning = warnings.FirstOrDefault(message =>
+                                        ReferenceEquals(message.Message, error)).Signature;
+                                    SignatureVerificationRejectionReasons reason = warning?.RejectionReason ?? SignatureVerificationRejectionReasons.UnattributedCollectorError;
+                                    rejectionReasons |= reason;
+                                    if (warning != null)
+                                    {
+                                        promotionReasons |= reason;
+                                        X509ChainStatusFlags warningFlags = warning.ChainStatusFlags.GetValueOrDefault();
+                                        promotedNonX509Rejection |= warningFlags == X509ChainStatusFlags.NoError;
+                                        promotedChainStatusFlags |= warningFlags;
+                                        revocationRejectionFlags |= warningFlags & CertificateChainUtility.RevocationUnavailableFlags;
+                                    }
+                                }
+                                telemetry.TelemetryEvent["AcceptanceRejectionReasons"] = (int)rejectionReasons;
+                                telemetry.TelemetryEvent["WarningPromotionReasons"] = (int)promotionReasons;
+                                telemetry.TelemetryEvent["AcceptanceRevocationRejectionFlags"] = (int)revocationRejectionFlags;
+                                telemetry.TelemetryEvent["WarningPromotionRevocationFlags"] = (int)revocationRejectionFlags;
+                                telemetry.TelemetryEvent["WarningPromotionChainStatusFlags"] = (int)promotedChainStatusFlags;
+                                telemetry.TelemetryEvent["WarningPromotionHasNonX509Rejection"] = promotedNonX509Rejection;
+                                telemetry.TelemetryEvent["AcceptanceHasNonX509Rejection"] =
+                                    verificationHasNonX509Rejection || promotedNonX509Rejection;
+                                telemetry.TelemetryEvent["AcceptanceChainRejectionFlags"] =
+                                    (int)(verificationRejectionFlags | promotedChainStatusFlags);
+                                telemetry.TelemetryEvent["AcceptanceDecisionRelevantChainStatusFlags"] =
+                                    (int)(verificationDecisionFlags | promotedChainStatusFlags);
                                 // Send empty results since errors and warnings have already been logged
                                 throw new SignatureException(results: Enumerable.Empty<PackageVerificationResult>().ToList(), package: package);
                             }
@@ -1132,6 +1180,8 @@ namespace NuGet.Packaging
                         throw new SignatureException(verifyResult.Results, package);
                     }
                 }
+
+                telemetry.TelemetryEvent["SignatureAcceptanceStatus"] = NuGetOperationStatus.Succeeded;
             }
         }
 
