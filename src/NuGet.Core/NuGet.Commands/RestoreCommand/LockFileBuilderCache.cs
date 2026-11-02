@@ -10,7 +10,6 @@ using System.Linq;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Shared;
@@ -32,7 +31,7 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<CriteriaKey, List<(List<SelectionCriteria>, bool)>> _criteriaSets =
             new();
 
-        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags, DependencyKey dependencies, bool restoreEnableAnalyzerAssets), Lazy<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)>> _lockFileTargetLibraryCache =
+        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags, int dependencyCount, bool restoreEnableAnalyzerAssets, PackageDependencyPruningResult pruningResult), Lazy<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)>> _lockFileTargetLibraryCache =
             new();
 
         /// <summary>
@@ -107,97 +106,18 @@ namespace NuGet.Commands
         /// <summary>
         /// Try to get a LockFileTargetLibrary from the cache.
         /// </summary>
-        internal (LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework) GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, string aliases, LibraryIncludeFlags libraryIncludeFlags, List<LibraryDependency> dependencies, bool restoreEnableAnalyzerAssets, Func<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)> valueFactory)
+        internal (LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework) GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, string aliases, LibraryIncludeFlags libraryIncludeFlags, List<LibraryDependency> dependencies, bool restoreEnableAnalyzerAssets, Func<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)> valueFactory, PackageDependencyPruningResult pruningResult = default)
         {
             // Comparing RuntimeGraph for equality is very expensive,
             // so in case of a request where the RuntimeGraph is not empty we avoid using the cache.
-            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
+            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier) || dependencies is null)
                 return valueFactory();
 
             localPackageInfo = localPackageInfo ?? throw new ArgumentNullException(nameof(localPackageInfo));
             var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
             var packagePath = localPackageInfo.ExpandedPath;
-            var dependencyKey = new DependencyKey(dependencies);
-            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, packagePath, aliases, libraryIncludeFlags, dependencyKey, restoreEnableAnalyzerAssets),
+            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, packagePath, aliases, libraryIncludeFlags, dependencies.Count, restoreEnableAnalyzerAssets, pruningResult),
                 key => new Lazy<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)>(valueFactory)).Value;
-        }
-
-        private sealed class DependencyKey : IEquatable<DependencyKey>
-        {
-            private readonly PackageDependency[] _dependencies;
-            private readonly int _hashCode;
-
-            public DependencyKey(List<LibraryDependency> dependencies)
-            {
-                var packageDependencies = new List<PackageDependency>(dependencies.Count);
-
-                foreach (LibraryDependency dependency in dependencies)
-                {
-                    if (dependency.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.PackageProjectExternal))
-                    {
-                        packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
-                    }
-                }
-
-                packageDependencies.Sort(Compare);
-                _dependencies = packageDependencies.ToArray();
-
-                var combiner = new HashCodeCombiner();
-                foreach (PackageDependency dependency in _dependencies)
-                {
-                    combiner.AddObject(dependency);
-                }
-
-                _hashCode = combiner.CombinedHash;
-            }
-
-            public bool Equals(DependencyKey other)
-            {
-                if (ReferenceEquals(this, other))
-                {
-                    return true;
-                }
-
-                if (ReferenceEquals(other, null)
-                    || _hashCode != other._hashCode
-                    || _dependencies.Length != other._dependencies.Length)
-                {
-                    return false;
-                }
-
-                for (int i = 0; i < _dependencies.Length; i++)
-                {
-                    if (!PackageDependencyComparer.Default.Equals(_dependencies[i], other._dependencies[i]))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return Equals(obj as DependencyKey);
-            }
-
-            public override int GetHashCode()
-            {
-                return _hashCode;
-            }
-
-            private static int Compare(PackageDependency left, PackageDependency right)
-            {
-                int result = StringComparer.OrdinalIgnoreCase.Compare(left.Id, right.Id);
-                if (result == 0)
-                {
-                    result = StringComparer.Ordinal.Compare(
-                        left.VersionRange.ToNormalizedString(),
-                        right.VersionRange.ToNormalizedString());
-                }
-
-                return result;
-            }
         }
 
         private class CriteriaKey : IEquatable<CriteriaKey>

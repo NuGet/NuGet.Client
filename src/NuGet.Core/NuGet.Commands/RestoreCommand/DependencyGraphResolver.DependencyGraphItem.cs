@@ -78,6 +78,7 @@ namespace NuGet.Commands
             /// <param name="packagesToPrune">An optional <see cref="IReadOnlyDictionary{TKey, TValue}" /> containing any packages to prune from the defined dependencies.</param>
             /// <param name="isRootProject">Indicates whether or not the dependency graph item is the root project.</param>
             /// <param name="logger">An <see cref="ILogger" /> used for logging.</param>
+            /// <param name="cacheTargetLibrary">Whether this graph uses the completed target-library cache.</param>
             /// <returns>A <see cref="GraphItem{TItem}" /> with the <see cref="RemoteResolveResult" /> of the result of finding the library.</returns>
             public async Task<GraphItem<RemoteResolveResult>> GetGraphItemAsync(
                 ProjectRestoreMetadata projectRestoreMetadata,
@@ -85,7 +86,8 @@ namespace NuGet.Commands
                 bool enablePruningWarnings,
                 bool isRootProject,
                 string targetGraphName,
-                ILogger logger)
+                ILogger logger,
+                bool cacheTargetLibrary)
             {
                 // Call the task to get the library, this may returned a cached result
                 GraphItem<RemoteResolveResult> item = await FindLibraryTask;
@@ -98,6 +100,8 @@ namespace NuGet.Commands
 
                 // Create a new list that is big enough for the existing items plus any runtime dependencies
                 List<LibraryDependency> dependencies = new(capacity: (RuntimeDependencies?.Count ?? 0) + item.Data.Dependencies.Count);
+                ulong removedMask = 0;
+                List<int>? removedDependencies = null;
 
                 // Loop through the defined dependencies, leaving out any pruned packages or runtime packages that replace them
                 for (int i = 0; i < item.Data.Dependencies.Count; i++)
@@ -105,8 +109,23 @@ namespace NuGet.Commands
                     LibraryDependency dependency = item.Data.Dependencies[i];
 
                     // Skip any packages that should be pruned or will be replaced with a runtime dependency
-                    if (ShouldPrunePackage(projectRestoreMetadata, packagesToPrune, enablePruningWarnings, dependency, item.Key, isRootProject, targetGraphName, logger)
-                        || RuntimeDependencies?.Contains(dependency) == true)
+                    if (ShouldPrunePackage(projectRestoreMetadata, packagesToPrune, enablePruningWarnings, dependency, item.Key, isRootProject, targetGraphName, logger))
+                    {
+                        if (cacheTargetLibrary)
+                        {
+                            if (item.Data.Dependencies.Count <= 64)
+                            {
+                                removedMask |= 1UL << i;
+                            }
+                            else
+                            {
+                                (removedDependencies ??= new List<int>()).Add(i);
+                            }
+                        }
+                        continue;
+                    }
+
+                    if (RuntimeDependencies?.Contains(dependency) == true)
                     {
                         continue;
                     }
@@ -128,14 +147,25 @@ namespace NuGet.Commands
                     }
                 }
 
-                // Return a new graph item containing the mutated list of dependencies
-                return new GraphItem<RemoteResolveResult>(item.Key)
-                {
-                    Data = new RemoteResolveResult()
+                RemoteResolveResult result = cacheTargetLibrary && (removedMask != 0 || removedDependencies is not null)
+                    ? new PrunedRemoteResolveResult
+                    {
+                        Dependencies = dependencies,
+                        Match = item.Data.Match,
+                        PruningResult = removedDependencies is null
+                            ? new PackageDependencyPruningResult(removedMask)
+                            : new PackageDependencyPruningResult(removedDependencies)
+                    }
+                    : new RemoteResolveResult
                     {
                         Dependencies = dependencies,
                         Match = item.Data.Match
-                    }
+                    };
+
+                // Return a new graph item containing the mutated list of dependencies
+                return new GraphItem<RemoteResolveResult>(item.Key)
+                {
+                    Data = result
                 };
             }
 
