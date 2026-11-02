@@ -59,27 +59,27 @@ namespace NuGet.Packaging.Signing
                     }
                     catch (SignatureException e)
                     {
-                        // SignatureException generated while parsing signatures
+                        // Parsing failures prevent integrity and trust verification and must be fatal.
                         var issues = new[] {
-                            SignatureLog.Issue(!settings.AllowIllegal, e.Code, e.Message),
+                            SignatureLog.Issue(fatal: true, e.Code, e.Message),
                             SignatureLog.DebugLog(e.ToString())
                         };
                         trustResults.Add(new InvalidSignaturePackageVerificationResult(
-                            settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed,
+                            SignatureVerificationStatus.Disallowed,
                             issues));
-                        valid = settings.AllowIllegal;
+                        valid = false;
                     }
                     catch (CryptographicException e)
                     {
                         // CryptographicException generated while parsing the SignedCms object
                         var issues = new[] {
-                            SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
+                            SignatureLog.Issue(fatal: true, NuGetLogCode.NU3003, Strings.ErrorPackageSignatureInvalid),
                             SignatureLog.DebugLog(e.ToString())
                         };
                         trustResults.Add(new InvalidSignaturePackageVerificationResult(
-                            settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed,
+                            SignatureVerificationStatus.Disallowed,
                             issues));
-                        valid = settings.AllowIllegal;
+                        valid = false;
                     }
                 }
                 else if (settings.AllowUnsigned)

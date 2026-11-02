@@ -34,12 +34,14 @@ namespace NuGet.Packaging.Signing
                 // Allow unsigned only if the common settings allow it and repository does not have all packages signed
                 var allowUnsigned = fallbackSettings.AllowUnsigned && !repoSignatureInfo.AllRepositorySigned;
 
+                var allowIllegal = fallbackSettings.AllowIllegal && !repoSignatureInfo.AllRepositorySigned;
+
                 // Allow untrusted only if the common settings allow it and repository does not have all packages signed
                 var allowUntrusted = fallbackSettings.AllowUntrusted && !repoSignatureInfo.AllRepositorySigned;
 
                 return new SignedPackageVerifierSettings(
                     allowUnsigned,
-                    fallbackSettings.AllowIllegal,
+                    allowIllegal,
                     allowUntrusted,
                     fallbackSettings.AllowIgnoreTimestamp,
                     fallbackSettings.AllowMultipleTimestamps,

@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -26,6 +27,7 @@ using NuGet.Packaging.Signing;
 using NuGet.Protocol.Plugins;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -43,6 +45,104 @@ namespace NuGet.Packaging.Test
         private const string SignatureVerificationEnvironmentVariable = "DOTNET_NUGET_SIGNATURE_VERIFICATION";
         private const string SignatureVerificationEnvironmentVariableTypo = "DOTNET_NUGET_SIGNATURE_VERIFICATIOn";
         private const string UntrustedChainCertError = "The author primary signature's signing certificate is not trusted by the trust provider.";
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        [InlineData(false, true)]
+        public async Task VerifySignaturesAsync_WhenSignatureParsingFails_DisallowsPackage(bool allowIllegal, bool cryptographicException)
+        {
+            var settings = allowIllegal
+                ? SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance)
+                : SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
+            Exception exception = cryptographicException
+                ? new System.Security.Cryptography.CryptographicException("Invalid signature")
+                : new SignatureException(NuGetLogCode.NU3005, "Invalid signature entry");
+            var package = new Mock<ISignedPackageReader>(MockBehavior.Strict);
+            package.Setup(p => p.IsSignedAsync(CancellationToken.None)).ReturnsAsync(true);
+            package.Setup(p => p.GetPrimarySignatureAsync(CancellationToken.None)).ThrowsAsync(exception);
+            var provider = new Mock<ISignatureVerificationProvider>(MockBehavior.Strict);
+            var verifier = new PackageSignatureVerifier(new[] { provider.Object });
+
+            var result = await verifier.VerifySignaturesAsync(package.Object, settings, CancellationToken.None);
+
+            Assert.True(result.IsSigned);
+            Assert.False(result.IsValid);
+            var verificationResult = Assert.Single(result.Results);
+            Assert.Equal(SignatureVerificationStatus.Disallowed, verificationResult.Trust);
+            var issue = Assert.Single(verificationResult.GetErrorIssues());
+            Assert.Equal(cryptographicException ? NuGetLogCode.NU3003 : NuGetLogCode.NU3005, issue.Code);
+            provider.VerifyNoOtherCalls();
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task InstallFromSourceAsync_WithTamperedPayloadAndInvalidSignatureHeader_DoesNotPublishPackage(bool allRepositorySigned)
+        {
+            using (var directory = TestDirectory.Create())
+            using (var stream = new MemoryStream())
+            {
+                var bytes = SigningTestUtility.GetResourceBytes("SignedPackage.1.0.0.nupkg");
+                stream.Write(bytes, 0, bytes.Length);
+
+                using (var archive = new ZipArchive(stream, ZipArchiveMode.Update, leaveOpen: true))
+                using (var writer = new StreamWriter(archive.CreateEntry("tampered.txt", CompressionLevel.NoCompression).Open()))
+                {
+                    writer.Write("altered payload");
+                }
+
+                using (var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true))
+                using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+                {
+                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader);
+                    var signatureHeader = metadata.CentralDirectoryHeaders[metadata.SignatureCentralDirectoryHeaderIndex];
+                    // The compression method is eight bytes into the local file header.
+                    stream.Position = signatureHeader.OffsetToLocalFileHeader + 8;
+                    writer.Write((ushort)8);
+                }
+
+                stream.Position = 0;
+                using (var reader = new PackageArchiveReader(stream, leaveStreamOpen: true))
+                {
+                    Assert.True(await reader.IsSignedAsync(CancellationToken.None));
+                    var exception = await Assert.ThrowsAsync<SignatureException>(
+                        () => reader.GetPrimarySignatureAsync(CancellationToken.None));
+                    Assert.Equal(NuGetLogCode.NU3005, exception.Code);
+                    Assert.True(await reader.IsSignedAsync(CancellationToken.None));
+                    Assert.False(string.IsNullOrEmpty(reader.GetContentHash(CancellationToken.None)));
+
+                    var identity = reader.GetIdentity();
+                    var resolver = new VersionFolderPathResolver(directory.Path);
+                    var logger = new TestLogger();
+                    var context = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        XmlDocFileSaveMode.None,
+                        ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                        logger);
+
+                    RepositorySignatureInfoProvider.Instance.AddOrUpdateRepositorySignatureInfo(
+                        directory.Path,
+                        new RepositorySignatureInfo(allRepositorySigned, Array.Empty<IRepositoryCertificateInfo>()));
+                    stream.Position = 0;
+                    var installException = await Assert.ThrowsAsync<SignatureException>(() => PackageExtractor.InstallFromSourceAsync(
+                        directory.Path,
+                        identity,
+                        destination => stream.CopyToAsync(destination),
+                        resolver,
+                        context,
+                        CancellationToken.None));
+
+                    Assert.NotNull(installException.Results);
+                    var verificationResult = Assert.Single(installException.Results);
+                    Assert.Equal(NuGetLogCode.NU3005, Assert.Single(verificationResult.GetErrorIssues()).Code);
+                    Assert.False(Directory.Exists(resolver.GetInstallPath(identity.Id, identity.Version)));
+                    Assert.False(File.Exists(resolver.GetHashPath(identity.Id, identity.Version)));
+                    Assert.False(File.Exists(resolver.GetNupkgMetadataPath(identity.Id, identity.Version)));
+                }
+            }
+        }
 
         [Fact]
         public async Task InstallFromSourceAsync_StressTestAsync()
@@ -4397,7 +4497,7 @@ namespace NuGet.Packaging.Test
 
                 var expectedVerifierSettings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
-                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
+                    allowIllegal: false,
                     allowUntrusted: false,
                     allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
                     allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
@@ -4470,7 +4570,7 @@ namespace NuGet.Packaging.Test
 
                 var expectedVerifierSettings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
-                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
+                    allowIllegal: false,
                     allowUntrusted: false,
                     allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
                     allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
@@ -4542,7 +4642,7 @@ namespace NuGet.Packaging.Test
 
                 var expectedVerifierSettings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
-                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
+                    allowIllegal: false,
                     allowUntrusted: false,
                     allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
                     allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
@@ -4614,7 +4714,7 @@ namespace NuGet.Packaging.Test
 
                 var expectedVerifierSettings = new SignedPackageVerifierSettings(
                     allowUnsigned: false,
-                    allowIllegal: signedPackageVerifierSettings.AllowIllegal,
+                    allowIllegal: false,
                     allowUntrusted: false,
                     allowIgnoreTimestamp: signedPackageVerifierSettings.AllowIgnoreTimestamp,
                     allowMultipleTimestamps: signedPackageVerifierSettings.AllowMultipleTimestamps,
