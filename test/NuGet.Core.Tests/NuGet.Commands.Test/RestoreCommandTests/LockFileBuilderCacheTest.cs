@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -24,6 +26,127 @@ namespace NuGet.Commands.Test.RestoreCommandTests
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class LockFileBuilderCacheTest
     {
+        [Theory]
+        [InlineData(64, 0, 1)]
+        [InlineData(65, 0, 64)]
+        public void GetLockFileTargetLibrary_DifferentPruningOutcomes_DoesNotReuseTargetLibrary(int originalDependencyCount, int firstRemovedPosition, int secondRemovedPosition)
+        {
+            // Arrange
+            var framework = NuGetFramework.Parse("net10.0");
+            var graph = RestoreTargetGraph.Create(
+                runtimeGraph: RuntimeGraph.Empty,
+                graphs: [],
+                context: null!,
+                targetAlias: "net10.0",
+                framework: framework,
+                runtimeIdentifier: "");
+            var package = new NuGet.Repositories.LocalPackageInfo(
+                packageId: "A",
+                version: NuGetVersion.Parse("1.0.0"),
+                path: "packageA",
+                manifestPath: "",
+                zipPath: "",
+                sha512Path: "",
+                nuspec: new Lazy<NuspecReader>(() => null!),
+                files: new Lazy<IReadOnlyList<string>>(() => []),
+                sha512: new Lazy<string>(() => ""),
+                runtimeGraph: new Lazy<RuntimeGraph?>(() => RuntimeGraph.Empty));
+            var cache = new LockFileBuilderCache();
+            var firstDependencies = CreatePrunedDependencies(originalDependencyCount, firstRemovedPosition);
+            var secondDependencies = CreatePrunedDependencies(originalDependencyCount, secondRemovedPosition);
+            var firstPruning = CreatePruningResult(originalDependencyCount, firstRemovedPosition);
+            var secondPruning = CreatePruningResult(originalDependencyCount, secondRemovedPosition);
+            var firstExpected = new LockFileTargetLibrary { Name = "First" };
+            var secondExpected = new LockFileTargetLibrary { Name = "Second" };
+
+            // Act
+            (var firstActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: firstDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (firstExpected, false, framework, framework),
+                pruningResult: firstPruning);
+            (var secondActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: secondDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (secondExpected, false, framework, framework),
+                pruningResult: secondPruning);
+
+            // Assert
+            Assert.Equal(firstDependencies.Count, secondDependencies.Count);
+            Assert.Same(firstExpected, firstActual);
+            Assert.Same(secondExpected, secondActual);
+        }
+
+        [Theory]
+        [InlineData(64, 0)]
+        [InlineData(65, 64)]
+        public void GetLockFileTargetLibrary_IdenticalPruningOutcomes_ReusesTargetLibrary(int originalDependencyCount, int removedPosition)
+        {
+            // Arrange
+            var framework = NuGetFramework.Parse("net10.0");
+            var graph = RestoreTargetGraph.Create(
+                runtimeGraph: RuntimeGraph.Empty,
+                graphs: [],
+                context: null!,
+                targetAlias: "net10.0",
+                framework: framework,
+                runtimeIdentifier: "");
+            var package = new NuGet.Repositories.LocalPackageInfo(
+                packageId: "A",
+                version: NuGetVersion.Parse("1.0.0"),
+                path: "packageA",
+                manifestPath: "",
+                zipPath: "",
+                sha512Path: "",
+                nuspec: new Lazy<NuspecReader>(() => null!),
+                files: new Lazy<IReadOnlyList<string>>(() => []),
+                sha512: new Lazy<string>(() => ""),
+                runtimeGraph: new Lazy<RuntimeGraph?>(() => RuntimeGraph.Empty));
+            var cache = new LockFileBuilderCache();
+            var firstDependencies = CreatePrunedDependencies(originalDependencyCount, removedPosition);
+            var secondDependencies = CreatePrunedDependencies(originalDependencyCount, removedPosition);
+            var firstPruning = CreatePruningResult(originalDependencyCount, removedPosition);
+            var secondPruning = CreatePruningResult(originalDependencyCount, removedPosition);
+            var expected = new LockFileTargetLibrary { Name = "First" };
+            var alternative = new LockFileTargetLibrary { Name = "Second" };
+
+            // Act
+            (var firstActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: firstDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (expected, false, framework, framework),
+                pruningResult: firstPruning);
+            (var secondActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: secondDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (alternative, false, framework, framework),
+                pruningResult: secondPruning);
+
+            // Assert
+            Assert.Same(expected, firstActual);
+            Assert.Same(expected, secondActual);
+        }
+
         [Theory]
         [InlineData(false, true)]
         [InlineData(true, false)]
@@ -566,6 +689,33 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 Assert.Equal(NuGetVersion.Parse("1.0.0"), lockFile1TargetLibraryA.Version);
                 Assert.Equal(NuGetVersion.Parse(version), lockFile2TargetLibraryA.Version);
             }
+        }
+
+        private static List<LibraryDependency> CreatePrunedDependencies(int originalDependencyCount, int removedPosition)
+        {
+            var dependencies = new List<LibraryDependency>();
+            for (int position = 0; position < originalDependencyCount; position++)
+            {
+                if (position == removedPosition)
+                {
+                    continue;
+                }
+
+                var libraryRange = new LibraryRange("D" + position, VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+                dependencies.Add(new LibraryDependency(libraryRange));
+            }
+
+            return dependencies;
+        }
+
+        private static PackageDependencyPruningResult CreatePruningResult(int originalDependencyCount, int removedPosition)
+        {
+            if (originalDependencyCount <= 64)
+            {
+                return new PackageDependencyPruningResult(1UL << removedPosition);
+            }
+
+            return new PackageDependencyPruningResult([removedPosition]);
         }
     }
 }
