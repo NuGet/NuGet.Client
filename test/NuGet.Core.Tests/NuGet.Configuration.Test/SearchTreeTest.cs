@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using FluentAssertions;
 using Test.Utility;
@@ -75,6 +76,58 @@ namespace NuGet.Configuration.Test
             IReadOnlyList<string> configuredSources = searchTree.GetConfiguredPackageSources(term);
             Assert.Equal(1, configuredSources.Count);
             Assert.True(configuredSources[0].StartsWith(term.Trim().Substring(0, 5)));
+        }
+
+        [Theory]
+        [InlineData("private,Internal.Package|public,*", "internal.package", "private")]
+        [InlineData("private,internal.package|public,*", "Internal.Package", "private")]
+        [InlineData("private,Internal.*|public,*", "internal.package", "private")]
+        [InlineData("private,internal.*|public,*", "Internal.Package", "private")]
+        [InlineData("private,Internal.Package", "internal.package", "private")]
+        [InlineData("private,internal.package", "Internal.Package", "private")]
+        [InlineData("private,Internal.*", "internal.package", "private")]
+        [InlineData("private,internal.*", "Internal.Package", "private")]
+        [InlineData("private,Internal.Package|public,*", "internal.other", "public")]
+        [InlineData("private,Internal.*|public,*", "other.package", "public")]
+        public void GetConfiguredPackageSources_TurkishCulture_ReturnsMostSpecificSource(
+            string packagePatterns, string term, string expectedSource)
+        {
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+                var configuration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
+
+                IReadOnlyList<string> configuredSources = configuration.GetConfiguredPackageSources(term);
+
+                Assert.Equal(expectedSource, Assert.Single(configuredSources));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
+        }
+
+        [Theory]
+        [InlineData("private,Internal.Package", "internal.other")]
+        [InlineData("private,Internal.*", "other.package")]
+        public void GetConfiguredPackageSources_TurkishCulture_NoMatch_ReturnsNoSources(
+            string packagePatterns, string term)
+        {
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+                var configuration = PackageSourceMappingUtility.GetpackageSourceMapping(packagePatterns);
+
+                IReadOnlyList<string> configuredSources = configuration.GetConfiguredPackageSources(term);
+
+                Assert.Null(configuredSources);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
 
         [Theory]
