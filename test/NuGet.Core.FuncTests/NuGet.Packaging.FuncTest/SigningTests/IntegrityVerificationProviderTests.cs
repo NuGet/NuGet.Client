@@ -341,7 +341,7 @@ namespace NuGet.Packaging.FuncTest
 
         [NetFxCIOnlyTheory]
         [InlineData("command", false)]
-        [InlineData("vs", true)]
+        [InlineData("vs", false)]
         public async Task Signer_VerifyOnTamperedPackage_SignatureTamperedAsync(string policyString, bool expectedValidity)
         {
             // Arrange
