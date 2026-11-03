@@ -406,12 +406,12 @@ namespace NuGet.ProjectModel
         }
 
         private void Write<TWriter>(TWriter writer, bool hashing)
-            where TWriter : RuntimeModel.IObjectWriter
+            where TWriter : IJsonObjectWriter
         {
             writer.WriteObjectStart();
-            writer.WriteNameValue("format", Version);
+            writer.WriteNameValue(JsonPropertyNames.Format, Version);
 
-            writer.WriteObjectStart("restore");
+            writer.WriteObjectStart(JsonPropertyNames.Restore);
 
             // Preserve default sort order
             foreach (var restoreName in _restore)
@@ -422,7 +422,7 @@ namespace NuGet.ProjectModel
 
             writer.WriteObjectEnd();
 
-            writer.WriteObjectStart("projects");
+            writer.WriteObjectStart(JsonPropertyNames.Projects);
 
             if (_projects.Count > 0)
             {

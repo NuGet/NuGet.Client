@@ -282,6 +282,46 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedHash, actualHash);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void EncodedSchemaNames_MatchPublicContractAndPreserveReadOnlyState(bool useLegacyHashFunction)
+        {
+            using var encodedWriter = new HashObjectWriter(CreateHashFunction());
+            using var stringWriter = new HashObjectWriter(CreateHashFunction());
+            var encodedAdapter = new HashObjectWriterAdapter(encodedWriter);
+
+            Write(encodedAdapter);
+            Write(new JsonObjectWriterAdapter(stringWriter));
+
+            Assert.Equal(stringWriter.GetHash(), encodedWriter.GetHash());
+            Assert.Throws<InvalidOperationException>(
+                () => encodedAdapter.WriteNameValue(JsonPropertyNames.Version, "2.0.0"));
+
+            IHashFunction CreateHashFunction() =>
+                useLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function();
+
+            static void Write<TWriter>(TWriter writer) where TWriter : IJsonObjectWriter
+            {
+                writer.WriteObjectStart();
+                writer.WriteNameValue(JsonPropertyNames.Format, 1);
+                writer.WriteObjectStart(JsonPropertyNames.Restore);
+                writer.WriteNameValue(JsonPropertyNames.CrossTargeting, true);
+                writer.WriteNameValue(JsonPropertyNames.ProjectName, null);
+                writer.WriteNameValue("version", "dynamic-caf\u00e9-<&>-\n");
+                writer.WriteNameArray(JsonPropertyNames.Imports, new[] { "net10.0", "netstandard2.0" });
+                writer.WriteNonEmptyNameArray(JsonPropertyNames.FallbackFolders, Array.Empty<string>());
+                writer.WriteNonEmptyNameArray(JsonPropertyNames.ConfigFilePaths, new[] { "/src/nuget.config" });
+                writer.WriteArrayStart(JsonPropertyNames.DownloadDependencies);
+                writer.WriteObjectStart();
+                writer.WriteNameValue(JsonPropertyNames.Name, "Contoso.Library");
+                writer.WriteObjectEnd();
+                writer.WriteArrayEnd();
+                writer.WriteObjectEnd();
+                writer.WriteObjectEnd();
+            }
+        }
+
         [Fact]
         public void WriteNameValue_LargerThanBuffer_Uses4096ByteHashUpdates()
         {

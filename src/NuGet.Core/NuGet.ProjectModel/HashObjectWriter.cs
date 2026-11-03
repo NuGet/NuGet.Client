@@ -10,7 +10,7 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.ProjectModel
 {
-    internal readonly struct HashObjectWriterAdapter : IObjectWriter
+    internal readonly struct HashObjectWriterAdapter : IJsonObjectWriter
     {
         private readonly HashObjectWriter _writer;
 
@@ -23,19 +23,35 @@ namespace NuGet.ProjectModel
 
         public void WriteObjectStart(string name) => _writer.WriteObjectStart(name);
 
+        public void WriteObjectStart(JsonEncodedText name) => _writer.WriteObjectStart(name);
+
         public void WriteObjectEnd() => _writer.WriteObjectEnd();
 
         public void WriteNameValue(string name, int value) => _writer.WriteNameValue(name, value);
 
+        public void WriteNameValue(JsonEncodedText name, int value) => _writer.WriteNameValue(name, value);
+
         public void WriteNameValue(string name, bool value) => _writer.WriteNameValue(name, value);
+
+        public void WriteNameValue(JsonEncodedText name, bool value) => _writer.WriteNameValue(name, value);
 
         public void WriteNameValue(string name, string? value) => _writer.WriteNameValue(name, value);
 
+        public void WriteNameValue(JsonEncodedText name, string? value) => _writer.WriteNameValue(name, value);
+
         public void WriteNameArray(string name, IEnumerable<string> values) => _writer.WriteNameArray(name, values);
+
+        public void WriteNameArray(JsonEncodedText name, IEnumerable<string> values) =>
+            _writer.WriteNameArray(name, values);
 
         public void WriteNonEmptyNameArray(string name, IEnumerable<string> values) => _writer.WriteNonEmptyNameArray(name, values);
 
+        public void WriteNonEmptyNameArray(JsonEncodedText name, IEnumerable<string> values) =>
+            _writer.WriteNonEmptyNameArray(name, values);
+
         public void WriteArrayStart(string name) => _writer.WriteArrayStart(name);
+
+        public void WriteArrayStart(JsonEncodedText name) => _writer.WriteArrayStart(name);
 
         public void WriteArrayEnd() => _writer.WriteArrayEnd();
     }
@@ -136,6 +152,66 @@ namespace NuGet.ProjectModel
             _writer.WriteObjectEnd();
 
             --_nestLevel;
+        }
+
+        internal void WriteObjectStart(JsonEncodedText name)
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteObjectStart(name);
+
+            ++_nestLevel;
+        }
+
+        internal void WriteNameValue(JsonEncodedText name, int value)
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteNameValue(name, value);
+        }
+
+        internal void WriteNameValue(JsonEncodedText name, bool value)
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteNameValue(name, value);
+        }
+
+        internal void WriteNameValue(JsonEncodedText name, string? value)
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteNameValue(name, value);
+        }
+
+        internal void WriteNameArray(JsonEncodedText name, IEnumerable<string> values)
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteNameArray(name, values);
+        }
+
+        internal void WriteNonEmptyNameArray(JsonEncodedText name, IEnumerable<string> values)
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteNonEmptyNameArray(name, values);
+        }
+
+        internal void WriteArrayStart(JsonEncodedText name)
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteArrayStart(name);
+
+            ++_nestLevel;
         }
 
         public void WriteNameValue(string name, int value)

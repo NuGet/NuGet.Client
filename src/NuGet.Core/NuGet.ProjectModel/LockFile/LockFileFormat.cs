@@ -788,7 +788,8 @@ namespace NuGet.ProjectModel
             if (lockFile.CentralTransitiveDependencyGroups.Any())
             {
                 writer.WritePropertyName(CentralTransitiveDependencyGroupsProperty);
-                WriteCentralTransitiveDependencyGroup(jsonObjectWriter, lockFile.CentralTransitiveDependencyGroups);
+                WriteCentralTransitiveDependencyGroup(
+                    new JsonObjectWriterAdapter(jsonObjectWriter), lockFile.CentralTransitiveDependencyGroups);
             }
 
             writer.WriteEndObject();
@@ -1130,7 +1131,9 @@ namespace NuGet.ProjectModel
             return path.Replace('\\', '/');
         }
 
-        private static void WriteCentralTransitiveDependencyGroup(IObjectWriter writer, IList<CentralTransitiveDependencyGroup> centralTransitiveDependencyGroups)
+        private static void WriteCentralTransitiveDependencyGroup<TWriter>(
+            TWriter writer, IList<CentralTransitiveDependencyGroup> centralTransitiveDependencyGroups)
+            where TWriter : IJsonObjectWriter
         {
             writer.WriteObjectStart();
 
