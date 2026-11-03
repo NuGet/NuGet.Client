@@ -1320,9 +1320,8 @@ namespace NuGet.Build.Tasks.Console
 
                 int buildCount = 0;
                 int failedBuildSubmissionCount = 0;
-                int pendingBuildCallbacks = 1;
-                using var buildCallbacksCompleted = new ManualResetEventSlim();
-                var callbackExceptions = new ConcurrentQueue<Exception>();
+                var buildSubmissions =
+                    new List<(BuildSubmission submission, ProjectInstance projectInstance, string targetFramework)>(projectGraph.ProjectNodes.Count);
 
                 var buildParameters = new BuildParameters(projectCollection)
                 {
@@ -1361,63 +1360,34 @@ namespace NuGet.Build.Tasks.Console
                                 // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
                                 BuildRequestDataFlags.SkipNonexistentTargets));
 
-                        Interlocked.Increment(ref pendingBuildCallbacks);
-                        try
-                        {
-                            buildSubmission.ExecuteAsync((submission) =>
-                            {
-                                try
-                                {
-                                    if (submission.BuildResult.OverallResult == BuildResultCode.Failure)
-                                    {
-                                        Interlocked.Increment(ref failedBuildSubmissionCount);
-                                    }
+                        buildSubmissions.Add((buildSubmission, projectInstance, targetFramework));
 
-                                    Interlocked.Increment(ref buildCount);
-
-                                    projects.AddOrUpdate(
-                                        projectInstance.FullPath,
-                                        createProjectFactory,
-                                        updateProjectFactory,
-                                        (projectInstance, targetFramework));
-                                }
-#pragma warning disable CA1031 // Callback exceptions are rethrown on the calling thread after all callbacks complete.
-                                catch (Exception e)
-#pragma warning restore CA1031
-                                {
-                                    callbackExceptions.Enqueue(e);
-                                }
-                                finally
-                                {
-                                    SignalBuildCallbackCompleted();
-                                }
-                            }, context: null);
-                        }
-                        catch
-                        {
-                            SignalBuildCallbackCompleted();
-                            throw;
-                        }
+                        // Queue the build submission but do not wait for each individual build to complete.
+                        // Only 1 build is allowed to run at a time since the BuildManager is configured to only have 1 node, but allows them to be queued up quickly.
+                        buildSubmission.ExecuteAsync(callback: null, context: null);
                     }
                 }
                 finally
                 {
-                    try
-                    {
-                        // EndBuild blocks until all builds are complete but does not wait for callbacks to complete.  The callbacks are used to update the projects dictionary and count the number of builds that failed.
-                        BuildManager.DefaultBuildManager.EndBuild();
-                    }
-                    finally
-                    {
-                        // Wait for all callbacks to complete
-                        SignalBuildCallbackCompleted();
-                        buildCallbacksCompleted.Wait();
-                    }
+                    // EndBuild waits for all build submissions, but not callbacks, so populate projects afterwards without callbacks.
+                    // https://github.com/dotnet/msbuild/issues/15408
+                    BuildManager.DefaultBuildManager.EndBuild();
                 }
 
-                if (!callbackExceptions.IsEmpty)
+                foreach ((BuildSubmission submission, ProjectInstance projectInstance, string targetFramework) in buildSubmissions)
                 {
-                    throw new AggregateException(callbackExceptions);
+                    if (submission.BuildResult.OverallResult == BuildResultCode.Failure)
+                    {
+                        failedBuildSubmissionCount++;
+                    }
+
+                    buildCount++;
+
+                    projects.AddOrUpdate(
+                        projectInstance.FullPath,
+                        createProjectFactory,
+                        updateProjectFactory,
+                        (projectInstance, targetFramework));
                 }
 
                 sw.Stop();
@@ -1440,14 +1410,6 @@ namespace NuGet.Build.Tasks.Console
 
                 // Just return the projects not the whole dictionary as it was just used to group the projects together
                 return projects;
-
-                void SignalBuildCallbackCompleted()
-                {
-                    if (Interlocked.Decrement(ref pendingBuildCallbacks) == 0)
-                    {
-                        buildCallbacksCompleted.Set();
-                    }
-                }
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
