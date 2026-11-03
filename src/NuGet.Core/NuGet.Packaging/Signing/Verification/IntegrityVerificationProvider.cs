@@ -49,6 +49,8 @@ namespace NuGet.Packaging.Signing
 
             return new SignedPackageVerificationResult(status, signature, issues)
             {
+                RejectionReasons = status != SignatureVerificationStatus.Valid
+                    ? SignatureVerificationRejectionReasons.Other : SignatureVerificationRejectionReasons.None,
                 HasNonX509Rejection = status != SignatureVerificationStatus.Valid
             };
         }

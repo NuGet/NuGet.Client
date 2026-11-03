@@ -728,9 +728,14 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task VerifySignaturesAsync_ChainTelemetry_DistinguishesAdditionalProviderBlocker(bool integrityFailure)
+        [InlineData(false, X509ChainStatusFlags.NoError)]
+        [InlineData(true, X509ChainStatusFlags.NoError)]
+        [InlineData(false, X509ChainStatusFlags.Revoked)]
+        [InlineData(true, X509ChainStatusFlags.Revoked)]
+        [InlineData(false, X509ChainStatusFlags.RevocationStatusUnknown)]
+        [InlineData(true, X509ChainStatusFlags.RevocationStatusUnknown)]
+        public async Task VerifySignaturesAsync_ChainTelemetry_DistinguishesAdditionalProviderBlocker(
+            bool integrityFailure, X509ChainStatusFlags signerFlags)
         {
             ISignatureVerificationProvider additionalProvider = integrityFailure
                 ? new IntegrityVerificationProvider()
@@ -743,14 +748,71 @@ namespace NuGet.Packaging.Test
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
                 revocationMode: RevocationMode.Online);
             (VerifySignaturesResult result, TelemetryEvent telemetryEvent) = await VerifyWithChainsAsync(
-                X509ChainStatusFlags.Revoked, X509ChainStatusFlags.NoError, settings,
+                signerFlags, X509ChainStatusFlags.NoError, settings,
                 additionalProvider: additionalProvider, integrityFails: integrityFailure);
 
             Assert.False(result.IsValid);
             Assert.Equal(true, telemetryEvent["VerificationHasNonX509Rejection"]);
-            Assert.Equal((int)X509ChainStatusFlags.Revoked, telemetryEvent["VerificationChainRejectionFlags"]);
+            Assert.Equal((int)signerFlags, telemetryEvent["VerificationChainRejectionFlags"]);
+            SignatureVerificationRejectionReasons expectedReasons = SignatureVerificationRejectionReasons.Other;
+            if (signerFlags == X509ChainStatusFlags.RevocationStatusUnknown)
+            {
+                expectedReasons |= SignatureVerificationRejectionReasons.RevocationUnavailable;
+            }
+            Assert.Equal((int)expectedReasons, telemetryEvent["VerificationRejectionReasons"]);
+            Assert.Equal(SignatureVerificationRejectionReasons.Other, result.Results.Last().RejectionReasons);
             Assert.Contains(result.Results.SelectMany(value => value.Issues),
                 issue => issue.Code == (integrityFailure ? NuGetLogCode.NU3008 : NuGetLogCode.NU3034));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task VerifySignaturesAsync_ChainTelemetry_DoesNotAttributeValidProviderResults(bool integrityProvider)
+        {
+            ISignatureVerificationProvider additionalProvider = integrityProvider
+                ? new IntegrityVerificationProvider()
+                : new AllowListVerificationProvider(Array.Empty<VerificationAllowListEntry>());
+            SignedPackageVerifierSettings settings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
+            (VerifySignaturesResult result, TelemetryEvent telemetryEvent) = await VerifyWithChainsAsync(
+                X509ChainStatusFlags.NoError, X509ChainStatusFlags.NoError, settings,
+                additionalProvider: additionalProvider);
+
+            Assert.True(result.IsValid);
+            Assert.Equal(SignatureVerificationRejectionReasons.None, result.Results.Last().RejectionReasons);
+            Assert.Equal(0, telemetryEvent["VerificationRejectionReasons"]);
+            Assert.Equal(false, telemetryEvent["VerificationHasNonX509Rejection"]);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task VerifySignaturesAsync_ChainTelemetry_AttributesOnlyEnforcedAllowListMismatch(bool allowUntrusted)
+        {
+            AllowListVerificationProvider additionalProvider = new(new VerificationAllowListEntry[]
+            {
+                new CertificateHashAllowListEntry(
+                    VerificationTarget.All, SignaturePlacement.PrimarySignature, "not-a-matching-fingerprint", HashAlgorithmName.SHA256)
+            });
+            SignedPackageVerifierSettings settings = new(
+                allowUnsigned: true, allowIllegal: false, allowUntrusted, allowIgnoreTimestamp: false,
+                allowMultipleTimestamps: true, allowNoTimestamp: true, allowUnknownRevocation: false,
+                reportUnknownRevocation: true, verificationTarget: VerificationTarget.All,
+                signaturePlacement: SignaturePlacement.PrimarySignature,
+                repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.Never,
+                revocationMode: RevocationMode.Online);
+            (VerifySignaturesResult result, TelemetryEvent telemetryEvent) = await VerifyWithChainsAsync(
+                X509ChainStatusFlags.NoError, X509ChainStatusFlags.NoError, settings,
+                additionalProvider: additionalProvider);
+
+            SignatureVerificationRejectionReasons expectedReasons = allowUntrusted
+                ? SignatureVerificationRejectionReasons.None : SignatureVerificationRejectionReasons.Other;
+            Assert.Equal(allowUntrusted, result.IsValid);
+            Assert.Equal(expectedReasons, result.Results.Last().RejectionReasons);
+            Assert.Equal((int)expectedReasons, telemetryEvent["VerificationRejectionReasons"]);
+            Assert.Equal(!allowUntrusted, telemetryEvent["VerificationHasNonX509Rejection"]);
+            Assert.Contains(result.Results.Last().Issues, issue => issue.Code == NuGetLogCode.NU3034 &&
+                issue.Level == (allowUntrusted ? LogLevel.Warning : LogLevel.Error));
         }
 
         private async Task<(VerifySignaturesResult Result, TelemetryEvent Telemetry)> VerifyWithChainsAsync(
