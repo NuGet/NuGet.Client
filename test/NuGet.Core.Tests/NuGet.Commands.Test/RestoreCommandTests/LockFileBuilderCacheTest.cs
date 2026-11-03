@@ -148,15 +148,15 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         }
 
         [Fact]
-        public async Task RestoreCommand_DifferentPruningOutcomesForManyDependencies_PreservesPackageDependencies()
+        public async Task LockFileBuilderCache_DifferentPruningOutcomesForManyDependencies_PreservesPackageDependencies()
         {
             // Arrange
             using var tmpPath = new SimpleTestPathContext();
-            const int originalDependencyCount = 65;
+            const int OriginalDependencyCount = 65;
             var framework = NuGetFramework.Parse("net10.0");
             var packageA = new SimpleTestPackageContext("PackageA", "1.0.0")
             {
-                Dependencies = Enumerable.Range(0, originalDependencyCount)
+                Dependencies = Enumerable.Range(0, OriginalDependencyCount)
                     .Select(position => new SimpleTestPackageContext($"Dependency{position:D2}", "1.0.0"))
                     .ToList()
             };
@@ -164,10 +164,6 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var lockFileBuilderCache = new LockFileBuilderCache();
             var project1Directory = Path.Combine(tmpPath.SolutionRoot, "Library1");
             var project2Directory = Path.Combine(tmpPath.SolutionRoot, "Library2");
-            var globalPackages = Path.Combine(tmpPath.WorkingDirectory, "globalPackages");
-            var packageSource = Path.Combine(tmpPath.WorkingDirectory, "packageSource");
-            Directory.CreateDirectory(globalPackages);
-            Directory.CreateDirectory(packageSource);
             Directory.CreateDirectory(project1Directory);
             Directory.CreateDirectory(project2Directory);
 
@@ -182,7 +178,11 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                             FrameworkName = framework,
                             TargetAlias = "net10.0",
                             Dependencies = [
-                                new LibraryDependency(new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All))
+                                new LibraryDependency
+                                {
+                                    LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
+                                        LibraryDependencyTarget.All)
+                                },
                             ],
                             PackagesToPrune = new Dictionary<string, PrunePackageReference>
                             {
@@ -195,30 +195,32 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var project1Spec = CreateProjectSpec("Library1", project1Directory, removedPosition: 0);
             var project2Spec = CreateProjectSpec("Library2", project2Directory, removedPosition: 64);
-            var sources = new[] { new PackageSource(packageSource) }
+            var sources = new[] { new PackageSource(tmpPath.PackageSource) }
                 .Select(source => Repository.Factory.GetCoreV3(source))
                 .ToList();
             var request1 = new TestRestoreRequest(
                 project1Spec,
                 sources,
-                globalPackages,
+                tmpPath.UserPackagesFolder,
                 new List<string>(),
                 new TestSourceCacheContext(),
                 ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                 logger,
-                lockFileBuilderCache)
+                lockFileBuilderCache
+            )
             { LockFilePath = Path.Combine(project1Directory, "project.lock.json") };
             var request2 = new TestRestoreRequest(
                 project2Spec,
                 sources,
-                globalPackages,
+                tmpPath.UserPackagesFolder,
                 new List<string>(),
                 new TestSourceCacheContext(),
                 ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
                 logger,
-                lockFileBuilderCache)
+                lockFileBuilderCache
+            )
             { LockFilePath = Path.Combine(project2Directory, "project.lock.json") };
-            await SimpleTestPackageUtility.CreatePackagesAsync(packageSource, packageA);
+            await SimpleTestPackageUtility.CreatePackagesAsync(tmpPath.PackageSource, packageA);
 
             // Act
             var result1 = await new RestoreCommand(request1).ExecuteAsync();
@@ -227,14 +229,24 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             // Assert
             Assert.True(result1.Success, logger.ShowMessages());
             Assert.True(result2.Success, logger.ShowMessages());
-            var project1Dependencies = result1.LockFile.Targets.Single().Libraries.Single(library => library.Name == "PackageA")
-                .Dependencies.Select(dependency => dependency.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
-            var project2Dependencies = result2.LockFile.Targets.Single().Libraries.Single(library => library.Name == "PackageA")
-                .Dependencies.Select(dependency => dependency.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
-            var expectedProject1Dependencies = Enumerable.Range(1, originalDependencyCount - 1)
-                .Select(position => $"Dependency{position:D2}").OrderBy(id => id, StringComparer.Ordinal).ToArray();
-            var expectedProject2Dependencies = Enumerable.Range(0, originalDependencyCount - 1)
-                .Select(position => $"Dependency{position:D2}").OrderBy(id => id, StringComparer.Ordinal).ToArray();
+            var project1Dependencies = result1.LockFile.Targets.Single().Libraries
+                .Single(library => library.Name == "PackageA").Dependencies
+                .Select(dependency => dependency.Id)
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+            var project2Dependencies = result2.LockFile.Targets.Single().Libraries
+                .Single(library => library.Name == "PackageA").Dependencies
+                .Select(dependency => dependency.Id)
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+            var expectedProject1Dependencies = Enumerable.Range(1, OriginalDependencyCount - 1)
+                .Select(position => $"Dependency{position:D2}")
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+            var expectedProject2Dependencies = Enumerable.Range(0, OriginalDependencyCount - 1)
+                .Select(position => $"Dependency{position:D2}")
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
 
             Assert.Equal(project1Dependencies.Length, project2Dependencies.Length);
             Assert.Equal(expectedProject1Dependencies, project1Dependencies);
