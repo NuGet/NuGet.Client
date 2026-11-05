@@ -117,6 +117,7 @@ stages:
         condition: "succeeded()"
         targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
         artifactName: 'BuildInfo'
+        sbomBuildDropPath: $(Build.StagingDirectory)/sbom
 
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
