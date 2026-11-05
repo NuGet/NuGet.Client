@@ -157,7 +157,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [CIOnlyFact]
-        public async Task Restore_PackageWithCompressedSignature_WarnsAsync()
+        public async Task Restore_PackageWithCompressedSignature_FailsAndDoesNotExpandAsync()
         {
             // Arrange
             var packageX = new SimpleTestPackageContext();
@@ -204,22 +204,23 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 };
 
                 // Act
-                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 0, additionalArgs: args);
+                var result = RunRestore(_nugetExePath, pathContext, expectedExitCode: 1, additionalArgs: args);
                 var assetFileReader = new LockFileFormat();
                 var assetsFile = assetFileReader.Read(projectA.AssetsFileOutputPath);
                 var errors = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Error);
                 var warnings = assetsFile.LogMessages.Where(m => m.Level == LogLevel.Warning);
 
                 // Assert
-                result.ExitCode.Should().Be(0);
-                result.AllOutput.Should().Contain($"WARNING: {string.Format(NU3005, SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource))}");
+                result.ExitCode.Should().Be(1);
+                result.Errors.Should().Contain(string.Format(NU3005, SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
 
-                errors.Count().Should().Be(0);
+                errors.Count().Should().Be(1);
+                errors.First().Code.Should().Be(NuGetLogCode.NU3005);
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                errors.First().LibraryId.Should().Be(packageX.Id);
 
-                warnings.Count().Should().Be(1);
-                warnings.First().Code.Should().Be(NuGetLogCode.NU3005);
-                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
-                warnings.First().LibraryId.Should().Be(packageX.Id);
+                warnings.Count().Should().Be(0);
+                Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id)).Should().BeFalse();
             }
         }
 
@@ -287,11 +288,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(string.Format(NU3005, "Warning As Error: " + SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
+                result.Errors.Should().Contain(string.Format(NU3005, SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
 
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3005);
-                errors.First().Message.Should().Be("Warning As Error: " + SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
                 errors.First().LibraryId.Should().Be(packageX.Id);
 
                 warnings.Count().Should().Be(0);

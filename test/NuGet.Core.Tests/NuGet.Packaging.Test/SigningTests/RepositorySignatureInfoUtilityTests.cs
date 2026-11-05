@@ -50,7 +50,7 @@ namespace NuGet.Packaging.Test
 
             // Assert
             settings.AllowUnsigned.Should().BeFalse();
-            settings.AllowIllegal.Should().BeTrue();
+            settings.AllowIllegal.Should().BeFalse();
             settings.AllowUntrusted.Should().BeFalse();
             settings.AllowIgnoreTimestamp.Should().BeTrue();
             settings.AllowNoTimestamp.Should().BeTrue();
