@@ -3,6 +3,10 @@ parameters:
   displayName: Build bits for publishing
   type: boolean
   default: true
+- name: RunUnitTestsOnWindows
+  displayName: Run unit tests on Windows
+  type: boolean
+  default: false
 # Disable on this branch.
 # - name: RunCrossFrameworkTestsOnWindows
 #   displayName: Run cross framweork tests on Windows
@@ -50,6 +54,7 @@ variables:
   Codeql.Enabled: false
   Codeql.TSAEnabled: false
   RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
+  RunUnitTestsOnWindows: ${{ parameters.RunUnitTestsOnWindows }}
   # Disable on this branch. RunCrossFrameworkTestsOnWindows: ${{ parameters.RunCrossFrameworkTestsOnWindows }}
   # RunFunctionalTestsOnWindows: ${{ parameters.RunFunctionalTestsOnWindows }}
   # RunSourceBuild: ${{ parameters.RunSourceBuild }}
