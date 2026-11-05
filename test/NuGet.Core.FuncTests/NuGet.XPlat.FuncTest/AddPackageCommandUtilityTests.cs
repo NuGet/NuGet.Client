@@ -297,6 +297,59 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(new NuGetVersion(expectedVersion), result);
         }
 
+        [Theory]
+        [InlineData("PackageX", "OtherPackage", "1.0.0")]
+        [InlineData("PackageX", "PackageX", "2.0.0")]
+        [InlineData("OtherPackage", "OtherPackage", null)]
+        public async Task GetLatestVersionAsync_WithPackageSourceMapping_ReturnsExpectedVersion(
+            string sourceAPattern,
+            string sourceBPattern,
+            string? expectedVersion)
+        {
+            using var testDirectory = TestDirectory.Create();
+            const string packageId = "PackageX";
+            string sourceAPath = await GetSourceWithPackages(
+                new[] { $"1.0.0;{packageId}" }, testDirectory, "SourceA");
+            string sourceBPath = await GetSourceWithPackages(
+                new[] { $"2.0.0;{packageId}" }, testDirectory, "SourceB");
+            const string configFileName = "NuGet.Config";
+            string configPath = Path.Combine(testDirectory.Path, configFileName);
+            SettingsTestUtils.CreateConfigurationFile(
+                configFileName,
+                testDirectory,
+                $"""
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="SourceA" value="{sourceAPath}" />
+                    <add key="SourceB" value="{sourceBPath}" />
+                  </packageSources>
+                  <packageSourceMapping>
+                    <packageSource key="sourcea">
+                      <package pattern="{sourceAPattern}" />
+                    </packageSource>
+                    <packageSource key="SourceB">
+                      <package pattern="{sourceBPattern}" />
+                    </packageSource>
+                  </packageSourceMapping>
+                </configuration>
+                """);
+            var packageSpec = new PackageSpec
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    Sources = new[] { new PackageSource(sourceAPath), new PackageSource(sourceBPath) },
+                    ConfigFilePaths = new[] { configPath }
+                }
+            };
+            var logger = new TestLogger();
+
+            NuGetVersion result = await AddPackageReferenceCommandRunner.GetLatestVersionAsync(
+                packageSpec, packageId, logger, prerelease: false);
+
+            Assert.Equal(expectedVersion == null ? null : new NuGetVersion(expectedVersion), result);
+        }
+
         private static void SetPackagePublishedDate(string sourcePath, PackageIdentity package, DateTimeOffset published)
         {
             var pathResolver = new VersionFolderPathResolver(sourcePath);

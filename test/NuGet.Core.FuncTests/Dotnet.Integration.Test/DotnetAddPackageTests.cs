@@ -317,8 +317,11 @@ namespace Dotnet.Integration.Test
             Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})'", result.AllOutput);
         }
 
-        [Fact]
-        public async Task AddPkg_WhenPackageSourceMappingConfiguredInstallsPackagesFromExpectedSources_Success()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task AddPkg_WhenPackageSourceMappingConfiguredInstallsPackagesFromExpectedSources_Success(
+            bool specifyVersion)
         {
             using SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext();
 
@@ -332,6 +335,7 @@ namespace Dotnet.Integration.Test
 
             var packageFrameworks = "net472; net7.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
+            var packageX200 = XPlatTestUtils.CreatePackage(packageX, "2.0.0", frameworkString: packageFrameworks);
             var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
 
             packageX100.Dependencies.Add(packageZ100);
@@ -346,6 +350,7 @@ namespace Dotnet.Integration.Test
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX100,
+                    packageX200,
                     packageZ100);
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -373,11 +378,15 @@ namespace Dotnet.Integration.Test
             File.WriteAllText(Path.Combine(projectADirectory, "NuGet.Config"), configFile);
 
             //Act
-            var result = _fixture.RunDotnetExpectSuccess(projectADirectory, $"add {projectA.ProjectPath} package {packageX} -v {version}", testOutputHelper: _testOutputHelper);
+            string command = specifyVersion
+                ? $"add {projectA.ProjectPath} package {packageX} -v {version}"
+                : $"package add {packageX} --project {projectA.ProjectPath}";
+            var result = _fixture.RunDotnetExpectSuccess(projectADirectory, command, testOutputHelper: _testOutputHelper);
 
             // Assert
             Assert.Contains($"Installed {packageX} {version} from {packageSource2.FullName}", result.AllOutput);
             Assert.Contains($"Installed {packageZ} {version} from {pathContext.PackageSource}", result.AllOutput);
+            Assert.Equal(NuGetVersion.Parse(version), projectA.AssetsFile.Libraries.Single(library => library.Name == packageX).Version);
         }
 
         [Fact]

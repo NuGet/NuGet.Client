@@ -332,6 +332,15 @@ namespace NuGet.CommandLine.XPlat
             IList<PackageSource> sources = AddPackageCommandUtility.EvaluateSources(
                 originalPackageSpec.RestoreMetadata.Sources,
                 settings);
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            if (packageSourceMapping.IsEnabled)
+            {
+                IReadOnlyList<string> mappedSourceNames = packageSourceMapping.GetConfiguredPackageSources(packageId);
+                sources = sources
+                    .Where(source => mappedSourceNames.Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
             var minPublishAgeExceptions = MinPublishAgeExceptions.GetMinPublishAgeExceptions(settings);
             bool ignoreMinPublishAge = minPublishAgeExceptions.FindException(packageId) != null;
 
