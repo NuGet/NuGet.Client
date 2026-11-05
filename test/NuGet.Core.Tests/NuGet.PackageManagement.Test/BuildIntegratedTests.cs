@@ -773,6 +773,155 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task UpdatePackage_WithExplicitVersionOutsideAllowedRange_DoesNotCreateAction()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager(pathContext);
+
+            var projectName = "TestProjectName";
+            var packageId = "NuGet.Versioning";
+            var originalPackage = new PackageIdentity(packageId, NuGetVersion.Parse("1.0.0"));
+            var outOfRangePackage = new PackageIdentity(packageId, NuGetVersion.Parse("2.0.0"));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, originalPackage, outOfRangePackage);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, new TestDeleteOnRestartManager());
+
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName, pathContext.SolutionRoot, framework: "net472");
+            PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency(packageId, VersionRange.Parse("[1.0.0,2.0.0)")));
+
+            var projectTargetFramework = NuGetFramework.Parse("net472");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, projectFullPath: Path.GetDirectoryName(packageSpec.FilePath), projectName);
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+
+            // Act
+            var actions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<PackageIdentity> { outOfRangePackage }, new List<NuGetProject> { buildIntegratedProject }, new ResolutionContext(), new TestNuGetProjectContext(), primarySources: sourceRepositories, secondarySources: sourceRepositories, CancellationToken.None)).ToList();
+
+            // Assert
+            actions.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task UpdatePackage_WithExplicitVersionInsideAllowedRange_PreservesUpperBound()
+        {
+            // Arrange
+            // Positive guardrail to the existing OutsideAllowedRange test: when the requested
+            // PackageIdentity falls inside the authored range, an action is emitted whose
+            // VersionRange keeps the original upper bound and slides the lower bound up.
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager(pathContext);
+
+            var projectName = "TestProjectName";
+            var packageId = "NuGet.Versioning";
+            var originalPackage = new PackageIdentity(packageId, NuGetVersion.Parse("1.0.0"));
+            var inRangePackage = new PackageIdentity(packageId, NuGetVersion.Parse("1.5.0"));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, originalPackage, inRangePackage);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, new TestDeleteOnRestartManager());
+
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName, pathContext.SolutionRoot, framework: "net472");
+            PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency(packageId, VersionRange.Parse("[1.0.0,2.0.0)")));
+
+            var projectTargetFramework = NuGetFramework.Parse("net472");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, projectFullPath: Path.GetDirectoryName(packageSpec.FilePath), projectName);
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+
+            // Act
+            var actions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<PackageIdentity> { inRangePackage }, new List<NuGetProject> { buildIntegratedProject }, new ResolutionContext(), new TestNuGetProjectContext(), primarySources: sourceRepositories, secondarySources: sourceRepositories, CancellationToken.None)).ToList();
+
+            // Assert
+            actions.Should().ContainSingle().Which.Should().BeOfType<BuildIntegratedProjectAction>();
+            var buildIntegratedAction = (BuildIntegratedProjectAction)actions[0];
+            var lowLevelActions = buildIntegratedAction.ActionAndContextList.Select(t => t.Item1).ToList();
+            lowLevelActions.Should().ContainSingle();
+            lowLevelActions[0].PackageIdentity.Should().Be(inRangePackage);
+            lowLevelActions[0].VersionRange.Should().NotBeNull();
+            lowLevelActions[0].VersionRange.ToString().Should().Be("[1.5.0, 2.0.0)");
+        }
+
+        [Fact]
+        public async Task UpdatePackage_WithExplicitVersionAcrossMajorBoundary_DoesNotCreateAction()
+        {
+            // Arrange
+            // Cross-major boundary: installed [8.0.0, 9.0.0), explicit request 9.0.0.
+            // The PM UI / PMC path must not silently widen the authored upper bound to admit a new major.
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager(pathContext);
+
+            var projectName = "TestProjectName";
+            var packageId = "NuGet.Versioning";
+            var originalPackage = new PackageIdentity(packageId, NuGetVersion.Parse("8.0.0"));
+            var nextMajorPackage = new PackageIdentity(packageId, NuGetVersion.Parse("9.0.0"));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, originalPackage, nextMajorPackage);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, new TestDeleteOnRestartManager());
+
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName, pathContext.SolutionRoot, framework: "net472");
+            PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency(packageId, VersionRange.Parse("[8.0.0,9.0.0)")));
+
+            var projectTargetFramework = NuGetFramework.Parse("net472");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, projectFullPath: Path.GetDirectoryName(packageSpec.FilePath), projectName);
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+
+            // Act
+            var actions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<PackageIdentity> { nextMajorPackage }, new List<NuGetProject> { buildIntegratedProject }, new ResolutionContext(), new TestNuGetProjectContext(), primarySources: sourceRepositories, secondarySources: sourceRepositories, CancellationToken.None)).ToList();
+
+            // Assert
+            actions.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task UpdatePackage_WithFloatingAllowedRange_PreservesFloatingIntent()
+        {
+            // Arrange
+            // Floating-range branch of TryGetVersionRangeForUpdate: the authored floating
+            // range must be preserved verbatim on the resulting action.
+            using var pathContext = new SimpleTestPathContext();
+            using var testSolutionManager = new TestSolutionManager(pathContext);
+
+            var projectName = "TestProjectName";
+            var packageId = "NuGet.Versioning";
+            var originalPackage = new PackageIdentity(packageId, NuGetVersion.Parse("8.0.0"));
+            var inRangePackage = new PackageIdentity(packageId, NuGetVersion.Parse("8.5.0"));
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, originalPackage, inRangePackage);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(pathContext.PackageSource));
+            var testSettings = TestSourceRepositoryUtility.PopulateSettingsWithSources(sourceRepositoryProvider, pathContext.WorkingDirectory);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, testSettings, testSolutionManager, new TestDeleteOnRestartManager());
+
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(testSettings, projectName, pathContext.SolutionRoot, framework: "net472");
+            var floatingRange = VersionRange.Parse("[8.*,9.0.0)");
+            PackageSpecOperations.AddOrUpdateDependency(packageSpec, new PackageDependency(packageId, floatingRange));
+
+            var projectTargetFramework = NuGetFramework.Parse("net472");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, projectFullPath: Path.GetDirectoryName(packageSpec.FilePath), projectName);
+            var buildIntegratedProject = new TestPackageReferenceNuGetProject(packageSpec, msBuildNuGetProjectSystem);
+            var sourceRepositories = sourceRepositoryProvider.GetRepositories();
+
+            // Act
+            var actions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(new List<PackageIdentity> { inRangePackage }, new List<NuGetProject> { buildIntegratedProject }, new ResolutionContext(), new TestNuGetProjectContext(), primarySources: sourceRepositories, secondarySources: sourceRepositories, CancellationToken.None)).ToList();
+
+            // Assert
+            actions.Should().ContainSingle().Which.Should().BeOfType<BuildIntegratedProjectAction>();
+            var buildIntegratedAction = (BuildIntegratedProjectAction)actions[0];
+            var lowLevelActions = buildIntegratedAction.ActionAndContextList.Select(t => t.Item1).ToList();
+            lowLevelActions.Should().ContainSingle();
+            lowLevelActions[0].PackageIdentity.Should().Be(inRangePackage);
+            lowLevelActions[0].VersionRange.Should().NotBeNull();
+            lowLevelActions[0].VersionRange.ToString().Should().Be(floatingRange.ToString());
+            lowLevelActions[0].VersionRange.IsFloating.Should().BeTrue();
+        }
+
+        [Fact]
         public async Task UpdateMultipleAndRollback()
         {
             // Arrange
