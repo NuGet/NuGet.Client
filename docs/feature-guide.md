@@ -183,9 +183,9 @@ See [UI Guidelines](ui-guidelines.md) for detailed information. In summary:
 
 ##### Feature flags shared with core libraries
 
-Use `INuGetFeatureFlagService` for native Visual Studio feature flags. For flags needed by core libraries that cannot depend on Visual Studio services, resolve the flag during `NuGetPackage.InitializeAsync` and publish its value through an `AppContext` switch. A helper compiled into each consuming assembly can read that process-wide switch without depending on Visual Studio.
-
-The infrastructure for `NuGet.ControlPowerShellScriptExecution` follows this pattern and defaults to off. `NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION=1` forces it on, and `0` forces it off; other values use the resolved Visual Studio flag. Outside Visual Studio, the shared helper falls back to the `AppContext` switch, or off when no switch is set. This infrastructure alone does not change script execution behavior.
+Use `INuGetFeatureFlagService` for native Visual Studio feature flags.
+For flags needed by core libraries that cannot depend on Visual Studio services, resolve the flag during `NuGetPackage.InitializeAsync` and publish its value through an `AppContext` switch.
+A helper compiled into each consuming assembly can read that process-wide switch without depending on Visual Studio.
 
 #### CLI (NuGet.exe & dotnet.exe) considerations
 
