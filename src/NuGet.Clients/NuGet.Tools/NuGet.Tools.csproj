@@ -46,6 +46,7 @@
     </Compile>
     <Compile Include="$(SharedDirectory)\AotCompatibilityAttributes.cs" />
     <Compile Include="$(SharedDirectory)\NuGetFeatureFlags.cs" />
+    <Compile Include="$(SharedDirectory)\PowerShellScriptExecutionFeature.cs" />
   </ItemGroup>
 
   <ItemGroup>
