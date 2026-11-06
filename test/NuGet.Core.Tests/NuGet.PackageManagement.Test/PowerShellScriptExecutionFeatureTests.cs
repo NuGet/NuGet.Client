@@ -14,9 +14,13 @@ namespace NuGet.PackageManagement.Test
         [InlineData(null, false, false)]
         [InlineData(null, true, true)]
         [InlineData("1", false, true)]
+        [InlineData("1", true, true)]
+        [InlineData("0", false, false)]
         [InlineData("0", true, false)]
         [InlineData("invalid", false, false)]
         [InlineData("invalid", true, true)]
+        [InlineData("true", false, false)]
+        [InlineData("false", true, true)]
         public void IsEnabled_EnvironmentOverridesAppContext(string? value, bool switchEnabled, bool expected)
         {
             using var environment = new PowerShellScriptExecutionFeatureScope(value);
