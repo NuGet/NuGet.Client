@@ -157,9 +157,9 @@ namespace NuGet.ProjectModel.Test
             var lockFileFalse = Parse(lockFileContentFalse, "In Memory");
             var lockFileMissing = Parse(lockFileContentMissing, "In Memory");
 
-            var lockFileTrueString = lockFileFormat.Render(lockFileTrue);
-            var lockFileFalseString = lockFileFormat.Render(lockFileFalse);
-            var lockFileMissingString = lockFileFormat.Render(lockFileMissing);
+            var lockFileTrueString = WriteToString(lockFileFormat, lockFileTrue);
+            var lockFileFalseString = WriteToString(lockFileFormat, lockFileFalse);
+            var lockFileMissingString = WriteToString(lockFileFormat, lockFileMissing);
 
             // Assert
             Assert.Equal(lockFileTrue, lockFileFalse);
@@ -358,11 +358,92 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile));
             var expected = JObject.Parse(lockFileContent);
 
             // Assert
             Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
+        public void LockFileFormat_WritePublicApis_WriteEquivalentSchemaAndDisposeStream()
+        {
+            LockFile lockFile = CreateLockFileForWriter("caf\u00e9<&");
+            var format = new LockFileFormat();
+            string filePath = Path.GetTempFileName();
+
+            try
+            {
+#pragma warning disable CS0618 // Intentionally verify the retained compatibility API.
+                string renderedOutput = format.Render(lockFile);
+#pragma warning restore CS0618
+
+                var stream = new MemoryStream();
+                format.Write(stream, lockFile);
+                string streamOutput = Encoding.UTF8.GetString(stream.ToArray());
+
+                format.Write(filePath, lockFile);
+                string fileOutput = File.ReadAllText(filePath);
+
+                JObject rendered = JObject.Parse(renderedOutput);
+                JObject streamed = JObject.Parse(streamOutput);
+                JObject written = JObject.Parse(fileOutput);
+
+                Assert.True(JToken.DeepEquals(rendered, streamed));
+                Assert.True(JToken.DeepEquals(rendered, written));
+                Assert.Equal(LockFileFormat.Version, rendered.Value<int>("version"));
+                Assert.Equal(
+                    "caf\u00e9<&",
+                    rendered["libraries"]["Package-caf\u00e9<&/1.2.3"].Value<string>("sha512"));
+                Assert.NotNull(rendered["project"]);
+                Assert.False(stream.CanWrite);
+            }
+            finally
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        [Fact]
+        public void LockFileFormat_WriteTextWriter_WritesValidLockFile()
+        {
+            LockFile lockFile = CreateLockFileForWriter("caf\u00e9<&");
+            var writer = new StringWriter();
+
+#pragma warning disable CS0618 // Testing the obsolete Newtonsoft.Json compatibility writer.
+            new LockFileFormat().Write(writer, lockFile);
+#pragma warning restore CS0618
+
+            JObject output = JObject.Parse(writer.ToString());
+            Assert.Equal(LockFileFormat.Version, output.Value<int>("version"));
+            Assert.Equal(
+                "caf\u00e9<&",
+                output["libraries"]["Package-caf\u00e9<&/1.2.3"].Value<string>("sha512"));
+            Assert.Throws<ObjectDisposedException>(() => writer.Write('x'));
+        }
+
+        [Fact]
+        public void LockFileFormat_WriteStream_WhenStreamIsNotWritable_DisposesStream()
+        {
+            LockFile lockFile = CreateLockFileForWriter("failure");
+            var format = new LockFileFormat();
+            var stream = new MemoryStream(new byte[1], writable: false);
+
+            Assert.Throws<NotSupportedException>(() => format.Write(stream, lockFile));
+            Assert.Throws<ObjectDisposedException>(() => stream.ReadByte());
+        }
+
+        [Fact]
+        public void LockFileFormat_WriteStream_LargeLockFile_WritesIncrementally()
+        {
+            LockFile lockFile = CreateLockFileForWriter(new string('a', 32 * 1024));
+            var stream = new RecordingMemoryStream();
+
+            new LockFileFormat().Write(stream, lockFile);
+
+            Assert.True(stream.WriteCount > 1);
+            Assert.True(stream.MaxWriteSize < stream.WrittenLength);
+            Assert.NotNull(JObject.Parse(Encoding.UTF8.GetString(stream.ToArray()))["libraries"]);
         }
 
         [Fact]
@@ -407,7 +488,7 @@ namespace NuGet.ProjectModel.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            var renderedJson = lockFileFormat.Render(lockFile);
+            var renderedJson = WriteToString(lockFileFormat, lockFile);
             var parsedLockFile = Parse(renderedJson, "In Memory");
 
             // Assert
@@ -454,7 +535,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile));
             var expected = JObject.Parse(lockFileContent);
 
             // Assert
@@ -505,7 +586,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile));
             var expected = JObject.Parse(lockFileContent);
 
             // Assert
@@ -513,7 +594,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Render_LockFileWithPackageFolder_WritesPackageFolder()
+        public void LockFileFormat_WriteStream_LockFileWithPackageFolder_WritesPackageFolder()
         {
             // Arrange
             var lockFileContent = @"{
@@ -538,7 +619,7 @@ namespace NuGet.ProjectModel.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            string actual = lockFileFormat.Render(lockFile);
+            string actual = WriteToString(lockFileFormat, lockFile);
 
             // Assert
             JObject expected = JObject.Parse(lockFileContent);
@@ -548,7 +629,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Render_LockFileWithLibrary_WritesLibrary()
+        public void LockFileFormat_WriteStream_LockFileWithLibrary_WritesLibrary()
         {
             // Arrange
             var lockFileContent = @"{
@@ -589,7 +670,7 @@ namespace NuGet.ProjectModel.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            string actual = lockFileFormat.Render(lockFile);
+            string actual = WriteToString(lockFileFormat, lockFile);
 
             // Assert
             JObject expected = JObject.Parse(lockFileContent);
@@ -599,7 +680,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Render_LockFileWithTarget_WritesTarget()
+        public void LockFileFormat_WriteStream_LockFileWithTarget_WritesTarget()
         {
             // Arrange
             var lockFileContent = @"{
@@ -766,7 +847,7 @@ namespace NuGet.ProjectModel.Test
             var lockFileFormat = new LockFileFormat();
 
             // Act
-            string actual = lockFileFormat.Render(lockFile);
+            string actual = WriteToString(lockFileFormat, lockFile);
 
             // Assert
             JObject expected = JObject.Parse(lockFileContent);
@@ -880,7 +961,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile));
             var expected = JObject.Parse(lockFileContent);
 
             // Assert
@@ -975,7 +1056,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile)).ToString();
             var expected = JObject.Parse(lockFileContent).ToString();
 
             // Assert
@@ -1096,7 +1177,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile)).ToString();
             var expected = JObject.Parse(lockFileContent).ToString();
 
             // Assert
@@ -1213,7 +1294,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile)).ToString();
             var expected = JObject.Parse(lockFileContent).ToString();
 
             // Assert
@@ -1340,7 +1421,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile)).ToString();
             var expected = JObject.Parse(lockFileContent).ToString();
 
             // Assert
@@ -1440,7 +1521,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile)).ToString();
             var expected = JObject.Parse(lockFileContent).ToString();
 
             // Assert
@@ -2444,7 +2525,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile)).ToString();
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile)).ToString();
             var expected = JObject.Parse(lockFileContent).ToString();
 
             // Assert
@@ -2552,7 +2633,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var lockFileFormat = new LockFileFormat();
-            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var output = JObject.Parse(WriteToString(lockFileFormat, lockFile));
             var expected = JObject.Parse(lockFileContent);
 
             // Assert
@@ -2694,6 +2775,90 @@ namespace NuGet.ProjectModel.Test
             using (var stream = new MemoryStream(byteArray))
             {
                 return LockFileFormat.Read(stream, logger ?? NullLogger.Instance, path, flags);
+            }
+        }
+
+        private static string WriteToString(LockFileFormat format, LockFile lockFile)
+        {
+            var stream = new MemoryStream();
+            format.Write(stream, lockFile);
+            return Encoding.UTF8.GetString(stream.ToArray());
+        }
+
+        private static LockFile CreateLockFileForWriter(string value)
+        {
+            var targetLibrary = new LockFileTargetLibrary
+            {
+                Name = $"Package-{value}",
+                Version = NuGetVersion.Parse("1.2.3"),
+                Type = "package",
+                Framework = value
+            };
+            targetLibrary.Dependencies.Add(new PackageDependency(
+                $"Dependency-{value}",
+                VersionRange.Parse("[2.0.0, )")));
+            var compileItem = new LockFileItem($"ref/{value}.dll");
+            compileItem.Properties["metadata"] = value;
+            targetLibrary.CompileTimeAssemblies.Add(compileItem);
+
+            var lockFile = new LockFile
+            {
+                Version = LockFileFormat.Version,
+                PackageSpec = new PackageSpec(new[]
+                {
+                    new TargetFrameworkInformation
+                    {
+                        FrameworkName = FrameworkConstants.CommonFrameworks.Net80,
+                        TargetAlias = "net8.0"
+                    }
+                })
+                {
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        ProjectUniqueName = value
+                    }
+                }
+            };
+            lockFile.Targets.Add(new LockFileTarget
+            {
+                Name = $"net8.0-{value}",
+                TargetFramework = FrameworkConstants.CommonFrameworks.Net80,
+                Libraries = new[] { targetLibrary }
+            });
+            lockFile.Libraries.Add(new LockFileLibrary
+            {
+                Name = $"Package-{value}",
+                Version = NuGetVersion.Parse("1.2.3"),
+                Type = "package",
+                Sha512 = value,
+                Files = ImmutableArray.Create($"lib/{value}.dll")
+            });
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup($"net8.0-{value}", new[] { $"Package-{value} >= 1.2.3" }));
+            lockFile.PackageFolders.Add(new LockFileItem($"packages/{value}/"));
+
+            return lockFile;
+        }
+
+        private sealed class RecordingMemoryStream : MemoryStream
+        {
+            internal int MaxWriteSize { get; private set; }
+
+            internal int WriteCount { get; private set; }
+
+            internal long WrittenLength { get; private set; }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                MaxWriteSize = Math.Max(MaxWriteSize, count);
+                WriteCount++;
+                base.Write(buffer, offset, count);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                WrittenLength = Length;
+                base.Dispose(disposing);
             }
         }
     }
