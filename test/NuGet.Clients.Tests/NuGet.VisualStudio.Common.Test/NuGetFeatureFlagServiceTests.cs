@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Moq;
 using NuGet.Common;
+using NuGet.Shared;
 using Test.Utility;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
@@ -27,6 +28,26 @@ namespace NuGet.VisualStudio.Common.Test
             sp.Reset();
             _globalProvider = sp;
             NuGetUIThreadHelper.SetCustomJoinableTaskFactory(ThreadHelper.JoinableTaskFactory);
+        }
+
+        [Theory]
+        [InlineData(null, false, false)]
+        [InlineData(null, true, true)]
+        [InlineData("1", false, true)]
+        [InlineData("0", true, false)]
+        public async Task ControlPowerShellScriptExecution_EnvironmentOverridesFeatureFlagAsync(string environmentValue, bool flagEnabled, bool expected)
+        {
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { PowerShellScriptExecutionFeature.EnvironmentVariable, environmentValue }
+            });
+            var featureFlags = new Mock<IVsFeatureFlags>(MockBehavior.Strict);
+            featureFlags.Setup(x => x.IsFeatureEnabled("NuGet.ControlPowerShellScriptExecution", false)).Returns(flagEnabled);
+            _globalProvider.AddService(typeof(SVsFeatureFlags), featureFlags.Object);
+            var service = new NuGetFeatureFlagService(environment, AsyncServiceProvider.GlobalProvider);
+
+            (await service.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.ControlPowerShellScriptExecution)).Should().Be(expected);
+            featureFlags.Verify(x => x.IsFeatureEnabled("NuGet.ControlPowerShellScriptExecution", false), Times.Once);
         }
 
         [Fact]

@@ -181,6 +181,12 @@ See [UI Guidelines](ui-guidelines.md) for detailed information. In summary:
 * Validate all themes and localizability
 * More complex changes should be reviewed by UX experts
 
+##### Feature flags shared with core libraries
+
+Use `INuGetFeatureFlagService` for native Visual Studio feature flags.
+For flags needed by core libraries that cannot depend on Visual Studio services, resolve the flag during `NuGetPackage.InitializeAsync` and publish its value through an `AppContext` switch.
+A helper compiled into each consuming assembly can read that process-wide switch without depending on Visual Studio.
+
 #### CLI (NuGet.exe & dotnet.exe) considerations
 
 * Is the command available in both tools? Should it be?
