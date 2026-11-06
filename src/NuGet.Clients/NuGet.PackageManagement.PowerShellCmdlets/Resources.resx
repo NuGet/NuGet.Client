@@ -293,6 +293,9 @@
     <value>Multiple installed versions of package '{0}' contain tools/init.ps1. Specify the package as id@version.</value>
     <comment>{0} is the package ID supplied by the user. Do not localize tools/init.ps1 or id@version.</comment>
   </data>
+  <data name="InitScript_FeatureDisabled" xml:space="preserve">
+    <value>This command is unavailable because explicit package initialization scripts are not enabled.</value>
+  </data>
   <data name="InitScript_PackageNotFound" xml:space="preserve">
     <value>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</value>
     <comment>{0} is the package selector supplied by the user. Do not localize tools/init.ps1 or Get-PackageInitScript.</comment>
