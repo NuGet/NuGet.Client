@@ -29,6 +29,32 @@ namespace NuGet.VisualStudio.Common.Test
             NuGetUIThreadHelper.SetCustomJoinableTaskFactory(ThreadHelper.JoinableTaskFactory);
         }
 
+        [Theory]
+        [InlineData(null, false, false)]
+        [InlineData(null, true, true)]
+        [InlineData("1", false, true)]
+        [InlineData("1", true, true)]
+        [InlineData("0", false, false)]
+        [InlineData("0", true, false)]
+        [InlineData("invalid", false, false)]
+        [InlineData("invalid", true, true)]
+        [InlineData("true", false, false)]
+        [InlineData("false", true, true)]
+        public async Task ControlPowerShellScriptExecution_EnvironmentOverridesFeatureFlagAsync(string environmentValue, bool flagEnabled, bool expected)
+        {
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>
+            {
+                { "NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION", environmentValue }
+            });
+            var featureFlags = new Mock<IVsFeatureFlags>(MockBehavior.Strict);
+            featureFlags.Setup(x => x.IsFeatureEnabled("NuGet.ControlPowerShellScriptExecution", false)).Returns(flagEnabled);
+            _globalProvider.AddService(typeof(SVsFeatureFlags), featureFlags.Object);
+            var service = new NuGetFeatureFlagService(environment, AsyncServiceProvider.GlobalProvider);
+
+            (await service.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.ControlPowerShellScriptExecution)).Should().Be(expected);
+            featureFlags.Verify(x => x.IsFeatureEnabled("NuGet.ControlPowerShellScriptExecution", false), Times.Once);
+        }
+
         [Fact]
         public void Constructor_WithNullWrapper_Throws()
         {
