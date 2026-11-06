@@ -29,6 +29,10 @@ namespace NuGetConsole.Host.PowerShell.Test
                 new SessionStateCmdletEntry("Find-Package", typeof(FindPackageCommand), null));
             initialSessionState.Commands.Add(
                 new SessionStateCmdletEntry("Get-Package", typeof(GetPackageCommand), null));
+            initialSessionState.Commands.Add(
+                new SessionStateCmdletEntry("Get-PackageInitScript", typeof(GetPackageInitScriptCommand), null));
+            initialSessionState.Commands.Add(
+                new SessionStateCmdletEntry("Import-PackageInitScript", typeof(ImportPackageInitScriptCommand), null));
 
             _runspace = RunspaceFactory.CreateRunspace(host, initialSessionState);
             _runspace.Open();
@@ -44,6 +48,24 @@ namespace NuGetConsole.Host.PowerShell.Test
             }
             pipeline.Commands.Add(cmd);
             return pipeline.Invoke().ToList();
+        }
+
+        public IReadOnlyList<ErrorRecord> Errors { get; private set; } = Array.Empty<ErrorRecord>();
+
+        public IList<PSObject> InvokeScript(string script)
+        {
+            using var pipeline = _runspace.CreatePipeline();
+            pipeline.Commands.AddScript(script);
+            try
+            {
+                return pipeline.Invoke().ToList();
+            }
+            finally
+            {
+                Errors = pipeline.Error.ReadToEnd()
+                    .Select(error => (ErrorRecord)PSObject.AsPSObject(error).BaseObject)
+                    .ToList();
+            }
         }
 
         public void Dispose()
