@@ -1056,6 +1056,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     string command = "& " + PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
                     LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
+                    if (string.Equals(System.IO.Path.GetFileName(path), PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
+                    {
+                        NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: true);
+                    }
+
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
                 }
 

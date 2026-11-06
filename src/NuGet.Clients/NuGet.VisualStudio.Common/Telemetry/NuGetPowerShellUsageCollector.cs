@@ -12,6 +12,13 @@ namespace NuGet.VisualStudio.Common.Telemetry
     {
         // PMC, PMUI powershell telemetry consts
         public const string PmcExecuteCommandCount = nameof(PmcExecuteCommandCount);
+
+        /// <summary>
+        /// Counts automatic init.ps1 execution attempts in PMC, during initialization or package installation.
+        /// Script execution does not add a command to <see cref="PmcExecuteCommandCount"/>.
+        /// </summary>
+        public const string PmcInitPs1ExecuteCount = nameof(PmcInitPs1ExecuteCount);
+
         public const string PmuiExecuteCommandCount = nameof(PmuiExecuteCommandCount);
         public const string NuGetCommandUsed = nameof(NuGetCommandUsed);
         public const string InitPs1LoadPmui = nameof(InitPs1LoadPmui);
@@ -57,6 +64,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             NuGetPowerShellUsage.PowerShellCommandExecuteEvent += NuGetPowerShellUsage_PowerShellCommandExecuteEventHandler;
             NuGetPowerShellUsage.NuGetCmdletExecutedEvent += NuGetPowerShellUsage_NuGetCmdletExecutedEventHandler;
             NuGetPowerShellUsage.InitPs1LoadEvent += NuGetPowerShellUsage_InitPs1LoadEventHandler;
+            NuGetPowerShellUsage.InitPs1ExecuteEvent += NuGetPowerShellUsage_InitPs1ExecuteEventHandler;
             NuGetPowerShellUsage.PmcWindowsEvent += NuGetPowerShellUsage_PMCWindowsEventHandler;
             NuGetPowerShellUsage.SolutionOpenEvent += NuGetPowerShellUsage_SolutionOpenHandler;
             NuGetPowerShellUsage.SolutionCloseEvent += NuGetPowerShellUsage_SolutionCloseHandler;
@@ -139,6 +147,18 @@ namespace NuGet.VisualStudio.Common.Telemetry
         private void NuGetPowerShellUsage_InitPs1LoadEventHandler(bool isPMC)
         {
             AddInitPs1LoadData(isPMC, _vsSolutionData);
+        }
+
+        private void NuGetPowerShellUsage_InitPs1ExecuteEventHandler(bool isPMC)
+        {
+            if (isPMC)
+            {
+                lock (_lock)
+                {
+                    _vsSolutionData.PmcInitPs1ExecuteCount++;
+                    _vsInstanceData.PmcInitPs1ExecuteCount++;
+                }
+            }
         }
 
         internal void AddInitPs1LoadData(bool isPMC, SolutionData vsSolutionData)
@@ -267,6 +287,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             NuGetPowerShellUsage.PowerShellCommandExecuteEvent -= NuGetPowerShellUsage_PowerShellCommandExecuteEventHandler;
             NuGetPowerShellUsage.NuGetCmdletExecutedEvent -= NuGetPowerShellUsage_NuGetCmdletExecutedEventHandler;
             NuGetPowerShellUsage.InitPs1LoadEvent -= NuGetPowerShellUsage_InitPs1LoadEventHandler;
+            NuGetPowerShellUsage.InitPs1ExecuteEvent -= NuGetPowerShellUsage_InitPs1ExecuteEventHandler;
             NuGetPowerShellUsage.PmcWindowsEvent -= NuGetPowerShellUsage_PMCWindowsEventHandler;
             NuGetPowerShellUsage.SolutionOpenEvent -= NuGetPowerShellUsage_SolutionOpenHandler;
             NuGetPowerShellUsage.SolutionCloseEvent -= NuGetPowerShellUsage_SolutionCloseHandler;
@@ -285,6 +306,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             internal bool LoadedFromPmui { get; set; }
             internal bool NuGetCommandUsed { get; set; }
             internal int PmcExecuteCommandCount { get; set; }
+            internal int PmcInitPs1ExecuteCount { get; set; }
             internal int PmcWindowLoadCount { get; set; }
             internal int PmuiExecuteCommandCount { get; set; }
             internal bool SolutionLoaded { get; set; }
@@ -300,6 +322,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
                 LoadedFromPmui = false;
                 NuGetCommandUsed = false;
                 PmcExecuteCommandCount = 0;
+                PmcInitPs1ExecuteCount = 0;
                 PmcWindowLoadCount = 0;
                 PmuiExecuteCommandCount = 0;
                 SolutionLoaded = false;
@@ -322,6 +345,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
                     pmuiExecuteCommandCount: PmuiExecuteCommandCount,
                     solutionLoaded: SolutionLoaded
                     );
+                telemetry[PowerShellHost + NuGetPowerShellUsageCollector.PmcInitPs1ExecuteCount] = PmcInitPs1ExecuteCount;
                 return telemetry;
             }
         }
@@ -329,6 +353,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
         internal class InstanceData
         {
             internal int PmcExecuteCommandCount { get; set; }
+            internal int PmcInitPs1ExecuteCount { get; set; }
             internal int PmcWindowLoadCount { get; set; }
             internal int PmuiExecuteCommandCount { get; set; }
             internal int PmcLoadedSolutionCount { get; set; }
@@ -339,6 +364,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             internal InstanceData()
             {
                 PmcExecuteCommandCount = 0;
+                PmcInitPs1ExecuteCount = 0;
                 PmcWindowLoadCount = 0;
                 PmuiExecuteCommandCount = 0;
                 PmcLoadedSolutionCount = 0;
@@ -350,6 +376,7 @@ namespace NuGet.VisualStudio.Common.Telemetry
             internal void AddProperties(TelemetryEvent telemetryEvent)
             {
                 telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.PmcExecuteCommandCount] = PmcExecuteCommandCount;
+                telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.PmcInitPs1ExecuteCount] = PmcInitPs1ExecuteCount;
                 telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.PmcWindowLoadCount] = PmcWindowLoadCount;
                 telemetryEvent[PowerShellHost + NuGetPowerShellUsageCollector.PmuiExecuteCommandCount] = PmuiExecuteCommandCount;
                 telemetryEvent[PowerShellHost + PmcPowerShellLoadedSolutionCount] = PmcLoadedSolutionCount;
