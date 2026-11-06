@@ -3421,6 +3421,19 @@ namespace NuGet.PackageManagement
                     }
                 }
 
+                if (!NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
+                {
+                    var addedPackages = BuildIntegratedRestoreUtility.GetAddedPackages(
+                        projectAction.OriginalLockFile,
+                        restoreResult.LockFile);
+                    await BuildIntegratedRestoreUtility.ExecuteInitPs1ScriptsAsync(
+                        buildIntegratedProject,
+                        addedPackages,
+                        pathResolver,
+                        nuGetProjectContext,
+                        token);
+                }
+
                 // find list of buildintegrated projects
                 var projects = (await SolutionManager.GetNuGetProjectsAsync()).OfType<BuildIntegratedNuGetProject>().ToList();
 

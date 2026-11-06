@@ -19,6 +19,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.Test;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -33,6 +34,7 @@ using Xunit;
 
 namespace NuGet.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class BuildIntegratedTests
     {
         [Fact]
@@ -1491,9 +1493,13 @@ namespace NuGet.Test
             Assert.Equal(0, entityFrameworkTargets.Count());
         }
 
-        [Fact]
-        public async Task InstallPackageDoesNotCallInitPs1()
+        [Theory]
+        [InlineData("1", false)]
+        [InlineData("0", true)]
+        [InlineData(null, true)]
+        public async Task InstallPackage_InitPs1DependsOnFeature(string featureValue, bool expectInitScripts)
         {
+            using var feature = new PowerShellScriptExecutionFeatureScope(featureValue);
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
@@ -1541,7 +1547,14 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), token);
 
             // Assert
-            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
+            if (expectInitScripts)
+            {
+                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEquivalentTo(new[] { packageIdentity, depedencyIdentity });
+            }
+            else
+            {
+                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
+            }
         }
 
         [Fact]
@@ -1595,9 +1608,13 @@ namespace NuGet.Test
             buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count.Should().Be(0);
         }
 
-        [Fact]
-        public async Task UpdatePackageDoesNotCallInitPs1()
+        [Theory]
+        [InlineData("1", false)]
+        [InlineData("0", true)]
+        [InlineData(null, true)]
+        public async Task UpdatePackage_InitPs1DependsOnFeature(string featureValue, bool expectInitScripts)
         {
+            using var feature = new PowerShellScriptExecutionFeatureScope(featureValue);
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
@@ -1648,7 +1665,14 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
             // Assert
-            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
+            if (expectInitScripts)
+            {
+                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().Contain(updateIdentity);
+            }
+            else
+            {
+                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
+            }
         }
 
         [Fact]
