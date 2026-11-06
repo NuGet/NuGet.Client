@@ -33,6 +33,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [AllowEmptyCollection]
         public object[]? FullName { get; set; }
 
+        protected override void BeginProcessing()
+        {
+            PackageInitScriptHelper.EnsureFeatureEnabled(this);
+            base.BeginProcessing();
+        }
+
         protected override void ProcessRecordCore()
         {
             if (ParameterSetName != "Paths")

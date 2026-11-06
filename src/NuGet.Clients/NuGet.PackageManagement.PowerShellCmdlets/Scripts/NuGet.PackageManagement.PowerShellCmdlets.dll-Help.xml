@@ -1385,6 +1385,7 @@
     </command:details>
     <maml:description>
       <maml:para>Discovers tools/init.ps1 files belonging to installed packages across the solution, in dependency order. Returns Id, Version, and the absolute script path as FullName. The same package is listed only once.</maml:para>
+      <maml:para>This experimental command is disabled by default. Set NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION=1 before starting Visual Studio to enable explicit package initialization, or set it to 0 to disable it regardless of Visual Studio experimentation. When disabled, NuGet continues to run init scripts automatically.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -1438,6 +1439,7 @@
     </command:details>
     <maml:description>
       <maml:para>With no arguments, runs all discovered tools/init.ps1 scripts. Alternatively, accepts positional or pipeline paths, objects with a FullName property, or package IDs with -Packages. Paths and -Packages cannot be combined. Only installed solution package init scripts can run; install.ps1 and uninstall.ps1 are never executed by this cmdlet. Null or empty path collections do nothing.</maml:para>
+      <maml:para>This experimental command is disabled by default. Set NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION=1 before starting Visual Studio to enable explicit package initialization, or set it to 0 to disable it regardless of Visual Studio experimentation. When disabled, NuGet continues to run init scripts automatically.</maml:para>
       <maml:para>Scripts run in dependency order, once per package per invocation. NuGet also runs a package's init.ps1 before executing its applicable install.ps1 for a packages.config project. Otherwise, installing or updating a package does not automatically import its init script. Invoke this cmdlet again to import new scripts. Earlier script changes are not undone; restarting Visual Studio may be necessary when changing package versions.</maml:para>
     </maml:description>
     <command:syntax>
