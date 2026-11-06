@@ -1250,11 +1250,11 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="createProjectFactory">A factory method that creates a project adapter from an MSBuild ProjectInstance.</param>
         /// <param name="updateProjectFactory">A factory method that updates a project adapter with a target framework and MSBuild ProjectInstance.</param>
         /// <param name="projectFinalizeDelegate">An option delegate to finalize a project adapter once all projects have been evaluated.</param>
-        /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
+        /// <returns>A read-only dictionary containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
 #if NET
         [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
 #endif
-        internal ConcurrentDictionary<string, TProject> LoadProjects<TProject>(
+        internal IReadOnlyDictionary<string, TProject> LoadProjects<TProject>(
             IEnumerable<ProjectGraphEntryPoint> entryProjects,
             bool interactive,
             string binaryLoggerParameters,
@@ -1283,7 +1283,7 @@ namespace NuGet.Build.Tasks.Console
                     logTaskInputs = true;
                 }
 
-                var projects = new ConcurrentDictionary<string, TProject>(PathUtility.GetStringComparerBasedOnOS());
+                var projects = new Dictionary<string, TProject>(PathUtility.GetStringComparerBasedOnOS());
 
                 using var projectCollection = new ProjectCollection(
                     globalProperties: null,
@@ -1369,8 +1369,7 @@ namespace NuGet.Build.Tasks.Console
                 }
                 finally
                 {
-                    // EndBuild waits for all build submissions, but not callbacks, so populate projects afterwards without callbacks.
-                    // https://github.com/dotnet/msbuild/issues/15408
+                    // EndBuild blocks until all builds are complete
                     BuildManager.DefaultBuildManager.EndBuild();
                 }
 
@@ -1383,11 +1382,16 @@ namespace NuGet.Build.Tasks.Console
 
                     buildCount++;
 
-                    projects.AddOrUpdate(
-                        projectInstance.FullPath,
-                        createProjectFactory,
-                        updateProjectFactory,
-                        (projectInstance, targetFramework));
+                    if (projects.TryGetValue(projectInstance.FullPath, out TProject project))
+                    {
+                        projects[projectInstance.FullPath] = updateProjectFactory(
+                            projectInstance.FullPath, project, (projectInstance, targetFramework));
+                    }
+                    else
+                    {
+                        projects.Add(projectInstance.FullPath, createProjectFactory(
+                            projectInstance.FullPath, (projectInstance, targetFramework)));
+                    }
                 }
 
                 sw.Stop();

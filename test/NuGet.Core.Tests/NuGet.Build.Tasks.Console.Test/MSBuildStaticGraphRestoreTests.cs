@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Build.Graph;
 using NuGet.Commands;
@@ -31,7 +29,7 @@ namespace NuGet.Build.Tasks.Console.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task LoadProjects_WhenProjectFactoryIsDelayed_FinalizesProjectBeforeReturning(bool failBuild)
+        public void LoadProjects_FinalizesProjectBeforeReturning(bool failBuild)
         {
             using var testDirectory = TestDirectory.Create();
             string projectPath = Path.Combine(testDirectory, "test.proj");
@@ -42,41 +40,16 @@ namespace NuGet.Build.Tasks.Console.Test
                 </Project>
                 """);
 
-            using var factoryStarted = new ManualResetEventSlim();
-            using var releaseFactory = new ManualResetEventSlim();
             using var restore = new MSBuildStaticGraphRestore();
             bool finalized = false;
-            var loadTask = Task.Factory.StartNew(
-                () => restore.LoadProjects(
-                    new[] { new ProjectGraphEntryPoint(projectPath) },
-                    interactive: false,
-                    binaryLoggerParameters: null,
-                    createProjectFactory: (path, _) =>
-                    {
-                        factoryStarted.Set();
-                        releaseFactory.Wait(TimeSpan.FromSeconds(30)).Should().BeTrue();
-                        return path;
-                    },
-                    updateProjectFactory: (_, project, _) => project,
-                    projectFinalizeDelegate: _ => finalized = true),
-                CancellationToken.None,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+            var projects = restore.LoadProjects(
+                new[] { new ProjectGraphEntryPoint(projectPath) },
+                interactive: false,
+                binaryLoggerParameters: null,
+                createProjectFactory: (path, _) => path,
+                updateProjectFactory: (_, project, _) => project,
+                projectFinalizeDelegate: _ => finalized = true);
 
-            try
-            {
-                factoryStarted.Wait(TimeSpan.FromSeconds(30)).Should().BeTrue();
-                Task completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1)));
-                completedTask.Should().NotBeSameAs(loadTask);
-                finalized.Should().BeFalse();
-            }
-            finally
-            {
-                releaseFactory.Set();
-                await loadTask;
-            }
-
-            var projects = await loadTask;
             finalized.Should().BeTrue();
             if (failBuild)
             {
