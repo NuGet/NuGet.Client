@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Commands.Test;
 using NuGet.Common;
@@ -448,6 +449,103 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(expectedJson, actualJson);
+        }
+
+        [Fact]
+        public void Save_PublicApis_WriteEquivalentJsonAndDisposeStream()
+        {
+            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation());
+            string filePath = Path.GetTempFileName();
+
+            try
+            {
+                var stream = new MemoryStream();
+                dependencyGraphSpec.Save(stream);
+                byte[] streamBytes = stream.ToArray();
+
+                File.WriteAllText(filePath, new string('x', streamBytes.Length * 2));
+                dependencyGraphSpec.Save(filePath);
+                byte[] fileBytes = File.ReadAllBytes(filePath);
+
+                Assert.Equal(streamBytes, fileBytes);
+                using JsonDocument document = JsonDocument.Parse(streamBytes);
+                Assert.Equal(1, document.RootElement.GetProperty("format").GetInt32());
+                Assert.False(stream.CanWrite);
+            }
+            finally
+            {
+                File.Delete(filePath);
+            }
+        }
+
+        [Fact]
+        public void Save_LargeGraph_WritesIncrementallyAndDisposesStream()
+        {
+            var dependencyGraphSpec = new DependencyGraphSpec();
+            for (int i = 0; i < 100; i++)
+            {
+                PackageSpec packageSpec = CreatePackageSpecWithPaths(
+                    directory: @"C:\src\Solution",
+                    projectName: $"Project{i:D3}");
+                dependencyGraphSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                dependencyGraphSpec.AddProject(packageSpec);
+            }
+            var stream = new TrackingWriteStream();
+
+            dependencyGraphSpec.Save(stream);
+
+            Assert.True(stream.IsDisposed);
+            Assert.True(stream.WriteCount > 1);
+            using JsonDocument document = JsonDocument.Parse(stream.ToArray());
+            Assert.Equal(100, document.RootElement.GetProperty("projects").EnumerateObject().Count());
+        }
+
+        [Fact]
+        public void Save_WithUnicodeAndControlCharacters_RoundTripsValidJson()
+        {
+            const string ProjectUniqueName = "unicode-caf\u00e9-\U0001F600-html-<&>-delete-\u007F-next-\u0085-line-\u2028-paragraph-\u2029-controls-\u0000\u0001\b\t\n\f\r\u001F-quote-\"-slash-\\";
+            var dependencyGraphSpec = new DependencyGraphSpec();
+            dependencyGraphSpec.AddRestore(ProjectUniqueName);
+            dependencyGraphSpec.AddProject(new PackageSpec
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = ProjectUniqueName
+                }
+            });
+            var stream = new MemoryStream();
+
+            dependencyGraphSpec.Save(stream);
+
+            using JsonDocument document = JsonDocument.Parse(stream.ToArray());
+            JsonElement root = document.RootElement;
+            Assert.True(root.GetProperty("restore").TryGetProperty(ProjectUniqueName, out _));
+            Assert.Equal(
+                ProjectUniqueName,
+                root.GetProperty("projects")
+                    .GetProperty(ProjectUniqueName)
+                    .GetProperty("restore")
+                    .GetProperty("projectUniqueName")
+                    .GetString());
+        }
+
+        [Fact]
+        public void Save_WithNullStream_ThrowsArgumentNullException()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new DependencyGraphSpec().Save(stream: null));
+
+            Assert.Equal("stream", exception.ParamName);
+        }
+
+        [Fact]
+        public void Save_WhenWritingFails_DisposesStream()
+        {
+            var stream = new ThrowingWriteStream();
+
+            Assert.Throws<InvalidOperationException>(() => CreateDependencyGraphSpec().Save(stream));
+
+            Assert.True(stream.IsDisposed);
         }
 
         [Theory]
@@ -1079,6 +1177,55 @@ namespace NuGet.ProjectModel.Test
             var resourceName = $"NuGet.ProjectModel.Test.compiler.resources.{fileName}";
 
             return ResourceTestUtility.GetResource(resourceName, typeof(DependencyGraphSpecTests));
+        }
+
+        private sealed class TrackingWriteStream : MemoryStream
+        {
+            internal bool IsDisposed { get; private set; }
+
+            internal int WriteCount { get; private set; }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                WriteCount++;
+                base.Write(buffer, offset, count);
+            }
+
+#if NET5_0_OR_GREATER
+            public override void Write(ReadOnlySpan<byte> buffer)
+            {
+                WriteCount++;
+                base.Write(buffer);
+            }
+#endif
+
+            protected override void Dispose(bool disposing)
+            {
+                IsDisposed = true;
+            }
+        }
+
+        private sealed class ThrowingWriteStream : MemoryStream
+        {
+            internal bool IsDisposed { get; private set; }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new InvalidOperationException();
+            }
+
+#if NET5_0_OR_GREATER
+            public override void Write(ReadOnlySpan<byte> buffer)
+            {
+                throw new InvalidOperationException();
+            }
+#endif
+
+            protected override void Dispose(bool disposing)
+            {
+                IsDisposed = true;
+                base.Dispose(disposing);
+            }
         }
 
         private sealed class Test : IDisposable
