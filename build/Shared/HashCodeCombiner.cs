@@ -11,6 +11,9 @@ namespace NuGet.Shared
     /// <summary>
     /// Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations
     /// </summary>
+#if NUGET_EMBEDDED_INTERNALS
+    [Microsoft.CodeAnalysis.Embedded]
+#endif
     internal ref struct HashCodeCombiner
     {
         // seed from String.GetHashCode()

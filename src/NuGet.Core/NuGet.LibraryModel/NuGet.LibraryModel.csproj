@@ -8,6 +8,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's types and interfaces for understanding dependencies.</Description>
+    <DefineConstants>$(DefineConstants);NUGET_EMBEDDED_INTERNALS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -37,6 +38,9 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NuGet.Commands.Test" />
+    <InternalsVisibleTo Include="NuGet.Commands" />
+    <InternalsVisibleTo Include="NuGet.Build.Tasks.Console" />
+    <InternalsVisibleTo Include="NuGet.SolutionRestoreManager" />
     <InternalsVisibleTo Include="NuGet.ProjectModel.Test" />
   </ItemGroup>
 

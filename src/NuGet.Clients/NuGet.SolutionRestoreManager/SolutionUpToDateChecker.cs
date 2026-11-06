@@ -135,6 +135,7 @@ namespace NuGet.SolutionRestoreManager
                 // Fast path. Skip Pass #2
                 if (dirtySpecs.Count == 0 && dirtyOutputs.Count == 0)
                 {
+                    _cachedDependencyGraphSpec = dependencyGraphSpec;
                     ReplayAllWarnings(_restoreData, (string projectName) => true, logger);
                     return Enumerable.Empty<string>();
                 }
@@ -169,9 +170,11 @@ namespace NuGet.SolutionRestoreManager
             {
                 if (shouldReplayWarnings(restoreOutputs.Key) && restoreOutputs.Value._messages != null)
                 {
+                    var collector = new RestoreCollectorLogger(logger);
+                    collector.ApplyRestoreInputs(_cachedDependencyGraphSpec.GetProjectSpec(restoreOutputs.Key));
                     foreach (var logMessage in restoreOutputs.Value._messages)
                     {
-                        logger.Log(logMessage);
+                        collector.Log(logMessage);
                     }
                 }
             }

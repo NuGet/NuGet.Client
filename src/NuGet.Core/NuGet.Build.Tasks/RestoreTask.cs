@@ -214,7 +214,7 @@ namespace NuGet.Build.Tasks
             }
         }
 
-        private async Task<bool> ExecuteAsync(Common.ILogger log)
+        private async Task<bool> ExecuteAsync(MSBuildLogger log)
         {
             if (RestoreGraphItems.Length < 1 && !HideWarningsAndErrors)
             {

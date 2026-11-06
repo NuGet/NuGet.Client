@@ -351,14 +351,14 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>A <see cref="List{LibraryDependency}" /> containing the package references for the specified project.</returns>
         internal static ImmutableArray<LibraryDependency> GetPackageReferences(IMSBuildProject project, bool isCentralPackageVersionManagementEnabled, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)
         {
-            // Get the distinct PackageReference items, ignoring duplicates
-            List<IMSBuildItem> packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
+            var packageReferenceGroups = (project.GetItems("PackageReference") ?? Enumerable.Empty<IMSBuildItem>())
+                .GroupBy(item => item.Identity, StringComparer.OrdinalIgnoreCase).ToList();
 
-            var libraryDependencies = new LibraryDependency[packageReferenceItems.Count];
+            var libraryDependencies = new LibraryDependency[packageReferenceGroups.Count];
 
-            for (int i = 0; i < packageReferenceItems.Count; i++)
+            for (int i = 0; i < packageReferenceGroups.Count; i++)
             {
-                var packageReferenceItem = packageReferenceItems[i];
+                var packageReferenceItem = packageReferenceGroups[i].First();
                 bool autoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined");
                 string version = packageReferenceItem.GetProperty("Version");
 
@@ -396,6 +396,10 @@ namespace NuGet.Build.Tasks.Console
                     VersionOverride = versionOverrideRange,
                     NoWarn = noWarn,
                     VersionCentrallyManaged = isCentrallyManaged,
+                    SourceLocation = packageReferenceGroups[i].Skip(1).Any() ? null : LibraryDependency.ParseSourceLocation(
+                        packageReferenceItem.GetProperty("DefiningProjectFullPath"),
+                        packageReferenceItem.GetProperty("DefiningProjectLineNumber"),
+                        packageReferenceItem.GetProperty("DefiningProjectColumnNumber")),
                 };
             }
 
@@ -1507,4 +1511,3 @@ namespace NuGet.Build.Tasks.Console
         }
     }
 }
-

@@ -138,6 +138,14 @@ namespace NuGet.Commands
                                 .ToList()
                         };
 
+                        if ((message.Code == NuGetLogCode.NU1510 || message.Code == NuGetLogCode.NU1603 || message.Code == NuGetLogCode.NU1605)
+                            && group.Any(m => m.FilePath != message.FilePath || m.StartLineNumber != message.StartLineNumber
+                            || m.StartColumnNumber != message.StartColumnNumber))
+                        {
+                            message.FilePath = message.ProjectPath;
+                            message.StartLineNumber = message.StartColumnNumber = message.EndLineNumber = message.EndColumnNumber = 0;
+                        }
+
                         output.Add(message);
                     }
                 }
