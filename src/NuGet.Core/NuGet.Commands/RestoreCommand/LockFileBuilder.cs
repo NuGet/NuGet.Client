@@ -235,6 +235,7 @@ namespace NuGet.Commands
 
                         var package = packageInfo.Package;
                         var libraryDependency = tfi?.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
+                        var pruningResult = graphItem.Data is PrunedRemoteResolveResult prunedResult ? prunedResult.PruningResult : default;
 
                         (LockFileTargetLibrary targetLibrary, bool usedFallbackFramework, NuGetFramework compileAssetFramework, NuGetFramework runtimeAssetFramework) = LockFileUtils.CreateLockFileTargetLibrary(
                             libraryDependency?.Aliases,
@@ -245,7 +246,8 @@ namespace NuGet.Commands
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
                             restoreEnableAnalyzerAssets: restoreEnableAnalyzerAssets,
-                            cache: lockFileBuilderCache);
+                            cache: lockFileBuilderCache,
+                            pruningResult: pruningResult);
 
                         target.Libraries.Add(targetLibrary);
 
@@ -266,7 +268,8 @@ namespace NuGet.Commands
                                     dependencyType: includeFlags,
                                     dependencies: graphItem.Data.Dependencies,
                                     restoreEnableAnalyzerAssets: restoreEnableAnalyzerAssets,
-                                    cache: lockFileBuilderCache);
+                                    cache: lockFileBuilderCache,
+                                    pruningResult: pruningResult);
                                 usedFallbackFramework = !targetLibrary.Equals(targetLibraryWithoutFallback);
                             }
 
