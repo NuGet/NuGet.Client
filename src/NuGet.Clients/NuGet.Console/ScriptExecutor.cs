@@ -17,6 +17,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
@@ -176,7 +177,17 @@ namespace NuGetConsole
             // to switch to powershell pipeline execution thread. In order not to block the UI thread,
             // go off the UI thread. This is important, since, switches to UI thread,
             // using SwitchToMainThreadAsync will deadlock otherwise
-            await Task.Run(() => host.Execute(console, request.BuildCommand(), request.BuildInput()));
+            await Task.Run(() =>
+            {
+                var command = request.BuildCommand();
+                var input = request.BuildInput();
+                if (string.Equals(Path.GetFileName(request.ScriptPath), PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
+                {
+                    NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
+                }
+
+                host.Execute(console, command, input);
+            });
         }
 
         private async Task<IHost> GetHostAsync()

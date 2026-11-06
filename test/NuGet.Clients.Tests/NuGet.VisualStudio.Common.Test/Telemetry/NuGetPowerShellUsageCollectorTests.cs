@@ -20,13 +20,11 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
     public class NuGetPowerShellUsageCollectorTests
     {
         private const string PmcCommands = "PowerShellHost.PmcExecuteCommandCount";
-        private const string PmcInitScripts = "PowerShellHost.PmcInitPs1ExecuteCount";
+        private const string InitScripts = "PowerShellHost.InitPs1ExecuteCount";
         private const string PmuiCommands = "PowerShellHost.PmuiExecuteCommandCount";
 
-        [Theory]
-        [InlineData(true, 2)]
-        [InlineData(false, 0)]
-        public void InitPs1Execute_CountsOnlyAutomaticPmcExecutions(bool isPmc, int expectedCount)
+        [Fact]
+        public void InitPs1Execute_AutomaticExecutions_CountsAttemptsWithoutAddingCommands()
         {
             var events = new List<TelemetryEvent>();
             var telemetryService = new Mock<INuGetTelemetryService>();
@@ -35,15 +33,15 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             using var collector = new NuGetPowerShellUsageCollector(telemetryService.Object);
 
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: isPmc);
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: isPmc);
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
             NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             var instanceEvent = InstanceCloseTelemetryEmitter.CreateTelemetryEvent();
 
             var solutionEvent = Assert.Single(events);
             Assert.Equal("SolutionClose", solutionEvent.Name);
-            Assert.Equal(expectedCount, solutionEvent[PmcInitScripts]);
-            Assert.Equal(expectedCount, instanceEvent[PmcInitScripts]);
+            Assert.Equal(2, solutionEvent[InitScripts]);
+            Assert.Equal(2, instanceEvent[InitScripts]);
             Assert.Equal(0, solutionEvent[PmcCommands]);
             Assert.Equal(0, instanceEvent[PmcCommands]);
             Assert.Equal(0, solutionEvent[PmuiCommands]);
@@ -60,11 +58,11 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             using var collector = new NuGetPowerShellUsageCollector(telemetryService.Object);
 
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: true);
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
             NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: true);
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: true);
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
             NuGetPowerShellUsage.RaiseCommandExecuteEvent(isPMC: true);
             NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
@@ -72,13 +70,13 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var instanceEvent = InstanceCloseTelemetryEmitter.CreateTelemetryEvent();
 
             Assert.Equal(3, events.Count);
-            Assert.Equal(1, events[0][PmcInitScripts]);
-            Assert.Equal(2, events[1][PmcInitScripts]);
-            Assert.Equal(0, events[2][PmcInitScripts]);
+            Assert.Equal(1, events[0][InitScripts]);
+            Assert.Equal(2, events[1][InitScripts]);
+            Assert.Equal(0, events[2][InitScripts]);
             Assert.Equal(0, events[0][PmcCommands]);
             Assert.Equal(1, events[1][PmcCommands]);
             Assert.Equal(0, events[2][PmcCommands]);
-            Assert.Equal(3, instanceEvent[PmcInitScripts]);
+            Assert.Equal(3, instanceEvent[InitScripts]);
             Assert.Equal(1, instanceEvent[PmcCommands]);
         }
     }

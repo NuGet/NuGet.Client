@@ -1058,7 +1058,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     if (string.Equals(System.IO.Path.GetFileName(path), PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                     {
-                        NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: true);
+                        NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
                     }
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);

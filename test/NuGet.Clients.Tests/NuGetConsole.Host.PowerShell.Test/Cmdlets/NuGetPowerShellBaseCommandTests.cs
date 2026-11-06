@@ -68,7 +68,7 @@ namespace NuGetConsole.Host.PowerShell.Test
 
             Assert.True(Assert.IsType<bool>(Assert.Single(results).BaseObject));
             Assert.NotNull(telemetryEvent);
-            Assert.Equal(expectedCount, telemetryEvent["PowerShellHost.PmcInitPs1ExecuteCount"]);
+            Assert.Equal(expectedCount, telemetryEvent["PowerShellHost.InitPs1ExecuteCount"]);
             Assert.Equal(0, telemetryEvent["PowerShellHost.PmcExecuteCommandCount"]);
             Assert.Equal(0, telemetryEvent["PowerShellHost.PmuiExecuteCommandCount"]);
         }

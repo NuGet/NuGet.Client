@@ -506,7 +506,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                             var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
 
-                            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(isPMC: _activeConsole is IWpfConsole);
+                            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
 
                             Runspace.Invoke(
                                 request.BuildCommand(),
