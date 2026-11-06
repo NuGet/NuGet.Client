@@ -56,6 +56,43 @@ namespace NuGet.Packaging.Core
         }
 
         /// <summary>
+        /// Parses a package ID optionally followed by '@' and an exact NuGet version.
+        /// </summary>
+        /// <param name="value">A package ID, such as "Example", or a version-qualified ID, such as "Example@1.2.3".</param>
+        /// <returns>The package identity. <see cref="HasVersion"/> is false when no version is specified.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+        /// <exception cref="ArgumentException">The package ID or version is invalid, or the version after '@' is empty.</exception>
+        public static PackageIdentity ParseAtSeparated(string value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var separator = value.IndexOf('@');
+            var id = separator < 0 ? value : value.Substring(0, separator);
+            PackageIdValidator.ValidatePackageId(id);
+            NuGetVersion? version = null;
+            if (separator >= 0)
+            {
+                var versionString = value.Substring(separator + 1);
+                try
+                {
+                    version = NuGetVersion.Parse(versionString);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture, Strings.ErrorInvalidPackageVersion, id, versionString),
+                        nameof(value),
+                        ex);
+                }
+            }
+
+            return new PackageIdentity(id, version);
+        }
+
+        /// <summary>
         /// True if the package identities are the same.
         /// </summary>
         /// <param name="other"></param>
