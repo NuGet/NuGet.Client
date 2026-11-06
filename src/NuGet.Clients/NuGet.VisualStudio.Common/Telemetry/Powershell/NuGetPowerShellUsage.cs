@@ -25,6 +25,14 @@ namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
         public delegate void InitPs1LoadEventHandler(bool isPMC);
         public static event InitPs1LoadEventHandler InitPs1LoadEvent;
 
+        public delegate void InitPs1ExecuteEventHandler();
+
+        /// <summary>
+        /// Raised immediately before an automatic init.ps1 execution attempt during initialization or package installation,
+        /// regardless of whether PMC or PMUI triggered it, after skipping already visited packages.
+        /// </summary>
+        public static event InitPs1ExecuteEventHandler InitPs1ExecuteEvent;
+
         public delegate void PmcWindowEventHandler(bool isLoad);
         public static event PmcWindowEventHandler PmcWindowsEvent;
 
@@ -46,6 +54,11 @@ namespace NuGet.VisualStudio.Common.Telemetry.PowerShell
         public static void RaiseInitPs1LoadEvent(bool isPMC)
         {
             InitPs1LoadEvent?.Invoke(isPMC);
+        }
+
+        public static void RaiseInitPs1ExecuteEvent()
+        {
+            InitPs1ExecuteEvent?.Invoke();
         }
 
         public static void RaisePmcWindowsLoadEvent(bool isLoad)
