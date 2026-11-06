@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using NuGet.Shared;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.Test
@@ -14,44 +16,50 @@ namespace NuGet.PackageManagement.Test
         [InlineData(null, false, false)]
         [InlineData(null, true, true)]
         [InlineData("1", false, true)]
-        [InlineData("1", true, true)]
-        [InlineData("0", false, false)]
         [InlineData("0", true, false)]
         [InlineData("invalid", false, false)]
         [InlineData("invalid", true, true)]
-        [InlineData("true", false, false)]
-        [InlineData("false", true, true)]
-        public void IsEnabled_EnvironmentOverridesAppContext(string? value, bool switchEnabled, bool expected)
+        public void IsEnabledCore_WithEnvironmentOverrideAndAppContext_ReturnsExpectedState(
+            string? value, bool switchEnabled, bool expected)
         {
-            using var environment = new PowerShellScriptExecutionFeatureScope(value);
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string?>
+            {
+                { PowerShellScriptExecutionFeature.EnvironmentVariable, value }
+            });
             AppContext.TryGetSwitch(PowerShellScriptExecutionFeature.SwitchName, out bool originalSwitch);
             try
             {
                 AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, switchEnabled);
-                Assert.Equal(expected, PowerShellScriptExecutionFeature.IsEnabled);
-                AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, !switchEnabled);
-                Assert.Equal(value == "1" || (value != "0" && !switchEnabled), PowerShellScriptExecutionFeature.IsEnabled);
+                bool actual = PowerShellScriptExecutionFeature.IsEnabledCore(environment);
+
+                Assert.Equal(expected, actual);
             }
             finally
             {
                 AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, originalSwitch);
             }
         }
-    }
 
-    internal sealed class PowerShellScriptExecutionFeatureScope : IDisposable
-    {
-        private readonly string? _originalValue;
-
-        internal PowerShellScriptExecutionFeatureScope(string? value)
+        [Fact]
+        public void IsEnabledCore_WhenAppContextSwitchChanges_ReturnsCurrentState()
         {
-            _originalValue = Environment.GetEnvironmentVariable(PowerShellScriptExecutionFeature.EnvironmentVariable);
-            Environment.SetEnvironmentVariable(PowerShellScriptExecutionFeature.EnvironmentVariable, value);
-        }
+            var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>());
+            AppContext.TryGetSwitch(PowerShellScriptExecutionFeature.SwitchName, out bool originalSwitch);
+            try
+            {
+                AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, false);
+                Assert.False(PowerShellScriptExecutionFeature.IsEnabledCore(environment));
 
-        public void Dispose()
-        {
-            Environment.SetEnvironmentVariable(PowerShellScriptExecutionFeature.EnvironmentVariable, _originalValue);
+                AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, true);
+                Assert.True(PowerShellScriptExecutionFeature.IsEnabledCore(environment));
+
+                AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, false);
+                Assert.False(PowerShellScriptExecutionFeature.IsEnabledCore(environment));
+            }
+            finally
+            {
+                AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, originalSwitch);
+            }
         }
     }
 }

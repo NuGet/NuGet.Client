@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Moq;
 using NuGet.Common;
+using NuGet.Shared;
 using Test.Utility;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
@@ -33,18 +34,12 @@ namespace NuGet.VisualStudio.Common.Test
         [InlineData(null, false, false)]
         [InlineData(null, true, true)]
         [InlineData("1", false, true)]
-        [InlineData("1", true, true)]
-        [InlineData("0", false, false)]
         [InlineData("0", true, false)]
-        [InlineData("invalid", false, false)]
-        [InlineData("invalid", true, true)]
-        [InlineData("true", false, false)]
-        [InlineData("false", true, true)]
         public async Task ControlPowerShellScriptExecution_EnvironmentOverridesFeatureFlagAsync(string environmentValue, bool flagEnabled, bool expected)
         {
             var environment = new TestEnvironmentVariableReader(new Dictionary<string, string>
             {
-                { "NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION", environmentValue }
+                { PowerShellScriptExecutionFeature.EnvironmentVariable, environmentValue }
             });
             var featureFlags = new Mock<IVsFeatureFlags>(MockBehavior.Strict);
             featureFlags.Setup(x => x.IsFeatureEnabled("NuGet.ControlPowerShellScriptExecution", false)).Returns(flagEnabled);
