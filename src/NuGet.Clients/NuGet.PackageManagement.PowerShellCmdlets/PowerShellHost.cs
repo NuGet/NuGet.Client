@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -21,10 +22,12 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -38,10 +41,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
         private static readonly string AggregateSourceName = LocalResources.AggregateSourceName;
+        private static readonly TimeSpan ExecuteInitScriptsRetryDelay = TimeSpan.FromMilliseconds(400);
+        private const int ExecuteInitScriptsRetriesLimit = 50;
         private const int MaxTasks = 16;
         private static bool PowerShellLoaded = false;
 
         private Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
+#pragma warning disable RS0030 // Do not used banned APIs
+        private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
+#pragma warning restore RS0030 // Do not used banned APIs
+        private readonly IRestoreEvents _restoreEvents;
+        private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
+        private readonly Lazy<IScriptExecutor> _scriptExecutor;
+        private readonly Lazy<IRestoreProgressReporter> _restoreProgressReporter;
         private readonly string _name;
         private readonly IRunspaceManager _runspaceManager;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
@@ -80,9 +92,13 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         // store the current CancellationToken. This will be set on the private data
         private CancellationToken _token;
+        private string _currentSolutionDirectory;
+        private SolutionRestoredEventArgs _latestRestore;
+        private SolutionRestoredEventArgs _currentRestore;
 
         protected PowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager, IEnvironmentVariableReader environmentVariableReader)
         {
+            _restoreEvents = restoreEvents;
             _runspaceManager = runspaceManager;
             _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
 
@@ -91,6 +107,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
             _solutionManager = new Lazy<IVsSolutionManager>(() => componentModel.GetService<IVsSolutionManager>());
             _settings = new Lazy<ISettings>(() => componentModel.GetService<ISettings>());
+            _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => componentModel.GetService<IDeleteOnRestartManager>());
+            _scriptExecutor = new Lazy<IScriptExecutor>(() => componentModel.GetService<IScriptExecutor>());
+            _restoreProgressReporter = new Lazy<IRestoreProgressReporter>(() => componentModel.GetService<IRestoreProgressReporter>());
             _dte = new Lazy<DTE>(() => NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>()));
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
                 () => componentModel.GetService<ISourceControlManagerProvider>());
@@ -101,6 +120,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             InitializeSources();
 
             _sourceRepositoryProvider.PackageSourceProvider.PackageSourcesChanged += PackageSourceProvider_PackageSourcesChanged;
+            _restoreEvents.SolutionRestoreCompleted += RestoreEvents_SolutionRestoreCompleted;
 
             _vsMonitorSelection = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsMonitorSelection>(
                 async () =>
@@ -302,6 +322,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         NuGetPowerShellUsage.RaisePowerShellLoadEvent(isPMC: _isPmc);
 
+                        await ExecuteInitScriptsAsync();
+
                         // check if PMC console is actually opened, then only hook to solution load/close events.
                         if (_isPmc)
                         {
@@ -349,8 +371,27 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void HandleSolutionOpened()
         {
-            UpdateWorkingDirectory();
-            StartAsyncDefaultProjectUpdate();
+            _scriptExecutor.Value.Reset();
+            Task.Run(async () =>
+                {
+                    UpdateWorkingDirectory();
+                    if (!NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
+                    {
+                        var retries = 0;
+                        while (retries < ExecuteInitScriptsRetriesLimit)
+                        {
+                            if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
+                            {
+                                await ExecuteInitScriptsAsync();
+                                break;
+                            }
+
+                            await Task.Delay(ExecuteInitScriptsRetryDelay);
+                            retries++;
+                        }
+                    }
+                })
+                .ContinueWith(_ => StartAsyncDefaultProjectUpdate(), TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         private void UpdateWorkingDirectoryAndAvailableProjects()
@@ -378,6 +419,97 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             });
         }
 
+        private async Task ExecuteInitScriptsAsync()
+        {
+            if (NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
+            {
+                return;
+            }
+
+#pragma warning disable RS0030 // Do not used banned APIs
+            using (await _initScriptsLock.EnterAsync())
+            {
+                if (!await _solutionManager.Value.IsSolutionOpenAsync())
+                {
+                    return;
+                }
+
+                var latestRestore = _latestRestore;
+                var latestSolutionDirectory = await _solutionManager.Value.GetSolutionDirectoryAsync();
+                if (ShouldNoOpDueToRestore(latestRestore) &&
+                    StringComparer.OrdinalIgnoreCase.Equals(_currentSolutionDirectory, latestSolutionDirectory))
+                {
+                    _currentRestore = latestRestore;
+                    _currentSolutionDirectory = latestSolutionDirectory;
+                    return;
+                }
+
+                await TaskScheduler.Default;
+                var packageManager = new NuGetPackageManager(
+                    _sourceRepositoryProvider,
+                    _settings.Value,
+                    _solutionManager.Value,
+                    _deleteOnRestartManager.Value,
+                    _restoreProgressReporter.Value);
+                var enumerator = new InstalledPackageEnumerator(_solutionManager.Value, _settings.Value);
+                var installedPackages = await enumerator.EnumeratePackagesAsync(packageManager, CancellationToken.None);
+                foreach (var installedPackage in installedPackages)
+                {
+                    await ExecuteInitPs1Async(installedPackage.InstallPath, installedPackage.Identity);
+                }
+
+                _currentRestore = latestRestore;
+                _currentSolutionDirectory = latestSolutionDirectory;
+            }
+#pragma warning restore RS0030 // Do not used banned APIs
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Report script failures without crashing the console.")]
+        private async Task ExecuteInitPs1Async(string installPath, PackageIdentity identity)
+        {
+            try
+            {
+                var toolsPath = Path.Combine(installPath, "tools");
+                if (Directory.Exists(toolsPath))
+                {
+                    AddPathToEnvironment(toolsPath, _environmentVariableReader);
+                    var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
+                    if (File.Exists(scriptPath))
+                    {
+                        NuGetPowerShellUsage.RaiseInitPs1LoadEvent(isPMC: _activeConsole is IWpfConsole);
+                        if (_scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
+                        {
+                            await TaskScheduler.Default;
+                            var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
+                            Runspace.Invoke(request.BuildCommand(), request.BuildInput(), outputResults: true);
+                            return;
+                        }
+                    }
+                }
+
+                _scriptExecutor.Value.TryMarkVisited(identity, PackageInitPS1State.NotFound);
+            }
+            catch (Exception ex)
+            {
+                ReportError(ex);
+                ExceptionHelper.WriteErrorToActivityLog(ex);
+            }
+        }
+
+        private static void AddPathToEnvironment(string path, IEnvironmentVariableReader environmentVariableReader)
+        {
+            var currentPath = environmentVariableReader.GetEnvironmentVariable("path");
+            var currentPaths = new HashSet<string>(
+                currentPath.Split(Path.PathSeparator).Select(p => p.Trim()),
+                StringComparer.OrdinalIgnoreCase);
+            if (currentPaths.Add(path))
+            {
+#pragma warning disable RS0030 // Do not use banned APIs (This adds a path for the PowerShell console session)
+                Environment.SetEnvironmentVariable("path", currentPath + Path.PathSeparator + path);
+#pragma warning restore RS0030 // Do not use banned APIs
+            }
+        }
+
         protected abstract bool ExecuteHost(string fullCommand, string command, params object[] inputs);
 
         public bool Execute(IConsole console, string command, params object[] inputs)
@@ -393,6 +525,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
 
             NuGetPowerShellUsage.RaiseCommandExecuteEvent(isPMC: console is IWpfConsole);
+
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(ExecuteInitScriptsAsync);
 
             ActiveConsole = console;
 
@@ -509,6 +643,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             _packageSources = GetEnabledPackageSources(_sourceRepositoryProvider);
             UpdateActiveSource(ActivePackageSource);
+        }
+
+        private void RestoreEvents_SolutionRestoreCompleted(SolutionRestoredEventArgs args)
+        {
+            _latestRestore = args;
+        }
+
+        private bool ShouldNoOpDueToRestore(SolutionRestoredEventArgs latestRestore)
+        {
+            return _currentRestore != null &&
+                latestRestore != null &&
+                (latestRestore.RestoreStatus == NuGetOperationStatus.NoOp ||
+                 object.ReferenceEquals(_currentRestore, latestRestore));
         }
 
         private void UpdateActiveSource(string activePackageSource)
@@ -741,6 +888,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public void Dispose()
         {
+            _restoreEvents.SolutionRestoreCompleted -= RestoreEvents_SolutionRestoreCompleted;
+#pragma warning disable RS0030 // Do not used banned APIs
+            _initScriptsLock.Dispose();
+#pragma warning restore RS0030 // Do not used banned APIs
             Runspace?.Dispose();
             _tokenSource?.Dispose();
         }

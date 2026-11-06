@@ -15,6 +15,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override bool IsLoggingTimeDisabled => true;
 
+        protected override void BeginProcessing()
+        {
+            PackageInitScriptHelper.EnsureFeatureEnabled(this);
+            base.BeginProcessing();
+        }
+
         protected override void ProcessRecordCore()
         {
             CheckSolutionState();

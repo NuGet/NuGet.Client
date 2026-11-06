@@ -475,6 +475,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This command is unavailable because explicit package initialization scripts are not enabled..
+        /// </summary>
+        internal static string InitScript_FeatureDisabled {
+            get {
+                return ResourceManager.GetString("InitScript_FeatureDisabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts..
         /// </summary>
         internal static string InitScript_InvalidPath {

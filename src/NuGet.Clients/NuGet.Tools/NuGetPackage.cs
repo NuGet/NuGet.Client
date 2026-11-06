@@ -152,6 +152,9 @@ namespace NuGetVSExtension
         private Lazy<INuGetExperimentationService> NuGetExperimentationService { get; set; }
 
         [Import]
+        private Lazy<INuGetFeatureFlagService> NuGetFeatureFlagService { get; set; }
+
+        [Import]
         private Lazy<IVsProjectJsonToPackageReferenceMigrator> ProjectJsonMigrator { get; set; }
 
         /// <summary>
@@ -208,6 +211,10 @@ namespace NuGetVSExtension
             {
                 AppContext.SetSwitch(NuGet.Shared.NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, isEnabled: true);
             }
+
+            AppContext.SetSwitch(
+                NuGet.Shared.PowerShellScriptExecutionFeature.SwitchName,
+                await NuGetFeatureFlagService.Value.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.ControlPowerShellScriptExecution));
 
             VSSettings vsSettings = Settings.Value as VSSettings;
             PackageSourceProvider packageSourceProvider = new(Settings.Value);

@@ -35,13 +35,17 @@ using Xunit;
 namespace NuGetConsole.Host.PowerShell.Test
 {
     [Collection(MockedVS.Collection)]
-    public class PackageInitScriptCommandTests : IAsyncServiceProvider
+    public class PackageInitScriptCommandTests : IAsyncServiceProvider, IDisposable
     {
+        private const string FeatureEnvironmentVariable = "NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION";
+        private readonly string? _originalFeatureEnvironmentVariable;
         private readonly Mock<IComponentModel> _componentModel = new Mock<IComponentModel>();
         private readonly Mock<IVsSolutionManager> _solutionManager = new Mock<IVsSolutionManager>();
 
         public PackageInitScriptCommandTests(GlobalServiceProvider globalServiceProvider)
         {
+            _originalFeatureEnvironmentVariable = Environment.GetEnvironmentVariable(FeatureEnvironmentVariable);
+            Environment.SetEnvironmentVariable(FeatureEnvironmentVariable, "1");
             globalServiceProvider.Reset();
             _solutionManager.SetupGet(manager => manager.IsSolutionOpen).Returns(true);
             _solutionManager.Setup(manager => manager.IsSolutionAvailableAsync()).ReturnsAsync(true);
@@ -53,6 +57,31 @@ namespace NuGetConsole.Host.PowerShell.Test
             _componentModel.Setup(model => model.GetService<IRestoreProgressReporter>()).Returns(Mock.Of<IRestoreProgressReporter>());
             globalServiceProvider.AddService(typeof(SComponentModel), _componentModel.Object);
             ServiceLocator.InitializePackageServiceProvider(this);
+        }
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable(FeatureEnvironmentVariable, _originalFeatureEnvironmentVariable);
+        }
+
+        [Theory]
+        [InlineData("Get-PackageInitScript", null)]
+        [InlineData("Import-PackageInitScript", null)]
+        [InlineData("Get-PackageInitScript", "0")]
+        [InlineData("Import-PackageInitScript", "0")]
+        [InlineData("Import-PackageInitScript -FullName @()", "0")]
+        [InlineData("@() | Import-PackageInitScript", "0")]
+        public async Task PackageInitScriptCommands_FeatureDisabled_ThrowAsync(string command, string? featureValue)
+        {
+            Environment.SetEnvironmentVariable(FeatureEnvironmentVariable, featureValue);
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            var exception = Assert.Throws<CmdletInvocationException>(() => fixture.InvokeScript(command));
+
+            exception.ErrorRecord.FullyQualifiedErrorId.Should().StartWith("NuGetPackageInitScriptFeatureDisabled");
+            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
         }
 
         [Fact]

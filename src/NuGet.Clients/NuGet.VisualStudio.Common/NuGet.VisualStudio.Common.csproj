@@ -42,6 +42,7 @@
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
     <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
     <Compile Include="$(SharedDirectory)\NuGetFeatureFlags.cs" />
+    <Compile Include="$(SharedDirectory)\PowerShellScriptExecutionFeature.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -20,6 +20,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     internal static class PackageInitScriptHelper
     {
+        internal static void EnsureFeatureEnabled(PSCmdlet cmdlet)
+        {
+            if (!NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
+            {
+                cmdlet.ThrowTerminatingError(new ErrorRecord(
+                    new NotSupportedException(Resources.InitScript_FeatureDisabled),
+                    "NuGetPackageInitScriptFeatureDisabled",
+                    ErrorCategory.NotImplemented,
+                    null));
+            }
+        }
+
         internal static IReadOnlyList<PowerShellPackageInitScript> GetScripts(
             IVsSolutionManager solutionManager,
             ISettings settings,
