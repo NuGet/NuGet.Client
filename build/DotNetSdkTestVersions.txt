@@ -1,4 +1,5 @@
 # Each line represents arguments for the .NET SDK installer script (https://learn.microsoft.com/dotnet/core/tools/dotnet-install-script)
 # To make sure that the right version of dotnet.exe (and maybe other files) is used, always install from lowest version to highest version
 -Channel 10.0 -Runtime dotnet
--Channel 11.0.1xx -Quality preview
+# Keep the test SDK compatible with NuGet 7.x assemblies.
+-Version 11.0.100-preview.5.26302.115
