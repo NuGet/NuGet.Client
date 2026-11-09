@@ -27,9 +27,7 @@
 
     <!-- NuGet SDK VS package Semantic Version -->
     <VsTargetMajorVersion Condition="'$(VsTargetMajorVersion)' == ''">18</VsTargetMajorVersion>
-    <!-- NuGet 8.0 maps to VS 18.12; update this offset when bumping the NuGet major version. -->
-    <VsTargetMinorVersionOffset Condition="'$(VsTargetMinorVersionOffset)' == ''">12</VsTargetMinorVersionOffset>
-    <VsTargetMinorVersion Condition="'$(VsTargetMinorVersion)' == ''">$([MSBuild]::Add($(VsTargetMinorVersionOffset), $(MinorNuGetVersion)))</VsTargetMinorVersion>
+    <VsTargetMinorVersion Condition="'$(VsTargetMinorVersion)' == ''">$([MSBuild]::Add($([MSBuild]::Multiply($([MSBuild]::Subtract($(MajorNuGetVersion), 7)), 12)), $(MinorNuGetVersion)))</VsTargetMinorVersion>
     <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(VsTargetMinorVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
 
     <!-- These branches are used for creating insertion PRs -->
