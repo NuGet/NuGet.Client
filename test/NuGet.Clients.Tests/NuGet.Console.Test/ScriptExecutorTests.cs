@@ -22,12 +22,13 @@ namespace NuGet.Console.Test
     public class ScriptExecutorTests
     {
         [Theory]
-        [InlineData("init.ps1", false, 1)]
-        [InlineData("INIT.PS1", false, 1)]
-        [InlineData("init.ps1", true, 0)]
-        [InlineData("install.ps1", false, 0)]
+        [InlineData("init.ps1", false, 1, false)]
+        [InlineData("INIT.PS1", false, 1, false)]
+        [InlineData("init.ps1", true, 0, false)]
+        [InlineData("install.ps1", false, 0, false)]
+        [InlineData("init.ps1", false, 1, true)]
         public async Task ExecuteAsync_WithoutExecutingCmdlet_RaisesEventOnlyForUnvisitedInitScriptAsync(
-            string scriptName, bool alreadyVisited, int expectedCount)
+            string scriptName, bool alreadyVisited, int expectedCount, bool changeSolutionWhileCreatingConsole)
         {
             using var directory = TestDirectory.Create();
             var relativeScriptPath = Path.Combine("tools", scriptName);
@@ -45,8 +46,14 @@ namespace NuGet.Console.Test
             var console = new Mock<IConsole>();
             console.SetupGet(c => c.Host).Returns(host.Object);
             console.SetupGet(c => c.Dispatcher).Returns(dispatcher.Object);
+            var consoleCreated = new TaskCompletionSource<IConsole>(TaskCreationOptions.RunContinuationsAsynchronously);
+            if (!changeSolutionWhileCreatingConsole)
+            {
+                consoleCreated.SetResult(console.Object);
+            }
+
             var provider = new Mock<IOutputConsoleProvider>();
-            provider.Setup(p => p.CreatePowerShellConsoleAsync()).ReturnsAsync(console.Object);
+            provider.Setup(p => p.CreatePowerShellConsoleAsync()).Returns(consoleCreated.Task);
             var executor = new ScriptExecutor { OutputConsoleProvider = provider.Object };
             if (alreadyVisited)
             {
@@ -54,15 +61,34 @@ namespace NuGet.Console.Test
             }
 
             var count = 0;
-            void OnInitScriptExecuted() => Interlocked.Increment(ref count);
+            long? executionSessionId = null;
+            void OnInitScriptExecuted(long solutionSessionId)
+            {
+                executionSessionId = solutionSessionId;
+                Interlocked.Increment(ref count);
+            }
+
             NuGetPowerShellUsage.InitPs1ExecuteEvent += OnInitScriptExecuted;
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+            var originalSessionId = NuGetPowerShellUsage.SolutionSessionId;
             try
             {
-                Assert.True(await executor.ExecuteAsync(
+                var execution = executor.ExecuteAsync(
                     identity, directory.Path, relativeScriptPath, project: null,
-                    Mock.Of<INuGetProjectContext>(), throwOnFailure: true));
+                    Mock.Of<INuGetProjectContext>(), throwOnFailure: true);
+                if (changeSolutionWhileCreatingConsole)
+                {
+                    Assert.False(execution.IsCompleted);
+                    NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+                    NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+                    Assert.NotEqual(originalSessionId, NuGetPowerShellUsage.SolutionSessionId);
+                    consoleCreated.SetResult(console.Object);
+                }
+
+                Assert.True(await execution);
 
                 Assert.Equal(expectedCount, count);
+                Assert.Equal(expectedCount == 1 ? originalSessionId : (long?)null, executionSessionId);
                 host.Verify(h => h.Execute(console.Object, It.IsAny<string>(), It.IsAny<object[]>()),
                     Times.Exactly(alreadyVisited ? 0 : 1));
 
@@ -79,6 +105,7 @@ namespace NuGet.Console.Test
             finally
             {
                 NuGetPowerShellUsage.InitPs1ExecuteEvent -= OnInitScriptExecuted;
+                NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             }
         }
     }

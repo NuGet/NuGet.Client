@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -10,13 +11,11 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Moq;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.ProjectManagement;
 using NuGet.Test.Utility;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Common.Telemetry;
 using NuGet.VisualStudio.Common.Telemetry.PowerShell;
 using Xunit;
 using PSCommand = System.Management.Automation.Runspaces.Command;
@@ -36,13 +35,15 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Theory]
-        [InlineData("init.ps1", false, 1)]
-        [InlineData("INIT.PS1", false, 1)]
-        [InlineData("init.ps1", true, 1)]
-        [InlineData("install.ps1", false, 0)]
-        [InlineData("uninstall.ps1", false, 0)]
-        [InlineData("notinit.ps1", false, 0)]
-        public void ExecutePSScriptInternal_CountsOnlyInitScriptAttempts(string scriptName, bool scriptThrows, int expectedCount)
+        [InlineData("init.ps1", false, 1, false)]
+        [InlineData("INIT.PS1", false, 1, false)]
+        [InlineData("init.ps1", true, 1, false)]
+        [InlineData("install.ps1", false, 0, false)]
+        [InlineData("uninstall.ps1", false, 0, false)]
+        [InlineData("notinit.ps1", false, 0, false)]
+        [InlineData("init.ps1", false, 2, true)]
+        public void ExecutePSScriptInternal_CountsOnlyInitScriptAttempts(
+            string scriptName, bool scriptThrows, int expectedCount, bool changeSolutionBetweenScripts)
         {
             using var directory = TestDirectory.Create();
             var scriptPath = Path.Combine(directory.Path, scriptName);
@@ -52,25 +53,34 @@ namespace NuGetConsole.Host.PowerShell.Test
             sessionState.Commands.Add(new SessionStateCmdletEntry("Invoke-TestPackageScript", typeof(InvokePackageScriptCommand), null));
             using var runspace = RunspaceFactory.CreateRunspace(new TestPSHost(directory.Path), sessionState);
             runspace.Open();
-            TelemetryEvent? telemetryEvent = null;
-            var telemetryService = new Mock<INuGetTelemetryService>();
-            telemetryService.Setup(s => s.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(e => telemetryEvent = e);
-            using var collector = new NuGetPowerShellUsageCollector(telemetryService.Object);
-            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
             using var pipeline = runspace.CreatePipeline();
             var command = new PSCommand("Invoke-TestPackageScript");
             command.Parameters.Add("ScriptPath", scriptPath);
+            command.Parameters.Add("ChangeSolutionBetweenScripts", changeSolutionBetweenScripts);
             pipeline.Commands.Add(command);
 
-            var results = pipeline.Invoke();
-            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+            var executionSessions = new List<long>();
+            void OnInitScriptExecuted(long solutionSessionId) => executionSessions.Add(solutionSessionId);
+            NuGetPowerShellUsage.InitPs1ExecuteEvent += OnInitScriptExecuted;
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+            var originalSessionId = NuGetPowerShellUsage.SolutionSessionId;
+            try
+            {
+                var results = pipeline.Invoke();
 
-            Assert.True(Assert.IsType<bool>(Assert.Single(results).BaseObject));
-            Assert.NotNull(telemetryEvent);
-            Assert.Equal(expectedCount, telemetryEvent["PowerShellHost.InitPs1ExecuteCount"]);
-            Assert.Equal(0, telemetryEvent["PowerShellHost.PmcExecuteCommandCount"]);
-            Assert.Equal(0, telemetryEvent["PowerShellHost.PmuiExecuteCommandCount"]);
+                Assert.True(Assert.IsType<bool>(Assert.Single(results).BaseObject));
+                Assert.Equal(expectedCount, executionSessions.Count);
+                Assert.All(executionSessions, id => Assert.Equal(originalSessionId, id));
+                if (changeSolutionBetweenScripts)
+                {
+                    Assert.NotEqual(originalSessionId, NuGetPowerShellUsage.SolutionSessionId);
+                }
+            }
+            finally
+            {
+                NuGetPowerShellUsage.InitPs1ExecuteEvent -= OnInitScriptExecuted;
+                NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+            }
         }
 
         public Task<object?> GetServiceAsync(Type serviceType)
@@ -84,11 +94,21 @@ namespace NuGetConsole.Host.PowerShell.Test
             [Parameter(Mandatory = true)]
             public string ScriptPath { get; set; } = string.Empty;
 
+            [Parameter]
+            public bool ChangeSolutionBetweenScripts { get; set; }
+
             protected override bool IsLoggingTimeDisabled => true;
 
             protected override void ProcessRecordCore()
             {
                 ExecutePSScriptInternal(ScriptPath);
+                if (ChangeSolutionBetweenScripts)
+                {
+                    NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+                    NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+                    ExecutePSScriptInternal(ScriptPath);
+                }
+
                 WriteObject(SessionState.PSVariable.GetValue("PackageScriptExecuted"));
             }
 

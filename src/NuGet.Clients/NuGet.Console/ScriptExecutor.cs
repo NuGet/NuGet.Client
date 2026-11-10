@@ -58,6 +58,7 @@ namespace NuGetConsole
             INuGetProjectContext nuGetProjectContext,
             bool throwOnFailure)
         {
+            var solutionSessionId = NuGetPowerShellUsage.SolutionSessionId;
             var scriptPath = Path.Combine(installPath, relativeScriptPath);
 
             if (File.Exists(scriptPath))
@@ -92,7 +93,7 @@ namespace NuGetConsole
                     nuGetProjectContext.Log(MessageLevel.Info, logMessage);
                     try
                     {
-                        await ExecuteScriptCoreAsync(request);
+                        await ExecuteScriptCoreAsync(request, solutionSessionId);
                     }
                     catch (Exception ex)
                     {
@@ -124,6 +125,7 @@ namespace NuGetConsole
 
         public async Task<bool> ExecuteInitScriptAsync(PackageIdentity identity)
         {
+            var solutionSessionId = NuGetPowerShellUsage.SolutionSessionId;
             var result = false;
             // Reserve the key. We can remove if the package has not been restored.
             if (TryMarkVisited(identity, PackageInitPS1State.NotFound))
@@ -146,7 +148,7 @@ namespace NuGetConsole
 
                         var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
 
-                        await ExecuteScriptCoreAsync(request);
+                        await ExecuteScriptCoreAsync(request, solutionSessionId);
 
                         result = true;
                     }
@@ -168,7 +170,7 @@ namespace NuGetConsole
             return result;
         }
 
-        private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request)
+        private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request, long solutionSessionId)
         {
             var console = await OutputConsoleProvider.CreatePowerShellConsoleAsync();
             var host = await Host.GetValueAsync();
@@ -183,7 +185,7 @@ namespace NuGetConsole
                 var input = request.BuildInput();
                 if (string.Equals(Path.GetFileName(request.ScriptPath), PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
-                    NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
+                    NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(solutionSessionId);
                 }
 
                 host.Execute(console, command, input);

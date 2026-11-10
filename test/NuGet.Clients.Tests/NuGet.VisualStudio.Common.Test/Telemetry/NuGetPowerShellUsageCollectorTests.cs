@@ -33,8 +33,9 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             using var collector = new NuGetPowerShellUsageCollector(telemetryService.Object);
 
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
+            var solutionSessionId = NuGetPowerShellUsage.SolutionSessionId;
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(solutionSessionId);
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(solutionSessionId);
             NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             var instanceEvent = InstanceCloseTelemetryEmitter.CreateTelemetryEvent();
 
@@ -58,11 +59,11 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             using var collector = new NuGetPowerShellUsageCollector(telemetryService.Object);
 
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(NuGetPowerShellUsage.SolutionSessionId);
             NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
-            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent();
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(NuGetPowerShellUsage.SolutionSessionId);
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(NuGetPowerShellUsage.SolutionSessionId);
             NuGetPowerShellUsage.RaiseCommandExecuteEvent(isPMC: true);
             NuGetPowerShellUsage.RaiseSolutionCloseEvent();
             NuGetPowerShellUsage.RaiseSolutionOpenEvent();
@@ -78,6 +79,61 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(0, events[2][PmcCommands]);
             Assert.Equal(3, instanceEvent[InitScripts]);
             Assert.Equal(1, instanceEvent[PmcCommands]);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void InitPs1Execute_AfterOriginatingSolutionCloses_CountsOnlyForInstance(bool openAnotherSolution)
+        {
+            var events = new List<TelemetryEvent>();
+            var telemetryService = new Mock<INuGetTelemetryService>();
+            telemetryService.Setup(s => s.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(events.Add);
+            using var collector = new NuGetPowerShellUsageCollector(telemetryService.Object);
+
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+            var originalSessionId = NuGetPowerShellUsage.SolutionSessionId;
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(originalSessionId);
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+            var firstInstanceSnapshot = InstanceCloseTelemetryEmitter.CreateTelemetryEvent();
+            if (openAnotherSolution)
+            {
+                NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+            }
+
+            var currentSessionId = NuGetPowerShellUsage.SolutionSessionId;
+            Assert.NotEqual(originalSessionId, currentSessionId);
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(originalSessionId);
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+            var finalInstanceSnapshot = InstanceCloseTelemetryEmitter.CreateTelemetryEvent();
+
+            Assert.Equal(2, events.Count);
+            Assert.Equal(1, events[0][InitScripts]);
+            Assert.Equal(0, events[1][InitScripts]);
+            Assert.Equal(1, firstInstanceSnapshot[InitScripts]);
+            Assert.Equal(2, finalInstanceSnapshot[InitScripts]);
+        }
+
+        [Fact]
+        public void InitPs1Execute_BeforeSolutionOpens_DoesNotContributeToSolution()
+        {
+            var events = new List<TelemetryEvent>();
+            var telemetryService = new Mock<INuGetTelemetryService>();
+            telemetryService.Setup(s => s.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(events.Add);
+            using var collector = new NuGetPowerShellUsageCollector(telemetryService.Object);
+
+            var noSolutionSessionId = NuGetPowerShellUsage.SolutionSessionId;
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(noSolutionSessionId);
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(noSolutionSessionId);
+            NuGetPowerShellUsage.RaiseInitPs1ExecuteEvent(NuGetPowerShellUsage.SolutionSessionId);
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+            var instanceEvent = InstanceCloseTelemetryEmitter.CreateTelemetryEvent();
+
+            Assert.Equal(1, Assert.Single(events)[InitScripts]);
+            Assert.Equal(3, instanceEvent[InitScripts]);
         }
     }
 }
