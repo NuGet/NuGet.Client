@@ -19,7 +19,6 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement;
-using NuGet.PackageManagement.Test;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -34,7 +33,6 @@ using Xunit;
 
 namespace NuGet.Test
 {
-    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class BuildIntegratedTests
     {
         [Fact]
@@ -1493,13 +1491,9 @@ namespace NuGet.Test
             Assert.Equal(0, entityFrameworkTargets.Count());
         }
 
-        [Theory]
-        [InlineData("1", false)]
-        [InlineData("0", true)]
-        [InlineData(null, true)]
-        public async Task InstallPackage_InitPs1DependsOnFeature(string featureValue, bool expectInitScripts)
+        [Fact]
+        public async Task InstallPackageWithInitPS1()
         {
-            using var feature = new PowerShellScriptExecutionFeatureScope(featureValue);
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
@@ -1547,14 +1541,11 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), token);
 
             // Assert
-            if (expectInitScripts)
-            {
-                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEquivalentTo(new[] { packageIdentity, depedencyIdentity });
-            }
-            else
-            {
-                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
-            }
+            Assert.Equal(2, buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count);
+            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(packageIdentity),
+                string.Join("|", buildIntegratedProject.ExecuteInitScriptAsyncCalls));
+            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().Contain(depedencyIdentity, because:
+                string.Join("|", buildIntegratedProject.ExecuteInitScriptAsyncCalls));
         }
 
         [Fact]
@@ -1608,13 +1599,9 @@ namespace NuGet.Test
             buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count.Should().Be(0);
         }
 
-        [Theory]
-        [InlineData("1", false)]
-        [InlineData("0", true)]
-        [InlineData(null, true)]
-        public async Task UpdatePackage_InitPs1DependsOnFeature(string featureValue, bool expectInitScripts)
+        [Fact]
+        public async Task UpdatePackageCallsInitPs1OnNewPackages()
         {
-            using var feature = new PowerShellScriptExecutionFeatureScope(featureValue);
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             using var testSolutionManager = new TestSolutionManager(pathContext);
@@ -1665,14 +1652,8 @@ namespace NuGet.Test
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
             // Assert
-            if (expectInitScripts)
-            {
-                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().Contain(updateIdentity);
-            }
-            else
-            {
-                buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().BeEmpty();
-            }
+            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count.Should().Be(1);
+            buildIntegratedProject.ExecuteInitScriptAsyncCalls.Should().Contain(updateIdentity);
         }
 
         [Fact]
