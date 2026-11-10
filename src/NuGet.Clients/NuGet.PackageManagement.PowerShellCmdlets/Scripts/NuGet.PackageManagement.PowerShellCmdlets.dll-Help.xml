@@ -1371,4 +1371,58 @@
       </maml:navigationLink>
     </maml:relatedLinks>
   </command:command>
+  <command:command
+      xmlns:maml="http://schemas.microsoft.com/maml/2004/10"
+      xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10"
+      xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10">
+    <command:details>
+      <command:name>Get-PackageInitScript</command:name>
+      <maml:description>
+        <maml:para>Lists installed package init scripts without executing them.</maml:para>
+      </maml:description>
+      <command:verb>Get</command:verb>
+      <command:noun>PackageInitScript</command:noun>
+    </command:details>
+    <maml:description>
+      <maml:para>Discovers tools/init.ps1 files belonging to installed packages across the solution, in dependency order. Returns Id, Version, and the absolute script path as FullName. The same package is listed only once.</maml:para>
+      <maml:para>This experimental command is disabled by default. Set NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION=1 before starting Visual Studio to enable discovery, or set it to 0 to disable it regardless of the Visual Studio feature flag. This command does not change automatic script execution.</maml:para>
+    </maml:description>
+    <command:syntax>
+      <command:syntaxItem>
+        <maml:name>Get-PackageInitScript</maml:name>
+        <command:parameter required="false" position="named">
+          <maml:name>Packages</maml:name>
+          <command:parameterValue required="true">string[]</command:parameterValue>
+        </command:parameter>
+      </command:syntaxItem>
+    </command:syntax>
+    <command:parameters>
+      <command:parameter required="false" position="named" pipelineInput="false">
+        <maml:name>Packages</maml:name>
+        <maml:description>
+          <maml:para>One or more installed package IDs. Use id@version to select a version when multiple installed versions contain init scripts. Unknown packages, invalid versions, or ambiguous IDs produce errors.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">string[]</command:parameterValue>
+      </command:parameter>
+    </command:parameters>
+    <command:returnValues>
+      <command:returnValue>
+        <dev:type><maml:name>NuGet.PackageManagement.PowerShellCmdlets.PowerShellPackageInitScript</maml:name></dev:type>
+        <maml:description><maml:para>Objects with Id, Version, and FullName properties.</maml:para></maml:description>
+      </command:returnValue>
+    </command:returnValues>
+    <command:examples>
+      <command:example>
+        <maml:title>----------  EXAMPLE 1 ----------</maml:title>
+        <dev:code>PM&gt; Get-PackageInitScript</dev:code>
+        <dev:remarks><maml:para>Lists all installed init scripts without running them.</maml:para></dev:remarks>
+      </command:example>
+      <command:example>
+        <maml:title>----------  EXAMPLE 2 ----------</maml:title>
+        <dev:code>PM&gt; Get-PackageInitScript -Packages Package1,Package2@2.0.0</dev:code>
+        <dev:remarks><maml:para>Lists init scripts belonging to selected packages.</maml:para></dev:remarks>
+      </command:example>
+    </command:examples>
+  </command:command>
+
 </helpItems>
