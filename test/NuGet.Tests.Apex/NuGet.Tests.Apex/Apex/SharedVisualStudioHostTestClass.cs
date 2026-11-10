@@ -6,7 +6,6 @@
 using System;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio;
-using Microsoft.Test.Apex.VisualStudio.FeatureFlags;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,10 +14,8 @@ namespace NuGet.Tests.Apex
     [TestClass]
     public abstract class SharedVisualStudioHostTestClass : ApexBaseTestClass
     {
-        private const string ControlPowerShellScriptExecutionFlagName = "NuGet.ControlPowerShellScriptExecution";
         private static readonly IVisualStudioHostFixtureFactory _contextFixtureFactory = new VisualStudioHostFixtureFactory();
         private readonly Lazy<VisualStudioHostFixture> _hostFixture;
-        private FeatureFlagTestService _featureFlagTestService;
         private NuGetConsoleTestExtension _console;
         private string _packageManagerOutputWindowText;
 
@@ -34,14 +31,9 @@ namespace NuGet.Tests.Apex
         {
             _hostFixture = new Lazy<VisualStudioHostFixture>(() =>
             {
-                var fixture = _contextFixtureFactory.GetVisualStudioHostFixture();
-                // Test the VS feature flag even when the runner inherits an environment override.
-                fixture.VisualStudioHostConfiguration.Environment["NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION"] = string.Empty;
-                return fixture;
+                return _contextFixtureFactory.GetVisualStudioHostFixture();
             });
         }
-
-        protected virtual bool ControlPowerShellScriptExecutionEnabled => true;
 
         public override VisualStudioHost VisualStudio => _hostFixture.Value.VisualStudio;
 
@@ -53,36 +45,13 @@ namespace NuGet.Tests.Apex
         public override void EnsureVisualStudioHost()
         {
             _hostFixture.Value.EnsureHost();
-            if (_featureFlagTestService == null)
-            {
-                var featureFlagTestService = VisualStudio.Get<FeatureFlagTestService>();
-                featureFlagTestService.CaptureOverride(ControlPowerShellScriptExecutionFlagName);
-                _featureFlagTestService = featureFlagTestService;
-                VisualStudio.Get<FeatureFlagService>().SetFeatureFlag(ControlPowerShellScriptExecutionFlagName, ControlPowerShellScriptExecutionEnabled);
-            }
         }
 
         public override void CloseVisualStudioHost()
         {
-            try
-            {
-                _packageManagerOutputWindowText = GetPackageManagerOutputWindowPaneText();
-            }
-            finally
-            {
-                try
-                {
-                    if (_featureFlagTestService != null)
-                    {
-                        _featureFlagTestService.RestoreOverride();
-                        _featureFlagTestService = null;
-                    }
-                }
-                finally
-                {
-                    VisualStudio.Stop();
-                }
-            }
+            _packageManagerOutputWindowText = GetPackageManagerOutputWindowPaneText();
+
+            VisualStudio.Stop();
         }
 
         protected NuGetConsoleTestExtension GetConsole(ProjectTestExtension project)
@@ -112,23 +81,18 @@ namespace NuGet.Tests.Apex
 
         public override void Dispose()
         {
-            try
+            if (_console != null)
             {
-                if (_console != null)
-                {
-                    string text = _console.GetText();
+                string text = _console.GetText();
 
-                    Logger.WriteMessage($"Package Manager Console contents:  {text}");
-                }
-
-                _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
-
-                Logger.WriteMessage($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+                Logger.WriteMessage($"Package Manager Console contents:  {text}");
             }
-            finally
-            {
-                base.Dispose();
-            }
+
+            _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
+
+            Logger.WriteMessage($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+
+            base.Dispose();
         }
 
         internal string GetPackageManagerOutputWindowPaneText()

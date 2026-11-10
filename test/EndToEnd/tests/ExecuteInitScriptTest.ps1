@@ -1,6 +1,6 @@
 Set-Variable DefaultRestoreTimeoutInSeconds 20 -Option Constant
 
-function Test-NetCoreProjectDoesNotExecuteInitScriptOnInstall {
+function Test-NetCoreProjectExecuteInitScriptOnInstall {
     param($context)
 
     Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
@@ -27,8 +27,6 @@ function Test-NetCoreProjectDoesNotExecuteInitScriptOnInstall {
         $restoreEvent = Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
-        Assert-Null $global:PackageInitPS1Var
-        Import-PackageInitScript -Packages PackageInitPS1
         Assert-AreEqual 1 $global:PackageInitPS1Var
     }
     Finally {
@@ -58,7 +56,6 @@ function Test-NetCoreProjectExecuteInitScriptOnlyOnce {
 
         $p | Install-Package PackageInitPS1 -Source $context.RepositoryRoot
         Wait-Event -SourceIdentifier RestoreEventSource -TimeoutSec $DefaultRestoreTimeoutInSeconds
-        Import-PackageInitScript -Packages PackageInitPS1
 
         # Act
         $p | Install-Package NuGet.Versioning -Version 3.5.0
@@ -115,8 +112,8 @@ function Test-NetCoreProjectExecuteInitScriptAfterReopen {
         Assert-NotNull $restoreEvent
         Assert-AreEqual 'Succeeded' $restoreEvent.SourceEventArgs.RestoreStatus
 
-        Assert-Null $global:PackageInitPS1Var
-        Import-PackageInitScript -Packages PackageInitPS1
+        Write-Verbose "Sleeping to let the host execute init scripts..."
+        Start-Sleep -s 10
         Assert-AreEqual 1 $global:PackageInitPS1Var
     }
     Finally {

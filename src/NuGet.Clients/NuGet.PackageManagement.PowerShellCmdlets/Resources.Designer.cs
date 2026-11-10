@@ -482,15 +482,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
                 return ResourceManager.GetString("InitScript_FeatureDisabled", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts..
-        /// </summary>
-        internal static string InitScript_InvalidPath {
-            get {
-                return ResourceManager.GetString("InitScript_InvalidPath", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to No installed tools/init.ps1 script matches package &apos;{0}&apos;. Use Get-PackageInitScript to list available scripts..
