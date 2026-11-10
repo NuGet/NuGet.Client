@@ -6,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
+using Microsoft.VisualStudio.Utilities;
 using Moq;
 using NuGet.Configuration;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Services;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -21,6 +23,45 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public VSSolutionManagerTest(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
+        }
+
+        [Fact]
+        public async Task GetNuGetProjectsAsync_WaitsForFeatureFlagInitialization_AndPropagatesFailure()
+        {
+            var initialization = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var featureFlagService = new Mock<INuGetFeatureFlagService>(MockBehavior.Strict);
+            featureFlagService.Setup(x => x.InitializeAsync()).Returns(initialization.Task);
+            var projectSystemCache = new Mock<IProjectSystemCache>(MockBehavior.Strict);
+            var logger = Mock.Of<Common.ILogger>();
+            var projectFactory = new NuGetProjectFactory(
+                Array.Empty<Lazy<INuGetProjectProvider, IOrderable>>(),
+                Mock.Of<IVsProjectThreadingService>(),
+                logger);
+            using var solutionManager = new VSSolutionManager(
+                this,
+                projectSystemCache.Object,
+                projectFactory,
+                Mock.Of<ICredentialServiceProvider>(),
+                Mock.Of<IVsProjectAdapterProvider>(),
+                logger,
+                new Lazy<ISettings>(() => Mock.Of<ISettings>()),
+                featureFlagService.Object,
+                NuGetUIThreadHelper.JoinableTaskFactory.Context,
+                new Lazy<IProjectJsonToPackageReferenceMigratorExt>(
+                    () => Mock.Of<IProjectJsonToPackageReferenceMigratorExt>()),
+                new Lazy<INuGetUILogger>(() => Mock.Of<INuGetUILogger>()));
+
+            var projects = solutionManager.GetNuGetProjectsAsync();
+
+            Assert.False(projects.IsCompleted);
+            projectSystemCache.VerifyNoOtherCalls();
+
+            var expected = new InvalidOperationException("Feature flag initialization failed.");
+            initialization.SetException(expected);
+
+            Exception actual = await Assert.ThrowsAsync<InvalidOperationException>(() => projects);
+            Assert.Same(expected, actual);
+            projectSystemCache.VerifyNoOtherCalls();
         }
 
         [Fact]

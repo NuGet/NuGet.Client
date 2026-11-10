@@ -13,6 +13,12 @@ namespace NuGet.VisualStudio
     public interface INuGetFeatureFlagService
     {
         /// <summary>
+        /// Initializes the AppContext switches for feature flags and experiments shared with core libraries.
+        /// Callers must await this before invoking code that reads those switches.
+        /// </summary>
+        Task InitializeAsync();
+
+        /// <summary>
         /// Determines whether a feature has been enabled.
         /// </summary>
         /// <param name="featureFlag">The feature flag info.</param>

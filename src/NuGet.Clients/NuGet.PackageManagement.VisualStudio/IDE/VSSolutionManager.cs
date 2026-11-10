@@ -917,6 +917,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task EnsureInitializeAsync()
         {
+            // MEF package installation APIs can use projects without loading NuGetPackage.
+            // Do not swallow initialization failures and continue with unresolved feature switches.
+            await _featureFlagService.InitializeAsync();
+
             try
             {
                 // If already initialized, need not be on the UI thread
