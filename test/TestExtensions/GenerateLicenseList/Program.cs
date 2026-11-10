@@ -91,7 +91,13 @@ namespace GenerateLicenseList
 
             LiteralExpressionSyntax placeholder = SyntaxFactory.LiteralExpression(
                 SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(string.Empty)).WithTriviaFrom(version);
-            return node.ReplaceNode(version, placeholder).NormalizeWhitespace().ToFullString();
+            node = node.ReplaceNode(version, placeholder);
+            node = node.ReplaceTrivia(
+                node.DescendantTrivia()
+                    .Where(trivia => trivia.IsKind(SyntaxKind.SingleLineCommentTrivia)),
+                (original, _) => SyntaxFactory.Comment(original.ToString().TrimEnd(' ', '\t')));
+
+            return node.NormalizeWhitespace().ToFullString();
         }
     }
 }
