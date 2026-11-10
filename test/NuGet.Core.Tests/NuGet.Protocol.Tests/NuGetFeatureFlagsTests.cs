@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using NuGet.Shared;
 using Test.Utility;
@@ -8,12 +9,34 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class NuGetFeatureFlagsTests
     {
         [Fact]
         public void UseSystemTextJsonDeserializationFeatureSwitch_Default_ReturnsFalse()
         {
             Assert.False(NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
+        }
+
+        [Fact]
+        public void UseSystemTextJsonDeserializationFeatureSwitch_WhenAppContextSwitchChanges_ReturnsCurrentState()
+        {
+            AppContext.TryGetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, out bool originalSwitch);
+            try
+            {
+                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, false);
+                Assert.False(NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
+
+                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, true);
+                Assert.True(NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
+
+                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, false);
+                Assert.False(NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
+            }
+            finally
+            {
+                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, originalSwitch);
+            }
         }
 
         [Fact]

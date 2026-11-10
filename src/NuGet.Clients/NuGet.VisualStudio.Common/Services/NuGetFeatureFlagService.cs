@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.VisualStudio
 {
@@ -19,22 +20,43 @@ namespace NuGet.VisualStudio
     {
         private readonly IEnvironmentVariableReader _environmentVariableReader;
         private readonly IAsyncServiceProvider _asyncServiceProvider;
+        private readonly INuGetExperimentationService _experimentationService;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IVsFeatureFlags> _ivsFeatureFlags;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<bool> _initialization;
         private readonly Dictionary<string, bool> _featureFlagCache;
 
         [ImportingConstructor]
-        public NuGetFeatureFlagService()
-            : this(EnvironmentVariableWrapper.Instance, AsyncServiceProvider.GlobalProvider)
+        public NuGetFeatureFlagService(INuGetExperimentationService experimentationService)
+            : this(EnvironmentVariableWrapper.Instance, AsyncServiceProvider.GlobalProvider, experimentationService)
         {
             // ensure uniqueness.
         }
 
-        internal NuGetFeatureFlagService(IEnvironmentVariableReader environmentVariableReader, IAsyncServiceProvider asyncServiceProvider)
+        internal NuGetFeatureFlagService(
+            IEnvironmentVariableReader environmentVariableReader,
+            IAsyncServiceProvider asyncServiceProvider,
+            INuGetExperimentationService experimentationService)
         {
             _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
             _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
+            _experimentationService = experimentationService ?? throw new ArgumentNullException(nameof(experimentationService));
             _ivsFeatureFlags = new(() => _asyncServiceProvider.GetServiceAsync<SVsFeatureFlags, IVsFeatureFlags>(), NuGetUIThreadHelper.JoinableTaskFactory);
+            _initialization = new(InitializeCoreAsync, NuGetUIThreadHelper.JoinableTaskFactory);
             _featureFlagCache = new();
+        }
+
+        public Task InitializeAsync() => _initialization.GetValueAsync();
+
+        private async Task<bool> InitializeCoreAsync()
+        {
+            if (_experimentationService.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization))
+            {
+                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, isEnabled: true);
+            }
+
+            bool enabled = await IsFeatureEnabledAsync(NuGetFeatureFlagConstants.ControlPowerShellScriptExecution);
+            AppContext.SetSwitch(PowerShellScriptExecutionFeature.SwitchName, enabled);
+            return true;
         }
 
         public async Task<bool> IsFeatureEnabledAsync(NuGetFeatureFlagConstants featureFlag)

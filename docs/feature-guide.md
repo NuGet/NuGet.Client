@@ -184,8 +184,11 @@ See [UI Guidelines](ui-guidelines.md) for detailed information. In summary:
 ##### Feature flags shared with core libraries
 
 Use `INuGetFeatureFlagService` for native Visual Studio feature flags.
-For flags needed by core libraries that cannot depend on Visual Studio services, resolve the flag during `NuGetPackage.InitializeAsync` and publish its value through an `AppContext` switch.
+For flags or experiments needed by core libraries that cannot depend on Visual Studio services, resolve and publish their values through `AppContext` switches in `INuGetFeatureFlagService.InitializeAsync`.
+Await this shared initialization at every entry point before calling code that reads the switches.
+Do not rely on `NuGetPackage.InitializeAsync` running first, since other packages and MEF APIs can start operations independently.
 A helper compiled into each consuming assembly can read that process-wide switch without depending on Visual Studio.
+Do not cache the switch value during static initialization, since the assembly may be used before Visual Studio publishes the value.
 
 #### CLI (NuGet.exe & dotnet.exe) considerations
 

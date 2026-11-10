@@ -60,6 +60,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ICommonOperations> _commonOperations;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
+        private readonly Lazy<INuGetFeatureFlagService> _featureFlagService;
         private readonly Lazy<IRestoreProgressReporter> _restoreProgressReporter;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string SyncModeKey = "IsSyncMode";
@@ -119,6 +120,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _settings = new Lazy<ISettings>(() => componentModel.GetService<ISettings>());
             _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => componentModel.GetService<IDeleteOnRestartManager>());
             _scriptExecutor = new Lazy<IScriptExecutor>(() => componentModel.GetService<IScriptExecutor>());
+            _featureFlagService = new Lazy<INuGetFeatureFlagService>(() => componentModel.GetService<INuGetFeatureFlagService>());
             _restoreProgressReporter = new Lazy<IRestoreProgressReporter>(() => componentModel.GetService<IRestoreProgressReporter>());
             _dte = new Lazy<DTE>(() => NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>()));
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
@@ -297,17 +299,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 ActiveConsole = console;
-                if (_initialized.HasValue)
+                try
                 {
-                    if (_initialized.Value
-                        && console.ShowDisclaimerHeader)
+                    await _featureFlagService.Value.InitializeAsync();
+
+                    if (_initialized.HasValue)
                     {
-                        DisplayDisclaimerAndHelpText();
+                        if (_initialized.Value
+                            && console.ShowDisclaimerHeader)
+                        {
+                            DisplayDisclaimerAndHelpText();
+                        }
                     }
-                }
-                else
-                {
-                    try
+                    else
                     {
                         bool _isPmc = console is IWpfConsole;
                         var result = _runspaceManager.GetRunspace(console, _name);
@@ -366,15 +370,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                         StartAsyncDefaultProjectUpdate();
                     }
-                    catch (Exception ex)
-                    {
-                        // catch all exception as we don't want it to crash VS
-                        _initialized = false;
-                        IsCommandEnabled = false;
-                        ReportError(ex);
+                }
+                catch (Exception ex)
+                {
+                    // catch all exception as we don't want it to crash VS
+                    _initialized = false;
+                    IsCommandEnabled = false;
+                    ReportError(ex);
 
-                        ExceptionHelper.WriteErrorToActivityLog(ex);
-                    }
+                    ExceptionHelper.WriteErrorToActivityLog(ex);
                 }
             });
         }
