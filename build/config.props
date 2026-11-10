@@ -32,7 +32,7 @@
 
     <!-- These branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/d18.11-ltsc</VsTargetBranch>
-    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">d18.11-ltsc</VsTargetChannel>
+    <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">int.d18.11-ltsc</VsTargetChannel>
 
     <!-- Run Apex/E2E tests on the target branch -->
     <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == ''">$(VsTargetChannel)</VsTargetChannelForTests>
