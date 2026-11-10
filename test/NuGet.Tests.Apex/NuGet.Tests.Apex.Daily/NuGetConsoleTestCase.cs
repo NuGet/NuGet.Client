@@ -255,8 +255,7 @@ namespace NuGet.Tests.Apex.Daily
                 nugetConsole.Execute($"install-package EntityFramework -source {source} -Verbose");
 
                 // Assert
-                nugetConsole.Execute("Import-PackageInitScript -Packages EntityFramework -Verbose");
-                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("init.ps1"), $"The EntityFramework init script was not explicitly imported. PMC output: {nugetConsole.GetText()}");
+                Assert.IsTrue(nugetConsole.IsMessageFoundInPMC("init.ps1"), "The init.ps1 script in TestProject was not executed when the EntityFramework package was installed");
 
                 // Act
                 nugetConsole.Clear();

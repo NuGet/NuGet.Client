@@ -50,22 +50,20 @@ function Test-BuildIntegratedDependencyUpdatedByInstall {
     Assert-NetCorePackageInLockFile $project Newtonsoft.Json 7.0.1
 }
 
-function Test-BuildIntegratedInstallPackageDoesNotInvokeInitScript {
+function Test-BuildIntegratedInstallPackageInvokeInitScript {
     param(
         $context
     )
     
     # Arrange
     $p = New-BuildIntegratedProj
-    Remove-Item function:\Get-WorldB -ErrorAction Ignore
 
     # Act
     Install-Package PackageWithScriptsB -Source $context.RepositoryRoot
 
     # Assert
 
-    Assert-False (Test-Path function:\Get-WorldB)
-    Import-PackageInitScript -Packages PackageWithScriptsB
+    # This asserts init.ps1 gets called
     Assert-True (Test-Path function:\Get-WorldB)
 }
 

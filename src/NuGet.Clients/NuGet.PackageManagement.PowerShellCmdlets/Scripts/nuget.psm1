@@ -51,12 +51,6 @@ Register-TabExpansion 'Get-PackageInitScript' @{
     }
 }
 
-Register-TabExpansion 'Import-PackageInitScript' @{
-    'Packages' = {
-        Get-PackageInitScript -ErrorAction SilentlyContinue | ForEach-Object { "$($_.Id)@$($_.Version)" }
-    }
-}
-
 Register-TabExpansion 'Install-Package' @{
     'Id' = {
         param($context)
