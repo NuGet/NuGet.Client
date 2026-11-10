@@ -27,7 +27,7 @@ namespace NuGet.Shared
 
         /// <summary>Feature switch for System.Text.Json deserialization. Defaults to <see langword="false"/> (Newtonsoft is the default).</summary>
         [FeatureSwitchDefinition(UseSystemTextJsonDeserializationSwitchName)]
-        internal static bool UseSystemTextJsonDeserializationFeatureSwitch { get; } =
+        internal static bool UseSystemTextJsonDeserializationFeatureSwitch =>
             AppContext.TryGetSwitch(UseSystemTextJsonDeserializationSwitchName, out bool value) && value;
 
         /// <summary>Returns <see langword="true"/> when env var <c>NUGET_USE_SYSTEM_TEXT_JSON_DESERIALIZATION</c> is <c>true</c>.</summary>
