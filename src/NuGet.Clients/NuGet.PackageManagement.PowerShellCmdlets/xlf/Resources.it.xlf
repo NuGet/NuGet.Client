@@ -240,11 +240,6 @@
         <target state="new">This command is unavailable because explicit package initialization scripts are not enabled.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InitScript_InvalidPath">
-        <source>'{0}' is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts.</source>
-        <target state="new">'{0}' is not an installed tools/init.ps1 script in this solution. Use Get-PackageInitScript to list available scripts.</target>
-        <note>{0} is the input path. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
-      </trans-unit>
       <trans-unit id="InitScript_PackageNotFound">
         <source>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</source>
         <target state="new">No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</target>

@@ -701,8 +701,6 @@ function Test-ExecuteInitScriptsPerSolution
 
     Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
-    Assert-True ($global:PackageInitPS1Var -eq 0)
-    Import-PackageInitScript -Packages PackageInitPS1
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     $solutionFile1 = Get-SolutionFullName
@@ -735,8 +733,6 @@ function Test-ExecuteInitScriptsOnlyOnce
 
     Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryRoot
 
-    Assert-True ($global:PackageInitPS1Var -eq 0)
-    Import-PackageInitScript -Packages PackageInitPS1
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     # Act

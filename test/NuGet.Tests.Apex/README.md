@@ -7,17 +7,6 @@ Each individual tests starts a runner which will kick off a new Visual Studio pr
 Due to the fact that each tests starts its own Visual Studio process, these tests are repeatable and are not affected by state left from previous tests unlike the powershell based [End-to-End tests](../../scripts/e2etests/README.md) tests which run in sequence.
 In turn that makes these tests really slow, so be very mindful about not duplicating scenarios.
 
-## Testing feature flags
-
-Use `VisualStudio.Get<FeatureFlagService>().SetFeatureFlag` to override native Visual Studio feature flags.
-Set startup-sensitive flags before opening a solution or accessing NuGet services, because NuGet caches their values.
-`SharedVisualStudioHostTestClass` enables `NuGet.ControlPowerShellScriptExecution` during host setup and restores the original local override before stopping Visual Studio.
-If there was no local override, cleanup removes the test's override rather than persisting the previous effective value, so remote settings retain their precedence.
-Override `ControlPowerShellScriptExecutionEnabled` to return `false` for legacy behavior.
-The host configuration clears any inherited `NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION` override so these tests exercise the native feature flag without changing the test runner's environment.
-
-`NuGetConsoleScriptExecutionTestCase` and `NuGetConsoleLegacyScriptExecutionTestCase` run the same initialization scenario with the feature enabled and disabled, respectively, for both packages.config and PackageReference.
-
 ## Running Apex tests
 
 ### Running Apex tests in Visual Studio

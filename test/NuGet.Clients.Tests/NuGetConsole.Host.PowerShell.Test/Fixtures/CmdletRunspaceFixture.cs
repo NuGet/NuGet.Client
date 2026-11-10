@@ -31,8 +31,6 @@ namespace NuGetConsole.Host.PowerShell.Test
                 new SessionStateCmdletEntry("Get-Package", typeof(GetPackageCommand), null));
             initialSessionState.Commands.Add(
                 new SessionStateCmdletEntry("Get-PackageInitScript", typeof(GetPackageInitScriptCommand), null));
-            initialSessionState.Commands.Add(
-                new SessionStateCmdletEntry("Import-PackageInitScript", typeof(ImportPackageInitScriptCommand), null));
 
             _runspace = RunspaceFactory.CreateRunspace(host, initialSessionState);
             _runspace.Open();

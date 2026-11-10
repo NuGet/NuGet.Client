@@ -302,7 +302,6 @@ Skip PS tests that:
 
 ## Common gotchas
 
-- **Native VS feature flags**: Use `VisualStudio.Get<FeatureFlagService>().SetFeatureFlag` before opening a solution or accessing NuGet services when NuGet caches a flag during initialization. This persists a local override: use `FeatureFlagTestService` to capture and restore the original override, including its absence, rather than restoring the effective Boolean value. Apex's `FeatureFlagUpdateMethod.Transient` also treats an absent value as false. Clear inherited environment overrides in the host configuration so they do not mask the flag. Separate enabled/disabled test classes can inherit the same data-driven scenario.
 - **Console width**: PMC output assertions are text-sensitive. The Apex infrastructure forces
   console width to 1024 to avoid wrapping issues.
 - **Restore timing**: After install/update operations, the Apex infrastructure handles waiting for
