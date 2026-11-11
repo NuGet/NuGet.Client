@@ -15,5 +15,7 @@ namespace NuGet.ProjectManagement
         public abstract Task OpenFile(string fullPath);
 
         public PackageIdentity DirectInstall { get; protected set; }
+
+        public PackageScriptBehavior PackageScripts { get; set; }
     }
 }

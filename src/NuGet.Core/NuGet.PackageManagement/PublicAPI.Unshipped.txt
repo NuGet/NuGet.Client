@@ -1,1 +1,8 @@
 #nullable enable
+NuGet.ProjectManagement.ExecutionContext.PackageScripts.get -> NuGet.ProjectManagement.PackageScriptBehavior
+NuGet.ProjectManagement.ExecutionContext.PackageScripts.set -> void
+NuGet.ProjectManagement.PackageScriptBehavior
+NuGet.ProjectManagement.PackageScriptBehavior.Fail = 0 -> NuGet.ProjectManagement.PackageScriptBehavior
+NuGet.ProjectManagement.PackageScriptBehavior.Run = 2 -> NuGet.ProjectManagement.PackageScriptBehavior
+NuGet.ProjectManagement.PackageScriptBehavior.RunWithInit = 3 -> NuGet.ProjectManagement.PackageScriptBehavior
+NuGet.ProjectManagement.PackageScriptBehavior.Skip = 1 -> NuGet.ProjectManagement.PackageScriptBehavior

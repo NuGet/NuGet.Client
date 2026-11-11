@@ -26,6 +26,12 @@ namespace NuGetConsole.Host.PowerShell.Test
             var host = new TestPSHost(activeSource);
             var initialSessionState = InitialSessionState.CreateDefault();
             initialSessionState.Commands.Add(
+                new SessionStateCmdletEntry("Install-Package", typeof(InstallPackageCommand), null));
+            initialSessionState.Commands.Add(
+                new SessionStateCmdletEntry("Update-Package", typeof(UpdatePackageCommand), null));
+            initialSessionState.Commands.Add(
+                new SessionStateCmdletEntry("Uninstall-Package", typeof(UninstallPackageCommand), null));
+            initialSessionState.Commands.Add(
                 new SessionStateCmdletEntry("Find-Package", typeof(FindPackageCommand), null));
             initialSessionState.Commands.Add(
                 new SessionStateCmdletEntry("Get-Package", typeof(GetPackageCommand), null));
