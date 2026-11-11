@@ -65,6 +65,25 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Theory]
+        [InlineData("Install-Package")]
+        [InlineData("Update-Package")]
+        [InlineData("Uninstall-Package")]
+        public void PackageScripts_ParameterHasExplicitChoicesAndRejectsInvalidInput(string command)
+        {
+            _componentModel.Setup(model => model.GetService<ISettings>()).Returns(NullSettings.Instance);
+            using var fixture = new CmdletRunspaceFixture();
+
+            var choices = fixture.InvokeScript(
+                $"(Get-Command {command}).Parameters['PackageScripts'].Attributes | " +
+                "Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] } | " +
+                "ForEach-Object { $_.ValidValues }");
+
+            Assert.Equal(new[] { "Fail", "Run", "RunWithInit", "Skip" }, choices.Select(choice => choice.BaseObject));
+            Assert.Throws<ParameterBindingException>(() => fixture.InvokeScript($"{command} Package -PackageScripts Invalid"));
+            Assert.Throws<ParameterBindingException>(() => fixture.InvokeScript($"{command} Package -PackageScripts 99"));
+        }
+
+        [Theory]
         [InlineData("Get-PackageInitScript", null)]
         [InlineData("Import-PackageInitScript", null)]
         [InlineData("Get-PackageInitScript", "0")]

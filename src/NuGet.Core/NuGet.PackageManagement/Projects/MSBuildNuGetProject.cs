@@ -436,6 +436,8 @@ namespace NuGet.ProjectManagement
             }
 
             var packageTargetFramework = packageReference.TargetFramework ?? ProjectSystem.TargetFramework;
+            var packagePath = FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity);
+            PackageScriptExecution.ThrowIfUninstallFilesMissing(nuGetProjectContext, packageIdentity, packagePath);
             var packageEventArgs = new PackageEventArgs(FolderNuGetProject,
                                             packageIdentity,
                                             FolderNuGetProject.GetInstalledPath(packageIdentity));
@@ -447,10 +449,20 @@ namespace NuGet.ProjectManagement
 
             PackageEventsProvider.Instance.NotifyUninstalling(packageEventArgs);
 
-            var packagePath = FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity);
-
             if (string.IsNullOrEmpty(packagePath))
             {
+                if (NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled
+                    && PackageScriptExecution.GetBehavior(nuGetProjectContext) == PackageScriptBehavior.Skip)
+                {
+                    await UninstallPackageReferenceAsync(packageIdentity, nuGetProjectContext, token);
+                    PackageReferenceRemoved?.Invoke(this, packageEventArgs);
+                    PackageEventsProvider.Instance.NotifyReferenceRemoved(packageEventArgs);
+                    PackageUninstalled?.Invoke(this, packageEventArgs);
+                    PackageEventsProvider.Instance.NotifyUninstalled(packageEventArgs);
+                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageUninstalledWithoutContents, packageIdentity);
+                    return true;
+                }
+
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExistInFolder,
                     packageIdentity, ProjectSystem.ProjectName);
                 return false;
@@ -461,21 +473,18 @@ namespace NuGet.ProjectManagement
             using var packageReader = new PackageArchiveReader(zipArchive);
 
             // Step-2: Execute powershell script - uninstall.ps1
-            var toolItemGroups = packageReader.GetToolItems();
-            var compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility
-                .GetMostCompatibleGroup(packageTargetFramework, toolItemGroups);
-            compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.Normalize(compatibleToolItemsGroup);
-
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
+            var uninstallPS1RelativePath = PackageScriptExecution.GetScript(
+                packageReader.GetToolItems(), packageTargetFramework, PowerShellScripts.Uninstall);
+            if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
             {
-                var uninstallPS1RelativePath = compatibleToolItemsGroup.Items.FirstOrDefault(
-                    p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall,
-                                    StringComparison.OrdinalIgnoreCase));
-
-                if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
+                var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
+                PackageScriptExecution.ThrowIfUninstallFilesMissing(
+                    nuGetProjectContext, packageIdentity, Path.Combine(packageInstallPath, uninstallPS1RelativePath));
+                PackageScriptExecution.ThrowIfBlocked(nuGetProjectContext,
+                    new[] { Path.Combine(packageInstallPath, uninstallPS1RelativePath) });
+                var scriptBehavior = PackageScriptExecution.GetBehavior(nuGetProjectContext);
+                if (scriptBehavior == PackageScriptBehavior.Run || scriptBehavior == PackageScriptBehavior.RunWithInit)
                 {
-                    var packageInstallPath = FolderNuGetProject.GetInstalledPath(
-                        packageIdentity);
                     await ProjectServices.ScriptService.ExecutePackageScriptAsync(
                         packageIdentity,
                         packageInstallPath,
@@ -510,18 +519,8 @@ namespace NuGet.ProjectManagement
                 = MSBuildNuGetProjectSystemUtility.Normalize(compatibleBuildFilesGroup);
 
             // Step-5: Remove package reference from packages.config
-            await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
-
-            // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
-            //         OR Add it again (to ensure that Source Control works), when there are some packages
-            if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
-            {
-                ProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-            }
-            else
-            {
-                ProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-            }
+            // Step-6: Update packages.config in the project
+            await UninstallPackageReferenceAsync(packageIdentity, nuGetProjectContext, token);
 
             // Step-7: Uninstall package from the msbuild project
             // Step-7.1: Remove references
@@ -590,6 +589,20 @@ namespace NuGet.ProjectManagement
             PackageEventsProvider.Instance.NotifyUninstalled(packageEventArgs);
 
             return true;
+        }
+
+        private async Task UninstallPackageReferenceAsync(
+            PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
+            if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
+            {
+                ProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+            }
+            else
+            {
+                ProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+            }
         }
 
         public override Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)

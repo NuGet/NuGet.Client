@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -520,6 +520,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot run uninstall.ps1 for package &apos;{0}&apos; because required files are missing from the solution packages folder. Restore packages before uninstalling, or use -PackageScripts Skip to uninstall without running scripts..
+        /// </summary>
+        internal static string PackageFilesMissingForUninstall {
+            get {
+                return ResourceManager.GetString("PackageFilesMissingForUninstall", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Unable to uninstall &apos;{0}&apos; because &apos;{1}&apos; depends on it..
         /// </summary>
         internal static string PackageHasDependent {
@@ -592,6 +601,16 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This operation contains PowerShell package scripts and no project files have been changed. Inspect the scripts below, then use -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip in Package Manager Console:
+        ///{0}.
+        /// </summary>
+        internal static string PackageScriptsBlocked {
+            get {
+                return ResourceManager.GetString("PackageScriptsBlocked", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Package source mapping matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;.
         /// </summary>
         internal static string PackageSourceMappingPatternMatchFound {
@@ -627,6 +646,15 @@ namespace NuGet.PackageManagement {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; was removed from packages.config without running scripts because it is missing from the solution packages folder. Assembly references, build imports, and content files could not be cleaned up..
+        /// </summary>
+        internal static string PackageUninstalledWithoutContents {
+            get {
+                return ResourceManager.GetString("PackageUninstalledWithoutContents", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Parameter cannot be zero or negative.
         /// </summary>
@@ -844,7 +872,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to gather package &apos;{0}&apos; from source &apos;{1}&apos;. Verify all your online package sources are available. .
+        ///   Looks up a localized string similar to Unable to gather package &apos;{0}&apos; from source &apos;{1}&apos;. Verify all your online package sources are available..
         /// </summary>
         internal static string UnableToGatherPackageFromSource {
             get {

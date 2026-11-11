@@ -2413,6 +2413,16 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var projects = nuGetProjects.ToList();
+            var actions = nuGetProjectActions.ToList();
+            await CheckUninstallPackageScriptsAsync(
+                actions.Where(action => action.Project is MSBuildNuGetProject && projects.Contains(action.Project))
+                    .Select(action => ((MSBuildNuGetProject)action.Project, action)),
+                nuGetProjectContext, token);
+            var downloadContext = new PackageDownloadContext(sourceCacheContext)
+            {
+                ParentId = nuGetProjectContext.OperationId,
+                ClientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, new LoggerAdapter(nuGetProjectContext))
+            };
 
             // find out build integrated projects so that we can arrange them in reverse dependency order
             var buildIntegratedProjectsToUpdate = projects.OfType<BuildIntegratedNuGetProject>().ToList();
@@ -2450,14 +2460,62 @@ namespace NuGet.PackageManagement
             // execute all nuget project actions
             foreach (var project in sortedProjectsToUpdate)
             {
-                var nugetActions = nuGetProjectActions.Where(action => action.Project.Equals(project));
-                await ExecuteNuGetProjectActionsAsync(project, nugetActions, nuGetProjectContext, sourceCacheContext, token);
+                var nugetActions = actions.Where(action => action.Project.Equals(project));
+                await ExecuteNuGetProjectActionsCoreAsync(project, nugetActions, nuGetProjectContext, downloadContext, token);
             }
 
             // clear cache which could temper with other updates
             _buildIntegratedProjectsUpdateSet?.Clear();
             _buildIntegratedProjectsCache = null;
             _restoreProviderCache = null;
+        }
+
+        private static async Task CheckUninstallPackageScriptsAsync(
+            IEnumerable<(MSBuildNuGetProject Project, NuGetProjectAction Action)> projectActions,
+            INuGetProjectContext context,
+            CancellationToken token)
+        {
+            if (!NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled
+                || PackageScriptExecution.GetBehavior(context) == PackageScriptBehavior.Skip)
+            {
+                return;
+            }
+
+            var scripts = new List<string>();
+            var installedFrameworks = new Dictionary<MSBuildNuGetProject, Dictionary<PackageIdentity, NuGetFramework>>();
+            foreach ((var project, var action) in projectActions)
+            {
+                token.ThrowIfCancellationRequested();
+                if (action.NuGetProjectActionType != NuGetProjectActionType.Uninstall)
+                {
+                    continue;
+                }
+
+                var packagePath = project.FolderNuGetProject.GetInstalledPackageFilePath(action.PackageIdentity);
+                PackageScriptExecution.ThrowIfUninstallFilesMissing(context, action.PackageIdentity, packagePath);
+                if (!string.IsNullOrEmpty(packagePath))
+                {
+                    using var reader = new PackageArchiveReader(packagePath);
+                    if (!installedFrameworks.TryGetValue(project, out var frameworks))
+                    {
+                        var installed = await project.GetInstalledPackagesAsync(token);
+                        frameworks = installed.ToDictionary(package => package.PackageIdentity, package => package.TargetFramework);
+                        installedFrameworks.Add(project, frameworks);
+                    }
+                    frameworks.TryGetValue(action.PackageIdentity, out var installedFramework);
+                    var framework = installedFramework ?? project.ProjectSystem.TargetFramework;
+                    var script = PackageScriptExecution.GetScript(
+                        reader.GetToolItems(), framework, PowerShellScripts.Uninstall);
+                    if (script != null)
+                    {
+                        var scriptPath = Path.Combine(project.FolderNuGetProject.GetInstalledPath(action.PackageIdentity), script);
+                        PackageScriptExecution.ThrowIfUninstallFilesMissing(context, action.PackageIdentity, scriptPath);
+                        scripts.Add(scriptPath);
+                    }
+                }
+            }
+
+            PackageScriptExecution.ThrowIfBlocked(context, scripts);
         }
 
         /// <summary>
@@ -2516,6 +2574,22 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
+            var actions = nuGetProjectActions.ToList();
+            if (nuGetProject is MSBuildNuGetProject msBuildProject)
+            {
+                await CheckUninstallPackageScriptsAsync(
+                    actions.Select(action => (msBuildProject, action)), nuGetProjectContext, token);
+            }
+
+            await ExecuteNuGetProjectActionsCoreAsync(nuGetProject, actions, nuGetProjectContext, downloadContext, token);
+        }
+
+        private async Task ExecuteNuGetProjectActionsCoreAsync(NuGetProject nuGetProject,
+            IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            INuGetProjectContext nuGetProjectContext,
+            PackageDownloadContext downloadContext,
+            CancellationToken token)
+        {
             var stopWatch = Stopwatch.StartNew();
 
             ExceptionDispatchInfo exceptionInfo = null;
