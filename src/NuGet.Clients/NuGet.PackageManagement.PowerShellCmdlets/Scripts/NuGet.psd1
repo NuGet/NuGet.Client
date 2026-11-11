@@ -67,6 +67,7 @@ CmdletsToExport = @(
     'Update-Package',
     'Get-Package', 
     'Get-PackageInitScript',
+    'Import-PackageInitScript',
     'Get-Project',
     'Sync-Package', 
 	'Find-Package'
