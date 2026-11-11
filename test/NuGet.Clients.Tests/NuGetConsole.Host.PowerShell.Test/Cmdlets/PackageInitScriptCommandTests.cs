@@ -65,16 +65,20 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("0")]
-        public async Task GetPackageInitScript_FeatureDisabled_ThrowsAsync(string? featureValue)
+        [InlineData("Get-PackageInitScript", null)]
+        [InlineData("Import-PackageInitScript", null)]
+        [InlineData("Get-PackageInitScript", "0")]
+        [InlineData("Import-PackageInitScript", "0")]
+        [InlineData("Import-PackageInitScript -FullName @()", "0")]
+        [InlineData("@() | Import-PackageInitScript", "0")]
+        public async Task PackageInitScriptCommands_FeatureDisabled_ThrowAsync(string command, string? featureValue)
         {
             Environment.SetEnvironmentVariable(FeatureEnvironmentVariable, featureValue);
             using var context = new SimpleTestPathContext();
             await SetupPackagesAsync(context);
             using var fixture = new CmdletRunspaceFixture(context.PackageSource);
 
-            var exception = Assert.Throws<CmdletInvocationException>(() => fixture.InvokeScript("Get-PackageInitScript"));
+            var exception = Assert.Throws<CmdletInvocationException>(() => fixture.InvokeScript(command));
 
             exception.ErrorRecord.FullyQualifiedErrorId.Should().StartWith("NuGetPackageInitScriptFeatureDisabled");
             fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
@@ -142,22 +146,166 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Theory]
-        [InlineData("Root@")]
+        [InlineData("Import-PackageInitScript")]
+        [InlineData("Import-PackageInitScript (Get-PackageInitScript)")]
+        [InlineData("Get-PackageInitScript | Import-PackageInitScript")]
+        [InlineData("Get-PackageInitScript | Select-Object -ExpandProperty FullName | Import-PackageInitScript")]
+        [InlineData("Get-PackageInitScript | Sort-Object Id -Descending | Import-PackageInitScript")]
+        [InlineData("Import-PackageInitScript -Packages Root,Dependency,root")]
+        [InlineData("Get-PackageInitScript | ForEach-Object { Get-Item -LiteralPath $_.FullName } | Import-PackageInitScript")]
+        [InlineData("$s = @(Get-PackageInitScript); Import-PackageInitScript @($s[1],$s[0],$s[1])")]
+        public async Task ImportPackageInitScript_ImportsInDependencyOrderOncePerInvocationAsync(string command)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            fixture.InvokeScript(command);
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:InitOrder").Select(result => result.BaseObject).Should().Equal("Dependency", "Root");
+            fixture.InvokeScript("Get-InitGreeting").Single().BaseObject.Should().Be("hello");
+            fixture.InvokeScript(command);
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:InitOrder").Select(result => result.BaseObject)
+                .Should().Equal("Dependency", "Root", "Dependency", "Root");
+        }
+
+        [Theory]
+        [InlineData("Import-PackageInitScript -Packages root", "Root")]
+        [InlineData("Import-PackageInitScript -Packages Dependency@1.0", "Dependency")]
+        [InlineData("Get-PackageInitScript -Packages Root | Import-PackageInitScript", "Root")]
+        [InlineData("Import-PackageInitScript (Get-PackageInitScript -Packages Dependency).FullName", "Dependency")]
+        public async Task ImportPackageInitScript_SelectsPackagesAsync(string command, string expected)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            fixture.InvokeScript(command);
+
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:InitOrder").Single().BaseObject.Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData("Import-PackageInitScript $null")]
+        [InlineData("Import-PackageInitScript @()")]
+        [InlineData("@() | Import-PackageInitScript")]
+        [InlineData("$null | Import-PackageInitScript")]
+        public async Task ImportPackageInitScript_EmptyInputDoesNothingAsync(string command)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            fixture.InvokeScript(command);
+
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData("tools\\install.ps1")]
+        [InlineData("tools\\uninstall.ps1")]
+        [InlineData("tools\\net45\\init.ps1")]
+        [InlineData("tools\\init.ps1.bak")]
+        [InlineData("other\\init.ps1")]
+        public async Task ImportPackageInitScript_RejectsOtherFilesAsync(string relativePath)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+            var path = Path.Combine(context.PackagesV2, "Root.1.0.0", relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, "$global:UnexpectedScript = $true");
+
+            fixture.InvokeScript($"Import-PackageInitScript '{Escape(path)}'");
+
+            fixture.Errors.Should().ContainSingle().Which.FullyQualifiedErrorId.Should().StartWith("NuGetInvalidPackageInitScript");
+            fixture.InvokeScript("($null -eq $global:InitOrder) -and ($null -eq $global:UnexpectedScript)")
+                .Single().BaseObject.Should().Be(true);
+        }
+
+        [Fact]
+        public async Task ImportPackageInitScript_RejectsUninstalledInitScriptAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+            var path = Path.Combine(context.WorkingDirectory, "tools", "init.ps1");
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, "throw 'must not run'");
+
+            fixture.InvokeScript($"Import-PackageInitScript '{Escape(path)}'");
+
+            fixture.Errors.Should().ContainSingle().Which.FullyQualifiedErrorId.Should().StartWith("NuGetInvalidPackageInitScript");
+        }
+
+        [Theory]
+        [InlineData("Missing")]
+        [InlineData("Root@2.0.0")]
         [InlineData("Root@invalid")]
         [InlineData("@1.0.0")]
-        public async Task GetPackageInitScript_InvalidSelectorPreservesParserExceptionAsync(string selector)
+        public async Task ImportPackageInitScript_InvalidPackageProducesErrorAsync(string selector)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            fixture.InvokeScript($"Import-PackageInitScript -Packages '{selector}'");
+
+            fixture.Errors.Should().ContainSingle();
+            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData("Get-PackageInitScript", "Root@")]
+        [InlineData("Get-PackageInitScript", "Root@invalid")]
+        [InlineData("Get-PackageInitScript", "@1.0.0")]
+        [InlineData("Import-PackageInitScript", "Root@")]
+        [InlineData("Import-PackageInitScript", "Root@invalid")]
+        [InlineData("Import-PackageInitScript", "@1.0.0")]
+        public async Task PackageInitScript_InvalidSelectorPreservesParserExceptionAsync(string command, string selector)
         {
             using var context = new SimpleTestPathContext();
             await SetupPackagesAsync(context);
             using var fixture = new CmdletRunspaceFixture(context.PackageSource);
             var expected = Assert.Throws<ArgumentException>(() => PackageIdentity.ParseAtSeparated(selector));
 
-            fixture.InvokeScript($"Get-PackageInitScript -Packages '{selector}'");
+            fixture.InvokeScript($"{command} -Packages '{selector}'");
 
             var error = fixture.Errors.Should().ContainSingle().Which;
             error.FullyQualifiedErrorId.Should().StartWith("NuGetPackageInitScriptNotFound");
             error.Exception.InnerException.Should().BeOfType<ArgumentException>()
                 .Which.Message.Should().Be(expected.Message);
+        }
+
+        [Fact]
+        public async Task ImportPackageInitScript_ParameterSetsAreExclusiveAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            Action invoke = () => fixture.InvokeScript(
+                $"Import-PackageInitScript '{Escape(ScriptPath(context, "Root"))}' -Packages Root");
+
+            invoke.Should().Throw<ParameterBindingException>();
+            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
+        }
+
+        [Fact]
+        public async Task ImportPackageInitScript_ReportsScriptFailureAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            File.WriteAllText(ScriptPath(context, "Root"), "throw 'init script failed'");
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            Action invoke = () => fixture.InvokeScript("Import-PackageInitScript -Packages Root");
+
+            invoke.Should().Throw<RuntimeException>().WithMessage("*init script failed*");
+            fixture.InvokeScript("Test-Path variable:__pc_args").Single().BaseObject.Should().Be(false);
         }
 
         [Theory]
@@ -233,6 +381,9 @@ namespace NuGetConsole.Host.PowerShell.Test
                 Path.Combine(context.FallbackFolder, "dependency", "1.0.0", "tools", "init.ps1"),
                 Path.Combine(context.UserPackagesFolder, "root", "1.0.0", "tools", "init.ps1"));
             fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
+            fixture.InvokeScript("Get-PackageInitScript | Import-PackageInitScript");
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:InitOrder").Select(result => result.BaseObject).Should().Equal("Dependency", "Root");
         }
 
         [Fact]
@@ -258,16 +409,105 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Fact]
-        public async Task GetPackageInitScript_NoInstalledScriptsIsNoOpAsync()
+        public async Task ImportPackageInitScript_AmbiguousVersionsRequireVersionSelectorAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            var first = new SimpleTestPackageContext("Root", "1.0.0");
+            var second = new SimpleTestPackageContext("Root", "2.0.0");
+            second.AddFile("tools/init.ps1", "$global:ImportedVersion = '2.0.0'");
+            await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(context.PackagesV2, second);
+            SetInstalledPackages(first, second, new SimpleTestPackageContext("Dependency", "1.0.0"));
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            fixture.InvokeScript("Import-PackageInitScript -Packages Root");
+
+            fixture.Errors.Should().ContainSingle().Which.FullyQualifiedErrorId.Should().StartWith("NuGetAmbiguousPackageInitScript");
+            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
+            fixture.InvokeScript("Import-PackageInitScript -Packages Root@2.0.0");
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:ImportedVersion").Single().BaseObject.Should().Be("2.0.0");
+        }
+
+        [Fact]
+        public async Task ImportPackageInitScript_RelativePathsResolveFromPowerShellLocationAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            fixture.InvokeScript($"Set-Location -LiteralPath '{Escape(context.PackagesV2)}'; Import-PackageInitScript '.\\Root.1.0.0\\tools\\init.ps1'");
+
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:InitOrder").Single().BaseObject.Should().Be("Root");
+        }
+
+        [Fact]
+        public async Task ImportPackageInitScript_ErrorActionStopPreventsExecutionAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            Action invoke = () => fixture.InvokeScript(
+                "@(Get-PackageInitScript; 'not-an-installed-script') | Import-PackageInitScript -ErrorAction Stop");
+
+            invoke.Should().Throw<RuntimeException>();
+            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
+        }
+
+        [Fact]
+        public async Task ImportPackageInitScript_DoesNotAutomaticallyImportNewlyInstalledScriptsAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+            fixture.InvokeScript("Import-PackageInitScript -Packages Root");
+            fixture.Errors.Should().BeEmpty();
+            var later = new SimpleTestPackageContext("Later", "1.0.0");
+            later.AddFile("tools/init.ps1", "$global:InitOrder += @('Later')");
+            await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(context.PackagesV2, later);
+            SetInstalledPackages(later);
+
+            fixture.InvokeScript("Get-PackageInitScript");
+
+            fixture.InvokeScript("$global:InitOrder").Single().BaseObject.Should().Be("Root");
+            fixture.InvokeScript("Import-PackageInitScript -Packages Later");
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:InitOrder").Select(result => result.BaseObject).Should().Equal("Root", "Later");
+        }
+
+        [Theory]
+        [InlineData("Get-PackageInitScript")]
+        [InlineData("Import-PackageInitScript")]
+        public async Task PackageInitScript_NoInstalledScriptsIsNoOpAsync(string command)
         {
             using var context = new SimpleTestPathContext();
             await SetupPackagesAsync(context);
             SetInstalledPackages();
             using var fixture = new CmdletRunspaceFixture(context.PackageSource);
 
-            fixture.InvokeScript("Get-PackageInitScript").Should().BeEmpty();
+            fixture.InvokeScript(command).Should().BeEmpty();
 
             fixture.Errors.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task ImportPackageInitScript_ReceivesLegacyArgumentsAndReturnsOutputAsync()
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            File.WriteAllText(ScriptPath(context, "Root"),
+                "param($installPath, $toolsPath, $package, $project) $installPath; $toolsPath; $package.Id; $package.Version; $null -eq $project");
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            var results = fixture.InvokeScript("Import-PackageInitScript -Packages Root");
+
+            fixture.Errors.Should().BeEmpty();
+            results.Select(result => result.BaseObject).Should().Equal(
+                Path.GetDirectoryName(Path.GetDirectoryName(ScriptPath(context, "Root"))!)!,
+                Path.GetDirectoryName(ScriptPath(context, "Root"))!,
+                "Root", "1.0.0", true);
         }
 
         [Fact]
@@ -289,7 +529,8 @@ namespace NuGetConsole.Host.PowerShell.Test
             dependency.AddFile("tools/init.ps1", "$global:InitOrder += @('Dependency')");
             var root = new SimpleTestPackageContext("Root", "1.0.0");
             root.Dependencies.Add(dependency);
-            root.AddFile("tools/init.ps1", "$global:InitOrder += @('Root')");
+            root.AddFile("tools/init.ps1",
+                "$global:InitOrder += @('Root'); function global:Get-InitGreeting { 'hello' }");
             root.AddFile("tools/install.ps1", "throw 'install script must not run'");
             root.AddFile("tools/uninstall.ps1", "throw 'uninstall script must not run'");
             var noScript = new SimpleTestPackageContext("NoScript", "1.0.0");
@@ -322,6 +563,8 @@ namespace NuGetConsole.Host.PowerShell.Test
 
         private static string ScriptPath(SimpleTestPathContext context, string id) =>
             Path.Combine(context.PackagesV2, id + ".1.0.0", "tools", "init.ps1");
+
+        private static string Escape(string path) => path.Replace("'", "''");
 
         public Task<object?> GetServiceAsync(Type serviceType) => Task.FromResult<object?>(null);
     }
