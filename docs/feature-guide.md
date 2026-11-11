@@ -187,6 +187,8 @@ Use `INuGetFeatureFlagService` for native Visual Studio feature flags. For flags
 
 The infrastructure for `NuGet.ControlPowerShellScriptExecution` follows this pattern and defaults to off. `NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION=1` forces it on, and `0` forces it off; other values use the resolved Visual Studio flag. Outside Visual Studio, the shared helper falls back to the `AppContext` switch, or off when no switch is set. This infrastructure alone does not change script execution behavior.
 
+When this flag is enabled, opening a solution, restoring, installing, or updating packages does not automatically run `init.ps1`. For packages.config projects, an applicable `install.ps1` still runs the package's `init.ps1` first. Use `Get-PackageInitScript` to discover scripts without executing them, and `Import-PackageInitScript` to run them explicitly in the Package Manager Console. With the flag disabled, automatic initialization retains its legacy behavior and the explicit initialization cmdlets are unavailable.
+
 #### CLI (NuGet.exe & dotnet.exe) considerations
 
 * Is the command available in both tools? Should it be?
