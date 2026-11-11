@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Test;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -24,6 +25,7 @@ using Xunit;
 
 namespace ProjectManagement.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class MSBuildNuGetProjectTests
     {
         [Fact]
@@ -1311,6 +1313,58 @@ namespace ProjectManagement.Test
             }
         }
 
+        [Theory]
+        [InlineData(null, true, "1")]
+        [InlineData("tools/tool.exe", true, "1")]
+        [InlineData("tools/net46/install.ps1", true, "1")]
+        [InlineData("tools/install.ps1", true, "1")]
+        [InlineData("tools/net45/install.ps1", true, "1")]
+        [InlineData("tools/net45/install.ps1", false, "1")]
+        [InlineData(null, true, "0")]
+        [InlineData("tools/tool.exe", true, "0")]
+        [InlineData("tools/net46/install.ps1", true, "0")]
+        [InlineData("tools/install.ps1", true, "0")]
+        [InlineData("tools/net45/install.ps1", true, "0")]
+        [InlineData("tools/net45/install.ps1", false, "0")]
+        [InlineData(null, true, null)]
+        public async Task TestMSBuildNuGetProjectPSInitDependsOnFeature(string toolPath, bool hasInitScript, string featureValue)
+        {
+            using var feature = new PowerShellScriptExecutionFeatureScope(featureValue);
+            using var packagesFolder = TestDirectory.Create();
+            using var projectFolder = TestDirectory.Create();
+            var context = new TestNuGetProjectContext();
+            var projectSystem = new TestMSBuildNuGetProjectSystem(NuGetFramework.Parse("net45"), context);
+            var project = new TestMSBuildNuGetProject(projectSystem, packagesFolder, projectFolder);
+            var identity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var package = new SimpleTestPackageContext(identity);
+            package.AddFile("lib/net45/_._");
+            if (hasInitScript)
+            {
+                package.AddFile("tools/init.ps1");
+            }
+            if (toolPath != null)
+            {
+                package.AddFile(toolPath);
+            }
+
+            using var stream = await package.CreateAsStreamAsync();
+            using var download = new DownloadResourceResult(stream, packagesFolder);
+            await project.InstallPackageAsync(identity, download, context, CancellationToken.None);
+
+            var expectedScripts = new List<string>();
+            bool hasApplicableInstall = toolPath == "tools/install.ps1" || toolPath == "tools/net45/install.ps1";
+            if (hasInitScript && (featureValue != "1" || hasApplicableInstall))
+            {
+                expectedScripts.Add("tools\\init.ps1");
+            }
+            if (hasApplicableInstall)
+            {
+                expectedScripts.Add(toolPath.Replace('/', '\\'));
+            }
+            Assert.Equal(expectedScripts, project.ScriptsExecuted.Keys);
+            Assert.All(project.ScriptsExecuted.Values, count => Assert.Equal(1, count));
+        }
+
         #endregion
 
         #region Legacy solution-level packages as project packages
@@ -2070,4 +2124,3 @@ namespace ProjectManagement.Test
         }
     }
 }
-

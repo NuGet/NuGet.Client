@@ -389,19 +389,21 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Task.Run(async () =>
                 {
                     UpdateWorkingDirectory();
-
-                    var retries = 0;
-
-                    while (retries < ExecuteInitScriptsRetriesLimit)
+                    if (!NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
                     {
-                        if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
-                        {
-                            await ExecuteInitScriptsAsync();
-                            break;
-                        }
+                        var retries = 0;
 
-                        await Task.Delay(ExecuteInitScriptsRetryDelay);
-                        retries++;
+                        while (retries < ExecuteInitScriptsRetriesLimit)
+                        {
+                            if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
+                            {
+                                await ExecuteInitScriptsAsync();
+                                break;
+                            }
+
+                            await Task.Delay(ExecuteInitScriptsRetryDelay);
+                            retries++;
+                        }
                     }
                 })
                 .ContinueWith(_ => StartAsyncDefaultProjectUpdate(), TaskContinuationOptions.OnlyOnRanToCompletion);
@@ -434,6 +436,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private async Task ExecuteInitScriptsAsync()
         {
+            if (NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
+            {
+                return;
+            }
+
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
 #pragma warning disable RS0030 // Do not used banned APIs
             using (await _initScriptsLock.EnterAsync())
