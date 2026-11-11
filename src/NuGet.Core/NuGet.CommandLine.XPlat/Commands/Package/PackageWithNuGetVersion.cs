@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Package
                 PackageIdentity identity;
                 try
                 {
-                    identity = PackageIdentity.ParseAtSeparated(token.Value);
+                    identity = PackageIdentity.Parse(token.Value);
                 }
                 catch (ArgumentException ex)
                 {

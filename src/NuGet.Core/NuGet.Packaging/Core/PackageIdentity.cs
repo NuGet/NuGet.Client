@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using NuGet.Versioning;
 
@@ -62,7 +63,7 @@ namespace NuGet.Packaging.Core
         /// <returns>The package identity. <see cref="HasVersion"/> is false when no version is specified.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
         /// <exception cref="ArgumentException">The package ID or version is invalid, or the version after '@' is empty.</exception>
-        public static PackageIdentity ParseAtSeparated(string value)
+        public static PackageIdentity Parse(string value)
         {
             if (value == null)
             {
@@ -90,6 +91,38 @@ namespace NuGet.Packaging.Core
             }
 
             return new PackageIdentity(id, version);
+        }
+
+        /// <summary>
+        /// Tries to parse a package ID optionally followed by '@' and an exact NuGet version.
+        /// </summary>
+        /// <param name="value">A package ID, such as "Example", or a version-qualified ID, such as "Example@1.2.3".</param>
+        /// <param name="identity">The parsed identity on success, or null on failure.
+        /// <see cref="HasVersion"/> is false when no version is specified.</param>
+        /// <returns>True if the package ID and optional version are valid; otherwise, false.</returns>
+        public static bool TryParse(string? value, [NotNullWhen(true)] out PackageIdentity? identity)
+        {
+            identity = null;
+            if (value == null)
+            {
+                return false;
+            }
+
+            var separator = value.IndexOf('@');
+            var id = separator < 0 ? value : value.Substring(0, separator);
+            if (id.Length > PackageIdValidator.MaxPackageIdLength || !PackageIdValidator.IsValidPackageId(id))
+            {
+                return false;
+            }
+
+            NuGetVersion? version = null;
+            if (separator >= 0 && !NuGetVersion.TryParse(value.Substring(separator + 1), out version))
+            {
+                return false;
+            }
+
+            identity = new PackageIdentity(id, version);
+            return true;
         }
 
         /// <summary>

@@ -119,7 +119,7 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Package
         [InlineData("invalid/id@1.2.3")]
         public void Parse_InvalidInput_ReportsPackageIdentityParserError(string value)
         {
-            var expected = Assert.Throws<ArgumentException>(() => PackageIdentity.ParseAtSeparated(value));
+            var expected = Assert.Throws<ArgumentException>(() => PackageIdentity.Parse(value));
 
             var result = _exactVersionCommand.Parse(value);
 
