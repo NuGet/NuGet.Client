@@ -497,7 +497,7 @@ namespace NuGet.Packaging
                 throw new ArgumentException(NuGetResources.Manifest_IdMaxLengthExceeded);
             }
 
-            PackageIdValidator.ValidatePackageId(packageId);
+            PackageIdValidator.ValidatePackageId(packageId, useRestrictedSet: false);
         }
 
         public static void ValidateReferenceAssemblies(IEnumerable<IPackageFile> files, IEnumerable<PackageReferenceSet> packageAssemblyReferences)

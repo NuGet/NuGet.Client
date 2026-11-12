@@ -2527,6 +2527,27 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         [Fact]
+        public void PackageBuilderAllowsNonAsciiPackageAndDependencyIds()
+        {
+            var builder = new PackageBuilder
+            {
+                Id = "Cont\u00F6so",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Description"
+            };
+            builder.Authors.Add("Me");
+            builder.DependencyGroups.Add(new PackageDependencyGroup(
+                NuGetFramework.AnyFramework,
+                new[] { new PackageDependency("D\u00E9pendency") }));
+
+            using (var stream = new MemoryStream())
+            {
+                builder.Save(stream);
+                Assert.True(stream.Length > 0);
+            }
+        }
+
+        [Fact]
         public void PackageBuilderThrowsIfDependencyIdInvalid()
         {
             // Arrange
