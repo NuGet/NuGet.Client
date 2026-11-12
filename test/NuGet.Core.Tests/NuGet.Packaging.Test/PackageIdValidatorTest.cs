@@ -210,15 +210,15 @@ namespace NuGet.Packaging.Test
         [InlineData(101)]
         [InlineData(102)]
         [InlineData(200)]
-        public void IdExceedingMaxLengthThrows(int idTestLength)
+        public void IdExceedingMaxLength_DoesNotThrow(int idTestLength)
         {
             // Arrange
             string packageId = new string('d', idTestLength);
 
             // Act && Assert
-            ExceptionAssert.ThrowsArgumentException(
-                () => PackageIdValidator.ValidatePackageId(packageId),
-                "Id must not exceed 100 characters.");
+            PackageIdValidator.ValidatePackageId(packageId);
+            Assert.True(PackageIdValidator.IsValidPackageId(packageId));
+            Assert.True(PackageIdValidator.IsValidPackageId(packageId, useRestrictedCharacterSet: false));
         }
 
         [Theory]

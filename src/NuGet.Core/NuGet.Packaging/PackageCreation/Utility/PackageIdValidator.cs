@@ -8,6 +8,14 @@ using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet.Packaging
 {
+    /// <summary>
+    /// Validates the format of package IDs.
+    /// </summary>
+    /// <remarks>
+    /// Other than the restricted character set check of <see cref="IsValidPackageId(string, bool)"/>, these methods do not
+    /// validate the package ID's length, for backwards compatibility. Pack enforces <see cref="MaxPackageIdLength"/> when creating packages, but packages
+    /// with longer IDs may exist on package sources, so they must still be usable.
+    /// </remarks>
     public static class PackageIdValidator
     {
         /// <summary>
@@ -19,6 +27,12 @@ namespace NuGet.Packaging
             options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
             matchTimeout: TimeSpan.FromSeconds(10));
 
+        /// <summary>
+        /// Checks whether the package ID has a valid format. The package ID's length is not validated, for backwards compatibility.
+        /// </summary>
+        /// <param name="packageId">The package ID to check.</param>
+        /// <returns><c>true</c> if the package ID has a valid format; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="packageId"/> is <c>null</c>.</exception>
         public static bool IsValidPackageId(string packageId)
         {
             if (packageId == null)
@@ -31,8 +45,13 @@ namespace NuGet.Packaging
         /// <summary>
         /// Validates the package ID. When <paramref name="useRestrictedCharacterSet"/> is <c>true</c>,
         /// additionally checks that the ID contains only ASCII letters, digits, dots, dashes, and underscores,
-        /// with no consecutive dots or dashes, and is 100 characters or less.
+        /// with no consecutive dots or dashes, and is <see cref="MaxPackageIdLength"/> characters or less.
+        /// When <paramref name="useRestrictedCharacterSet"/> is <c>false</c>, the package ID's length is not validated, for backwards compatibility.
         /// </summary>
+        /// <param name="packageId">The package ID to check.</param>
+        /// <param name="useRestrictedCharacterSet">Whether to also apply the restricted character set and length checks.</param>
+        /// <returns><c>true</c> if the package ID is valid; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="packageId"/> is <c>null</c>.</exception>
         public static bool IsValidPackageId(string packageId, bool useRestrictedCharacterSet)
         {
             if (!IsValidPackageId(packageId))
@@ -48,13 +67,13 @@ namespace NuGet.Packaging
             return true;
         }
 
+        /// <summary>
+        /// Throws if the package ID does not have a valid format. The package ID's length is not validated, for backwards compatibility.
+        /// </summary>
+        /// <param name="packageId">The package ID to validate.</param>
+        /// <exception cref="ArgumentException"><paramref name="packageId"/> does not have a valid format.</exception>
         public static void ValidatePackageId(string packageId)
         {
-            if (packageId.Length > MaxPackageIdLength)
-            {
-                throw new ArgumentException(NuGetResources.Manifest_IdMaxLengthExceeded);
-            }
-
             if (!IsValidPackageId(packageId))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, packageId));

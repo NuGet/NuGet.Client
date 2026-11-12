@@ -2544,6 +2544,24 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             ExceptionAssert.ThrowsArgumentException(() => builder.Save(new MemoryStream()), "The package ID 'brainf%2ack' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.");
         }
 
+        [Fact]
+        public void PackageBuilderThrowsIfDependencyIdExceedsMaxLengthLimit()
+        {
+            // Arrange
+            var builder = new PackageBuilder
+            {
+                Id = "a.b",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Description"
+            };
+            builder.Authors.Add("Me");
+
+            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] { new PackageDependency(new string('c', 101)) }));
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentException(() => builder.Save(new MemoryStream()), "Id must not exceed 100 characters.");
+        }
+
 #if !IS_CORECLR
         [Fact]
         public void ReadingPackageWithUnknownSchemaThrows()
