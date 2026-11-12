@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
@@ -70,13 +71,14 @@ namespace NuGet.Packaging.Core
                 throw new ArgumentNullException(nameof(value));
             }
 
-            var separator = value.IndexOf('@');
-            var id = separator < 0 ? value : value.Substring(0, separator);
-            PackageIdValidator.ValidatePackageId(id);
-            NuGetVersion? version = null;
-            if (separator >= 0)
+            GetParts(value, out string id, out string? versionString);
+            if (!PackageIdValidator.IsValidPackageId(id))
             {
-                var versionString = value.Substring(separator + 1);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, id));
+            }
+            NuGetVersion? version = null;
+            if (versionString != null)
+            {
                 try
                 {
                     version = NuGetVersion.Parse(versionString);
@@ -108,21 +110,32 @@ namespace NuGet.Packaging.Core
                 return false;
             }
 
-            var separator = value.IndexOf('@');
-            var id = separator < 0 ? value : value.Substring(0, separator);
-            if (id.Length > PackageIdValidator.MaxPackageIdLength || !PackageIdValidator.IsValidPackageId(id))
+            GetParts(value, out string id, out string? versionString);
+            if (!PackageIdValidator.IsValidPackageId(id))
             {
                 return false;
             }
 
-            NuGetVersion? version = null;
-            if (separator >= 0 && !NuGetVersion.TryParse(value.Substring(separator + 1), out version))
+            if (versionString == null)
+            {
+                identity = new PackageIdentity(id, version: null);
+                return true;
+            }
+
+            if (!NuGetVersion.TryParse(versionString, out NuGetVersion? version))
             {
                 return false;
             }
 
             identity = new PackageIdentity(id, version);
             return true;
+        }
+
+        private static void GetParts(string value, out string id, out string? version)
+        {
+            var separator = value.IndexOf('@');
+            id = separator < 0 ? value : value.Substring(0, separator);
+            version = separator < 0 ? null : value.Substring(separator + 1);
         }
 
         /// <summary>

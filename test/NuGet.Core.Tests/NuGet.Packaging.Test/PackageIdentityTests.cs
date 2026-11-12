@@ -101,13 +101,24 @@ namespace NuGet.Packaging.Core.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void ParseAndTryParse_IdTooLong_RejectInput(bool hasVersion)
+        public void ParseAndTryParse_IdExceedsPackLengthLimit_ReturnIdentity(bool hasVersion)
         {
-            var value = new string('a', PackageIdValidator.MaxPackageIdLength + 1) + (hasVersion ? "@1.2.3" : "");
+            var id = new string('a', PackageIdValidator.MaxPackageIdLength + 1);
+            var value = id + (hasVersion ? "@1.2.3" : "");
 
-            Assert.Throws<ArgumentException>(() => PackageIdentity.Parse(value));
-            Assert.False(PackageIdentity.TryParse(value, out var identity));
-            Assert.Null(identity);
+            var parsedIdentity = PackageIdentity.Parse(value);
+            Assert.True(PackageIdentity.TryParse(value, out var triedIdentity));
+
+            Assert.NotNull(triedIdentity);
+            Assert.Equal(id, parsedIdentity.Id);
+            Assert.Equal(id, triedIdentity.Id);
+            Assert.Equal(hasVersion, parsedIdentity.HasVersion);
+            Assert.Equal(hasVersion, triedIdentity.HasVersion);
+            if (hasVersion)
+            {
+                Assert.Equal("1.2.3", parsedIdentity.Version.OriginalVersion);
+                Assert.Equal("1.2.3", triedIdentity.Version.OriginalVersion);
+            }
         }
 
         [Fact]
