@@ -4,6 +4,9 @@ parameters:
   - name: SigningType
     displayName: Type of signing to use
     type: string
+  - name: ForkSafe
+    type: boolean
+    default: false
 
 steps:
   - task: PowerShell@1
@@ -12,17 +15,18 @@ steps:
       arguments: "-Force"
     displayName: "Run Configure.ps1"
 
-  - task: PowerShell@1
-    inputs:
-      scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
-      arguments: >-
-        -BuildRTM $(BuildRTM)
-        -RepositoryPath $(Build.Repository.LocalPath)
-        -BranchName $(SourceBranch)
-        -CommitHash $(Build.SourceVersion)
-        -BuildNumber $(Build.BuildNumber)
-        -BuildInfoDirectory $(Build.StagingDirectory)\BuildInfo
-    displayName: "Configure VSTS CI Environment"
+  - ${{ if not(parameters.ForkSafe) }}:
+    - task: PowerShell@1
+      inputs:
+        scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
+        arguments: >-
+          -BuildRTM $(BuildRTM)
+          -RepositoryPath $(Build.Repository.LocalPath)
+          -BranchName $(SourceBranch)
+          -CommitHash $(Build.SourceVersion)
+          -BuildNumber $(Build.BuildNumber)
+          -BuildInfoDirectory $(Build.StagingDirectory)\BuildInfo
+      displayName: "Configure VSTS CI Environment"
 
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -67,9 +71,10 @@ steps:
           exit 1
         }
 
-  - task: CodeQL3000Init@0
-    displayName: Initialize CodeQL
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+  - ${{ if not(parameters.ForkSafe) }}:
+    - task: CodeQL3000Init@0
+      displayName: Initialize CodeQL
+      condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Restore"
@@ -87,7 +92,7 @@ steps:
     env:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_MULTILEVEL_LOOKUP: true
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
     displayName: "Set IncludeApex variable"
@@ -120,9 +125,10 @@ steps:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:GitRepositoryRemoteName=github /binarylogger:$(Build.StagingDirectory)\\binlog\\02a.Build_NuGet.exe.binlog /property:MicroBuild_SigningEnabled=false"
 
-  - task: CodeQL3000Finalize@0
-    displayName: Finalize CodeQL
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+  - ${{ if not(parameters.ForkSafe) }}:
+    - task: CodeQL3000Finalize@0
+      displayName: Finalize CodeQL
+      condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Pack Nupkgs"
@@ -153,7 +159,7 @@ steps:
       msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.PackVSIX.binlog"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
-  - ${{ if not(parameters.BuildRTM)}}:
+  - ${{ if and(not(parameters.BuildRTM), not(parameters.ForkSafe)) }}:
       - task: PowerShell@1
         displayName: "Prepare for SBOM generation"
         inputs:
@@ -175,7 +181,7 @@ steps:
       solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\14.BuildToolsVSIX.binlog"
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
     displayName: "Sign"
@@ -183,29 +189,33 @@ steps:
       solution: "build\\sign.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/restore /p:DryRunSigning=false /p:DotNetSignType=${{parameters.SigningType}} /p:SigningLogDirectory=$(Build.StagingDirectory)\\binlog /binarylogger:$(Build.StagingDirectory)\\binlog\\15.Sign.binlog"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'))"
 
   - task: NuGetToolInstaller@1
     displayName: Use NuGet 6.x
     inputs:
       versionSpec: 6.x
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'))"
 
   - task: NuGetCommand@2
     displayName: "Verify Nupkg Signatures"
     inputs:
       command: "custom"
       arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'))"
 
-  - task: MicroBuildCodesignVerify@3
-    displayName: Verify Assembly Signatures and StrongName for the nupkgs
-    inputs:
-      TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+  - ${{ if not(parameters.ForkSafe) }}:
+    - task: MicroBuildCodesignVerify@3
+      displayName: Verify Assembly Signatures and StrongName for the nupkgs
+      inputs:
+        TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
 
-  - task: MicroBuildCodesignVerify@3
-    displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
-    inputs:
-      TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
-      ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-      ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+    - task: MicroBuildCodesignVerify@3
+      displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
+      inputs:
+        TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
+        ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+        ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
 
   - task: MSBuild@1
     displayName: "Generate VSMAN file for NuGet Core VSIX"
@@ -213,7 +223,7 @@ steps:
       solution: "setup\\Microsoft.VisualStudio.NuGet.Core\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\16.GenerateVSManifestForVSIX.binlog"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
     displayName: "Generate VSMAN file for Build Tools VSIX"
@@ -221,28 +231,28 @@ steps:
       solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateVSManifestForToolsVSIX.binlog"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: NuGetCommand@2
     displayName: "Add the VSEng package source"
     inputs:
       command: "custom"
       arguments: 'sources add -Name VS -Source $(VsPackageFeedUrl) -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: NuGetCommand@2
     displayName: "Install the NuGet package for building .runsettingsproj files"
     inputs:
       command: "custom"
       arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
     displayName: "Generate .runsettings files"
     inputs:
       solution: 'build\runsettings.proj'
       msbuildArguments: '/restore:false /property:OutputPath="$(Build.StagingDirectory)\RunSettings" /property:TestDrop="$(RunSettingsDropName)" /property:ProfilingInputsDrop="$(ProfilingInputsDropName)" /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateRunSettings.binlog'
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
     displayName: "Copy VS integration test binaries"
@@ -260,7 +270,7 @@ steps:
           Write-Host "##vso[task.LogIssue type=error;]$_"
           exit 1
         }
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
     displayName: "Collect Build Symbols"
@@ -275,6 +285,7 @@ steps:
         /property:SymbolsOutputDirectory=$(Build.StagingDirectory)\\symbolstoindex
         /binarylogger:$(Build.StagingDirectory)\\binlog\\18.CollectBuildSymbols.binlog
       maximumCpuCount: true
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'))"
 
   - task: MSBuild@1
     displayName: "LocValidation: Verify VSIX"
@@ -298,6 +309,7 @@ steps:
       SourceFolder: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
       Contents: '**'
       TargetFolder: '$(Build.StagingDirectory)\\VS15'
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'))"
 
   - task: CopyFiles@2
     displayName: Copy nupkgs to staging directory
@@ -305,6 +317,7 @@ steps:
       SourceFolder: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
       Contents: '**'
       TargetFolder: '$(Build.StagingDirectory)\\nupkgs'
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'))"
 
     # Use dotnet msbuild instead of MSBuild CLI.
     # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
@@ -318,22 +331,23 @@ steps:
       includePreviewVersions: true
       installationPath: $(Agent.TempDirectory)/dotnet
       workingDirectory: $(Agent.TempDirectory)
-    condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
 
-  - task: AzureCLI@2
-    displayName: "Publish to the .NET Core build asset registry (BAR)"
-    inputs:
-      azureSubscription: "Darc: Maestro Production"
-      scriptType: ps
-      scriptLocation: inlineScript
-      inlineScript: |
-        $(Agent.TempDirectory)/dotnet/dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(SourceBranch) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /binarylogger:$(Build.StagingDirectory)\binlog\21.PublishToBuildAssetRegistry.binlog /property:MaestroApiEndpoint=$(MaestroApiEndpoint)
-      workingDirectory: cli
-      failOnStderr: true
-    env:
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-      DOTNET_MULTILEVEL_LOOKUP: true
-    condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
+  - ${{ if not(parameters.ForkSafe) }}:
+    - task: AzureCLI@2
+      displayName: "Publish to the .NET Core build asset registry (BAR)"
+      inputs:
+        azureSubscription: "Darc: Maestro Production"
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          $(Agent.TempDirectory)/dotnet/dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(SourceBranch) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /binarylogger:$(Build.StagingDirectory)\binlog\21.PublishToBuildAssetRegistry.binlog /property:MaestroApiEndpoint=$(MaestroApiEndpoint)
+        workingDirectory: cli
+        failOnStderr: true
+      env:
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+        DOTNET_MULTILEVEL_LOOKUP: true
+      condition: "and(succeeded(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
 
   - task: PowerShell@1
     displayName: "Create ReleaseConfigs artifact"
@@ -356,11 +370,12 @@ steps:
           Write-Host "##vso[task.LogIssue type=error;]$_"
           exit 1
         }
-    condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
+    condition: "and(succeeded(), eq('${{ parameters.ForkSafe }}', 'false'), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
 
-  - template: /eng/common/templates-official/steps/publish-build-artifacts.yml
-    parameters:
-      displayName: "Publish ReleaseConfigs artifact"
-      pathToPublish: '$(Build.StagingDirectory)\ReleaseConfigs'
-      artifactName: 'ReleaseConfigs'
-      condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
+  - ${{ if not(parameters.ForkSafe) }}:
+    - template: /eng/common/templates-official/steps/publish-build-artifacts.yml
+      parameters:
+        displayName: "Publish ReleaseConfigs artifact"
+        pathToPublish: '$(Build.StagingDirectory)\ReleaseConfigs'
+        artifactName: 'ReleaseConfigs'
+        condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
