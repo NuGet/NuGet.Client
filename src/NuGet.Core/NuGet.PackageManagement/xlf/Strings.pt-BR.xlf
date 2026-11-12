@@ -257,6 +257,11 @@
         <target state="translated">O pacote '{0}' não existe em '{1}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageFilesMissingForUninstall">
+        <source>Cannot run uninstall.ps1 for package '{0}' because required files are missing from the solution packages folder. Restore packages before uninstalling, or use -PackageScripts Skip to uninstall without running scripts.</source>
+        <target state="new">Cannot run uninstall.ps1 for package '{0}' because required files are missing from the solution packages folder. Restore packages before uninstalling, or use -PackageScripts Skip to uninstall without running scripts.</target>
+        <note>{0} is the package identity. {Locked="uninstall.ps1"} {Locked="-PackageScripts Skip"}</note>
+      </trans-unit>
       <trans-unit id="PackageHasDependent">
         <source>Unable to uninstall '{0}' because '{1}' depends on it.</source>
         <target state="translated">Não é possível desinstalar '{0}' porque '{1}' depende dele.</target>
@@ -282,6 +287,13 @@
         <target state="translated">O pacote '{0}' não foi encontrado na fonte '{1}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageScriptsBlocked">
+        <source>This operation contains PowerShell package scripts and no project files have been changed. Inspect the scripts below, then use -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip in Package Manager Console:
+{0}</source>
+        <target state="new">This operation contains PowerShell package scripts and no project files have been changed. Inspect the scripts below, then use -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip in Package Manager Console:
+{0}</target>
+        <note>{0} is a newline-separated list of absolute script paths. Do not translate -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip.</note>
+      </trans-unit>
       <trans-unit id="PackageSourceMappingPatternMatchFound">
         <source>Package source mapping matches found for package ID '{0}' are: '{1}'</source>
         <target state="translated">As correspondências de mapeamento de origem do pacote encontradas para a ID '{0}' são: '{1}'</target>
@@ -302,6 +314,11 @@
         <source>Package '{0}' to be uninstalled could not be found in project '{1}'</source>
         <target state="translated">O pacote '{0}' a ser desinstalado não pôde ser encontrado no projeto '{1}'</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PackageUninstalledWithoutContents">
+        <source>Package '{0}' was removed from packages.config without running scripts because it is missing from the solution packages folder. Assembly references, build imports, and content files could not be cleaned up.</source>
+        <target state="new">Package '{0}' was removed from packages.config without running scripts because it is missing from the solution packages folder. Assembly references, build imports, and content files could not be cleaned up.</target>
+        <note>{0} is the package identity. {Locked="packages.config"}</note>
       </trans-unit>
       <trans-unit id="PackagesConfigAllowedVersionConflict">
         <source>Unable to resolve '{0}'. An additional constraint '{1}' defined in {2} prevents this operation.</source>

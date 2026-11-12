@@ -50,9 +50,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public SwitchParameter RemoveDependencies { get; set; }
 
+        [Parameter]
+        [ValidateSet("Fail", "Run", "RunWithInit", "Skip")]
+        public PackageScriptBehavior PackageScripts { get; set; }
+
         private void Preprocess()
         {
             CheckSolutionState();
+            ExecutionContext.PackageScripts = PackageScripts;
 
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {

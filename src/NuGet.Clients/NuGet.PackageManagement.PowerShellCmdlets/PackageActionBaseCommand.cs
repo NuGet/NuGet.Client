@@ -67,9 +67,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter]
         public DependencyBehavior? DependencyVersion { get; set; }
 
+        [Parameter]
+        [ValidateSet("Fail", "Run", "RunWithInit", "Skip")]
+        public PackageScriptBehavior PackageScripts { get; set; }
+
         protected virtual void Preprocess()
         {
             CheckSolutionState();
+            ExecutionContext.PackageScripts = PackageScripts;
 
             var result = ValidateSource(Source);
             if (result.Validity == SourceValidity.UnknownSource)

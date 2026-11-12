@@ -12,6 +12,52 @@ namespace NuGet.Tests.Apex
     public class NuGetConsoleScriptExecutionTestCase : SharedVisualStudioHostTestClass
     {
         [DataTestMethod]
+        [DataRow("Fail")]
+        [DataRow("Run")]
+        [DataRow("RunWithInit")]
+        [DataRow("Skip")]
+        [Timeout(DefaultTimeout)]
+        public async Task UninstallPackageScriptsFromPMCRespectsOperationPolicyAsync(string behavior)
+        {
+            using var pathContext = new SimpleTestPathContext();
+            pathContext.Settings.SetPackageFormatToPackagesConfig();
+            using var testContext = new ApexTestContext(VisualStudio, ProjectTemplate.ConsoleApplication, Logger, simpleTestPathContext: pathContext);
+            var package = new SimpleTestPackageContext("ScriptPolicy", "1.0.0");
+            package.AddFile("tools/init.ps1", "$global:PackageScriptLog += @('init')");
+            package.AddFile("tools/uninstall.ps1", "$global:PackageScriptLog += @('uninstall')");
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, package);
+            var console = GetConsole(testContext.Project);
+            console.Execute("$global:PackageScriptLog = @()");
+            var source = pathContext.PackageSource.Replace("'", "''");
+            console.Execute($"Install-Package ScriptPolicy -Version 1.0.0 -Source '{source}'");
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, package.Id, package.Version, Logger);
+            console.Execute("$global:PackageScriptLog = @()");
+            // Omit the parameter for Fail to exercise the default policy.
+            var argument = behavior == "Fail" ? "" : $" -PackageScripts {behavior}";
+            console.Execute($"try {{ Uninstall-Package ScriptPolicy{argument} -ErrorAction Stop }} " +
+                "catch { Write-Host ('uninstall-blocked:' + $_.Exception.Message) }");
+            var isBlocked = ControlPowerShellScriptExecutionEnabled && behavior == "Fail";
+            var expectedLog = !ControlPowerShellScriptExecutionEnabled || behavior == "RunWithInit" || behavior == "Run"
+                ? "uninstall" : "";
+            AssertState("after-uninstall", isBlocked ? 1 : 0, expectedLog);
+            if (isBlocked)
+            {
+                Assert.IsTrue(console.IsMessageFoundInPMC("-PackageScripts Run"), console.GetText());
+                Assert.IsTrue(console.IsMessageFoundInPMC("uninstall.ps1"), console.GetText());
+                console.Execute("Uninstall-Package ScriptPolicy -PackageScripts Skip");
+                AssertState("after-skipped-uninstall", 0, "");
+            }
+
+            void AssertState(string stage, int packageCount, string scriptLog)
+            {
+                console.Execute($"Write-Host ('{stage}-packages:' + @(Get-Package | Where-Object Id -eq ScriptPolicy).Count); " +
+                    $"Write-Host ('{stage}-scripts:[' + ($global:PackageScriptLog -join ',') + ']')");
+                Assert.IsTrue(console.IsMessageFoundInPMC($"{stage}-packages:{packageCount}"), console.GetText());
+                Assert.IsTrue(console.IsMessageFoundInPMC($"{stage}-scripts:[{scriptLog}]"), console.GetText());
+            }
+        }
+
+        [DataTestMethod]
         [DataRow(ProjectTemplate.ConsoleApplication)]
         [DataRow(ProjectTemplate.NetCoreConsoleApp)]
         [Timeout(DefaultTimeout)]
