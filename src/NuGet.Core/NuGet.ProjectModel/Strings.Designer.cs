@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -178,6 +178,24 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate JSON property name &apos;{0}&apos; in packages lock file..
+        /// </summary>
+        internal static string PackagesLockFile_DuplicatePropertyName {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_DuplicatePropertyName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Expected &apos;version&apos; as the first property in the package lock file..
+        /// </summary>
+        internal static string PackagesLockFile_ExpectedVersionFirst {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ExpectedVersionFirst", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Version specified in the packages.lock.json file is incompatible. Current tooling supports version {0} and previous formats..
         /// </summary>
         internal static string PackagesLockFile_IncompatibleLockFileVersion {
@@ -204,6 +222,15 @@ namespace NuGet.ProjectModel {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to JSON property names cannot be null in packages lock file..
+        /// </summary>
+        internal static string PackagesLockFile_NullPropertyName {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_NullPropertyName", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to A new package reference was found {0} for the project target framework {1}..
         /// </summary>
