@@ -219,7 +219,7 @@ namespace NuGet.ProjectModel
                 foreach (AssetsLogMessage message in lockFile.LogMessages.Where(x => string.IsNullOrEmpty(x.ProjectPath)))
                 {
                     message.ProjectPath = projectPath;
-                    message.FilePath = projectPath;
+                    message.FilePath ??= projectPath;
                 }
             }
 

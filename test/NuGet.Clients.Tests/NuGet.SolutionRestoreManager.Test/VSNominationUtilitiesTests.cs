@@ -6,15 +6,62 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using FluentAssertions;
+using NuGet.Commands;
 using NuGet.Common;
+using NuGet.LibraryModel;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using Xunit;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
     public class VSNominationUtilitiesTests
     {
+        [Theory]
+        [InlineData("5", false)]
+        [InlineData(null, false)]
+        [InlineData("invalid", false)]
+        [InlineData("5", true)]
+        public void NominatedOrigins_SurviveCloning_AndRespectTargetGraphs(string? line, bool duplicate)
+        {
+            var builder = new TestProjectRestoreInfoBuilder();
+            foreach (string tfm in new[] { "net9.0", "net10.0" })
+            {
+                builder.WithTargetFrameworkInfo(tfm, framework =>
+                {
+                    KeyValuePair<string, string>[] metadata =
+                    [
+                        new("Version", "1.0.0"), new("DefiningProjectFullPath", $@"C:\{tfm}%20.props"),
+                        new("DefiningProjectLineNumber", line!), new("DefiningProjectColumnNumber", "7")
+                    ];
+                    framework.WithItem(ProjectItems.PackageReference, "X", metadata);
+                    if (duplicate) framework.WithItem(ProjectItems.PackageReference, "X", metadata);
+                });
+            }
+            var names = new ProjectNames(@"C:\project\project.csproj", "project", "project.csproj", "project", Guid.NewGuid().ToString());
+            var project = VsSolutionRestoreService.ToPackageSpec(names, builder.Build()).Clone();
+            var frameworkToCopy = project.TargetFrameworks[1];
+            project.TargetFrameworks[1] = new TargetFrameworkInformation(frameworkToCopy)
+            {
+                Dependencies = frameworkToCopy.Dependencies.Select(d => new LibraryDependency(d)).ToImmutableArray()
+            };
+            var logger = new RestoreCollectorLogger(NullLogger.Instance);
+            logger.ApplyRestoreInputs(project);
+            var warning = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1510, "prune X", "X", "net10.0");
+            logger.Log(warning);
+            bool located = line == "5" && !duplicate;
+            warning.FilePath.Should().Be(located ? @"C:\net10.0%20.props" : names.FullName);
+            warning.StartLineNumber.Should().Be(located ? 5 : 0);
+            warning.StartColumnNumber.Should().Be(located ? 7 : 0);
+
+            warning = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1510, "prune X", "X", "net9.0", "net10.0");
+            logger.Log(warning);
+            warning.FilePath.Should().Be(names.FullName);
+            warning.StartLineNumber.Should().Be(0);
+        }
+
         [Fact]
         public void GetRestoreAuditProperties_WithoutSuppressions_ReturnsNull()
         {

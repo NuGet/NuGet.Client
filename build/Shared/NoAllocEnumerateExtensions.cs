@@ -8,6 +8,9 @@ using System.Collections.Generic;
 
 namespace NuGet;
 
+#if NUGET_EMBEDDED_INTERNALS
+[Microsoft.CodeAnalysis.Embedded]
+#endif
 internal static class NoAllocEnumerateExtensions
 {
     #region IList

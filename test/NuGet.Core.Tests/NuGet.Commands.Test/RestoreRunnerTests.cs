@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +27,91 @@ namespace NuGet.Commands.Test
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreRunnerTests
     {
+        [Theory]
+        [InlineData(NuGetLogCode.NU1603, true, null)]
+        [InlineData(NuGetLogCode.NU1603, false, null)]
+        [InlineData(NuGetLogCode.NU1603, true, "central")]
+        [InlineData(NuGetLogCode.NU1603, true, "frameworks")]
+        [InlineData(NuGetLogCode.NU1605, true, null)]
+        [InlineData(NuGetLogCode.NU1605, false, null)]
+        public async Task RestoreRunner_SourceLocations_RespectCausalReferencesAndNoOp(NuGetLogCode code, bool direct, string fallback)
+        {
+            using var paths = new SimpleTestPathContext();
+            // P -> X (direct), or P -> A -> X (transitive); A can introduce a competing higher range.
+            var x1 = new SimpleTestPackageContext("X", "1.0.0");
+            var x2 = new SimpleTestPackageContext("X", "2.0.0");
+            var c = new SimpleTestPackageContext("C", "1.0.0") { Dependencies = [x2] };
+            var a = new SimpleTestPackageContext("A", "1.0.0")
+            {
+                Dependencies = code == NuGetLogCode.NU1603 ? [new SimpleTestPackageContext("X", "1.5.0")] : direct ? [x2] : [x1, c]
+            };
+            await SimpleTestPackageUtility.CreatePackagesWithoutDependenciesAsync(paths.PackageSource,
+                code == NuGetLogCode.NU1603 ? [x2, a] : [x1, x2, a, c]);
+            var spec = ProjectTestHelpers.GetPackageSpec("project", paths.SolutionRoot, "net10.0", direct ? "X" : "A");
+            var framework = spec.TargetFrameworks[0];
+            if (direct && code == NuGetLogCode.NU1605)
+            {
+                spec.TargetFrameworks[0] = new TargetFrameworkInformation(framework)
+                {
+                    Dependencies = framework.Dependencies.Add(new LibraryDependency(new LibraryRange("A", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)))
+                };
+            }
+            if (fallback == "central")
+            {
+                spec.RestoreMetadata.CentralPackageVersionsEnabled = true;
+                spec.TargetFrameworks[0] = new TargetFrameworkInformation(framework)
+                {
+                    CentralPackageVersions = new Dictionary<string, CentralPackageVersion> { ["X"] = new("X", VersionRange.Parse("1.0.0")) }
+                };
+            }
+            if (fallback == "frameworks")
+            {
+                spec.TargetFrameworks.Add(new TargetFrameworkInformation(framework) { FrameworkName = NuGetFramework.Parse("net9.0"), TargetAlias = "net9.0" });
+                spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net9.0")) { TargetAlias = "net9.0" });
+            }
+            spec.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(spec.RestoreMetadata.OutputPath);
+            bool located = direct && fallback == null;
+            foreach (int line in located ? new[] { 5, 12, 0 } : new[] { 5 })
+            {
+                string source = Path.Combine(paths.SolutionRoot, line == 5 ? "references%20.props" : "moved.props");
+                for (int i = 0; i < spec.TargetFrameworks.Count; i++)
+                {
+                    framework = spec.TargetFrameworks[i];
+                    spec.TargetFrameworks[i] = new TargetFrameworkInformation(framework)
+                    {
+                        Dependencies = framework.Dependencies.Select(d => new LibraryDependency(d)
+                        {
+                            SourceLocation = line > 0 ? (i == 0 ? source : Path.Combine(paths.SolutionRoot, "other.props"), line, 7)
+                                : LibraryDependency.ParseSourceLocation("C:relative.props", "5", "7"),
+                            VersionCentrallyManaged = fallback == "central"
+                        }).ToImmutableArray()
+                    };
+                }
+                var logger = new TestLogger();
+                var request = ProjectTestHelpers.CreateRestoreRequest(paths, logger, spec);
+                request.AllowNoOp = true;
+                var result = await new RestoreCommand(request).ExecuteAsync();
+                var summaryRequest = new RestoreSummaryRequest(request, spec.FilePath, [], []);
+                var summary = await RestoreRunner.CommitAsync(new RestoreResultPair(summaryRequest, result), default);
+                Assert.True(summary.Success, logger.ShowMessages());
+                Assert.Equal(line != 5, summary.NoOpRestore);
+                var message = Assert.Single(summary.Errors);
+                Assert.Equal(code, message.Code);
+                Assert.Equal("X", message.LibraryId);
+                Assert.Equal(spec.FilePath, message.ProjectPath);
+                Assert.Equal(spec.TargetFrameworks.Count, message.TargetGraphs.Count);
+                Assert.Equal(located && line > 0 ? source : spec.FilePath, message.FilePath);
+                Assert.Equal(located ? line : 0, message.StartLineNumber);
+                Assert.Equal(located && line > 0 ? 7 : 0, message.StartColumnNumber);
+                Assert.Equal(AssetsLogMessage.Create(message), Assert.Single(result.LogMessages));
+                if (line == 5)
+                {
+                    var persisted = Assert.Single(new LockFileFormat().Read(request.LockFilePath).LogMessages);
+                    Assert.Equal(AssetsLogMessage.Create(message), persisted);
+                }
+            }
+        }
+
         [Fact]
         public async Task RestoreRunner_BasicRestoreAsync()
         {

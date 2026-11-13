@@ -9,6 +9,9 @@ using System.Linq;
 
 namespace NuGet.Shared
 {
+#if NUGET_EMBEDDED_INTERNALS
+    [Microsoft.CodeAnalysis.Embedded]
+#endif
     internal static class EqualityUtility
     {
         /// <summary>
