@@ -250,7 +250,7 @@ namespace NuGet.Build.Tasks
                 cleanupAssetsForUnsupportedProjects: false,
                 additionalMessages: additionalMessages,
                 log: log,
-                cancellationToken: _cts.Token);
+                cancellationToken: _cts.Token).ConfigureAwait(false);
 
             int upToDate = 0;
             int audited = 0;

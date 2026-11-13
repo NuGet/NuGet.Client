@@ -7,8 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -26,6 +28,159 @@ namespace NuGet.Commands.Test
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreRunnerTests
     {
+        [Theory]
+        [InlineData(true, false, true)]
+        [InlineData(false, false, true)]
+        [InlineData(true, true, true)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(false, false, false)]
+        public async Task RunAsync_WithNonPumpingSynchronizationContext_Completes(
+            bool disableParallel, bool asynchronousProvider, bool commit)
+        {
+            using var workingDirectory = TestDirectory.Create();
+            using var releaseRestore = new ManualResetEventSlim(initialState: true);
+            var logger = new TestLogger();
+            var requestLogger = new GatedRestoreLogger(releaseRestore, logger);
+            var requests = new List<RestoreSummaryRequest>();
+            for (int i = 0; i < 2; i++)
+            {
+                string projectName = "project" + i;
+                Directory.CreateDirectory(Path.Combine(workingDirectory, projectName));
+                var spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(
+                    projectName, workingDirectory, @"{ ""frameworks"": { ""net472"": {} } }");
+                var request = new TestRestoreRequest(
+                    spec, Array.Empty<PackageSource>(), Path.Combine(workingDirectory, "packages"), requestLogger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    LockFilePath = Path.Combine(spec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName)
+                };
+                requests.Add(new RestoreSummaryRequest(
+                    request, spec.FilePath, Array.Empty<string>(), Array.Empty<SourceRepository>()));
+            }
+
+            var providerResult = new TaskCompletionSource<IReadOnlyList<RestoreSummaryRequest>>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            var provider = new Mock<IPreLoadedRestoreRequestProvider>();
+            provider.Setup(p => p.CreateRequests(It.IsAny<RestoreArgs>()))
+                .Returns(asynchronousProvider ? providerResult.Task : Task.FromResult<IReadOnlyList<RestoreSummaryRequest>>(requests));
+            var args = new RestoreArgs
+            {
+                Log = logger,
+                DisableParallel = disableParallel,
+                PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider> { provider.Object }
+            };
+
+            releaseRestore.Reset();
+            await NonPumpingSynchronizationContext.RunAsync(() =>
+            {
+                // Keep both request creation and restore execution incomplete until their callers have yielded.
+                if (commit)
+                {
+                    Task<IReadOnlyList<RestoreSummary>> pending = RestoreRunner.RunAsync(args);
+                    providerResult.SetResult(requests);
+                    releaseRestore.Set();
+                    IReadOnlyList<RestoreSummary> summaries = pending.GetAwaiter().GetResult();
+                    Assert.Equal(2, summaries.Count);
+                    Assert.All(summaries, summary => Assert.True(summary.Success, logger.ShowErrors()));
+                    Assert.All(requests, request => Assert.True(File.Exists(request.Request.LockFilePath)));
+                }
+                else
+                {
+                    Task<IReadOnlyList<RestoreResultPair>> pending = RestoreRunner.RunWithoutCommitAsync(
+                        requests, args, CancellationToken.None);
+                    releaseRestore.Set();
+                    IReadOnlyList<RestoreResultPair> results = pending.GetAwaiter().GetResult();
+                    Assert.Equal(2, results.Count);
+                    Assert.All(results, result => Assert.True(result.Result.Success, logger.ShowErrors()));
+                    Assert.All(requests, request => Assert.False(File.Exists(request.Request.LockFilePath)));
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task GetRequests_WithAsynchronousInputProvider_DoesNotRequirePumping(bool asynchronousSupports)
+        {
+            var supports = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requests = new TaskCompletionSource<IReadOnlyList<RestoreSummaryRequest>>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            var provider = new Mock<IRestoreRequestProvider>();
+            provider.Setup(p => p.Supports("project")).Returns(asynchronousSupports ? supports.Task : Task.FromResult(true));
+            provider.Setup(p => p.CreateRequests("project", It.IsAny<RestoreArgs>())).Returns(requests.Task);
+            var args = new RestoreArgs
+            {
+                Log = new TestLogger(),
+                Inputs = new List<string> { "project" },
+                RequestProviders = new List<IRestoreRequestProvider> { provider.Object }
+            };
+
+            await NonPumpingSynchronizationContext.RunAsync(() =>
+            {
+                Task<IReadOnlyList<RestoreSummaryRequest>> pending = RestoreRunner.GetRequests(args);
+                supports.SetResult(true);
+                requests.SetResult(Array.Empty<RestoreSummaryRequest>());
+                Assert.Empty(pending.GetAwaiter().GetResult());
+            });
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RunAsync_WithAsynchronousProviderFailure_PropagatesWithoutPumping(bool canceled)
+        {
+            var result = new TaskCompletionSource<IReadOnlyList<RestoreSummaryRequest>>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            var provider = new Mock<IPreLoadedRestoreRequestProvider>();
+            provider.Setup(p => p.CreateRequests(It.IsAny<RestoreArgs>())).Returns(result.Task);
+            var args = new RestoreArgs
+            {
+                Log = new TestLogger(),
+                PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider> { provider.Object }
+            };
+            var expected = new InvalidOperationException("Request creation failed.");
+
+            await NonPumpingSynchronizationContext.RunAsync(() =>
+            {
+                Task<IReadOnlyList<RestoreSummary>> pending = RestoreRunner.RunAsync(args, CancellationToken.None);
+                if (canceled)
+                {
+                    result.SetCanceled();
+                    Assert.ThrowsAny<OperationCanceledException>(() => pending.GetAwaiter().GetResult());
+                }
+                else
+                {
+                    result.SetException(expected);
+                    Assert.Same(expected, Assert.Throws<InvalidOperationException>(() => pending.GetAwaiter().GetResult()));
+                }
+            });
+        }
+
+        private sealed class GatedRestoreLogger : LoggerBase
+        {
+            private readonly ManualResetEventSlim _release;
+            private readonly TestLogger _logger;
+
+            public GatedRestoreLogger(ManualResetEventSlim release, TestLogger logger)
+            {
+                _release = release;
+                _logger = logger;
+            }
+
+            public override void Log(ILogMessage message)
+            {
+                Assert.True(_release.Wait(TimeSpan.FromSeconds(30)), "Restore was not released by its caller.");
+                _logger.Log(message);
+            }
+
+            public override Task LogAsync(ILogMessage message)
+            {
+                Log(message);
+                return Task.CompletedTask;
+            }
+        }
+
         [Fact]
         public async Task RestoreRunner_BasicRestoreAsync()
         {
