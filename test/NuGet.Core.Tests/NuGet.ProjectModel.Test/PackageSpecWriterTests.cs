@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Newtonsoft.Json;
@@ -87,6 +89,58 @@ namespace NuGet.ProjectModel.Test
         {
             // Assert
             Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.Write(EmptyPackageSpec, writer: null));
+        }
+
+        [Fact]
+        public void Write_InternalEncodedPath_MatchesPublicContract()
+        {
+            const string Json = """
+                {
+                  "version": "1.2.3",
+                  "restore": {
+                    "projectUniqueName": "/src/caf\u00e9/project.csproj",
+                    "projectName": "project<&>",
+                    "projectPath": "/src/caf\u00e9/project.csproj",
+                    "crossTargeting": true,
+                    "configFilePaths": ["/src/nuget.config"],
+                    "fallbackFolders": []
+                  },
+                  "frameworks": {
+                    "net10.0": {
+                      "dependencies": {
+                        "version": "1.0.0",
+                        "Contoso.Library": {
+                          "version": "2.0.0",
+                          "autoReferenced": true
+                        }
+                      },
+                      "imports": ["netstandard2.0"]
+                    }
+                  }
+                }
+                """;
+            PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(Json, "project", "/src/project.csproj");
+
+            Assert.Equal(Serialize(packageSpec, usePublicContract: true), Serialize(packageSpec, usePublicContract: false));
+
+            static byte[] Serialize(PackageSpec packageSpec, bool usePublicContract)
+            {
+                using var stream = new MemoryStream();
+                using var jsonWriter = new Utf8JsonWriter(stream);
+                var writer = new Utf8JsonObjectWriter(jsonWriter);
+                writer.WriteObjectStart();
+                if (usePublicContract)
+                {
+                    PackageSpecWriter.Write(packageSpec, (IObjectWriter)writer);
+                }
+                else
+                {
+                    PackageSpecWriter.Write(packageSpec, writer, hashing: false, EnvironmentVariableWrapper.Instance);
+                }
+                writer.WriteObjectEnd();
+                jsonWriter.Flush();
+                return stream.ToArray();
+            }
         }
 
         [Fact]
