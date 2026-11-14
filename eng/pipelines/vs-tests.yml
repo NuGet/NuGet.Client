@@ -51,6 +51,10 @@ resources:
     source: DartLab
     branch: main
   repositories:
+  - repository: VisualStudio
+    type: git
+    name: DevDiv/VS
+    ref: refs/heads/main
   # Legacy DTL DartLab templates repository
   - repository: LegacyDartLabTemplates
     type: git
@@ -76,6 +80,12 @@ stages:
     timeoutInMinutes: 170
     pool:
       name: VSEng-MicroBuildVSStable
+    variables:
+      VisualStudioRepositoryId: $[ resources.repositories.VisualStudio.id ]
+    # Authorize REST access to VS's version.json without checking out the VS repository.
+    uses:
+      repositories:
+      - VisualStudio
     steps:
     - template: vs-test/build.yml
       parameters:
@@ -85,7 +95,7 @@ stages:
   parameters:
     stageName: VS_EndToEnd
     stageDisplayName: On Windows
-    condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
+    condition: "and(succeeded(), eq(dependencies.Build.outputs['Build.select_visual_studio.RunVSIntegrationTests'], 'true'), ne(variables['RunEndToEndTests'], 'false'))"
     dependsOn:
     - Build
     variables:
@@ -102,7 +112,7 @@ stages:
 # Dartlab's template defines this in its own stage
 - template: vs-test/apex.yml
   parameters:
-    condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
+    condition: "and(succeeded(), eq(dependencies.Build.outputs['Build.select_visual_studio.RunVSIntegrationTests'], 'true'), ne(variables['RunApexTests'], 'false'))"
     dependsOn:
     - Build
     variables:

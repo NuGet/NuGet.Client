@@ -4,23 +4,37 @@ parameters:
     default: false
 
 steps:
+  # Check before building, so old servicing branches don't build NuGet when no active VS branch can test it.
+  - task: PowerShell@2
+    displayName: "Select Visual Studio for integration tests"
+    name: "select_visual_studio"
+    inputs:
+      filePath: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\SelectVisualStudioForTests.ps1"
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      VS_REPOSITORY_ID: $(VisualStudioRepositoryId)
+
   - task: MicroBuildLocalizationPlugin@4
     displayName: "Install Localization Plugin"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MicroBuildSigningPlugin@4
     inputs:
       signType: "Test"
     displayName: "Install Signing Plugin"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MicroBuildSwixPlugin@4
     displayName: "Install Swix Plugin"
     inputs:
       dropName: "Tests/$(System.TeamProject)/$(Build.DefinitionName)/$(SourceBranch)/$(Build.BuildId)"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
   - task: PowerShell@1
     displayName: "Run Configure.ps1"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
       arguments: "-Force"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PowerShell@1
     displayName: "Set build variables"
@@ -35,23 +49,17 @@ steps:
           $version = dotnet msbuild -getProperty:AssemblyVersion $(Build.Repository.LocalPath)\src\NuGet.Clients\NuGet.VisualStudio.Client\
           Write-Host "Setting NuGet version to: $version"
           Write-Host "##vso[task.setvariable variable=NuGetVersion]$version"
-
-          $VsTargetChannelForTests = dotnet msbuild -getProperty:VsTargetChannelForTests $(Build.Repository.LocalPath)\src\NuGet.Clients\NuGet.VisualStudio.Client\
-          Write-Host "Setting VsTargetChannelForTests to: $VsTargetChannelForTests"
-          Write-Host "##vso[task.setvariable variable=VsTargetChannelForTests]$VsTargetChannelForTests"
-
-          $VsTargetMajorVersion = dotnet msbuild -getProperty:VsTargetMajorVersion $(Build.Repository.LocalPath)\src\NuGet.Clients\NuGet.VisualStudio.Client\
-          Write-Host "Setting VsTargetMajorVersion to: $VsTargetMajorVersion"
-          Write-Host "##vso[task.setvariable variable=VsTargetMajorVersion]$VsTargetMajorVersion"
         } catch {
           throw $_
         }
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
       arguments: "-BuildRTM false -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(SourceBranch) -CommitHash $(Build.SourceVersion) -BuildNumber $(NuGetVersion)"
     displayName: "Configure VSTS CI Environment"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -96,6 +104,7 @@ steps:
           Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
           exit 1
         }
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Restore"
@@ -103,6 +112,7 @@ steps:
       solution: "NuGet.sln"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/restore:false /target:Restore /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Build"
@@ -116,6 +126,7 @@ steps:
         /property:MicroBuild_SigningEnabled=false
         /property:EnableApexBlameHangDumpCollector=${{parameters.enableApexBlameHangDumpCollector}}
         /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PowerShell@1
     displayName: "Prepare for SBOM generation"
@@ -123,6 +134,7 @@ steps:
       scriptType: "inlineScript"
       inlineScript: |
         mkdir $(Build.ArtifactStagingDirectory)/sbom
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: ManifestGeneratorTask@0
     displayName: 'Generate SBOM'
@@ -131,6 +143,7 @@ steps:
       ManifestDirPath: '$(Build.ArtifactStagingDirectory)/sbom'
       PackageName: "NuGet.Client"
       PackageVersion: "$(NuGetVersion)"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Generate Build Tools package"
@@ -138,6 +151,7 @@ steps:
       solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\08.BuildToolsVSIX.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Sign"
@@ -145,6 +159,7 @@ steps:
       solution: "build\\sign.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/restore /p:DryRunSigning=false /p:DotNetSignType=test /binarylogger:$(Build.StagingDirectory)\\binlog\\09.SignPackages.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MicroBuildCodesignVerify@3
     displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
@@ -152,6 +167,7 @@ steps:
       TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
       ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
       ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Generate VSMAN file for NuGet Core VSIX"
@@ -159,6 +175,7 @@ steps:
       solution: "setup\\Microsoft.VisualStudio.NuGet.Core\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\10.GenerateVSManifestForVSIX.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Generate VSMAN file for Build Tools VSIX"
@@ -166,6 +183,7 @@ steps:
       solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\11.GenerateVSManifestForToolsVSIX.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Create EndToEnd Test Package"
@@ -173,6 +191,7 @@ steps:
       solution: "$(Build.Repository.LocalPath)\\test\\TestUtilities\\CreateEndToEndTestPackage\\CreateEndToEndTestPackage.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.StagingDirectory)\\E2ETests /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\12.CreateEndToEndTestPackage.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: CopyFiles@2
     displayName: "Copy NuGet.exe for E2E Tests"
@@ -180,26 +199,31 @@ steps:
       SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
       Contents: "NuGet.exe"
       TargetFolder: "$(Build.StagingDirectory)\\E2ETests"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: CopyFiles@2
     displayName: "Copy scripts for cloudbuild machines"
     inputs:
       SourceFolder: "$(Build.Repository.LocalPath)\\scripts"
       TargetFolder: "$(Build.StagingDirectory)\\RunSettings\\scripts"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: NuGetToolInstaller@1
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: NuGetCommand@2
     displayName: "Add the VSEng package source"
     inputs:
       command: "custom"
       arguments: 'sources add -Name VS -Source $(VsPackageFeedUrl) -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: NuGetCommand@2
     displayName: "Install the NuGet package for building .runsettingsproj files"
     inputs:
       command: "custom"
       arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MicroBuildBuildVSBootstrapper@3
     displayName: "Build a Visual Studio bootstrapper for tests"
@@ -211,6 +235,7 @@ steps:
       outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PowerShell@1
     displayName: "Set DartLab variables for tests"
@@ -239,13 +264,14 @@ steps:
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop]$runSettingsDrop"
           Write-Host "##vso[task.setvariable variable=RunSettingsDrop;isOutput=true]$runSettingsDrop"
 
-          $vsBootstrapperBranch = dotnet msbuild -getProperty:VsTargetBranch build\config.props
+          $vsBootstrapperBranch = "$(VsBootstrapperBranch)"
           Write-Host "VS Bootstrapper Branch: $vsBootstrapperBranch"
           Write-Host "##vso[task.setvariable variable=VsBootstrapperBranch;isOutput=true]$vsBootstrapperBranch"
         } catch {
           Write-Host "##vso[task.LogIssue type=error;]Unable to set variables for DartLab: $_"
           exit 1
         }
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Generate .runsettings files"
@@ -257,6 +283,7 @@ steps:
         /property:TestDrop="$(RunSettingsDrop)"
         /property:EnableApexBlameHangDumpCollector=${{parameters.enableApexBlameHangDumpCollector}}
         /binarylogger:$(Build.StagingDirectory)\\binlog\\13.GenerateRunSettings.binlog
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PowerShell@1
     displayName: "Copy VS integration test binaries"
@@ -274,6 +301,7 @@ steps:
           Write-Host "##vso[task.LogIssue type=error;]$_"
           exit 1
         }
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Collect Build Symbols"
@@ -282,7 +310,7 @@ steps:
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:IsSymbolBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\14.CollectBuildSymbols.binlog"
       maximumCpuCount: true
-    condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: MSBuild@1
     displayName: "LocValidation: Verify VSIX"
@@ -290,6 +318,7 @@ steps:
       solution: "build\\BuildValidator.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/target:ValidateVsix /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\15.ValidateVsixLocalization.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: MSBuild@1
     displayName: "LocValidation: Verify Artifacts"
@@ -297,6 +326,7 @@ steps:
       solution: "build\\BuildValidator.proj"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/target:ValidateArtifacts /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\16.ValidateArtifactsLocalization.binlog"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PublishBuildArtifacts@1
     displayName: "Publish BootstrapperInfo.json as a build artifact"
@@ -304,6 +334,7 @@ steps:
       PathtoPublish: $(Build.StagingDirectory)\MicroBuild\Output
       ArtifactName: MicroBuildOutputs
       ArtifactType: Container
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: artifactDropTask@0
     displayName: "Upload VS bootstapper Drop"
@@ -314,6 +345,7 @@ steps:
       toLowerCase: false
       usePat: true
       dropMetadataContainerName: "DropMetadata-Product"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: artifactDropTask@0
     displayName: "Publish the .runsettings files to artifact services"
@@ -324,18 +356,21 @@ steps:
       toLowerCase: false
       usePat: true
       dropMetadataContainerName: "DropMetadata-RunSettings"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PublishPipelineArtifact@1
     displayName: "Publish E2E tests"
     inputs:
       artifactName: "E2ETests"
       targetPath: "$(Build.StagingDirectory)\\E2ETests"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PublishPipelineArtifact@1
     displayName: "Publish scripts"
     inputs:
       artifactName: "scripts"
       targetPath: "$(Build.Repository.LocalPath)\\scripts"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"
 
   - task: PublishPipelineArtifact@1
     displayName: "Publish binlogs"
@@ -346,3 +381,4 @@ steps:
 
   - task: MicroBuildCleanup@1
     displayName: "Perform Cleanup Tasks"
+    condition: "and(succeeded(), eq(variables['RunVSIntegrationTests'], 'true'))"

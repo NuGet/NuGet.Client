@@ -24,6 +24,10 @@ resources:
     tags:
     - Production
   repositories:
+  - repository: VisualStudio
+    type: git
+    name: DevDiv/VS
+    ref: refs/heads/main
   - repository: DartLabTemplates
     type: git
     name: DevDiv/DartLab
@@ -43,13 +47,19 @@ stages:
     timeoutInMinutes: 170
     pool:
       name: VSEng-MicroBuildVSStable
+    variables:
+      VisualStudioRepositoryId: $[ resources.repositories.VisualStudio.id ]
+    # Authorize REST access to VS's version.json without checking out the VS repository.
+    uses:
+      repositories:
+      - VisualStudio
     steps:
     - template: vs-test/build.yml
 
 # Dartlab's template defines this in its own stage
 - template: vs-test/apex.yml
   parameters:
-    condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
+    condition: "and(succeeded(), eq(dependencies.Build.outputs['Build.select_visual_studio.RunVSIntegrationTests'], 'true'), ne(variables['RunApexTests'], 'false'))"
     dependsOn:
     - Build
     variables:
