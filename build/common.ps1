@@ -200,7 +200,7 @@ Function Install-DotnetCLI {
     $cli = @{
             Root = $CLIRoot
             DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/4bd9bb92cc3636421cd01baedbd8ef3e41aa1e22/scripts/obtain/dotnet-install.ps1'
+            DotNetInstallUrl = 'https://dot.net/v1/dotnet-install.ps1'
         }
 
     $env:DOTNET_HOME=$cli.Root
@@ -215,7 +215,11 @@ Function Install-DotnetCLI {
 
         Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
         $channel = $CliTargetBranch.Trim()
-        & $DotNetInstall -Channel $channel  -i $cli.Root
+        # Keep handled installer errors out of Invoke-BuildStep's error collection.
+        & powershell -NoProfile -File $DotNetInstall -Channel $channel  -i $cli.Root
+        if ($LASTEXITCODE -ne 0) {
+            throw "dotnet-install.ps1 exited with non-zero exit code $LASTEXITCODE."
+        }
     }
 
     if (-not (Test-Path $cli.DotNetExe)) {
@@ -235,7 +239,7 @@ Function Install-DotnetCLIToILMergePack {
     $cli = @{
             Root = $CLIRootForPack
             DotNetExe = Join-Path $CLIRootForPack 'dotnet.exe'
-            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
+            DotNetInstallUrl = 'https://dot.net/v1/dotnet-install.ps1'
             Version = '1.0.1'
         }
 
@@ -258,7 +262,11 @@ Function Install-DotnetCLIToILMergePack {
 
         Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
 
-        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
+        # Keep handled installer errors out of Invoke-BuildStep's error collection.
+        & powershell -NoProfile -File $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
+        if ($LASTEXITCODE -ne 0) {
+            throw "dotnet-install.ps1 exited with non-zero exit code $LASTEXITCODE."
+        }
     }
 
     if (-not (Test-Path $cli.DotNetExe)) {
