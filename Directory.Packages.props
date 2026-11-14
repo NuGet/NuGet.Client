@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <Net10PackagesVersion>10.0.13</Net10PackagesVersion>
+    <Net10PackagesVersion>10.0.10</Net10PackagesVersion>
 
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <!-- Microsoft.VisualStudio.RpcContracts has a dependency on Newtonsoft.Json 13.0.4, but we cannot update Newtonsoft.Json to 13.0.4 due to compatibility issues. We manually downgrade newtonsoft.json -->
@@ -28,7 +28,8 @@
     <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.2.0</MicrosoftWebXdtPackageVersion>
     <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
     <SystemMemoryPackageVersion Condition="'$(SystemMemoryPackageVersion)' == ''">4.6.3</SystemMemoryPackageVersion>
-    <SystemSecurityCryptographyPkcsVersion Condition="'$(SystemSecurityCryptographyPkcsVersion)' == ''">$(Net10PackagesVersion)</SystemSecurityCryptographyPkcsVersion>
+    <!-- PKCS 10.0.13 fixes vulnerabilities and is not used by NuGet's .NET Framework build. -->
+    <SystemSecurityCryptographyPkcsVersion Condition="'$(SystemSecurityCryptographyPkcsVersion)' == ''">10.0.13</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyProtectedDataVersion Condition="'$(SystemSecurityCryptographyProtectedDataVersion)' == ''">$(Net10PackagesVersion)</SystemSecurityCryptographyProtectedDataVersion>
     <MicrosoftDotNetXliffTasksVersion Condition="'$(MicrosoftDotNetXliffTasksVersion)' == ''">10.0.0-beta.25260.104</MicrosoftDotNetXliffTasksVersion>
   </PropertyGroup>
