@@ -5,13 +5,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -881,7 +881,7 @@ namespace NuGet.Protocol.Tests
             var logger = new TestLogger();
 
             // Act
-            await resource.Push(
+            Task push = resource.Push(
                 packagePaths: new[] { packageInfo.FullName },
                 symbolSource: string.Empty,
                 timeoutInSecond: PushTimeoutInSeconds,
@@ -897,21 +897,66 @@ namespace NuGet.Protocol.Tests
             // Assert
             if (isErrorExpected)
             {
-                Assert.Equal(1, logger.ErrorMessages.Count);
-                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "push", source));
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => push);
+                Assert.Equal(string.Format(Strings.Error_HttpServerUsage, "push", source), exception.Message);
+                Assert.Null(sourceRequest);
             }
             else
             {
+                await push;
                 Assert.NotNull(sourceRequest);
                 Assert.Equal(0, logger.WarningMessages.Count);
             }
 
         }
 
+        [Fact]
+        public async Task Push_WithAnHttpSourceAndMultiplePackages_DoesNotPushAnyPackage()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            var source = "http://www.nuget.org/api/v2/";
+            var requestCount = 0;
+            await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFullPackageAsync(workingDir, "b", "1.0.0");
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+                {
+                    {
+                        source,
+                        request =>
+                        {
+                            Interlocked.Increment(ref requestCount);
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                        }
+                    },
+                };
+            var resource = await StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses).GetResourceAsync<PackageUpdateResource>(CancellationToken.None);
+            var logger = new TestLogger();
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => resource.Push(
+                packagePaths: new[] { Path.Combine(workingDir, "*.nupkg") },
+                symbolSource: string.Empty,
+                timeoutInSecond: PushTimeoutInSeconds,
+                disableBuffering: false,
+                getApiKey: _ => "serverapikey",
+                getSymbolApiKey: _ => null,
+                noServiceEndpoint: false,
+                skipDuplicate: false,
+                symbolPackageUpdateResource: null,
+                allowInsecureConnections: false,
+                log: logger));
+
+            // Assert
+            Assert.Equal(string.Format(Strings.Error_HttpServerUsage, "push", source), exception.Message);
+            Assert.Equal(0, requestCount);
+        }
+
         [Theory]
         [InlineData(true, false)]
         [InlineData(false, true)]
-        public async Task Push_WhenPushingToAnHttpSymbolSourceAndAllowInsecureConnections_logsError(bool allowInsecureConnections, bool isErrorExpected)
+        public async Task Push_WhenPushingToAnHttpSymbolSourceAndAllowInsecureConnections_Throws(bool allowInsecureConnections, bool isErrorExpected)
         {
             // Arrange
             using var workingDir = TestDirectory.Create();
@@ -949,7 +994,7 @@ namespace NuGet.Protocol.Tests
             var logger = new TestLogger();
 
             // Act
-            await resource.Push(
+            Task push = resource.Push(
                 packagePaths: new[] { packageInfo.FullName },
                 symbolSource: symbolSource,
                 timeoutInSecond: PushTimeoutInSeconds,
@@ -965,11 +1010,14 @@ namespace NuGet.Protocol.Tests
             // Assert
             if (isErrorExpected)
             {
-                Assert.Equal(1, logger.ErrorMessages.Count);
-                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "push", "http://other.smbsrc.net/api/v2/package/"));
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => push);
+                Assert.Equal(string.Format(Strings.Error_HttpServerUsage, "push", "http://other.smbsrc.net/api/v2/package/"), exception.Message);
+                Assert.NotNull(sourceRequest);
+                Assert.Null(symbolRequest);
             }
             else
             {
+                await push;
                 Assert.NotNull(sourceRequest);
                 Assert.NotNull(symbolRequest);
                 Assert.Equal(0, logger.WarningMessages.Count);
@@ -979,7 +1027,7 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData(true, false)]
         [InlineData(false, true)]
-        public async Task Push_WhenPushingToAnHttpSourceAndSymbolSourceWithAllowInsecureConnections_ErrorsForOne(bool allowInsecureConnections, bool isErrorExpected)
+        public async Task Push_WhenPushingToAnHttpSourceAndSymbolSourceWithAllowInsecureConnections_ThrowsForTheFirst(bool allowInsecureConnections, bool isErrorExpected)
         {
             // Arrange
             using var workingDir = TestDirectory.Create();
@@ -1017,7 +1065,7 @@ namespace NuGet.Protocol.Tests
             var logger = new TestLogger();
 
             // Act
-            await resource.Push(
+            Task push = resource.Push(
                 packagePaths: new[] { packageInfo.FullName },
                 symbolSource: symbolSource,
                 timeoutInSecond: PushTimeoutInSeconds,
@@ -1033,11 +1081,14 @@ namespace NuGet.Protocol.Tests
             // Assert
             if (isErrorExpected)
             {
-                Assert.Equal(1, logger.ErrorMessages.Count);
-                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "push", source));
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => push);
+                Assert.Equal(string.Format(Strings.Error_HttpServerUsage, "push", source), exception.Message);
+                Assert.Null(sourceRequest);
+                Assert.Null(symbolRequest);
             }
             else
             {
+                await push;
                 Assert.NotNull(sourceRequest);
                 Assert.NotNull(symbolRequest);
                 Assert.Equal(0, logger.WarningMessages.Count);
@@ -1045,7 +1096,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task Delete_WhenDeletingFromHTTPSource_LogsAnError()
+        public async Task Delete_WhenDeletingFromHTTPSource_Throws()
         {
             // Arrange
             using (var workingDir = TestDirectory.Create())
@@ -1070,17 +1121,17 @@ namespace NuGet.Protocol.Tests
                 var logger = new TestLogger();
 
                 // Act
-                await resource.Delete(
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => resource.Delete(
                     packageId: "DeepEqual",
                     packageVersion: "1.4.0.1-rc",
                     getApiKey: _ => apiKey,
                     confirm: _ => true,
                     noServiceEndpoint: false,
-                    log: logger);
+                    log: logger));
 
                 // Assert
-                Assert.Equal(1, logger.Errors);
-                logger.ErrorMessages.Should().Contain(string.Format(Strings.Error_HttpServerUsage, "delete", source));
+                Assert.Equal(string.Format(Strings.Error_HttpServerUsage, "delete", source), exception.Message);
+                Assert.Null(actualRequest);
             }
         }
     }
