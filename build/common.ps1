@@ -215,7 +215,11 @@ Function Install-DotnetCLI {
 
         Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
         $channel = $CliTargetBranch.Trim()
-        & $DotNetInstall -Channel $channel  -i $cli.Root
+        # Keep handled installer errors out of Invoke-BuildStep's error collection.
+        & powershell -NoProfile -File $DotNetInstall -Channel $channel  -i $cli.Root
+        if ($LASTEXITCODE -ne 0) {
+            throw "dotnet-install.ps1 exited with non-zero exit code $LASTEXITCODE."
+        }
     }
 
     if (-not (Test-Path $cli.DotNetExe)) {
@@ -258,7 +262,11 @@ Function Install-DotnetCLIToILMergePack {
 
         Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
 
-        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
+        # Keep handled installer errors out of Invoke-BuildStep's error collection.
+        & powershell -NoProfile -File $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version -Architecture $arch
+        if ($LASTEXITCODE -ne 0) {
+            throw "dotnet-install.ps1 exited with non-zero exit code $LASTEXITCODE."
+        }
     }
 
     if (-not (Test-Path $cli.DotNetExe)) {
