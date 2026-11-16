@@ -181,13 +181,13 @@
     <value>Clear NuGet local resources</value>
   </data>
   <data name="PackageRestore" xml:space="preserve">
-    <value>Package Restore</value>
+    <value>Package restore</value>
   </data>
   <data name="BindingRedirects" xml:space="preserve">
-    <value>Binding Redirects</value>
+    <value>Binding redirects</value>
   </data>
   <data name="PackageManagement" xml:space="preserve">
-    <value>Package Management</value>
+    <value>Package management</value>
   </data>
   <data name="SettingsStoredInNuGetConfiguration" xml:space="preserve">
     <value>These settings are stored in %NuGet.Config% files</value>
@@ -201,7 +201,7 @@
     <comment>Please leave the [ and ] brackets in place and do translate the words between them. Do not translate the URL inside ( ).</comment>
   </data>
   <data name="Text_FilePath_Header" xml:space="preserve">
-    <value>File Path</value>
+    <value>File path</value>
   </data>
   <data name="Text_PackageSourceName_Header" xml:space="preserve">
     <value>Name</value>
@@ -247,7 +247,7 @@
     <value>At least one source must be selected.</value>
   </data>
   <data name="Text_AllowInsecureConnections_Header" xml:space="preserve">
-    <value>Allow Insecure Connections</value>
+    <value>Allow insecure connections</value>
   </data>
   <data name="Text_MinPublishAgeHours_Header" xml:space="preserve">
     <value>Minimum publish age (hours)</value>

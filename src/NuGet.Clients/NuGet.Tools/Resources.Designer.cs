@@ -61,7 +61,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Binding Redirects.
+        ///   Looks up a localized string similar to Binding redirects.
         /// </summary>
         internal static string BindingRedirects {
             get {
@@ -304,7 +304,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package Management.
+        ///   Looks up a localized string similar to Package management.
         /// </summary>
         internal static string PackageManagement {
             get {
@@ -322,7 +322,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package Restore.
+        ///   Looks up a localized string similar to Package restore.
         /// </summary>
         internal static string PackageRestore {
             get {
@@ -439,7 +439,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allow Insecure Connections.
+        ///   Looks up a localized string similar to Allow insecure connections.
         /// </summary>
         internal static string Text_AllowInsecureConnections_Header {
             get {
@@ -502,7 +502,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File Path.
+        ///   Looks up a localized string similar to File path.
         /// </summary>
         internal static string Text_FilePath_Header {
             get {
