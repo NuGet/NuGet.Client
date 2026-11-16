@@ -40,7 +40,7 @@ namespace NuGet.Packaging.Core.Test
         public void Parse_InvalidId_PreservesValidationError(string value)
         {
             var id = value.Split('@')[0];
-            var expected = Assert.Throws<ArgumentException>(() => PackageIdValidator.ValidatePackageId(id));
+            var expected = Assert.Throws<ArgumentException>(() => PackageIdValidator.ValidatePackageId(id, useRestrictedSet: false));
 
             var actual = Assert.Throws<ArgumentException>(() => PackageIdentity.Parse(value));
 
