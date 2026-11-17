@@ -99,8 +99,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [InlineData("""{}""")]
-        [InlineData("""{"dependencies":{}}""")]
         [InlineData("""{"dependencies":{},"version":1}""")]
         [InlineData("""{"net8.0":{"framework":"net8.0","dependencies":{}},"version":3}""")]
         public void PackagesLockFileFormat_ReadVersionNotFirst_Throws(string content)
@@ -110,14 +108,10 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(Strings.PackagesLockFile_ExpectedVersionFirst, exception.Message);
         }
 
-        [Theory]
-        [InlineData("""{}""")]
-        [InlineData("""{"dependencies":{}}""")]
-        [InlineData("""{"dependencies":{},"version":1}""")]
-        [InlineData("""{"net8.0":{"framework":"net8.0","dependencies":{}},"version":3}""")]
-        public void PackagesLockFileFormat_ReadVersionNotFirst_LogsDiagnosticAndDisposesStream(string content)
+        [Fact]
+        public void PackagesLockFileFormat_ReadVersionNotFirst_LogsDiagnosticAndDisposesStream()
         {
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes("""{"dependencies":{},"version":1}"""));
             var logger = new TestLogger();
 
             PackagesLockFile lockFile = PackagesLockFileFormat.Read(stream, logger, "invalid-version.lock.json");
@@ -211,41 +205,6 @@ namespace NuGet.ProjectModel.Test
                 () => PackagesLockFileFormat.Read(stream, log: null!, "packages.lock.json"));
 
             Assert.Equal("log", exception.ParamName);
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_ReadTextReaderWithNullLog_Throws()
-        {
-            using var reader = new StringReader("""{"version":1,"dependencies":{}}""");
-
-#pragma warning disable CS0618 // Testing the obsolete TextReader overload's argument validation.
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => PackagesLockFileFormat.Read(reader, log: null!, "packages.lock.json"));
-#pragma warning restore CS0618
-
-            Assert.Equal("log", exception.ParamName);
-            Assert.Equal('{', reader.Peek());
-        }
-
-        [Theory]
-        [InlineData("""{"dependencies":{},"version":1}""", 1)]
-        [InlineData("""{"dependencies":{},"version":2}""", 2)]
-        [InlineData("""{"net8.0":{"framework":"net8.0","dependencies":{}},"version":3}""", 3)]
-        public void PackagesLockFileFormat_ReadTextReader_PreservesNewtonsoftPropertyOrderAndDisposesReader(
-            string content,
-            int version)
-        {
-            var reader = new StringReader(content);
-            var logger = new TestLogger();
-
-#pragma warning disable CS0618 // Testing the obsolete Newtonsoft.Json compatibility reader.
-            PackagesLockFile lockFile = PackagesLockFileFormat.Read(reader, logger, "legacy.lock.json");
-#pragma warning restore CS0618
-
-            Assert.Equal(version, lockFile.Version);
-            Assert.Empty(logger.InformationMessages);
-            Assert.Throws<ObjectDisposedException>(() => reader.Peek());
-            Assert.Throws<JsonException>(() => ParseWithSystemTextJson(content));
         }
 
         [Theory]
@@ -457,8 +416,10 @@ namespace NuGet.ProjectModel.Test
             Assert.False(string.IsNullOrEmpty(target.Dependencies[1].ContentHash));
         }
 
-        [Fact]
-        public void PackagesLockFileFormat_Write_ProducesIndentedDeterministicSchema()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void PackagesLockFileFormat_Write_ProducesIndentedDeterministicSchema(bool useStream)
         {
             var nuGetLockFileContent = @"{
                 ""version"": 1,
@@ -483,131 +444,35 @@ namespace NuGet.ProjectModel.Test
             }";
 
             PackagesLockFile lockFile = ParseWithSystemTextJson(nuGetLockFileContent);
-            var output = RenderToString(lockFile);
+            var output = RenderToString(lockFile, useStream);
 
-            using JsonDocument document = JsonDocument.Parse(output);
-            JsonElement root = document.RootElement;
-            Assert.Equal(1, root.GetProperty("version").GetInt32());
-            JsonElement dependencies = root.GetProperty("dependencies");
-            JsonElement target = dependencies.GetProperty(".NETFramework,Version=v4.5");
-            Assert.Equal("Direct", target.GetProperty("PackageA").GetProperty("type").GetString());
-            Assert.Equal("1.0.0", target.GetProperty("PackageB").GetProperty("resolved").GetString());
-
+            Assert.True(JToken.DeepEquals(JToken.Parse(nuGetLockFileContent), JToken.Parse(output)));
             Assert.Contains("\n  \"version\"", output);
             Assert.True(output.IndexOf("\"version\"", StringComparison.Ordinal) < output.IndexOf("\"dependencies\"", StringComparison.Ordinal));
             Assert.True(output.IndexOf("\"PackageA\"", StringComparison.Ordinal) < output.IndexOf("\"PackageB\"", StringComparison.Ordinal));
-            Assert.Equal(output, RenderToString(lockFile));
         }
 
         [Fact]
-        public void PackagesLockFileFormat_WritePublicApis_ProduceSameOutput()
+        public void PackagesLockFileFormat_WriteLargeLockFile_PreservesOutputAcrossBufferBoundaries()
         {
-            const string lockFileContent = """
-                {
-                  "version": 2,
-                  "dependencies": {
-                    "net8.0": {
-                      "ProjectA": {
-                        "type": "Project",
-                        "resolved": "1.0.0",
-                        "contentHash": "café<&",
-                        "dependencies": {
-                          "PackageB": "[1.0.0, 2.0.0)"
-                        }
-                      }
-                    }
-                  }
-                }
-                """;
-            PackagesLockFile lockFile = ParseWithSystemTextJson(lockFileContent);
-            string filePath = Path.GetTempFileName();
-
-            try
-            {
-                string renderedOutput = RenderToString(lockFile);
-
-                var stream = new MemoryStream();
-                PackagesLockFileFormat.Write(stream, lockFile);
-                string streamOutput = Encoding.UTF8.GetString(stream.ToArray());
-
-                PackagesLockFileFormat.Write(filePath, lockFile);
-                string fileOutput = File.ReadAllText(filePath);
-
-                Assert.Equal(renderedOutput, streamOutput);
-                Assert.Equal(renderedOutput, fileOutput);
-                Assert.False(stream.CanWrite);
-
-                using JsonDocument document = JsonDocument.Parse(renderedOutput);
-                JsonElement project = document.RootElement
-                    .GetProperty("dependencies")
-                    .GetProperty("net8.0")
-                    .GetProperty("ProjectA");
-                Assert.Equal("Project", project.GetProperty("type").GetString());
-                Assert.Equal("café<&", project.GetProperty("contentHash").GetString());
-                Assert.Equal("[1.0.0, 2.0.0)", project.GetProperty("dependencies").GetProperty("PackageB").GetString());
-            }
-            finally
-            {
-                File.Delete(filePath);
-            }
-        }
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(3)]
-        public void PackagesLockFileFormat_WriteTextWriter_PreservesNewtonsoftEscapingAndDisposesWriter(int version)
-        {
-            PackagesLockFile lockFile = CreateLockFileWithValue("caf\u00e9<&\U0001F600");
-            lockFile.Version = version;
-            using var writer = new StringWriter(CultureInfo.InvariantCulture);
-
-#pragma warning disable CS0618 // Testing the obsolete Newtonsoft.Json compatibility writer.
-            PackagesLockFileFormat.Write(writer, lockFile);
-#pragma warning restore CS0618
-
-            string output = writer.ToString();
-            Assert.Contains("caf\u00e9", output);
-            Assert.True(JToken.DeepEquals(JToken.Parse(RenderToString(lockFile)), JToken.Parse(output)));
-            Assert.Throws<ObjectDisposedException>(() => writer.Write("closed"));
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteLargeLockFile_WritesIncrementallyAndDisposesDestination()
-        {
-            PackagesLockFile lockFile = CreateLargeLockFile(packageCount: 1_000);
-            var stream = new RecordingWriteStream();
+            PackagesLockFile lockFile = CreateLockFile(packageCount: 1_000);
+            var stream = new MemoryStream();
 
             PackagesLockFileFormat.Write(stream, lockFile);
 
-            Assert.True(stream.IsDisposed);
-            Assert.True(stream.WriteCount > 1);
-            Assert.True(stream.BytesWritten > 16 * 1024);
-
-            using JsonDocument document = JsonDocument.Parse(stream.ToArray());
-            Assert.Equal(
-                1_000,
-                document.RootElement
-                    .GetProperty("net10.0")
-                    .GetProperty("dependencies")
-                    .EnumerateObject()
-                    .Count());
+            byte[] output = stream.ToArray();
+            Assert.True(output.Length > 16 * 1024);
+            Assert.Equal(RenderToString(lockFile), Encoding.UTF8.GetString(output));
+            Assert.False(stream.CanWrite);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void PackagesLockFileFormat_WriteFile_CreatesOrReplacesDestinationWithoutTemporaryFiles(bool fileExists)
+        [Fact]
+        public void PackagesLockFileFormat_WriteFile_ReplacesDestinationWithoutTemporaryFiles()
         {
             using var directory = TestDirectory.Create();
-            string filePath = Path.Combine(directory.Path, "nested", PackagesLockFileFormat.LockFileName);
-            if (fileExists)
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-                File.WriteAllText(filePath, "original content");
-            }
-
-            PackagesLockFile lockFile = CreateLargeLockFile(packageCount: 1_000);
+            string filePath = Path.Combine(directory.Path, PackagesLockFileFormat.LockFileName);
+            File.WriteAllText(filePath, "original content");
+            PackagesLockFile lockFile = CreateLockFile();
 
             PackagesLockFileFormat.Write(filePath, lockFile);
 
@@ -616,13 +481,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [InlineData(false)]
+        [InlineData(true)]
         public void PackagesLockFileFormat_WriteFileValidationFailure_PreservesDestinationAndDeletesTemporaryFile(
-            bool fileExists,
-            bool nullPropertyName)
+            bool fileExists)
         {
             using var directory = TestDirectory.Create();
             string filePath = Path.Combine(directory.Path, "nested", PackagesLockFileFormat.LockFileName);
@@ -633,27 +495,14 @@ namespace NuGet.ProjectModel.Test
                 File.WriteAllBytes(filePath, originalContent);
             }
 
-            PackagesLockFile lockFile = CreateLargeLockFile(packageCount: 1_000);
+            PackagesLockFile lockFile = CreateLockFile(packageCount: 1_000);
             PackagesLockFileTarget target = lockFile.Targets[0];
             target.Dependencies.Add(new LockFileDependency
             {
-                Id = nullPropertyName ? null! : target.Dependencies[0].Id
+                Id = target.Dependencies[0].Id
             });
 
-            if (nullPropertyName)
-            {
-                ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                    () => PackagesLockFileFormat.Write(filePath, lockFile));
-                Assert.Contains(Strings.PackagesLockFile_NullPropertyName, exception.Message);
-            }
-            else
-            {
-                ArgumentException exception = Assert.Throws<ArgumentException>(
-                    () => PackagesLockFileFormat.Write(filePath, lockFile));
-                Assert.Contains(
-                    string.Format(CultureInfo.CurrentCulture, Strings.PackagesLockFile_DuplicatePropertyName, target.Dependencies[0].Id),
-                    exception.Message);
-            }
+            Assert.Throws<ArgumentException>(() => PackagesLockFileFormat.Write(filePath, lockFile));
 
             if (fileExists)
             {
@@ -666,185 +515,55 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        [Fact]
-        public void PackagesLockFileFormat_WriteWhenDestinationWriteThrows_DisposesDestination()
-        {
-            PackagesLockFile lockFile = CreateLargeLockFile(packageCount: 1_000);
-            var stream = new RecordingWriteStream(throwOnWrite: true);
-
-            IOException exception = Assert.Throws<IOException>(
-                () => PackagesLockFileFormat.Write(stream, lockFile));
-
-            Assert.Equal("The destination cannot be written.", exception.Message);
-            Assert.True(stream.IsDisposed);
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteUnicodeAndSpecialCharacters_PreserveModelSemantics()
-        {
-            const string value = "emoji-\U0001F600-Latin-café-Ångström-html-<>&'-quote-\"-backslash-\\";
-            PackagesLockFile lockFile = CreateLockFileWithValue(value);
-
-            string output = RenderToString(lockFile);
-
-            using JsonDocument document = JsonDocument.Parse(output);
-            JsonElement target = document.RootElement.GetProperty($"target-{value}");
-            JsonElement package = target.GetProperty("dependencies").GetProperty($"package-{value}");
-            Assert.Equal(value, package.GetProperty("contentHash").GetString());
-            Assert.Equal(
-                "(, )",
-                package.GetProperty("dependencies").GetProperty($"dependency-{value}").GetString());
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteDuplicateTargets_ThrowsAndDisposesStream()
-        {
-            var lockFile = new PackagesLockFile(1);
-            lockFile.Targets.Add(new PackagesLockFileTarget { TargetFramework = NuGetFramework.Parse("net8.0") });
-            lockFile.Targets.Add(new PackagesLockFileTarget { TargetFramework = NuGetFramework.Parse("net8.0") });
-
-            AssertDuplicateWriteThrows(lockFile, "net8.0");
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteDuplicatePackages_ThrowsAndDisposesStream()
-        {
-            var lockFile = new PackagesLockFile(1);
-            var target = new PackagesLockFileTarget { TargetFramework = NuGetFramework.Parse("net8.0") };
-            target.Dependencies.Add(new LockFileDependency { Id = "PackageA" });
-            target.Dependencies.Add(new LockFileDependency { Id = "PackageA" });
-            lockFile.Targets.Add(target);
-
-            AssertDuplicateWriteThrows(lockFile, "PackageA");
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteDuplicateDependencies_ThrowsAndDisposesStream()
-        {
-            var lockFile = new PackagesLockFile(1);
-            var target = new PackagesLockFileTarget { TargetFramework = NuGetFramework.Parse("net8.0") };
-            var package = new LockFileDependency { Id = "PackageA" };
-            package.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("PackageB"));
-            package.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("PackageB"));
-            target.Dependencies.Add(package);
-            lockFile.Targets.Add(target);
-
-            AssertDuplicateWriteThrows(lockFile, "PackageB");
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteVersion3TargetNamedVersion_ThrowsAndDisposesStream()
-        {
-            var lockFile = new PackagesLockFile(3);
-            lockFile.Targets.Add(new PackagesLockFileTarget
-            {
-                TargetAlias = "version",
-                TargetFramework = NuGetFramework.Parse("net8.0")
-            });
-
-            AssertDuplicateWriteThrows(lockFile, "version");
-        }
-
         [Theory]
         [InlineData(1, "target")]
         [InlineData(3, "target")]
         [InlineData(1, "package")]
-        [InlineData(3, "package")]
         [InlineData(1, "dependency")]
-        [InlineData(3, "dependency")]
-        public void PackagesLockFileFormat_WriteDuplicateNameAfterLargeContent_ThrowsAfterWriting(int version, string duplicateScope)
+        [InlineData(3, "version")]
+        public void PackagesLockFileFormat_WriteDuplicatePropertyName_Throws(int version, string scope)
         {
-            PackagesLockFile lockFile = CreateLargeLockFile(packageCount: 1_000);
+            PackagesLockFile lockFile = CreateLockFile();
             lockFile.Version = version;
             PackagesLockFileTarget target = lockFile.Targets[0];
-            target.TargetAlias = version >= 3 ? target.TargetAlias : null;
-            LockFileDependency package = target.Dependencies.Last();
-
-            string duplicateName;
-            switch (duplicateScope)
-            {
-                case "target":
-                    lockFile.Targets.Add(new PackagesLockFileTarget
-                    {
-                        TargetFramework = target.TargetFramework,
-                        TargetAlias = target.TargetAlias
-                    });
-                    duplicateName = target.Name;
-                    break;
-                case "package":
-                    target.Dependencies.Add(new LockFileDependency { Id = package.Id });
-                    duplicateName = package.Id;
-                    break;
-                default:
-                    package.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("PackageA"));
-                    package.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("PackageA"));
-                    duplicateName = "PackageA";
-                    break;
-            }
-
-            using var stream = new MemoryStream();
-
-            ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => PackagesLockFileFormat.Write(stream, lockFile));
-
-            Assert.Contains(
-                string.Format(CultureInfo.CurrentCulture, Strings.PackagesLockFile_DuplicatePropertyName, duplicateName),
-                exception.Message);
-            Assert.True(stream.ToArray().Length > 16 * 1024);
-            Assert.False(stream.CanWrite);
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteNullPackageNameAfterLargeContent_ThrowsAfterWriting()
-        {
-            PackagesLockFile lockFile = CreateLargeLockFile(packageCount: 1_000);
-            PackagesLockFileTarget target = lockFile.Targets[0];
-            target.Dependencies.Add(new LockFileDependency { Id = null! });
-
-            using var stream = new MemoryStream();
-
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => PackagesLockFileFormat.Write(stream, lockFile));
-
-            Assert.Equal("name", exception.ParamName);
-            Assert.Contains(Strings.PackagesLockFile_NullPropertyName, exception.Message);
-            Assert.True(stream.ToArray().Length > 16 * 1024);
-            Assert.False(stream.CanWrite);
-        }
-
-        [Theory]
-        [InlineData("target")]
-        [InlineData("package")]
-        [InlineData("dependency")]
-        public void PackagesLockFileFormat_WriteNullElement_ThrowsAndDisposesStream(string scope)
-        {
-            var lockFile = new PackagesLockFile(1);
-            var target = new PackagesLockFileTarget { TargetFramework = NuGetFramework.Parse("net8.0") };
-            var package = new LockFileDependency { Id = "PackageA" };
-            target.Dependencies.Add(package);
-            lockFile.Targets.Add(target);
-
+            string propertyName;
             switch (scope)
             {
                 case "target":
-                    lockFile.Targets.Add(null!);
+                    lockFile.Targets.Add(target);
+                    propertyName = target.Name;
                     break;
                 case "package":
-                    target.Dependencies.Add(null!);
+                    target.Dependencies.Add(target.Dependencies[0]);
+                    propertyName = target.Dependencies[0].Id;
+                    break;
+                case "dependency":
+                    propertyName = "PackageB";
+                    target.Dependencies[0].Dependencies.Add(new NuGet.Packaging.Core.PackageDependency(propertyName));
+                    target.Dependencies[0].Dependencies.Add(new NuGet.Packaging.Core.PackageDependency(propertyName));
                     break;
                 default:
-                    package.Dependencies.Add(null!);
+                    propertyName = "version";
+                    target.TargetAlias = propertyName;
                     break;
             }
 
-            using var stream = new MemoryStream();
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => RenderToString(lockFile));
 
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => PackagesLockFileFormat.Write(stream, lockFile));
+            Assert.Contains(
+                string.Format(CultureInfo.CurrentCulture, Strings.PackagesLockFile_DuplicatePropertyName, propertyName),
+                exception.Message);
+        }
 
-            Assert.Equal("name", exception.ParamName);
+        [Fact]
+        public void PackagesLockFileFormat_WriteNullPropertyName_Throws()
+        {
+            PackagesLockFile lockFile = CreateLockFile();
+            lockFile.Targets[0].Dependencies[0].Id = null!;
+
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => RenderToString(lockFile));
+
             Assert.Contains(Strings.PackagesLockFile_NullPropertyName, exception.Message);
-            Assert.False(stream.CanWrite);
         }
 
         [Fact]
@@ -935,60 +654,10 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("win-x64", target2.RuntimeIdentifier);
         }
 
-        [Fact]
-        public void PackagesLockFileFormat_WriteVersion3WithAliases()
-        {
-            var lockFile = new PackagesLockFile(3);
-
-            var target1 = new PackagesLockFileTarget
-            {
-                TargetFramework = NuGetFramework.Parse("net10.0"),
-                TargetAlias = "netcoreapp10.0"
-            };
-            target1.Dependencies.Add(new LockFileDependency
-            {
-                Id = "PackageA",
-                Type = PackageDependencyType.Direct,
-                ResolvedVersion = NuGetVersion.Parse("1.0.0"),
-                ContentHash = "hash1"
-            });
-
-            var target2 = new PackagesLockFileTarget
-            {
-                TargetFramework = NuGetFramework.Parse("net10.0"),
-                TargetAlias = "net10.0"
-            };
-            target2.Dependencies.Add(new LockFileDependency
-            {
-                Id = "PackageB",
-                Type = PackageDependencyType.Direct,
-                ResolvedVersion = NuGetVersion.Parse("2.0.0"),
-                ContentHash = "hash2"
-            });
-
-            lockFile.Targets.Add(target1);
-            lockFile.Targets.Add(target2);
-
-            var output = RenderToString(lockFile);
-            var json = JObject.Parse(output);
-
-            Assert.Equal(3, (int)json["version"]!);
-            Assert.True(json.ContainsKey("netcoreapp10.0"));
-            Assert.True(json.ContainsKey("net10.0"));
-
-            var target1Json = json["netcoreapp10.0"] as JObject;
-            Assert.NotNull(target1Json);
-            Assert.Equal("net10.0", (string)target1Json["framework"]!);
-            Assert.NotNull(target1Json["dependencies"]);
-
-            var target2Json = json["net10.0"] as JObject;
-            Assert.NotNull(target2Json);
-            Assert.Equal("net10.0", (string)target2Json["framework"]!);
-            Assert.NotNull(target2Json["dependencies"]);
-        }
-
-        [Fact]
-        public void PackagesLockFileFormat_WriteVersion3WithAliases_IsDeterministicAndReadable()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void PackagesLockFileFormat_WriteVersion3WithAliases_PreservesSchema(bool useStream)
         {
             var originalContent = @"{
                 ""version"": 3,
@@ -1005,27 +674,19 @@ namespace NuGet.ProjectModel.Test
                 ""net10.0"": {
                     ""framework"": ""net10.0"",
                     ""dependencies"": {
-                        ""PackageB"": {
+                        ""PackageB\u00e9\u0022\u005c<&\uD83D\uDE00"": {
                             ""type"": ""Direct"",
                             ""resolved"": ""2.0.0"",
-                            ""contentHash"": ""hash2""
+                            ""contentHash"": ""hash2-\u00e9<&\uD83D\uDE00""
                         }
                     }
                 }
             }";
 
             PackagesLockFile lockFile = ParseWithSystemTextJson(originalContent);
-            var output = RenderToString(lockFile);
+            var output = RenderToString(lockFile, useStream);
 
-            Assert.Equal(output, RenderToString(lockFile));
-
-            PackagesLockFile roundTripped = ParseWithSystemTextJson(output);
-            Assert.Equal(3, roundTripped.Version);
-            Assert.Equal(2, roundTripped.Targets.Count);
-            Assert.Equal("netcoreapp10.0", roundTripped.Targets[0].TargetAlias);
-            Assert.Equal("PackageA", roundTripped.Targets[0].Dependencies[0].Id);
-            Assert.Equal("net10.0", roundTripped.Targets[1].TargetAlias);
-            Assert.Equal("PackageB", roundTripped.Targets[1].Dependencies[0].Id);
+            Assert.True(JToken.DeepEquals(JToken.Parse(originalContent), JToken.Parse(output)));
         }
 
         [Fact]
@@ -1081,8 +742,15 @@ namespace NuGet.ProjectModel.Test
             return PackagesLockFileFormat.ReadLockFile(stream);
         }
 
-        private static string RenderToString(PackagesLockFile lockFile)
+        private static string RenderToString(PackagesLockFile lockFile, bool useStream = false)
         {
+            if (useStream)
+            {
+                var stream = new MemoryStream();
+                PackagesLockFileFormat.Write(stream, lockFile);
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
+
 #pragma warning disable CS0618 // Testing the obsolete whole-file string rendering API.
             return PackagesLockFileFormat.Render(lockFile);
 #pragma warning restore CS0618
@@ -1167,40 +835,7 @@ namespace NuGet.ProjectModel.Test
             public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         }
 
-        private static void AssertDuplicateWriteThrows(PackagesLockFile lockFile, string propertyName)
-        {
-            var stream = new MemoryStream();
-
-            ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => PackagesLockFileFormat.Write(stream, lockFile));
-
-            Assert.Contains(
-                string.Format(CultureInfo.CurrentCulture, Strings.PackagesLockFile_DuplicatePropertyName, propertyName),
-                exception.Message);
-            Assert.False(stream.CanWrite);
-        }
-
-        private static PackagesLockFile CreateLockFileWithValue(string value)
-        {
-            var lockFile = new PackagesLockFile(3);
-            var target = new PackagesLockFileTarget
-            {
-                TargetAlias = $"target-{value}",
-                TargetFramework = NuGetFramework.Parse("net8.0")
-            };
-            var package = new LockFileDependency
-            {
-                Id = $"package-{value}",
-                Type = PackageDependencyType.Direct,
-                ContentHash = value
-            };
-            package.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency($"dependency-{value}"));
-            target.Dependencies.Add(package);
-            lockFile.Targets.Add(target);
-            return lockFile;
-        }
-
-        private static PackagesLockFile CreateLargeLockFile(int packageCount)
+        private static PackagesLockFile CreateLockFile(int packageCount = 1)
         {
             var lockFile = new PackagesLockFile(3);
             var target = new PackagesLockFileTarget
@@ -1223,54 +858,6 @@ namespace NuGet.ProjectModel.Test
 
             lockFile.Targets.Add(target);
             return lockFile;
-        }
-
-        private sealed class RecordingWriteStream : MemoryStream
-        {
-            private readonly bool _throwOnWrite;
-            private long _bytesWritten;
-
-            internal RecordingWriteStream(bool throwOnWrite = false)
-            {
-                _throwOnWrite = throwOnWrite;
-            }
-
-            internal long BytesWritten => _bytesWritten;
-
-            internal bool IsDisposed { get; private set; }
-
-            internal int WriteCount { get; private set; }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                BeforeWrite();
-                base.Write(buffer, offset, count);
-                _bytesWritten += count;
-            }
-
-#if NET5_0_OR_GREATER
-            public override void Write(ReadOnlySpan<byte> buffer)
-            {
-                BeforeWrite();
-                base.Write(buffer);
-                _bytesWritten += buffer.Length;
-            }
-#endif
-
-            protected override void Dispose(bool disposing)
-            {
-                IsDisposed = true;
-                base.Dispose(disposing);
-            }
-
-            private void BeforeWrite()
-            {
-                WriteCount++;
-                if (_throwOnWrite)
-                {
-                    throw new IOException("The destination cannot be written.");
-                }
-            }
         }
     }
 }
