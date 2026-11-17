@@ -83,15 +83,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     WriteInvalidPackageError(package);
                 }
-                else if (matches.Count > 1)
-                {
-                    writeError(new ErrorRecord(
-                        new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.InitScript_AmbiguousPackage, package)),
-                        NuGetErrorId.AmbiguousPackageInitScript, ErrorCategory.InvalidArgument, package));
-                }
                 else
                 {
-                    selected.Add(matches[0]);
+                    selected.UnionWith(matches);
                 }
             }
 

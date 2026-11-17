@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -466,16 +466,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple installed versions of package &apos;{0}&apos; contain tools/init.ps1. Specify the package as id@version..
-        /// </summary>
-        internal static string InitScript_AmbiguousPackage {
-            get {
-                return ResourceManager.GetString("InitScript_AmbiguousPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This command is unavailable because explicit package initialization scripts are not enabled..
+        ///   Looks up a localized string similar to This feature is not yet enabled..
         /// </summary>
         internal static string InitScript_FeatureDisabled {
             get {

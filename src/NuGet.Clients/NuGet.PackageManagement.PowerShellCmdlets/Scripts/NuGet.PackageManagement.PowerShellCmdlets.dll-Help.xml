@@ -1384,8 +1384,8 @@
       <command:noun>PackageInitScript</command:noun>
     </command:details>
     <maml:description>
-      <maml:para>Discovers tools/init.ps1 files belonging to installed packages across the solution, in dependency order. Returns Id, Version, and the absolute script path as FullName. The same package is listed only once.</maml:para>
-      <maml:para>This experimental command is disabled by default. Set NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION=1 before starting Visual Studio to enable discovery, or set it to 0 to disable it regardless of the Visual Studio feature flag. This command does not change automatic script execution.</maml:para>
+      <maml:para>Discovers tools/init.ps1 files belonging to installed packages across the solution, in dependency order. Returns Id, Version, and the absolute script path as FullName.</maml:para>
+      <maml:para>This feature is not yet enabled. This command does not change automatic script execution.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
@@ -1400,7 +1400,7 @@
       <command:parameter required="false" position="named" pipelineInput="false">
         <maml:name>Packages</maml:name>
         <maml:description>
-          <maml:para>One or more installed package IDs. Use id@version to select a version when multiple installed versions contain init scripts. Unknown packages, invalid versions, or ambiguous IDs produce errors.</maml:para>
+          <maml:para>One or more installed package IDs. All matching installed versions containing init scripts are listed. Use id@version to select a specific version. Unknown packages or invalid versions produce errors.</maml:para>
         </maml:description>
         <command:parameterValue required="true">string[]</command:parameterValue>
       </command:parameter>
