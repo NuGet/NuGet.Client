@@ -236,7 +236,6 @@ namespace NuGet.Protocol.Core.Types
                         Path.GetFileName(symbolPackagePath),
                         Strings.DefaultSymbolServer));
                 }
-                bool logErrorForHttpSources = true;
                 foreach (string packageToPush in symbolsToPush!)
                 {
                     await PushPackageCore(
@@ -246,11 +245,9 @@ namespace NuGet.Protocol.Core.Types
                         noServiceEndpoint,
                         skipDuplicate,
                         requestTimeout,
-                        logErrorForHttpSources,
                         allowInsecureConnections,
                         log,
                         token);
-                    logErrorForHttpSources = false;
                 }
             }
         }
@@ -290,7 +287,6 @@ namespace NuGet.Protocol.Core.Types
                     Strings.NoApiKeyFound,
                     GetSourceDisplayName(source)));
             }
-            bool logErrorForHttpSources = true;
             foreach (string nupkgToPush in nupkgsToPush)
             {
                 bool packageWasPushed = await PushPackageCore(
@@ -300,7 +296,6 @@ namespace NuGet.Protocol.Core.Types
                     noServiceEndpoint,
                     skipDuplicate,
                     requestTimeout,
-                    logErrorForHttpSources,
                     allowInsecureConnections,
                     log,
                     token);
@@ -339,12 +334,10 @@ namespace NuGet.Protocol.Core.Types
                         noServiceEndpoint,
                         skipDuplicate,
                         requestTimeout,
-                        logErrorForHttpSources,
                         allowInsecureConnections,
                         log,
                         token);
                 }
-                logErrorForHttpSources = false;
             }
         }
 
@@ -354,7 +347,6 @@ namespace NuGet.Protocol.Core.Types
             bool noServiceEndpoint,
             bool skipDuplicate,
             TimeSpan requestTimeout,
-            bool logErrorForHttpSources,
             bool allowInsecureConnections,
             ILogger log,
             CancellationToken token)
@@ -376,7 +368,7 @@ namespace NuGet.Protocol.Core.Types
             else
             {
                 wasPackagePushed = await PushPackageToServer(source, _httpSource!, apiKey, packageToPush, noServiceEndpoint, skipDuplicate,
-                    requestTimeout, logErrorForHttpSources, allowInsecureConnections, log, token);
+                    requestTimeout, allowInsecureConnections, log, token);
             }
 
             if (wasPackagePushed)
@@ -427,7 +419,6 @@ namespace NuGet.Protocol.Core.Types
             bool noServiceEndpoint,
             bool skipDuplicate,
             TimeSpan requestTimeout,
-            bool logErrorForHttpSources,
             bool allowInsecureConnections,
             ILogger logger,
             CancellationToken token)
@@ -436,10 +427,9 @@ namespace NuGet.Protocol.Core.Types
             bool useTempApiKey = IsSourceNuGetSymbolServer(source);
             HttpStatusCode? codeNotToThrow = ConvertSkipDuplicateParamToHttpStatusCode(skipDuplicate);
             bool showPushCommandPackagePushed = true;
-            if (logErrorForHttpSources && serviceEndpointUrl.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
+            if (serviceEndpointUrl.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
             {
-                logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "push", serviceEndpointUrl));
-                return false;
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "push", serviceEndpointUrl));
             }
 
             if (useTempApiKey)
@@ -740,8 +730,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 if (sourceUri.Scheme == Uri.UriSchemeHttp && !allowInsecureConnections)
                 {
-                    logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
-                    return;
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServerUsage, "delete", sourceUri));
                 }
                 await DeletePackageFromServer(_source, _httpSource, apiKey, packageId, packageVersion, noServiceEndpoint, logger, token);
             }
