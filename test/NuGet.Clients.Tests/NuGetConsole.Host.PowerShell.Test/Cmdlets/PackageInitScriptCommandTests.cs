@@ -419,8 +419,11 @@ namespace NuGetConsole.Host.PowerShell.Test
             fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
         }
 
-        [Fact]
-        public async Task ImportPackageInitScript_AmbiguousVersionsRequireVersionSelectorAsync()
+        [Theory]
+        [InlineData("Import-PackageInitScript")]
+        [InlineData("Import-PackageInitScript -Packages Root")]
+        [InlineData("Import-PackageInitScript -Packages root,Root@2.0.0,Root")]
+        public async Task ImportPackageInitScript_MultipleVersionsImportsAllMatchingScriptsAsync(string command)
         {
             using var context = new SimpleTestPathContext();
             await SetupPackagesAsync(context);
@@ -431,13 +434,17 @@ namespace NuGetConsole.Host.PowerShell.Test
             SetInstalledPackages(first, second, new SimpleTestPackageContext("Dependency", "1.0.0"));
             using var fixture = new CmdletRunspaceFixture(context.PackageSource);
 
-            fixture.InvokeScript("Import-PackageInitScript -Packages Root");
+            fixture.InvokeScript(command);
 
-            fixture.Errors.Should().ContainSingle().Which.FullyQualifiedErrorId.Should().StartWith("NuGetAmbiguousPackageInitScript");
-            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
+            fixture.Errors.Should().BeEmpty();
+            fixture.InvokeScript("$global:InitOrder").Select(result => result.BaseObject).Should().Equal(
+                command == "Import-PackageInitScript" ? new[] { "Dependency", "Root" } : new[] { "Root" });
+            fixture.InvokeScript("$global:ImportedVersion").Single().BaseObject.Should().Be("2.0.0");
+            fixture.InvokeScript("Remove-Variable InitOrder,ImportedVersion -Scope Global");
             fixture.InvokeScript("Import-PackageInitScript -Packages Root@2.0.0");
             fixture.Errors.Should().BeEmpty();
             fixture.InvokeScript("$global:ImportedVersion").Single().BaseObject.Should().Be("2.0.0");
+            fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
         }
 
         [Fact]

@@ -1470,7 +1470,7 @@
       <command:parameter required="true" position="named" pipelineInput="false">
         <maml:name>Packages</maml:name>
         <maml:description>
-          <maml:para>One or more installed package IDs. Ambiguous IDs require id@version. Cannot be combined with script paths.</maml:para>
+          <maml:para>One or more installed package IDs. Matches all installed versions unless a version is specified with id@version. Cannot be combined with script paths.</maml:para>
         </maml:description>
         <command:parameterValue required="true">string[]</command:parameterValue>
       </command:parameter>
