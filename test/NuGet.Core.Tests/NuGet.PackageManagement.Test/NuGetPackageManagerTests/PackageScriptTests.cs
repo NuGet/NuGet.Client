@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
@@ -21,198 +20,104 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
     public class PackageScriptTests
     {
         [Fact]
-        public async Task ExecuteActions_UninstallPreflight_ReadsInstalledPackagesOncePerProject()
+        public async Task Uninstall_FailPolicy_DoesNotRemoveEarlierDependencyOrContent()
         {
-            using var feature = new PowerShellScriptExecutionFeatureScope("1");
-            using var source = TestDirectory.Create();
-            using var solution = new TestSolutionManager();
-            var provider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source.Path) });
-            var manager = new NuGetPackageManager(provider, CreateSettings(source.Path), solution, new TestDeleteOnRestartManager());
-            var originalProject = solution.AddNewMSBuildProject();
-            var packages = new[] { CreatePackage("First", "tools/uninstall.ps1"), CreatePackage("Second", "tools/uninstall.ps1") };
-            await SimpleTestPackageUtility.CreatePackagesAsync(source, packages);
-            var context = new TestNuGetProjectContext
-            {
-                TestExecutionContext = new TestExecutionContext(null) { PackageScripts = PackageScriptBehavior.Skip }
-            };
-            foreach (var package in packages)
-            {
-                await manager.InstallPackageAsync(originalProject, package.Id, new ResolutionContext(), context,
-                    provider.GetRepositories().Single(), null, CancellationToken.None);
-            }
-            var project = new Mock<MSBuildNuGetProject>(
-                originalProject.ProjectSystem, solution.PackagesFolder, originalProject.ProjectSystem.ProjectFullPath)
-            {
-                CallBase = true
-            };
-            var configPath = Path.Combine(originalProject.ProjectSystem.ProjectFullPath, "packages.config");
-            var originalConfig = File.ReadAllText(configPath);
-            context.ExecutionContext.PackageScripts = PackageScriptBehavior.Fail;
-            var actions = packages.Select(package => NuGetProjectAction.CreateUninstallProjectAction(package.Identity, project.Object));
-            using var cache = new SourceCacheContext();
-
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                manager.ExecuteNuGetProjectActionsAsync(project.Object, actions, context, cache, CancellationToken.None));
-
-            project.Verify(project => project.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()), Times.Once);
-            foreach (var package in packages)
-            {
-                Assert.Contains(Path.Combine(solution.PackagesFolder, package.Id + ".1.0.0", "tools", "uninstall.ps1"), exception.Message);
-            }
-            Assert.Equal(originalConfig, File.ReadAllText(configPath));
-        }
-
-        [Fact]
-        public async Task Uninstall_DefaultPolicy_DoesNotRemoveEarlierDependencyOrContent()
-        {
-            using var feature = new PowerShellScriptExecutionFeatureScope("1");
-            using var source = TestDirectory.Create();
-            using var solution = new TestSolutionManager();
-            var provider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source.Path) });
-            var manager = new NuGetPackageManager(provider, CreateSettings(source.Path), solution, new TestDeleteOnRestartManager());
-            var project = solution.AddNewMSBuildProject();
+            using var test = new PackageScriptTestContext();
+            var project = test.Solution.AddNewMSBuildProject();
             var dependency = CreatePackage("Dependency", "tools/uninstall.ps1");
             var root = CreatePackage("Root", "tools/init.ps1");
             root.Dependencies.Add(dependency);
-            await SimpleTestPackageUtility.CreatePackagesAsync(source, root);
-            var context = new TestNuGetProjectContext
-            {
-                TestExecutionContext = new TestExecutionContext(null) { PackageScripts = PackageScriptBehavior.Skip }
-            };
-            await manager.InstallPackageAsync(project, root.Id, new ResolutionContext(), context,
-                provider.GetRepositories().Single(), null, CancellationToken.None);
-            var configPath = Path.Combine(solution.SolutionDirectory, project.ProjectSystem.ProjectName, "packages.config");
+            await SimpleTestPackageUtility.CreatePackagesAsync(test.Source, root);
+            await test.InstallAsync(project, root);
+            var configPath = Path.Combine(test.Solution.SolutionDirectory, project.ProjectSystem.ProjectName, "packages.config");
             var originalConfig = File.ReadAllText(configPath);
-            context.ExecutionContext.PackageScripts = PackageScriptBehavior.Fail;
+            test.Context.ExecutionContext.PackageScripts = PackageScriptBehavior.Fail;
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                manager.UninstallPackageAsync(project, root.Id, new UninstallationContext(removeDependencies: true, forceRemove: false),
-                    context, CancellationToken.None));
+                test.Manager.UninstallPackageAsync(project, root.Id, new UninstallationContext(removeDependencies: true, forceRemove: false),
+                    test.Context, CancellationToken.None));
 
             Assert.Contains("uninstall.ps1", exception.Message);
             Assert.Equal(originalConfig, File.ReadAllText(configPath));
             Assert.Equal(2, (await project.GetInstalledPackagesAsync(CancellationToken.None)).Count());
         }
 
-        [Theory]
-        [InlineData(false, "tools/uninstall.ps1")]
-        [InlineData(true, "tools/uninstall.ps1")]
-        public async Task UpdateOrReinstall_DefaultPolicy_PreservesInstalledVersion(bool reinstall, string script)
+        [Fact]
+        public async Task Update_FailPolicy_PreservesInstalledVersion()
         {
-            using var feature = new PowerShellScriptExecutionFeatureScope("1");
-            using var source = TestDirectory.Create();
-            using var solution = new TestSolutionManager();
-            var provider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source.Path) });
-            var repository = provider.GetRepositories().Single();
-            var manager = new NuGetPackageManager(provider, CreateSettings(source.Path), solution, new TestDeleteOnRestartManager());
-            var project = solution.AddNewMSBuildProject();
-            var oldPackage = CreatePackage("Package", script);
-            var newPackage = CreatePackage("Package", script);
+            using var test = new PackageScriptTestContext();
+            var project = test.Solution.AddNewMSBuildProject();
+            var oldPackage = CreatePackage("Package", "tools/uninstall.ps1");
+            var newPackage = CreatePackage("Package", "tools/uninstall.ps1");
             newPackage.Version = "2.0.0";
-            await SimpleTestPackageUtility.CreatePackagesAsync(source, oldPackage, newPackage);
-            var context = new TestNuGetProjectContext
-            {
-                TestExecutionContext = new TestExecutionContext(null) { PackageScripts = PackageScriptBehavior.Skip }
-            };
-            await manager.InstallPackageAsync(project, oldPackage.Identity, new ResolutionContext(), context,
-                new[] { repository }, null, CancellationToken.None);
+            await SimpleTestPackageUtility.CreatePackagesAsync(test.Source, oldPackage, newPackage);
+            await test.InstallAsync(project, oldPackage);
             var installedPackage = (await project.GetInstalledPackagesAsync(CancellationToken.None)).Single().PackageIdentity;
-            var target = reinstall ? installedPackage : newPackage.Identity;
             var configPath = Path.Combine(project.ProjectSystem.ProjectFullPath, "packages.config");
             var originalConfig = File.ReadAllText(configPath);
             var actions = new[]
             {
                 NuGetProjectAction.CreateUninstallProjectAction(installedPackage, project),
-                NuGetProjectAction.CreateInstallProjectAction(target, repository, project)
+                NuGetProjectAction.CreateInstallProjectAction(newPackage.Identity, test.Repository, project)
             };
-            context.ExecutionContext.PackageScripts = PackageScriptBehavior.Fail;
+            test.Context.ExecutionContext.PackageScripts = PackageScriptBehavior.Fail;
             using var cache = new SourceCacheContext();
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                manager.ExecuteNuGetProjectActionsAsync(project, actions, context, cache, CancellationToken.None));
+                test.Manager.ExecuteNuGetProjectActionsAsync(project, actions, test.Context, cache, CancellationToken.None));
 
-            Assert.Contains(script.Replace('/', Path.DirectorySeparatorChar), exception.Message);
+            Assert.Contains(Path.Combine("tools", "uninstall.ps1"), exception.Message);
             Assert.Equal(originalConfig, File.ReadAllText(configPath));
             Assert.Equal(installedPackage, (await project.GetInstalledPackagesAsync(CancellationToken.None)).Single().PackageIdentity);
-            Assert.False(Directory.Exists(Path.Combine(solution.PackagesFolder, "Package.2.0.0")));
+            Assert.False(Directory.Exists(Path.Combine(test.Solution.PackagesFolder, "Package.2.0.0")));
         }
 
         [Fact]
-        public async Task Uninstall_DefaultPolicy_UsesInstalledFrameworkAfterRetargeting()
+        public async Task Uninstall_FailPolicy_UsesInstalledFrameworkAfterRetargeting()
         {
-            using var feature = new PowerShellScriptExecutionFeatureScope("1");
-            using var source = TestDirectory.Create();
-            using var solution = new TestSolutionManager();
-            var provider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source.Path) });
-            var manager = new NuGetPackageManager(provider, CreateSettings(source.Path), solution, new TestDeleteOnRestartManager());
-            var project = solution.AddNewMSBuildProject();
+            using var test = new PackageScriptTestContext();
+            var project = test.Solution.AddNewMSBuildProject();
             var package = CreatePackage("Package", "tools/net45/uninstall.ps1");
-            await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
-            var context = new TestNuGetProjectContext
-            {
-                TestExecutionContext = new TestExecutionContext(null) { PackageScripts = PackageScriptBehavior.Skip }
-            };
-            await manager.InstallPackageAsync(project, package.Id, new ResolutionContext(), context,
-                provider.GetRepositories().Single(), null, CancellationToken.None);
+            await SimpleTestPackageUtility.CreatePackagesAsync(test.Source, package);
+            await test.InstallAsync(project, package);
             var projectDirectory = project.ProjectSystem.ProjectFullPath;
             var originalConfig = File.ReadAllText(Path.Combine(projectDirectory, "packages.config"));
-            var retargetedSystem = new TestMSBuildNuGetProjectSystem(NuGetFramework.Parse("net40"), context, projectFullPath: projectDirectory);
-            var retargeted = new TestMSBuildNuGetProject(retargetedSystem, solution.PackagesFolder, projectDirectory);
-            context.ExecutionContext.PackageScripts = PackageScriptBehavior.Fail;
+            var retargetedSystem = new TestMSBuildNuGetProjectSystem(NuGetFramework.Parse("net40"), test.Context, projectFullPath: projectDirectory);
+            var retargeted = new TestMSBuildNuGetProject(retargetedSystem, test.Solution.PackagesFolder, projectDirectory);
+            test.Context.ExecutionContext.PackageScripts = PackageScriptBehavior.Fail;
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                manager.UninstallPackageAsync(retargeted, package.Id, new UninstallationContext(),
-                    context, CancellationToken.None));
+                test.Manager.UninstallPackageAsync(retargeted, package.Id, new UninstallationContext(),
+                    test.Context, CancellationToken.None));
 
             Assert.Contains(Path.Combine("tools", "net45", "uninstall.ps1"), exception.Message);
             Assert.Equal(originalConfig, File.ReadAllText(Path.Combine(projectDirectory, "packages.config")));
             Assert.Single(await retargeted.GetInstalledPackagesAsync(CancellationToken.None));
         }
 
-        [Theory]
-        [InlineData(PackageScriptBehavior.Run, true)]
-        [InlineData(PackageScriptBehavior.RunWithInit, true)]
-        [InlineData(PackageScriptBehavior.Run, false)]
-        [InlineData(PackageScriptBehavior.RunWithInit, false)]
-        public async Task ExecuteActions_UninstallRunWithMissingFiles_PreservesAllProjects(
-            PackageScriptBehavior behavior, bool missingPackage)
+        [Fact]
+        public async Task ExecuteActions_UninstallRunWithMissingScript_PreservesAllProjects()
         {
-            using var feature = new PowerShellScriptExecutionFeatureScope("1");
-            using var source = TestDirectory.Create();
-            using var solution = new TestSolutionManager();
-            var provider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source.Path) });
-            var manager = new NuGetPackageManager(provider, CreateSettings(source.Path), solution, new TestDeleteOnRestartManager());
-            var projects = new[] { solution.AddNewMSBuildProject("First"), solution.AddNewMSBuildProject("Second") };
+            using var test = new PackageScriptTestContext();
+            var projects = new[] { test.Solution.AddNewMSBuildProject("First"), test.Solution.AddNewMSBuildProject("Second") };
             var packages = new[] { CreatePackage("Plain", "tools/init.ps1"), CreatePackage("Scripted", "tools/uninstall.ps1") };
-            await SimpleTestPackageUtility.CreatePackagesAsync(source, packages);
-            var context = new TestNuGetProjectContext
-            {
-                TestExecutionContext = new TestExecutionContext(null) { PackageScripts = PackageScriptBehavior.Skip }
-            };
+            await SimpleTestPackageUtility.CreatePackagesAsync(test.Source, packages);
             for (var i = 0; i < projects.Length; i++)
             {
-                await manager.InstallPackageAsync(projects[i], packages[i].Id, new ResolutionContext(), context,
-                    provider.GetRepositories().Single(), null, CancellationToken.None);
+                await test.InstallAsync(projects[i], packages[i]);
             }
             var originalConfigs = projects.Select(project => File.ReadAllText(Path.Combine(project.ProjectSystem.ProjectFullPath, "packages.config"))).ToArray();
             var installedPath = projects[1].FolderNuGetProject.GetInstalledPath(packages[1].Identity);
-            if (missingPackage)
-            {
-                Directory.Delete(installedPath, recursive: true);
-            }
-            else
-            {
-                File.Delete(Path.Combine(installedPath, "tools", "uninstall.ps1"));
-            }
-            context.ExecutionContext.PackageScripts = behavior;
+            File.Delete(Path.Combine(installedPath, "tools", "uninstall.ps1"));
+            test.Context.ExecutionContext.PackageScripts = PackageScriptBehavior.Run;
             var actions = projects.Select((project, i) => NuGetProjectAction.CreateUninstallProjectAction(packages[i].Identity, project));
             using var cache = new SourceCacheContext();
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                manager.ExecuteNuGetProjectActionsAsync(projects, actions, context, cache, CancellationToken.None));
+                test.Manager.ExecuteNuGetProjectActionsAsync(projects, actions, test.Context, cache, CancellationToken.None));
 
             Assert.Contains(packages[1].Identity.ToString(), exception.Message);
-            Assert.Contains("Restore packages before uninstalling", exception.Message);
+            Assert.Contains("Restore packages before continuing", exception.Message);
             Assert.Contains("-PackageScripts Skip", exception.Message);
             for (var i = 0; i < projects.Length; i++)
             {
@@ -222,40 +127,39 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
             }
         }
 
-        [Fact]
-        public async Task Uninstall_SkipWithMissingPackage_RemovesPackageEntry()
+        private sealed class PackageScriptTestContext : IDisposable
         {
-            using var feature = new PowerShellScriptExecutionFeatureScope("1");
-            using var source = TestDirectory.Create();
-            using var solution = new TestSolutionManager();
-            var provider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source.Path) });
-            var manager = new NuGetPackageManager(provider, CreateSettings(source.Path), solution, new TestDeleteOnRestartManager());
-            var project = solution.AddNewMSBuildProject();
-            var package = CreatePackage("Scripted", "tools/uninstall.ps1");
-            await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
-            var context = new TestNuGetProjectContext
+            private readonly PowerShellScriptExecutionFeatureScope _feature = new PowerShellScriptExecutionFeatureScope("1");
+
+            public TestDirectory Source { get; } = TestDirectory.Create();
+            public TestSolutionManager Solution { get; } = new TestSolutionManager();
+            public TestNuGetProjectContext Context { get; } = new TestNuGetProjectContext
             {
-                EnableLogging = true,
                 TestExecutionContext = new TestExecutionContext(null) { PackageScripts = PackageScriptBehavior.Skip }
             };
-            await manager.InstallPackageAsync(project, package.Id, new ResolutionContext(), context,
-                provider.GetRepositories().Single(), null, CancellationToken.None);
-            Directory.Delete(project.FolderNuGetProject.GetInstalledPath(package.Identity), recursive: true);
+            public SourceRepository Repository { get; }
+            public NuGetPackageManager Manager { get; }
 
-            await manager.UninstallPackageAsync(project, package.Id, new UninstallationContext(),
-                context, CancellationToken.None);
+            public PackageScriptTestContext()
+            {
+                var provider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(Source.Path) });
+                var settings = new Settings(Source.Path);
+                settings.AddOrUpdate(ConfigurationConstants.Config,
+                    new AddItem("globalPackagesFolder", Path.Combine(Source.Path, "global-packages")));
+                Repository = provider.GetRepositories().Single();
+                Manager = new NuGetPackageManager(provider, settings, Solution, new TestDeleteOnRestartManager());
+            }
 
-            Assert.Empty(await project.GetInstalledPackagesAsync(CancellationToken.None));
-            Assert.False(File.Exists(Path.Combine(project.ProjectSystem.ProjectFullPath, "packages.config")));
-            Assert.True(File.Exists(Path.Combine(project.ProjectSystem.ProjectFullPath, "marker.txt")));
-            Assert.Contains(context.Logs.Value, message => message.Contains("could not be cleaned up"));
-        }
+            public Task InstallAsync(NuGetProject project, SimpleTestPackageContext package) =>
+                Manager.InstallPackageAsync(project, package.Identity, new ResolutionContext(), Context,
+                    new[] { Repository }, null, CancellationToken.None);
 
-        private static ISettings CreateSettings(string root)
-        {
-            var settings = new Settings(root);
-            settings.AddOrUpdate(ConfigurationConstants.Config, new AddItem("globalPackagesFolder", Path.Combine(root, "global-packages")));
-            return settings;
+            public void Dispose()
+            {
+                Solution.Dispose();
+                Source.Dispose();
+                _feature.Dispose();
+            }
         }
 
         private static SimpleTestPackageContext CreatePackage(string id, string script)

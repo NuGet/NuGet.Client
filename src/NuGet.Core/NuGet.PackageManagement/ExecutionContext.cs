@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Threading.Tasks;
+using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 
 namespace NuGet.ProjectManagement
@@ -16,6 +17,6 @@ namespace NuGet.ProjectManagement
 
         public PackageIdentity DirectInstall { get; protected set; }
 
-        public PackageScriptBehavior PackageScripts { get; set; }
+        public PackageScriptBehavior PackageScripts { get; set; } = PackageScriptExecution.DefaultBehavior;
     }
 }

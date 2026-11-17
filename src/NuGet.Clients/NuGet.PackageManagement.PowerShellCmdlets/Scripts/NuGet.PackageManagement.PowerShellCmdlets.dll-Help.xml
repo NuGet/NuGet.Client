@@ -28,10 +28,6 @@
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Install-Package</maml:name>
-        <command:parameter required="false" position="named">
-          <maml:name>PackageScripts</maml:name>
-          <command:parameterValue required="true">Fail | Run | RunWithInit | Skip</command:parameterValue>
-        </command:parameter>
         <command:parameter required="true" position="1">
           <maml:name>Id</maml:name>
           <command:parameterValue required="true">string</command:parameterValue>
@@ -77,14 +73,6 @@
           string
         </command:parameterValue>
         <dev:defaultValue></dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" position="named">
-        <maml:name>PackageScripts</maml:name>
-        <maml:description>
-          <maml:para>Controls applicable uninstall.ps1 scripts when this operation removes installed packages, including dependencies, and NuGet.ControlPowerShellScriptExecution is enabled. Fail (the default) checks all resolved uninstall actions and stops before changing any project files if uninstall scripts are present, listing their installed paths for inspection. Run and RunWithInit execute uninstall scripts and require the package archive and any applicable uninstall.ps1 in the solution packages folder; restore missing files before uninstalling. Skip continues without executing uninstall scripts. If the package archive is missing, Skip removes its packages.config entry without cleaning up assembly references, build imports, or content files. Neither run mode initializes packages during uninstall. This parameter does not change install.ps1 or init.ps1 execution during installation. Applies only to packages.config projects; package resolution is unchanged. With the feature disabled, legacy script execution is unchanged.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true">Fail | Run | RunWithInit | Skip</command:parameterValue>
-        <dev:defaultValue>Fail</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" position="named">
         <maml:name>IgnoreDependencies</maml:name>
@@ -683,7 +671,9 @@
       <command:parameter required="false" position="named">
         <maml:name>PackageScripts</maml:name>
         <maml:description>
-          <maml:para>Controls applicable uninstall.ps1 scripts for the entire operation, including removed dependencies, when NuGet.ControlPowerShellScriptExecution is enabled. Fail (the default) checks all resolved actions and stops before changing any project files if scripts are present, listing their paths for inspection. Run and RunWithInit execute uninstall scripts and require the package archive and any applicable uninstall.ps1 in the solution packages folder; restore missing files before uninstalling. Skip continues without executing scripts. If the package archive is missing, Skip removes its packages.config entry without cleaning up assembly references, build imports, or content files. Neither run mode initializes packages during uninstall. Applies only to packages.config projects; package resolution is unchanged. With the feature disabled, legacy script execution is unchanged.</maml:para>
+          <maml:para>Controls uninstall.ps1 for all packages removed by this operation, including dependencies. Applies only to packages.config projects with NuGet.ControlPowerShellScriptExecution enabled.</maml:para>
+          <maml:para>Fail (default) stops before changing projects if uninstall scripts are found, reporting their paths. Skip skips uninstall scripts. Run and RunWithInit run them without init.ps1.</maml:para>
+          <maml:para>If the package archive is missing, uninstall logs a warning and leaves the package reference unchanged. Either run mode requires the applicable uninstall script to exist.</maml:para>
         </maml:description>
         <command:parameterValue required="true">Fail | Run | RunWithInit | Skip</command:parameterValue>
         <dev:defaultValue>Fail</dev:defaultValue>
@@ -808,10 +798,6 @@
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Update-Package</maml:name>
-        <command:parameter required="false" position="named">
-          <maml:name>PackageScripts</maml:name>
-          <command:parameterValue required="true">Fail | Run | RunWithInit | Skip</command:parameterValue>
-        </command:parameter>
         <command:parameter required="true" position="1">
           <maml:name>Id</maml:name>
           <command:parameterValue required="true">string</command:parameterValue>
@@ -869,14 +855,6 @@
           string
         </command:parameterValue>
         <dev:defaultValue></dev:defaultValue>
-      </command:parameter>
-      <command:parameter required="false" position="named">
-        <maml:name>PackageScripts</maml:name>
-        <maml:description>
-          <maml:para>Controls applicable uninstall.ps1 scripts for the entire update or reinstall, including removed dependencies and all selected projects, when NuGet.ControlPowerShellScriptExecution is enabled. Fail (the default) checks all resolved uninstall actions and stops before changing any project files if uninstall scripts are present, listing their installed paths for inspection. Run and RunWithInit execute uninstall scripts and require the package archive and any applicable uninstall.ps1 in the solution packages folder; restore missing files before uninstalling. Skip continues without executing uninstall scripts. If the package archive is missing, Skip removes its packages.config entry without cleaning up assembly references, build imports, or content files. Neither run mode initializes packages during uninstall. This parameter does not change install.ps1 or init.ps1 execution during installation. Applies only to packages.config projects; package resolution is unchanged. With the feature disabled, legacy script execution is unchanged.</maml:para>
-        </maml:description>
-        <command:parameterValue required="true">Fail | Run | RunWithInit | Skip</command:parameterValue>
-        <dev:defaultValue>Fail</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" position="named">
         <maml:name>IgnoreDependencies</maml:name>

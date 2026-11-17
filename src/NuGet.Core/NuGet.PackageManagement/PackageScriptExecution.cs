@@ -15,10 +15,14 @@ namespace NuGet.PackageManagement
 {
     internal static class PackageScriptExecution
     {
+        // TODO: Change the default to Fail when the remaining callers implement script controls.
+        // https://github.com/NuGet/Home/blob/dev/accepted/2026/control-powershell-script-execution.md
+        internal const PackageScriptBehavior DefaultBehavior = PackageScriptBehavior.RunWithInit;
+
         internal static PackageScriptBehavior GetBehavior(INuGetProjectContext context)
         {
-            var behavior = NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled
-                ? context.ExecutionContext?.PackageScripts ?? PackageScriptBehavior.Fail
+            var behavior = NuGet.Shared.NuGetFeatureFlags.IsControlPowerShellScriptExecutionEnabled()
+                ? context.ExecutionContext?.PackageScripts ?? DefaultBehavior
                 : PackageScriptBehavior.Run;
             if (behavior != PackageScriptBehavior.Fail && behavior != PackageScriptBehavior.Run
                 && behavior != PackageScriptBehavior.RunWithInit && behavior != PackageScriptBehavior.Skip)
@@ -46,14 +50,14 @@ namespace NuGet.PackageManagement
             PackageIdentity identity,
             string? filePath)
         {
-            if (NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
+            if (NuGet.Shared.NuGetFeatureFlags.IsControlPowerShellScriptExecutionEnabled())
             {
                 var behavior = GetBehavior(context);
                 if ((behavior == PackageScriptBehavior.Run || behavior == PackageScriptBehavior.RunWithInit)
                     && !File.Exists(filePath))
                 {
                     throw new InvalidOperationException(string.Format(
-                        CultureInfo.CurrentCulture, Strings.PackageFilesMissingForUninstall, identity));
+                        CultureInfo.CurrentCulture, Strings.PackageFilesMissingForScriptExecution, identity));
                 }
             }
         }

@@ -2475,7 +2475,7 @@ namespace NuGet.PackageManagement
             INuGetProjectContext context,
             CancellationToken token)
         {
-            if (!NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled
+            if (!NuGet.Shared.NuGetFeatureFlags.IsControlPowerShellScriptExecutionEnabled()
                 || PackageScriptExecution.GetBehavior(context) == PackageScriptBehavior.Skip)
             {
                 return;
@@ -2492,7 +2492,6 @@ namespace NuGet.PackageManagement
                 }
 
                 var packagePath = project.FolderNuGetProject.GetInstalledPackageFilePath(action.PackageIdentity);
-                PackageScriptExecution.ThrowIfUninstallFilesMissing(context, action.PackageIdentity, packagePath);
                 if (!string.IsNullOrEmpty(packagePath))
                 {
                     using var reader = new PackageArchiveReader(packagePath);

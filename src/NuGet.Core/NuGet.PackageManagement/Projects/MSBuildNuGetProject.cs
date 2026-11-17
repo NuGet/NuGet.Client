@@ -436,8 +436,6 @@ namespace NuGet.ProjectManagement
             }
 
             var packageTargetFramework = packageReference.TargetFramework ?? ProjectSystem.TargetFramework;
-            var packagePath = FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity);
-            PackageScriptExecution.ThrowIfUninstallFilesMissing(nuGetProjectContext, packageIdentity, packagePath);
             var packageEventArgs = new PackageEventArgs(FolderNuGetProject,
                                             packageIdentity,
                                             FolderNuGetProject.GetInstalledPath(packageIdentity));
@@ -449,20 +447,10 @@ namespace NuGet.ProjectManagement
 
             PackageEventsProvider.Instance.NotifyUninstalling(packageEventArgs);
 
+            var packagePath = FolderNuGetProject.GetInstalledPackageFilePath(packageIdentity);
+
             if (string.IsNullOrEmpty(packagePath))
             {
-                if (NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled
-                    && PackageScriptExecution.GetBehavior(nuGetProjectContext) == PackageScriptBehavior.Skip)
-                {
-                    await UninstallPackageReferenceAsync(packageIdentity, nuGetProjectContext, token);
-                    PackageReferenceRemoved?.Invoke(this, packageEventArgs);
-                    PackageEventsProvider.Instance.NotifyReferenceRemoved(packageEventArgs);
-                    PackageUninstalled?.Invoke(this, packageEventArgs);
-                    PackageEventsProvider.Instance.NotifyUninstalled(packageEventArgs);
-                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageUninstalledWithoutContents, packageIdentity);
-                    return true;
-                }
-
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExistInFolder,
                     packageIdentity, ProjectSystem.ProjectName);
                 return false;
@@ -519,8 +507,18 @@ namespace NuGet.ProjectManagement
                 = MSBuildNuGetProjectSystemUtility.Normalize(compatibleBuildFilesGroup);
 
             // Step-5: Remove package reference from packages.config
-            // Step-6: Update packages.config in the project
-            await UninstallPackageReferenceAsync(packageIdentity, nuGetProjectContext, token);
+            await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
+
+            // Step-6: Remove packages.config from MSBuildNuGetProject if there are no packages
+            //         OR Add it again (to ensure that Source Control works), when there are some packages
+            if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
+            {
+                ProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+            }
+            else
+            {
+                ProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
+            }
 
             // Step-7: Uninstall package from the msbuild project
             // Step-7.1: Remove references
@@ -589,20 +587,6 @@ namespace NuGet.ProjectManagement
             PackageEventsProvider.Instance.NotifyUninstalled(packageEventArgs);
 
             return true;
-        }
-
-        private async Task UninstallPackageReferenceAsync(
-            PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
-        {
-            await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
-            if (!(await PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).Any())
-            {
-                ProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-            }
-            else
-            {
-                ProjectSystem.AddExistingFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-            }
         }
 
         public override Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)

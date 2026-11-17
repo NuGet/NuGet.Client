@@ -520,11 +520,11 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot run uninstall.ps1 for package &apos;{0}&apos; because required files are missing from the solution packages folder. Restore packages before uninstalling, or use -PackageScripts Skip to uninstall without running scripts..
+        ///   Looks up a localized string similar to Cannot run scripts for package &apos;{0}&apos; because required package files are missing. Restore packages before continuing, or use -PackageScripts Skip to continue without running scripts..
         /// </summary>
-        internal static string PackageFilesMissingForUninstall {
+        internal static string PackageFilesMissingForScriptExecution {
             get {
-                return ResourceManager.GetString("PackageFilesMissingForUninstall", resourceCulture);
+                return ResourceManager.GetString("PackageFilesMissingForScriptExecution", resourceCulture);
             }
         }
 
@@ -646,15 +646,6 @@ namespace NuGet.PackageManagement {
             }
         }
         
-        /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; was removed from packages.config without running scripts because it is missing from the solution packages folder. Assembly references, build imports, and content files could not be cleaned up..
-        /// </summary>
-        internal static string PackageUninstalledWithoutContents {
-            get {
-                return ResourceManager.GetString("PackageUninstalledWithoutContents", resourceCulture);
-            }
-        }
-
         /// <summary>
         ///   Looks up a localized string similar to Parameter cannot be zero or negative.
         /// </summary>

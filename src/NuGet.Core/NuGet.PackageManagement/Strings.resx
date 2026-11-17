@@ -452,12 +452,8 @@
 {0}</value>
     <comment>{0} is a newline-separated list of absolute script paths. Do not translate -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip.</comment>
   </data>
-  <data name="PackageFilesMissingForUninstall" xml:space="preserve">
-    <value>Cannot run uninstall.ps1 for package '{0}' because required files are missing from the solution packages folder. Restore packages before uninstalling, or use -PackageScripts Skip to uninstall without running scripts.</value>
-    <comment>{0} is the package identity. {Locked="uninstall.ps1"} {Locked="-PackageScripts Skip"}</comment>
-  </data>
-  <data name="PackageUninstalledWithoutContents" xml:space="preserve">
-    <value>Package '{0}' was removed from packages.config without running scripts because it is missing from the solution packages folder. Assembly references, build imports, and content files could not be cleaned up.</value>
-    <comment>{0} is the package identity. {Locked="packages.config"}</comment>
+  <data name="PackageFilesMissingForScriptExecution" xml:space="preserve">
+    <value>Cannot run scripts for package '{0}' because required package files are missing. Restore packages before continuing, or use -PackageScripts Skip to continue without running scripts.</value>
+    <comment>{0} is the package identity. Applies to install, uninstall, and upgrade operations. {Locked="-PackageScripts Skip"}</comment>
   </data>
 </root>

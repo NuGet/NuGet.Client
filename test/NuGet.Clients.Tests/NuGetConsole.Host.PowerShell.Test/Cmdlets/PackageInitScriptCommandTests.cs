@@ -65,8 +65,6 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Theory]
-        [InlineData("Install-Package")]
-        [InlineData("Update-Package")]
         [InlineData("Uninstall-Package")]
         public void PackageScripts_ParameterHasExplicitChoicesAndRejectsInvalidInput(string command)
         {
