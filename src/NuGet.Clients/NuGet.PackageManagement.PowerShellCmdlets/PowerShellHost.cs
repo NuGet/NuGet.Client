@@ -60,7 +60,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly Lazy<ICommonOperations> _commonOperations;
         private readonly Lazy<IDeleteOnRestartManager> _deleteOnRestartManager;
         private readonly Lazy<IScriptExecutor> _scriptExecutor;
-        private readonly Lazy<INuGetFeatureFlagService> _featureFlagService;
+        private readonly Lazy<INuGetFeatureFlagInitializer> _featureFlagInitializer;
         private readonly Lazy<IRestoreProgressReporter> _restoreProgressReporter;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string SyncModeKey = "IsSyncMode";
@@ -120,7 +120,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _settings = new Lazy<ISettings>(() => componentModel.GetService<ISettings>());
             _deleteOnRestartManager = new Lazy<IDeleteOnRestartManager>(() => componentModel.GetService<IDeleteOnRestartManager>());
             _scriptExecutor = new Lazy<IScriptExecutor>(() => componentModel.GetService<IScriptExecutor>());
-            _featureFlagService = new Lazy<INuGetFeatureFlagService>(() => componentModel.GetService<INuGetFeatureFlagService>());
+            _featureFlagInitializer = new Lazy<INuGetFeatureFlagInitializer>(() => componentModel.GetService<INuGetFeatureFlagInitializer>());
             _restoreProgressReporter = new Lazy<IRestoreProgressReporter>(() => componentModel.GetService<IRestoreProgressReporter>());
             _dte = new Lazy<DTE>(() => NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>()));
             _sourceControlManagerProvider = new Lazy<ISourceControlManagerProvider>(
@@ -302,7 +302,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 ActiveConsole = console;
                 try
                 {
-                    await _featureFlagService.Value.InitializeAsync();
+                    await _featureFlagInitializer.Value.InitializeAsync();
 
                     if (_initialized.HasValue)
                     {
