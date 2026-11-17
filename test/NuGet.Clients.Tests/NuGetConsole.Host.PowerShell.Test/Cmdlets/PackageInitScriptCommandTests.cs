@@ -235,8 +235,11 @@ namespace NuGetConsole.Host.PowerShell.Test
             fixture.InvokeScript("$null -eq $global:InitOrder").Single().BaseObject.Should().Be(true);
         }
 
-        [Fact]
-        public async Task GetPackageInitScript_AmbiguousVersionsRequireVersionSelectorAsync()
+        [Theory]
+        [InlineData("Get-PackageInitScript")]
+        [InlineData("Get-PackageInitScript -Packages Root")]
+        [InlineData("Get-PackageInitScript -Packages root,Root@2.0.0,Root")]
+        public async Task GetPackageInitScript_MultipleVersionsListsAllMatchingScriptsAsync(string command)
         {
             using var context = new SimpleTestPathContext();
             await SetupPackagesAsync(context);
@@ -247,9 +250,17 @@ namespace NuGetConsole.Host.PowerShell.Test
             SetInstalledPackages(first, second, new SimpleTestPackageContext("Dependency", "1.0.0"));
             using var fixture = new CmdletRunspaceFixture(context.PackageSource);
 
-            fixture.InvokeScript("Get-PackageInitScript -Packages Root").Should().BeEmpty();
+            var matches = fixture.InvokeScript(command)
+                .Select(result => (PowerShellPackageInitScript)result.BaseObject).ToList();
 
-            fixture.Errors.Should().ContainSingle().Which.FullyQualifiedErrorId.Should().StartWith("NuGetAmbiguousPackageInitScript");
+            fixture.Errors.Should().BeEmpty();
+            matches.Should().HaveCount(command == "Get-PackageInitScript" ? 3 : 2);
+            var rootScripts = matches.Where(script => script.Id == "Root").ToList();
+            rootScripts.Select(script => script.Version).Should().BeEquivalentTo(
+                new[] { NuGetVersion.Parse("1.0.0"), NuGetVersion.Parse("2.0.0") });
+            rootScripts.Select(script => script.FullName).Should().BeEquivalentTo(
+                ScriptPath(context, "Root"),
+                Path.Combine(context.PackagesV2, "Root.2.0.0", "tools", "init.ps1"));
             var results = fixture.InvokeScript("Get-PackageInitScript -Packages Root@2.0.0");
             fixture.Errors.Should().BeEmpty();
             var script = (PowerShellPackageInitScript)results.Single().BaseObject;
