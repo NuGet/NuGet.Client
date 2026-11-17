@@ -32,6 +32,6 @@ namespace NuGet.VisualStudio
         internal bool DefaultState { get; }
 
         public static readonly NuGetFeatureFlagConstants RenderReadmeInPMUI = new("NuGet.RenderReadmeInPMUI", "NUGET_RENDER_README_IN_PMUI", defaultState: true);
-        public static readonly NuGetFeatureFlagConstants ControlPowerShellScriptExecution = new(PowerShellScriptExecutionFeature.SwitchName, PowerShellScriptExecutionFeature.EnvironmentVariable, defaultState: false);
+        public static readonly NuGetFeatureFlagConstants ControlPowerShellScriptExecution = new(NuGetFeatureFlags.ControlPowerShellScriptExecutionSwitchName, NuGetFeatureFlags.ControlPowerShellScriptExecutionEnvVar, defaultState: false);
     }
 }

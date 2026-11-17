@@ -29,8 +29,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetNuGetProjectsAsync_WaitsForFeatureFlagInitialization_AndPropagatesFailure()
         {
             var initialization = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var featureFlagService = new Mock<INuGetFeatureFlagService>(MockBehavior.Strict);
-            featureFlagService.Setup(x => x.InitializeAsync()).Returns(initialization.Task);
+            var featureFlagInitializer = new Mock<INuGetFeatureFlagInitializer>(MockBehavior.Strict);
+            featureFlagInitializer.Setup(x => x.InitializeAsync()).Returns(initialization.Task);
             var projectSystemCache = new Mock<IProjectSystemCache>(MockBehavior.Strict);
             var logger = Mock.Of<Common.ILogger>();
             var projectFactory = new NuGetProjectFactory(
@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Mock.Of<IVsProjectAdapterProvider>(),
                 logger,
                 new Lazy<ISettings>(() => Mock.Of<ISettings>()),
-                featureFlagService.Object,
+                featureFlagInitializer.Object,
                 NuGetUIThreadHelper.JoinableTaskFactory.Context,
                 new Lazy<IProjectJsonToPackageReferenceMigratorExt>(
                     () => Mock.Of<IProjectJsonToPackageReferenceMigratorExt>()),

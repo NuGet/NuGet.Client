@@ -112,9 +112,9 @@ namespace NuGetConsole.Host.PowerShell.Test
             componentModel.Setup(c => c.GetService<ISettings>()).Returns(settings);
             componentModel.Setup(c => c.GetService<IVsSolutionManager>()).Returns(solutionManager.Object);
             componentModel.Setup(c => c.GetService<IScriptExecutor>()).Returns(scriptExecutor.Object);
-            var featureFlagService = new Mock<INuGetFeatureFlagService>();
-            featureFlagService.Setup(f => f.InitializeAsync()).Returns(Task.CompletedTask);
-            componentModel.Setup(c => c.GetService<INuGetFeatureFlagService>()).Returns(featureFlagService.Object);
+            var featureFlagInitializer = new Mock<INuGetFeatureFlagInitializer>();
+            featureFlagInitializer.Setup(f => f.InitializeAsync()).Returns(Task.CompletedTask);
+            componentModel.Setup(c => c.GetService<INuGetFeatureFlagInitializer>()).Returns(featureFlagInitializer.Object);
             componentModel.Setup(c => c.GetService<ISourceRepositoryProvider>())
                 .Returns(new SourceRepositoryProvider(
                     new PackageSourceProvider(settings), Repository.Provider.GetCoreV3()));
@@ -181,8 +181,8 @@ namespace NuGetConsole.Host.PowerShell.Test
             var initializationStarted = new TaskCompletionSource<bool>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
             var initialization = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var featureFlagService = new Mock<INuGetFeatureFlagService>(MockBehavior.Strict);
-            featureFlagService.Setup(x => x.InitializeAsync())
+            var featureFlagInitializer = new Mock<INuGetFeatureFlagInitializer>(MockBehavior.Strict);
+            featureFlagInitializer.Setup(x => x.InitializeAsync())
                 .Callback(() => initializationStarted.TrySetResult(true))
                 .Returns(initialization.Task);
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
@@ -190,7 +190,7 @@ namespace NuGetConsole.Host.PowerShell.Test
             sourceRepositoryProvider.SetupGet(x => x.PackageSourceProvider).Returns(Mock.Of<IPackageSourceProvider>());
             var componentModel = new Mock<IComponentModel>(MockBehavior.Strict);
             componentModel.Setup(x => x.GetService<ISourceRepositoryProvider>()).Returns(sourceRepositoryProvider.Object);
-            componentModel.Setup(x => x.GetService<INuGetFeatureFlagService>()).Returns(featureFlagService.Object);
+            componentModel.Setup(x => x.GetService<INuGetFeatureFlagInitializer>()).Returns(featureFlagInitializer.Object);
             var serviceProvider = new Mock<IAsyncServiceProvider>();
             serviceProvider.Setup(x => x.GetServiceAsync(typeof(SComponentModel))).ReturnsAsync(componentModel.Object);
             ServiceLocator.InitializePackageServiceProvider(serviceProvider.Object);
