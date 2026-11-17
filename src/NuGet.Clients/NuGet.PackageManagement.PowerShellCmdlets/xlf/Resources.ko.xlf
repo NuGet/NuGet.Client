@@ -230,14 +230,9 @@
         <target state="translated">오류: 이 컴퓨터에는 Package Manager Console에 필요한 PowerShell 2.0 런타임이 설치되어 있지 않습니다. http://support.microsoft.com/kb/968929에서 PowerShell 2.0을 설치한 다음 Visual Studio를 다시 시작하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InitScript_AmbiguousPackage">
-        <source>Multiple installed versions of package '{0}' contain tools/init.ps1. Specify the package as id@version.</source>
-        <target state="new">Multiple installed versions of package '{0}' contain tools/init.ps1. Specify the package as id@version.</target>
-        <note>{0} is the package ID supplied by the user. Do not localize tools/init.ps1 or id@version.</note>
-      </trans-unit>
       <trans-unit id="InitScript_FeatureDisabled">
-        <source>This command is unavailable because explicit package initialization scripts are not enabled.</source>
-        <target state="new">This command is unavailable because explicit package initialization scripts are not enabled.</target>
+        <source>This feature is not yet enabled.</source>
+        <target state="new">This feature is not yet enabled.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitScript_PackageNotFound">
