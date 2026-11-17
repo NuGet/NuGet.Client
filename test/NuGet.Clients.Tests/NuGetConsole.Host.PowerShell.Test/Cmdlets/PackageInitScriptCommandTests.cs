@@ -150,7 +150,7 @@ namespace NuGetConsole.Host.PowerShell.Test
             using var context = new SimpleTestPathContext();
             await SetupPackagesAsync(context);
             using var fixture = new CmdletRunspaceFixture(context.PackageSource);
-            var expected = Assert.Throws<ArgumentException>(() => PackageIdentity.ParseAtSeparated(selector));
+            var expected = Assert.Throws<ArgumentException>(() => PackageIdentity.Parse(selector));
 
             fixture.InvokeScript($"Get-PackageInitScript -Packages '{selector}'");
 
