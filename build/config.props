@@ -34,8 +34,8 @@
     <VsTargetBranch Condition="'$(VsTargetBranch)' == '' And '$(IsEscrowMode)' == 'true'">rel/insiders</VsTargetBranch>
     <VsTargetChannel Condition="'$(VsTargetChannel)' == '' And '$(IsEscrowMode)' == 'true'">insiders</VsTargetChannel>
 
-    <!-- Run Apex/E2E tests on the target branch -->
-    <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == ''">$(VsTargetChannel)</VsTargetChannelForTests>
+    <!-- Use internal main for Apex/E2E tests until the bootstrapper supports Insiders manifests. -->
+    <VsTargetChannelForTests Condition="'$(VsTargetChannelForTests)' == ''">int.main</VsTargetChannelForTests>
   </PropertyGroup>
 
  <PropertyGroup Condition=" '$(PreReleaseVersion)' == '' ">
