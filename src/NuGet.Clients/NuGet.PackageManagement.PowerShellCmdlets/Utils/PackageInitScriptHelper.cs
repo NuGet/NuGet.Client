@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     {
         internal static void EnsureFeatureEnabled(PSCmdlet cmdlet)
         {
-            if (!NuGet.Shared.PowerShellScriptExecutionFeature.IsEnabled)
+            if (!NuGet.Shared.NuGetFeatureFlags.IsControlPowerShellScriptExecutionEnabled())
             {
                 cmdlet.ThrowTerminatingError(new ErrorRecord(
                     new NotSupportedException(Resources.InitScript_FeatureDisabled),
@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 PackageIdentity identity;
                 try
                 {
-                    identity = PackageIdentity.ParseAtSeparated(package);
+                    identity = PackageIdentity.Parse(package);
                 }
                 catch (ArgumentException ex)
                 {
