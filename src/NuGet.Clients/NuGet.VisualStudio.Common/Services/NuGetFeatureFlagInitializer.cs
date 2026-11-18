@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Shared;
 
 namespace NuGet.VisualStudio
@@ -31,14 +32,26 @@ namespace NuGet.VisualStudio
         private async Task<bool> InitializeCoreAsync()
         {
             // Publish switches here for NuGetFeatureFlags consumers that cannot depend on VS services.
-            // Consumers must read switches dynamically, not cache values before initialization.
-            if (_experimentationService.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization))
+            // Consumers must await initialization before reading or caching these switch values.
+            try
             {
-                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, isEnabled: true);
-            }
+                bool jsonEnabled = _experimentationService.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization);
+                bool powerShellEnabled = await _featureFlagService.IsFeatureEnabledAsync(
+                    NuGetFeatureFlagConstants.ControlPowerShellScriptExecution);
 
-            bool enabled = await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.ControlPowerShellScriptExecution);
-            AppContext.SetSwitch(NuGetFeatureFlags.ControlPowerShellScriptExecutionSwitchName, enabled);
+                if (jsonEnabled)
+                {
+                    AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, isEnabled: true);
+                }
+
+                AppContext.SetSwitch(NuGetFeatureFlags.ControlPowerShellScriptExecutionSwitchName, powerShellEnabled);
+            }
+#pragma warning disable CA1031 // Lookup failures must leave existing defaults in place rather than block package operations.
+            catch (Exception exception)
+#pragma warning restore CA1031
+            {
+                ExceptionHelper.WriteErrorToActivityLog(exception);
+            }
             return true;
         }
     }

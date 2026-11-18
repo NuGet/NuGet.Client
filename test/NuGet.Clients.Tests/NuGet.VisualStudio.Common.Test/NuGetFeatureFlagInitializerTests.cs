@@ -48,6 +48,57 @@ namespace NuGet.VisualStudio.Common.Test
             }
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task InitializeAsync_WhenLookupFails_LeavesSwitchesUnchangedWithoutRetry(bool experimentFails)
+        {
+            var failure = new InvalidOperationException("Feature lookup failed.");
+            var experimentationService = new Mock<INuGetExperimentationService>(MockBehavior.Strict);
+            var experiment = experimentationService.Setup(
+                x => x.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization));
+            if (experimentFails)
+            {
+                experiment.Throws(failure);
+            }
+            else
+            {
+                experiment.Returns(true);
+            }
+
+            var featureFlags = new Mock<INuGetFeatureFlagService>(MockBehavior.Strict);
+            featureFlags.Setup(x => x.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.ControlPowerShellScriptExecution))
+                .ThrowsAsync(failure);
+            var initializer = new NuGetFeatureFlagInitializer(featureFlags.Object, experimentationService.Object);
+            string jsonSwitchName = ExperimentationConstants.UseSystemTextJsonDeserialization.FlightFlag;
+            string powerShellSwitchName = NuGetFeatureFlagConstants.ControlPowerShellScriptExecution.Name;
+            AppContext.TryGetSwitch(jsonSwitchName, out bool previousJsonValue);
+            AppContext.TryGetSwitch(powerShellSwitchName, out bool previousPowerShellValue);
+            try
+            {
+                AppContext.SetSwitch(jsonSwitchName, false);
+                AppContext.SetSwitch(powerShellSwitchName, true);
+
+                await initializer.InitializeAsync();
+                await initializer.InitializeAsync();
+
+                AppContext.TryGetSwitch(jsonSwitchName, out bool jsonEnabled);
+                jsonEnabled.Should().BeFalse();
+                AppContext.TryGetSwitch(powerShellSwitchName, out bool powerShellEnabled);
+                powerShellEnabled.Should().BeTrue();
+                experimentationService.Verify(
+                    x => x.IsExperimentEnabled(ExperimentationConstants.UseSystemTextJsonDeserialization), Times.Once);
+                featureFlags.Verify(
+                    x => x.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.ControlPowerShellScriptExecution),
+                    experimentFails ? Times.Never() : Times.Once());
+            }
+            finally
+            {
+                AppContext.SetSwitch(jsonSwitchName, previousJsonValue);
+                AppContext.SetSwitch(powerShellSwitchName, previousPowerShellValue);
+            }
+        }
+
         [Fact]
         public async Task InitializeAsync_ConcurrentCallers_WaitForSharedInitializationAndPublishBothSwitchesOnce()
         {

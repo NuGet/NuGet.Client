@@ -152,6 +152,9 @@ namespace NuGetVSExtension
         private Lazy<INuGetExperimentationService> NuGetExperimentationService { get; set; }
 
         [Import]
+        private Lazy<INuGetFeatureFlagInitializer> FeatureFlagInitializer { get; set; }
+
+        [Import]
         private Lazy<IVsProjectJsonToPackageReferenceMigrator> ProjectJsonMigrator { get; set; }
 
         /// <summary>
@@ -203,6 +206,8 @@ namespace NuGetVSExtension
             var componentModel = await this.GetServiceAsync<SComponentModel, IComponentModel>();
             Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
+
+            await FeatureFlagInitializer.Value.InitializeAsync();
 
             VSSettings vsSettings = Settings.Value as VSSettings;
             PackageSourceProvider packageSourceProvider = new(Settings.Value);

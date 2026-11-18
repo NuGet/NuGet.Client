@@ -917,10 +917,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task EnsureInitializeAsync()
         {
-            // MEF package installation APIs can use projects without loading NuGetPackage.
-            // Do not swallow initialization failures and continue with unresolved feature switches.
-            await _featureFlagInitializer.InitializeAsync();
-
             try
             {
                 // If already initialized, need not be on the UI thread
@@ -929,6 +925,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
                     return;
                 }
+
+                // MEF package installation APIs can use projects without loading NuGetPackage.
+                // Wait until shared feature switches have been resolved before continuing.
+                await _featureFlagInitializer.InitializeAsync();
 
                 // Ensure all initialization finished when needed, it still runs as async and prevents _initialized set true too early.
                 // Setting '_initialized = true' too early caused random timing bug.

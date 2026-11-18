@@ -19,19 +19,14 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void UseSystemTextJsonDeserializationFeatureSwitch_WhenAppContextSwitchChanges_ReturnsCurrentState()
+        public void UseSystemTextJsonDeserializationFeatureSwitch_WhenAppContextSwitchChanges_ReturnsCachedState()
         {
+            bool cachedValue = NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch;
             AppContext.TryGetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, out bool originalSwitch);
             try
             {
-                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, false);
-                Assert.False(NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
-
-                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, true);
-                Assert.True(NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
-
-                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, false);
-                Assert.False(NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
+                AppContext.SetSwitch(NuGetFeatureFlags.UseSystemTextJsonDeserializationSwitchName, !cachedValue);
+                Assert.Equal(cachedValue, NuGetFeatureFlags.UseSystemTextJsonDeserializationFeatureSwitch);
             }
             finally
             {
