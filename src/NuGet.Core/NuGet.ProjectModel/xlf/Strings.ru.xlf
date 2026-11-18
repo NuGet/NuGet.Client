@@ -69,6 +69,16 @@
         <target state="translated">Файлы централизованного управления пакетами не содержат диапазон версий для пакета {0}, который указан как зависимость CentralTransitive в файле блокировки.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackagesLockFile_DuplicatePropertyName">
+        <source>Duplicate JSON property name '{0}' in packages lock file.</source>
+        <target state="new">Duplicate JSON property name '{0}' in packages lock file.</target>
+        <note>{0} is the duplicate JSON property name.</note>
+      </trans-unit>
+      <trans-unit id="PackagesLockFile_ExpectedVersionFirst">
+        <source>Expected 'version' as the first property in the package lock file.</source>
+        <target state="new">Expected 'version' as the first property in the package lock file.</target>
+        <note>{Locked="version"} 'version' is a JSON property name.</note>
+      </trans-unit>
       <trans-unit id="PackagesLockFile_IncompatibleLockFileVersion">
         <source>Version specified in the packages.lock.json file is incompatible. Current tooling supports version {0} and previous formats.</source>
         <target state="translated">Указанная в файле packages.lock.json версия несовместима. Текущие инструменты поддерживают версию {0} и предыдущие форматы.</target>
@@ -83,6 +93,11 @@
         <source>The project target framework {0} was not found in the lock file.</source>
         <target state="translated">Целевая платформа проекта {0} не найдена в файле блокировки.</target>
         <note>0 - project target framework</note>
+      </trans-unit>
+      <trans-unit id="PackagesLockFile_NullPropertyName">
+        <source>JSON property names cannot be null in packages lock file.</source>
+        <target state="new">JSON property names cannot be null in packages lock file.</target>
+        <note />
       </trans-unit>
       <trans-unit id="PackagesLockFile_PackageReferenceAdded">
         <source>A new package reference was found {0} for the project target framework {1}.</source>
