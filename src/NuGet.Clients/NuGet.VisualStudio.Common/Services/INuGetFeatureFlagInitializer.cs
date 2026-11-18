@@ -13,6 +13,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <remarks>
         /// Other packages and MEF APIs can start operations before NuGetPackage initializes.
+        /// Lookup failures are logged, leave switches unchanged, and are not retried until Visual Studio restarts.
         /// </remarks>
         Task InitializeAsync();
     }
