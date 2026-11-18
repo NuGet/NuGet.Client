@@ -51,15 +51,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 return false;
             }
 
-            if (!session.Path.IsValid(psPath))
+            try
             {
-                errorMessage = String.Format(
-                    CultureInfo.CurrentCulture,
-                    Resources.Cmdlet_InvalidPathSyntax, psPath);
-            }
-            else
-            {
-                try
+                if (!session.Path.IsValid(psPath))
+                {
+                    errorMessage = String.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.Cmdlet_InvalidPathSyntax, psPath);
+                }
+                else
                 {
                     // we do not glob wildcards (literalpath.)
                     exists = session.InvokeProvider.Item.Exists(psPath, force: false, literalPath: true);
@@ -80,16 +80,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         succeeded = true;
                     }
                 }
-                catch (ProviderNotFoundException)
-                {
-                    errorMessage = Resources.Cmdlet_InvalidProvider;
-                }
-                catch (DriveNotFoundException ex)
-                {
-                    errorMessage = String.Format(
-                        CultureInfo.CurrentCulture,
-                        Resources.Cmdlet_InvalidPSDrive, ex.ItemName);
-                }
+            }
+            catch (ProviderNotFoundException)
+            {
+                errorMessage = Resources.Cmdlet_InvalidProvider;
+            }
+            catch (DriveNotFoundException ex)
+            {
+                errorMessage = String.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Cmdlet_InvalidPSDrive, ex.ItemName);
             }
             return succeeded;
         }
