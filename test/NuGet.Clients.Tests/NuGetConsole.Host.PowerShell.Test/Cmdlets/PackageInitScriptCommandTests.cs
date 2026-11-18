@@ -99,6 +99,29 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Theory]
+        [InlineData("Dep", new[] { "Dependency@1.0.0" })]
+        [InlineData("Root,Dep", new[] { "Root,Dependency@1.0.0" })]
+        [InlineData("Root@1.0.0,Dep", new[] { "Root@1.0.0,Dependency@1.0.0" })]
+        [InlineData("Root@1.0.0,Root,dep", new[] { "Root@1.0.0,Root,Dependency@1.0.0" })]
+        [InlineData("Root,", new[] { "Root,Dependency@1.0.0", "Root,Root@1.0.0" })]
+        [InlineData("Root,Missing", new string[0])]
+        public async Task GetPackageInitScript_TabCompletionPreservesPrecedingSelectorsAsync(string selectors, string[] expected)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+            var modulePath = Path.Combine(AppContext.BaseDirectory, "Scripts", "nuget.psm1");
+            fixture.InvokeScript($"Import-Module '{modulePath.Replace("'", "''")}'");
+            fixture.Errors.Should().BeEmpty();
+
+            var results = fixture.InvokeScript(
+                $"NugetTabExpansion 'Get-PackageInitScript -Packages {selectors}' '{selectors}'");
+
+            fixture.Errors.Should().BeEmpty();
+            results.Select(result => (string)result.BaseObject).Should().Equal(expected);
+        }
+
+        [Theory]
         [InlineData("root", "Root")]
         [InlineData("Dependency@1.0", "Dependency")]
         public async Task GetPackageInitScript_SelectsPackagesAsync(string selector, string expected)

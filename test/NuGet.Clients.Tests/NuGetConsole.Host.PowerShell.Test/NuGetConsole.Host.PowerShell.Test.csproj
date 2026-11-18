@@ -16,5 +16,7 @@
 
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\Scripts\nuget.psm1"
+             Link="Scripts\nuget.psm1" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
