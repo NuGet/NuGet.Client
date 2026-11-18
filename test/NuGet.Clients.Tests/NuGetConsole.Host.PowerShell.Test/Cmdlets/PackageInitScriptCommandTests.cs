@@ -226,6 +226,23 @@ namespace NuGetConsole.Host.PowerShell.Test
                 .Single().BaseObject.Should().Be(true);
         }
 
+        [Theory]
+        [InlineData("MissingDrive:\\tools\\init.ps1")]
+        [InlineData("MissingProvider::tools\\init.ps1")]
+        [InlineData("Env:\\PATH")]
+        public async Task ImportPackageInitScript_InvalidPathDoesNotPreventValidImportsAsync(string invalidPath)
+        {
+            using var context = new SimpleTestPathContext();
+            await SetupPackagesAsync(context);
+            using var fixture = new CmdletRunspaceFixture(context.PackageSource);
+
+            fixture.InvokeScript(
+                $"@('{Escape(invalidPath)}'; Get-PackageInitScript) | Import-PackageInitScript -ErrorAction Continue");
+
+            fixture.Errors.Should().ContainSingle().Which.FullyQualifiedErrorId.Should().StartWith("NuGetInvalidPackageInitScript");
+            fixture.InvokeScript("$global:InitOrder").Select(result => result.BaseObject).Should().Equal("Dependency", "Root");
+        }
+
         [Fact]
         public async Task ImportPackageInitScript_RejectsUninstalledInitScriptAsync()
         {

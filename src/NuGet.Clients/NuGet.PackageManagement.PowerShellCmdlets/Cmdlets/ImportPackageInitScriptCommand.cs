@@ -65,13 +65,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var wrapped = PSObject.AsPSObject(input);
                 var path = wrapped.BaseObject as string ?? wrapped.Properties["FullName"]?.Value as string;
                 string? fullPath = null;
-                if (!string.IsNullOrWhiteSpace(path))
+                if (!string.IsNullOrWhiteSpace(path) &&
+                    PSPathUtility.TryTranslatePSPath(SessionState, path, out var resolvedPath, out _, out _))
                 {
-                    var resolvedPath = SessionState.Path.GetUnresolvedProviderPathFromPSPath(path, out var provider, out _);
-                    if (StringComparer.OrdinalIgnoreCase.Equals(provider.Name, "FileSystem"))
-                    {
-                        fullPath = resolvedPath;
-                    }
+                    fullPath = resolvedPath;
                 }
                 var script = GetScripts().FirstOrDefault(candidate =>
                     StringComparer.OrdinalIgnoreCase.Equals(candidate.FullName, fullPath));
