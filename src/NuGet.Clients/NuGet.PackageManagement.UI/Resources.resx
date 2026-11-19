@@ -710,7 +710,7 @@ Error: {1}</value>
   </data>
   <data name="Label_Installed_DeprecatedWarning" xml:space="preserve">
     <value>You have {0} deprecated package versions installed.</value>
-    <comment>{0} is the number of installed package versions</comment>
+    <comment>{0} is the number of installed package versions (always more than 1)</comment>
   </data>
   <data name="Label_DeprecationReasons" xml:space="preserve">
     <value>Deprecation reason</value>
@@ -816,7 +816,7 @@ Error: {1}</value>
   </data>
   <data name="Label_Installed_VulnerableAndDeprecatedWarning" xml:space="preserve">
     <value>You have {0} vulnerable package versions and {1} deprecated package versions installed.</value>
-    <comment>{0} and {1} are numbers of installed package versions</comment>
+    <comment>{0} and {1} are numbers of installed package versions (both always more than 1)</comment>
   </data>
   <data name="Label_Installed_VulnerableWarning" xml:space="preserve">
     <value>You have {0} vulnerable package versions installed.</value>
@@ -1000,5 +1000,19 @@ Error: {1}</value>
   </data>
   <data name="ShowMessage_LocalsCommandMoreInformation" xml:space="preserve">
     <value>For more information, see</value>
+  </data>
+  <data name="Label_Installed_DeprecatedWarning_Single" xml:space="preserve">
+    <value>You have 1 deprecated package version installed.</value>
+  </data>
+  <data name="Label_Installed_VulnerableAndDeprecatedWarning_SingleVulnerable" xml:space="preserve">
+    <value>You have 1 vulnerable package version and {0} deprecated package versions installed.</value>
+    <comment>{0} is the number of installed deprecated package versions (always more than 1)</comment>
+  </data>
+  <data name="Label_Installed_VulnerableAndDeprecatedWarning_SingleDeprecated" xml:space="preserve">
+    <value>You have {0} vulnerable package versions and 1 deprecated package version installed.</value>
+    <comment>{0} is the number of installed vulnerable package versions (always more than 1)</comment>
+  </data>
+  <data name="Label_Installed_VulnerableAndDeprecatedWarning_SingleBoth" xml:space="preserve">
+    <value>You have 1 vulnerable package version and 1 deprecated package version installed.</value>
   </data>
 </root>

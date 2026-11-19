@@ -26,6 +26,63 @@ namespace NuGet.PackageManagement.UI
             return string.Format(CultureInfo.CurrentCulture, Resources.Label_Installed_VulnerableWarning, vulnerablePackagesCount);
         }
 
+        /// <summary>
+        /// Builds the "You have N deprecated package versions installed." warning text with the correct
+        /// singular/plural form.
+        /// </summary>
+        internal static string GetInstalledDeprecatedPackagesWarningText(int deprecatedPackagesCount)
+        {
+            if (deprecatedPackagesCount == 1)
+            {
+                return Resources.Label_Installed_DeprecatedWarning_Single;
+            }
+
+            return string.Format(CultureInfo.CurrentCulture, Resources.Label_Installed_DeprecatedWarning, deprecatedPackagesCount);
+        }
+
+        /// <summary>
+        /// Builds the Installed tab warning tooltip text for the given numbers of vulnerable and deprecated
+        /// package versions, using the correct singular/plural form for each count.
+        /// Returns <see langword="null"/> when both counts are zero.
+        /// </summary>
+        internal static string? GetInstalledPackagesWarningText(int vulnerablePackagesCount, int deprecatedPackagesCount)
+        {
+            bool hasVulnerable = vulnerablePackagesCount > 0;
+            bool hasDeprecated = deprecatedPackagesCount > 0;
+
+            if (hasVulnerable && hasDeprecated)
+            {
+                if (vulnerablePackagesCount == 1 && deprecatedPackagesCount == 1)
+                {
+                    return Resources.Label_Installed_VulnerableAndDeprecatedWarning_SingleBoth;
+                }
+
+                if (vulnerablePackagesCount == 1)
+                {
+                    return string.Format(CultureInfo.CurrentCulture, Resources.Label_Installed_VulnerableAndDeprecatedWarning_SingleVulnerable, deprecatedPackagesCount);
+                }
+
+                if (deprecatedPackagesCount == 1)
+                {
+                    return string.Format(CultureInfo.CurrentCulture, Resources.Label_Installed_VulnerableAndDeprecatedWarning_SingleDeprecated, vulnerablePackagesCount);
+                }
+
+                return string.Format(CultureInfo.CurrentCulture, Resources.Label_Installed_VulnerableAndDeprecatedWarning, vulnerablePackagesCount, deprecatedPackagesCount);
+            }
+
+            if (hasVulnerable)
+            {
+                return GetInstalledVulnerablePackagesWarningText(vulnerablePackagesCount);
+            }
+
+            if (hasDeprecated)
+            {
+                return GetInstalledDeprecatedPackagesWarningText(deprecatedPackagesCount);
+            }
+
+            return null;
+        }
+
         public static void LaunchExternalLink(Uri url)
         {
             if (url == null

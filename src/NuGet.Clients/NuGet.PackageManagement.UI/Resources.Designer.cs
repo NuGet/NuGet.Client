@@ -1067,7 +1067,16 @@ namespace NuGet.PackageManagement.UI {
                 return ResourceManager.GetString("Label_Installed_DeprecatedWarning", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to You have 1 deprecated package version installed..
+        /// </summary>
+        public static string Label_Installed_DeprecatedWarning_Single {
+            get {
+                return ResourceManager.GetString("Label_Installed_DeprecatedWarning_Single", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to You have {0} vulnerable package versions and {1} deprecated package versions installed..
         /// </summary>
@@ -1076,7 +1085,34 @@ namespace NuGet.PackageManagement.UI {
                 return ResourceManager.GetString("Label_Installed_VulnerableAndDeprecatedWarning", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to You have 1 vulnerable package version and 1 deprecated package version installed..
+        /// </summary>
+        public static string Label_Installed_VulnerableAndDeprecatedWarning_SingleBoth {
+            get {
+                return ResourceManager.GetString("Label_Installed_VulnerableAndDeprecatedWarning_SingleBoth", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You have {0} vulnerable package versions and 1 deprecated package version installed..
+        /// </summary>
+        public static string Label_Installed_VulnerableAndDeprecatedWarning_SingleDeprecated {
+            get {
+                return ResourceManager.GetString("Label_Installed_VulnerableAndDeprecatedWarning_SingleDeprecated", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You have 1 vulnerable package version and {0} deprecated package versions installed..
+        /// </summary>
+        public static string Label_Installed_VulnerableAndDeprecatedWarning_SingleVulnerable {
+            get {
+                return ResourceManager.GetString("Label_Installed_VulnerableAndDeprecatedWarning_SingleVulnerable", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to You have {0} vulnerable package versions installed..
         /// </summary>
