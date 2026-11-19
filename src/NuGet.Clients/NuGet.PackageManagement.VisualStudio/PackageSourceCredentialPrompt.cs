@@ -7,22 +7,60 @@ using System.Net;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
+    /// <summary>
+    /// Prompts for source credentials, optionally saving them in Windows Credential Manager.
+    /// Saved credentials use the same hostname-based targets as the VS proxy service,
+    /// so they are shared across sources and ports on that host and survive VS restarts.
+    /// </summary>
     internal sealed class PackageSourceCredentialPrompt : IPackageSourceCredentialPrompt
     {
+        private readonly Func<string, NetworkCredential?> _readCredentials;
+        private readonly NativeMethods.CredentialPrompt _promptForCredentials;
+        private readonly Action<string, NetworkCredential> _writeCredentials;
+
+        public PackageSourceCredentialPrompt()
+            : this(NativeMethods.ReadCredentials, NativeMethods.PromptForCredentials, NativeMethods.WriteCredentials)
+        {
+        }
+
+        internal PackageSourceCredentialPrompt(
+            Func<string, NetworkCredential?> readCredentials,
+            NativeMethods.CredentialPrompt promptForCredentials,
+            Action<string, NetworkCredential> writeCredentials)
+        {
+            _readCredentials = readCredentials;
+            _promptForCredentials = promptForCredentials;
+            _writeCredentials = writeCredentials;
+        }
+
         public NetworkCredential? PromptForCredentials(Uri packageSourceUri, bool isRetry, IntPtr parentWindow)
         {
+            string targetName = packageSourceUri.Host;
+            if (!isRetry && _readCredentials(targetName) is NetworkCredential savedCredentials)
+            {
+                return savedCredentials;
+            }
+
             string source = GetDisplayName(packageSourceUri);
             string message = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.CredentialPrompt_PackageSourceMessage,
                 source);
 
-            return NativeMethods.PromptForCredentials(
+            NetworkCredential? credentials = _promptForCredentials(
                 Strings.CredentialPrompt_PackageSourceCaption,
                 message,
-                source,
+                targetName,
                 isRetry,
-                parentWindow);
+                parentWindow,
+                out bool saveCredentials);
+
+            if (credentials != null && saveCredentials)
+            {
+                _writeCredentials(targetName, credentials);
+            }
+
+            return credentials;
         }
 
         internal static string GetDisplayName(Uri packageSourceUri)
