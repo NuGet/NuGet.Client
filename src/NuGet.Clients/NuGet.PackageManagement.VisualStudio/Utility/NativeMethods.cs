@@ -21,7 +21,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private const int MaxPasswordLength = 256;
         private const int MaxUserNameLength = 513;
         private const uint CredentialTypeGeneric = 1;
-        private const uint CredentialTypeDomainPassword = 2;
         private const uint CredentialPersistLocalMachine = 2;
         private const string PackageSourceCredentialComment = "NuGet package source credential";
 
@@ -80,44 +79,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal static NetworkCredential? ReadCredentials(string targetName)
         {
-            return ReadCredentials(targetName, ReadCredentials);
+            return ReadGenericCredentials(targetName);
         }
 
-        internal static NetworkCredential? ReadCredentials(
-            string targetName,
-            Func<string, uint, NetworkCredential?> readCredentials)
+        private static NetworkCredential? ReadGenericCredentials(string targetName)
         {
-            NetworkCredential? genericCredentials = readCredentials(targetName, CredentialTypeGeneric);
-            if (genericCredentials != null)
-            {
-                return genericCredentials;
-            }
-
-            NetworkCredential? domainCredentials = readCredentials(targetName, CredentialTypeDomainPassword);
-            if (domainCredentials != null)
-            {
-                using SecureString password = domainCredentials.SecurePassword;
-                if (password.Length != 0)
-                {
-                    return domainCredentials;
-                }
-            }
-
-            // VS stores a generic fallback when the domain password cannot be read.
-            NetworkCredential? fallbackCredentials = readCredentials("VSCredentials_" + targetName, CredentialTypeGeneric);
-            if (domainCredentials == null || (fallbackCredentials != null
-                && string.Equals(domainCredentials.UserName, fallbackCredentials.UserName, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(domainCredentials.Domain, fallbackCredentials.Domain, StringComparison.OrdinalIgnoreCase)))
-            {
-                return fallbackCredentials;
-            }
-
-            return null;
-        }
-
-        private static NetworkCredential? ReadCredentials(string targetName, uint type)
-        {
-            if (!CredRead(targetName, type, flags: 0, out IntPtr buffer))
+            if (!CredRead(targetName, CredentialTypeGeneric, flags: 0, out IntPtr buffer))
             {
                 int error = Marshal.GetLastWin32Error();
                 if (error == ErrorNotFound)
@@ -143,41 +110,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 password.MakeReadOnly();
-                return CreateStoredCredentials(
-                    credential.UserName,
-                    password,
-                    targetName,
-                    credential.Comment == PackageSourceCredentialComment);
+                return new NetworkCredential(credential.UserName, password);
             }
             finally
             {
                 CredFree(buffer);
             }
-        }
-
-        internal static NetworkCredential CreateStoredCredentials(
-            string userName, SecureString password, string targetName, bool isPackageSourceCredential)
-        {
-            // The old VS prompt could prepend the target; the new prompt preserves the user's input.
-            if (isPackageSourceCredential)
-            {
-                return new NetworkCredential(userName, password);
-            }
-
-            int separator = userName.IndexOf('\\');
-            if (separator < 0)
-            {
-                return new NetworkCredential(userName, password);
-            }
-
-            string domain = userName.Substring(0, separator);
-            userName = userName.Substring(separator + 1);
-            if (string.Equals(domain, targetName, StringComparison.OrdinalIgnoreCase))
-            {
-                domain = string.Empty;
-            }
-
-            return new NetworkCredential(userName, password, domain);
         }
 
         internal static void WriteCredentials(string targetName, NetworkCredential credentials)

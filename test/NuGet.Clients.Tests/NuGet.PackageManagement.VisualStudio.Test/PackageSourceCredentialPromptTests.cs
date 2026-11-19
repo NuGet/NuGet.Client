@@ -4,7 +4,6 @@
 using System;
 using System.ComponentModel;
 using System.Net;
-using System.Security;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -12,15 +11,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class PackageSourceCredentialPromptTests
     {
         [Theory]
-        [InlineData("https://unit.test/v3/index.json")]
-        [InlineData("https://unit.test:8443/other/index.json")]
-        public void PromptForCredentials_WithSavedCredentials_DoesNotPrompt(string source)
+        [InlineData("https://unit.test/v3/index.json", "NuGet:https://unit.test")]
+        [InlineData("https://unit.test:8443/other/index.json", "NuGet:https://unit.test:8443")]
+        [InlineData("http://unit.test/v3/index.json", "NuGet:http://unit.test")]
+        public void PromptForCredentials_WithSavedCredentials_DoesNotPrompt(string source, string expectedTarget)
         {
             var savedCredentials = new NetworkCredential("user", "password");
             var prompt = new PackageSourceCredentialPrompt(
                 target =>
                 {
-                    Assert.Equal("unit.test", target);
+                    Assert.Equal(expectedTarget, target);
                     return savedCredentials;
                 },
                 UnexpectedPrompt,
@@ -50,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 },
                 (string caption, string message, string target, bool retry, IntPtr owner, out bool saveCredentials) =>
                 {
-                    Assert.Equal("unit.test", target);
+                    Assert.Equal("NuGet:https://unit.test:8443", target);
                     Assert.Contains("https://unit.test:8443/v3/index.json", message);
                     Assert.DoesNotContain("secret", message);
                     Assert.Equal(isRetry, retry);
@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 },
                 (target, value) =>
                 {
-                    Assert.Equal("unit.test", target);
+                    Assert.Equal("NuGet:https://unit.test:8443", target);
                     Assert.Same(credentials, value);
                     writes++;
                 });
@@ -105,39 +105,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.Same(error, Assert.Throws<Win32Exception>(
                 () => prompt.PromptForCredentials(new Uri("https://unit.test"), isRetry: false, IntPtr.Zero)));
-        }
-
-        [Theory]
-        [InlineData("alice", true)]
-        [InlineData("ALICE", true)]
-        [InlineData("bob", false)]
-        public void ReadCredentials_WithUnreadableDomainPassword_UsesFallbackOnlyForSameUser(
-            string fallbackUser, bool shouldReturnFallback)
-        {
-            var fallback = new NetworkCredential(fallbackUser, "password");
-
-            NetworkCredential? result = NativeMethods.ReadCredentials(
-                "unit.test",
-                (target, type) => target == "VSCredentials_unit.test"
-                    ? fallback
-                    : type == 2 ? new NetworkCredential("alice", string.Empty) : null);
-
-            Assert.Same(shouldReturnFallback ? fallback : null, result);
-        }
-
-        [Theory]
-        [InlineData(true, "unit.test\\user", "")]
-        [InlineData(false, "user", "")]
-        public void CreateStoredCredentials_PreservesNewUserNamesAndNormalizesLegacyUserNames(
-            bool isPackageSourceCredential, string expectedUserName, string expectedDomain)
-        {
-            using var password = new SecureString();
-
-            NetworkCredential result = NativeMethods.CreateStoredCredentials(
-                "unit.test\\user", password, "unit.test", isPackageSourceCredential);
-
-            Assert.Equal(expectedUserName, result.UserName);
-            Assert.Equal(expectedDomain, result.Domain);
         }
 
         private static NetworkCredential? UnexpectedPrompt(

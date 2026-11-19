@@ -9,8 +9,8 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Prompts for source credentials, optionally saving them in Windows Credential Manager.
-    /// Saved credentials use the same hostname-based targets as the VS proxy service,
-    /// so they are shared across sources and ports on that host and survive VS restarts.
+    /// Saved credentials use NuGet-prefixed scheme-and-server targets, so they are isolated
+    /// from other applications and from sources with a different scheme or port.
     /// </summary>
     internal sealed class PackageSourceCredentialPrompt : IPackageSourceCredentialPrompt
     {
@@ -35,7 +35,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public NetworkCredential? PromptForCredentials(Uri packageSourceUri, bool isRetry, IntPtr parentWindow)
         {
-            string targetName = packageSourceUri.Host;
+            string targetName = "NuGet:" + packageSourceUri.GetComponents(
+                UriComponents.SchemeAndServer,
+                UriFormat.UriEscaped);
             if (!isRetry && _readCredentials(targetName) is NetworkCredential savedCredentials)
             {
                 return savedCredentials;
