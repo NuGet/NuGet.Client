@@ -14,8 +14,8 @@ jobs:
     displayName: "Static Analysis"
     timeoutInMinutes: 180
     pool:
-      name: VSEng-MicroBuildVSLegacy
-      demands: ImageOverride -equals server2025-microbuildVS2022-1es
+      name: AzurePipelines-EO
+      demands: ImageOverride -equals 1ESPT-Windows2025
 
     steps:
       - task: CredScan@2
