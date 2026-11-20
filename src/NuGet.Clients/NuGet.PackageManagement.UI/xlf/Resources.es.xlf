@@ -575,12 +575,32 @@
       <trans-unit id="Label_Installed_DeprecatedWarning">
         <source>You have {0} deprecated package versions installed.</source>
         <target state="translated">Tiene instaladas {0} versiones de paquetes en desuso.</target>
-        <note>{0} is the number of installed package versions</note>
+        <note>{0} is the number of installed package versions (always more than 1)</note>
+      </trans-unit>
+      <trans-unit id="Label_Installed_DeprecatedWarning_Single">
+        <source>You have 1 deprecated package version installed.</source>
+        <target state="new">You have 1 deprecated package version installed.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableAndDeprecatedWarning">
         <source>You have {0} vulnerable package versions and {1} deprecated package versions installed.</source>
         <target state="translated">Tiene instaladas {0} versiones de paquetes vulnerables y {1} versiones de paquetes en desuso.</target>
-        <note>{0} and {1} are numbers of installed package versions</note>
+        <note>{0} and {1} are numbers of installed package versions (both always more than 1)</note>
+      </trans-unit>
+      <trans-unit id="Label_Installed_VulnerableAndDeprecatedWarning_SingleBoth">
+        <source>You have 1 vulnerable package version and 1 deprecated package version installed.</source>
+        <target state="new">You have 1 vulnerable package version and 1 deprecated package version installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Label_Installed_VulnerableAndDeprecatedWarning_SingleDeprecated">
+        <source>You have {0} vulnerable package versions and 1 deprecated package version installed.</source>
+        <target state="new">You have {0} vulnerable package versions and 1 deprecated package version installed.</target>
+        <note>{0} is the number of installed vulnerable package versions (always more than 1)</note>
+      </trans-unit>
+      <trans-unit id="Label_Installed_VulnerableAndDeprecatedWarning_SingleVulnerable">
+        <source>You have 1 vulnerable package version and {0} deprecated package versions installed.</source>
+        <target state="new">You have 1 vulnerable package version and {0} deprecated package versions installed.</target>
+        <note>{0} is the number of installed deprecated package versions (always more than 1)</note>
       </trans-unit>
       <trans-unit id="Label_Installed_VulnerableWarning">
         <source>You have {0} vulnerable package versions installed.</source>
