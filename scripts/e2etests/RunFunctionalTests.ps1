@@ -46,6 +46,7 @@ Write-Host 'Before starting the functional tests, force delete all the Results.h
 CleanTempFolder
 
 
+$env:NUGET_CONTROL_POWERSHELL_SCRIPT_EXECUTION = "1"
 $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50
 if (-not $dte2) {
     Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'

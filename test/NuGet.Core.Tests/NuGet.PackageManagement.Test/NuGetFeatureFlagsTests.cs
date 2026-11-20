@@ -62,4 +62,20 @@ namespace NuGet.PackageManagement.Test
             }
         }
     }
+
+    internal sealed class PowerShellScriptExecutionFeatureScope : IDisposable
+    {
+        private readonly string? _originalValue;
+
+        internal PowerShellScriptExecutionFeatureScope(string? value)
+        {
+            _originalValue = Environment.GetEnvironmentVariable(NuGetFeatureFlags.ControlPowerShellScriptExecutionEnvVar);
+            Environment.SetEnvironmentVariable(NuGetFeatureFlags.ControlPowerShellScriptExecutionEnvVar, value);
+        }
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable(NuGetFeatureFlags.ControlPowerShellScriptExecutionEnvVar, _originalValue);
+        }
+    }
 }
