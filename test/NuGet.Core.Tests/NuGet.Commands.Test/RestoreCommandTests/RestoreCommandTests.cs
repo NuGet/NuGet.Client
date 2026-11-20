@@ -5111,6 +5111,68 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             result.LockFile.PackageSpec.RestoreMetadata.UseLegacyDependencyResolver.Should().BeTrue();
         }
 
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void GetRestoreOutput_WithProjectLibraries_OnlyIncludesPackageMarkers(
+            bool useFallbackFolder,
+            bool useNupkgMetadata)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageSpec = ProjectTestHelpers.GetPackageSpec("ProbeConsumer", pathContext.SolutionRoot, "net10.0");
+            packageSpec.RestoreMetadata.FallbackFolders.Add(pathContext.FallbackFolder);
+            var downloadDependency = new DownloadDependency("ProbeDownload", VersionRange.Parse("[4.5.6]"));
+            packageSpec.TargetFrameworks[0] = new TargetFrameworkInformation(packageSpec.TargetFrameworks[0])
+            {
+                DownloadDependencies = [downloadDependency]
+            };
+
+            var projectLibrary = new LockFileLibrary
+            {
+                Name = "ProbeLibrary",
+                Version = NuGetVersion.Parse("2.3.4"),
+                Type = LibraryType.Project
+            };
+            var packageLibrary = new LockFileLibrary
+            {
+                Name = "ProbePackage",
+                Version = NuGetVersion.Parse("3.4.5"),
+                Type = LibraryType.Package
+            };
+            var lockFile = new LockFile
+            {
+                Libraries = { projectLibrary, packageLibrary }
+            };
+            var resolver = new VersionFolderPathResolver(
+                useFallbackFolder ? pathContext.FallbackFolder : pathContext.UserPackagesFolder);
+
+            // Existing markers for the project identity make an unfiltered library loop observable.
+            var projectMarker = CreateMarkerFile(projectLibrary.Name, projectLibrary.Version);
+            var packageMarker = CreateMarkerFile(packageLibrary.Name, packageLibrary.Version);
+            var downloadMarker = CreateMarkerFile(downloadDependency.Name, downloadDependency.VersionRange.MinVersion);
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, new TestLogger(), packageSpec);
+
+            // Act
+            var output = NoOpRestoreUtilities.GetRestoreOutput(request, lockFile);
+
+            // Assert
+            output.Should().NotContain(projectMarker);
+            output.Should().Equal(packageMarker, downloadMarker);
+
+            string CreateMarkerFile(string packageId, NuGetVersion version)
+            {
+                var path = useNupkgMetadata
+                    ? resolver.GetNupkgMetadataPath(packageId, version)
+                    : resolver.GetHashPath(packageId, version);
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, string.Empty);
+                return path;
+            }
+        }
+
         /// <summary>
         /// Verifies that the <see cref="RestoreCommand.CreateFrameworkRuntimeDefinitions(PackageSpec, ISet{string})" /> method returns pairs with frameworks with no runtimes first, then pairs with frameworks and runtimes after.
         /// </summary>
