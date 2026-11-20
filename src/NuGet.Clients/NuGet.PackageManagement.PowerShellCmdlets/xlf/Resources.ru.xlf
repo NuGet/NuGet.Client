@@ -230,6 +230,16 @@
         <target state="translated">Ошибка. Для работы Package Manager Console требуется среда выполнения PowerShell 2.0, которая не обнаружена на этом компьютере. Установите PowerShell 2.0, воспользовавшись страницей по адресу http://support.microsoft.com/kb/968929, и перезапустите Visual Studio.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitScript_FeatureDisabled">
+        <source>This feature is not yet enabled.</source>
+        <target state="new">This feature is not yet enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitScript_PackageNotFound">
+        <source>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</source>
+        <target state="new">No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</target>
+        <note>{0} is the package selector supplied by the user. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
+      </trans-unit>
       <trans-unit id="PowerShellHostTitle">
         <source>Package Manager Console Host Version {0}</source>
         <target state="translated">Узел консоли диспетчера пакетов версии {0}</target>

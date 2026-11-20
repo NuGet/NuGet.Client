@@ -45,6 +45,16 @@ Register-TabExpansion 'Get-Package' @{
     }
 }
 
+Register-TabExpansion 'Get-PackageInitScript' @{
+    'Packages' = {
+        param($context)
+        $packages = [string]$context.Packages
+        # Completion replaces the whole argument, including selectors before the last comma.
+        $prefix = $packages.Substring(0, $packages.LastIndexOf(',') + 1)
+        Get-PackageInitScript -ErrorAction SilentlyContinue | ForEach-Object { "$prefix$($_.Id)@$($_.Version)" }
+    }
+}
+
 Register-TabExpansion 'Install-Package' @{
     'Id' = {
         param($context)
@@ -343,7 +353,7 @@ function NugetTabExpansion($line, $lastWord) {
                     }
 
                     # Use the argument value to filter results
-                    $results = $results | %{ $_.ToString() } | Where-Object { $_.StartsWith($argumentValue, "OrdinalIgnoreCase") }
+                    $results = @($results | %{ $_.ToString() } | Where-Object { $_.StartsWith($argumentValue, "OrdinalIgnoreCase") })
 
                     return NormalizeResults $results
                 }
