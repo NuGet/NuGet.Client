@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -1660,6 +1661,8 @@ namespace NuGet.Tests.Apex
         [DataRow("1.0.0-a", " -IncludePrerelease", "1.0.1-a")]
         [DataRow("1.0.1-a", "", "1.0.1-a")]
         [DataRow("1.0.1-a", " -Version 1.0.0", "1.0.0")]
+        [DataRow("1.0.0-a", " -Safe", "1.0.0")]
+        [DataRow("1.0.0-a", " -Safe -IncludePrerelease", "1.0.1-a")]
         [Timeout(DefaultTimeout)]
         public async Task UpdatePackageFromPMCWithPrereleaseVersions_UpdatesToExpectedVersionAsync(
             string installedVersion,
@@ -1672,6 +1675,7 @@ namespace NuGet.Tests.Apex
 
             var packageName = "TestPackage";
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0-a");
+            await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0-b");
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.0");
             await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, "1.0.1-a");
 
@@ -1920,6 +1924,71 @@ namespace NuGet.Tests.Apex
 
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, packageName, packageVersion, Logger);
             CommonUtility.WaitForDirectoryNotExists(Path.Combine(simpleTestPathContext.PackagesV2, $"{packageName}.{packageVersion}"));
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageFromPMCForFSharpProject_InstallsPackageAsync()
+        {
+            using var testContext = CreateFSharpContext();
+            await CreatePackagesAsync(testContext.PackageSource, Package("elmah", "1.1"));
+            var console = GetConsole(testContext.Project);
+
+            testContext.SolutionService.Build();
+            console.Execute(
+                $"Get-Project -Name '{testContext.Project.Name}' | " +
+                $"Install-Package elmah -Version 1.1 -Source '{testContext.PackageSource}'");
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "elmah", "1.1", Logger);
+            AssertNoErrors(console);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UninstallPackageFromPMCForFSharpProject_RemovesPackageAsync()
+        {
+            using var testContext = CreateFSharpContext();
+            await CreatePackagesAsync(testContext.PackageSource, Package("Ninject", "2.0.1"));
+            var console = GetConsole(testContext.Project);
+
+            InstallByUniqueName(console, testContext.Project, "Ninject", "2.0.1", testContext.PackageSource);
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "Ninject", "2.0.1", Logger);
+            CommonUtility.AssertPackageReferenceExists(testContext.Project, "Ninject", "2.0.1", Logger);
+            // Extra settle time: the CPS project system's installed-packages cache (read by
+            // Uninstall-Package) can lag behind the assets file/.fsproj content by more than the
+            // above assertions account for.
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            console.Execute($"Uninstall-Package Ninject -ProjectName '{testContext.Project.UniqueName}'");
+            testContext.NuGetApexTestService.WaitForAutoRestore();
+
+            CommonUtility.AssertPackageReferenceDoesNotExist(testContext.Project, "Ninject", "2.0.1", Logger);
+            CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, "Ninject", "2.0.1", Logger);
+            AssertNoErrors(console);
+        }
+
+        private ApexTestContext CreateFSharpContext()
+        {
+            var pathContext = new SimpleTestPathContext();
+            return new ApexTestContext(
+                VisualStudio,
+                ProjectTemplate.ConsoleApplication,
+                Logger,
+                simpleTestPathContext: pathContext,
+                projectLanguage: ProjectLanguage.FSharp);
+        }
+
+        private static void InstallByUniqueName(
+            NuGetConsoleTestExtension console,
+            ProjectTestExtension project,
+            string packageName,
+            string packageVersion,
+            string source)
+        {
+            console.Execute(
+                $"Install-Package {packageName} -ProjectName '{project.UniqueName}' -Source '{source}' -Version {packageVersion}");
         }
 
         private static async Task CreateSafeUpdatePackagesAsync(string packageSource, string packageAName, string packageBName, string packageCName)

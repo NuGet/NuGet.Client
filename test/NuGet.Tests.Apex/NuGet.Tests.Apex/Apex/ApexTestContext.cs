@@ -27,7 +27,7 @@ namespace NuGet.Tests.Apex
 
         public NuGetApexTestService NuGetApexTestService { get; }
 
-        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ITestLogger logger, bool noAutoRestore = false, bool addNetStandardFeeds = false, SimpleTestPathContext simpleTestPathContext = null)
+        public ApexTestContext(VisualStudioHost visualStudio, ProjectTemplate projectTemplate, ITestLogger logger, bool noAutoRestore = false, bool addNetStandardFeeds = false, SimpleTestPathContext simpleTestPathContext = null, ProjectLanguage projectLanguage = ProjectLanguage.CSharp)
         {
             logger.WriteMessage("Creating test context");
             _pathContext = simpleTestPathContext ?? new SimpleTestPathContext();
@@ -49,7 +49,7 @@ namespace NuGet.Tests.Apex
 
             VisualStudioHostExtension.ClearWindows(_visualStudio);
 
-            Project = CommonUtility.CreateAndInitProject(projectTemplate, _pathContext, SolutionService, logger);
+            Project = CommonUtility.CreateAndInitProject(projectTemplate, _pathContext, SolutionService, logger, projectLanguage);
 
             NuGetApexTestService.WaitForAutoRestore();
         }
