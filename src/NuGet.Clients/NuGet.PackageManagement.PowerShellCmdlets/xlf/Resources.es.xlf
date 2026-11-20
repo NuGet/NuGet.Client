@@ -230,6 +230,16 @@
         <target state="translated">Error: la consola de Administrador de paquetes requiere el tiempo de ejecución de PowerShell 2.0, que no se detecta en este equipo. Instale PowerShell 2.0 desde http://support.microsoft.com/kb/968929 y reinicie Visual Studio.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitScript_FeatureDisabled">
+        <source>This feature is not yet enabled.</source>
+        <target state="new">This feature is not yet enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitScript_PackageNotFound">
+        <source>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</source>
+        <target state="new">No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</target>
+        <note>{0} is the package selector supplied by the user. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
+      </trans-unit>
       <trans-unit id="PowerShellHostTitle">
         <source>Package Manager Console Host Version {0}</source>
         <target state="translated">Versión de host {0} de la Consola del Administrador de paquetes</target>

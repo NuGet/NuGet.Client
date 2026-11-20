@@ -230,6 +230,16 @@
         <target state="translated">Chyba: Package Manager Console vyžaduje modul runtime PowerShell 2.0, který se v počítači nenašel. Nainstalujte PowerShell 2.0 z adresy http://support.microsoft.com/kb/968929 a spusťte Visual Studio znovu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitScript_FeatureDisabled">
+        <source>This feature is not yet enabled.</source>
+        <target state="new">This feature is not yet enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitScript_PackageNotFound">
+        <source>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</source>
+        <target state="new">No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</target>
+        <note>{0} is the package selector supplied by the user. Do not localize tools/init.ps1 or Get-PackageInitScript.</note>
+      </trans-unit>
       <trans-unit id="PowerShellHostTitle">
         <source>Package Manager Console Host Version {0}</source>
         <target state="translated">Verze hostitele konzoly Správce balíčků: {0}</target>
