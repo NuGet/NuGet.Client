@@ -138,6 +138,69 @@ public class UpdatePackageReferenceTests
     }
 
     [Fact]
+    public async Task UpdatePackageReference_WithUpperBound_PreservesUpperBound()
+    {
+        // Arrange
+        using var testContext = new SimpleTestPathContext();
+
+        var packageA_v1 = new SimpleTestPackageContext("PackageA", "1.0.0");
+        var packageA_v15 = new SimpleTestPackageContext("PackageA", "1.5.0");
+        await SimpleTestPackageUtility.CreatePackagesAsync(testContext.PackageSource, packageA_v1, packageA_v15);
+
+        var project = SimpleTestProjectContext.CreateNETCore("TestProject", testContext.SolutionRoot, "net9.0");
+
+        project.AddPackageToAllFrameworks(packageA_v1);
+        project.Properties.Add("RestorePackagesPath", testContext.UserPackagesFolder);
+        project.Sources = new List<PackageSource> { new PackageSource(testContext.PackageSource) };
+        project.FallbackFolders = new List<string> { testContext.FallbackFolder };
+        project.GlobalPackagesFolder = testContext.UserPackagesFolder;
+        project.Save();
+
+        using var packageUpdateIO = CreatePackageUpdateIO(testContext.SolutionRoot);
+
+        var updatedDgSpec = new ProjectModel.DependencyGraphSpec();
+        var projectSpec = project.PackageSpec.Clone();
+        projectSpec.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(testContext.PackageSource) };
+        projectSpec.RestoreMetadata.FallbackFolders = new List<string> { testContext.FallbackFolder };
+        projectSpec.RestoreMetadata.PackagesPath = testContext.UserPackagesFolder;
+        var framework = projectSpec.TargetFrameworks.First();
+        framework.Dependencies.Clear();
+        framework.Dependencies.Add(new LibraryModel.LibraryDependency
+        {
+            LibraryRange = new LibraryModel.LibraryRange(
+                "PackageA", VersionRange.Parse("[1.5.0,2.0.0)"), NuGet.LibraryModel.LibraryDependencyTarget.Package)
+        });
+        updatedDgSpec.AddProject(projectSpec);
+        updatedDgSpec.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
+
+        var previewResult = await packageUpdateIO.PreviewUpdatePackageReferenceAsync(updatedDgSpec, NullLogger.Instance, CancellationToken.None);
+        previewResult.Success.Should().BeTrue();
+
+        var packageToUpdate = new PackageToUpdate
+        {
+            Id = "PackageA",
+            CurrentVersion = VersionRange.Parse("[1.0.0,2.0.0)"),
+            NewVersion = VersionRange.Parse("[1.5.0,2.0.0)")
+        };
+
+        var tfmAliases = projectSpec.TargetFrameworks.Select(tf => tf.TargetAlias).ToList();
+
+        // Act
+        packageUpdateIO.UpdatePackageReference(projectSpec, previewResult, tfmAliases, packageToUpdate, NullLogger.Instance);
+
+        // Assert
+        var projectXml = XDocument.Load(project.ProjectPath);
+        var ns = projectXml.Root!.GetDefaultNamespace();
+        var packageReferences = projectXml.Descendants(ns + "PackageReference")
+            .Where(e => e.Attribute("Include")?.Value == "PackageA")
+            .ToList();
+
+        packageReferences.Should().ContainSingle();
+        var packageReference = packageReferences.First();
+        packageReference.Attribute("Version")?.Value.Should().Be("[1.5.0, 2.0.0)");
+    }
+
+    [Fact]
     public async Task UpdatePackageReference_FileBasedApp()
     {
         // Arrange

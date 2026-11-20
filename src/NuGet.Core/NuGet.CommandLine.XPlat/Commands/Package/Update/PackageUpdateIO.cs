@@ -236,6 +236,24 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         ILogger logger,
         CancellationToken cancellationToken)
     {
+        return await GetLatestVersionAsync(
+            packageId,
+            includePrerelease,
+            allowedSources,
+            allowedVersions: null,
+            logger,
+            cancellationToken);
+    }
+
+    /// <inheritdoc cref="IPackageUpdateIO.GetLatestVersionAsync(string, bool, IReadOnlyList{string}?, VersionRange?, ILogger, CancellationToken)"/>
+    public async Task<PackageVersionLookupResult> GetLatestVersionAsync(
+        string packageId,
+        bool includePrerelease,
+        IReadOnlyList<string>? allowedSources,
+        VersionRange? allowedVersions,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
         var sources = GetSourcesForPackage(packageId, allowedSources);
         var lookups = new Task<PackageVersionLookupResult>[sources.Count];
         DateTimeOffset utcNow = _utcNow();
@@ -248,6 +266,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
                 sourceRepository,
                 packageId,
                 includePrerelease,
+                allowedVersions,
                 isCooldownExempt,
                 utcNow,
                 logger,
@@ -497,6 +516,7 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
         SourceRepository source,
         string packageId,
         bool includePrerelease,
+        VersionRange? allowedVersions,
         bool isCooldownExempt,
         DateTimeOffset utcNow,
         ILogger logger,
@@ -531,6 +551,11 @@ internal class PackageUpdateIO : IPackageUpdateIO, IDisposable
             utcNow))
         {
             NuGetVersion version = package.Identity.Version;
+            if (allowedVersions is not null && !allowedVersions.Satisfies(version))
+            {
+                continue;
+            }
+
             if (isEligible)
             {
                 if (highestVersion is null || version > highestVersion)
