@@ -59,6 +59,7 @@ namespace NuGet.Commands
         /// <param name="dependencies">The dependencies of this package.</param>
         /// <param name="restoreEnableAnalyzerAssets">Whether analyzer assets should be selected for the lock file.</param>
         /// <param name="cache">The lock file build cache.</param>
+        /// <param name="pruningResult">The positions removed from this package's original graph-selected dependency group.</param>
         /// <returns>The LockFileTargetLibrary, whether a fallback framework criteria was used to select it, the framework selected for compile assets, and the framework selected for runtime assets.</returns>
         internal static (LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework) CreateLockFileTargetLibrary(
             string aliases,
@@ -69,7 +70,8 @@ namespace NuGet.Commands
             NuGetFramework targetFrameworkOverride,
             List<LibraryDependency> dependencies,
             bool restoreEnableAnalyzerAssets,
-            LockFileBuilderCache cache)
+            LockFileBuilderCache cache,
+            PackageDependencyPruningResult pruningResult = default)
         {
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
@@ -82,9 +84,30 @@ namespace NuGet.Commands
                 dependencyType,
                 dependencies,
                 restoreEnableAnalyzerAssets,
-                CreateLockFileTargetLibraryCore);
+                () => CreateLockFileTargetLibraryCore(
+                    aliases,
+                    library,
+                    package,
+                    targetGraph,
+                    dependencyType,
+                    framework,
+                    runtimeIdentifier,
+                    dependencies,
+                    restoreEnableAnalyzerAssets,
+                    cache),
+                pruningResult);
 
-            (LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework) CreateLockFileTargetLibraryCore()
+            static (LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework) CreateLockFileTargetLibraryCore(
+                string aliases,
+                LockFileLibrary library,
+                LocalPackageInfo package,
+                RestoreTargetGraph targetGraph,
+                LibraryIncludeFlags dependencyType,
+                NuGetFramework framework,
+                string runtimeIdentifier,
+                List<LibraryDependency> dependencies,
+                bool restoreEnableAnalyzerAssets,
+                LockFileBuilderCache cache)
             {
                 LockFileTargetLibrary lockFileLib = null;
                 NuGetFramework compileAssetFramework = null;

@@ -985,7 +985,8 @@ namespace NuGet.Commands
                 // Determine if what is being processed is the root project itself which has different rules vs a transitive dependency
                 bool isRootProject = currentDependencyGraphItem.LibraryDependencyIndex == LibraryDependencyIndex.Project;
 
-                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, targetGraphName, _logger);
+                GraphItem<RemoteResolveResult> currentGraphItem = await currentDependencyGraphItem.GetGraphItemAsync(_request.Project.RestoreMetadata, projectTargetFramework.PackagesToPrune, IsNewerThanNET10(projectTargetFramework.FrameworkName), isRootProject, targetGraphName, _logger,
+                    cacheTargetLibrary: string.IsNullOrEmpty(pair.RuntimeIdentifier));
 
                 LibraryDependencyTarget typeConstraint = currentDependencyGraphItem.LibraryDependency.LibraryRange.TypeConstraint;
                 if (evictions.TryGetValue(currentDependencyGraphItem.LibraryRangeIndex, out (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget) eviction))
