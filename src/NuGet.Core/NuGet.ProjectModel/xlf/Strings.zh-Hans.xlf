@@ -69,6 +69,16 @@
         <target state="translated">中央包管理文件不包含在锁定文件中被指定为 CentralTransitive 依赖项的 {0} 包的版本范围。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackagesLockFile_DuplicatePropertyName">
+        <source>Duplicate JSON property name '{0}' in packages lock file.</source>
+        <target state="new">Duplicate JSON property name '{0}' in packages lock file.</target>
+        <note>{0} is the duplicate JSON property name.</note>
+      </trans-unit>
+      <trans-unit id="PackagesLockFile_ExpectedVersionFirst">
+        <source>Expected 'version' as the first property in the package lock file.</source>
+        <target state="new">Expected 'version' as the first property in the package lock file.</target>
+        <note>{Locked="version"} 'version' is a JSON property name.</note>
+      </trans-unit>
       <trans-unit id="PackagesLockFile_IncompatibleLockFileVersion">
         <source>Version specified in the packages.lock.json file is incompatible. Current tooling supports version {0} and previous formats.</source>
         <target state="translated">在 packages.lock.json 文件中指定的版本不兼容。当前工具支持版本 {0} 和以前的格式。</target>
@@ -83,6 +93,11 @@
         <source>The project target framework {0} was not found in the lock file.</source>
         <target state="translated">在锁定文件中找不到项目目标框架 {0}。</target>
         <note>0 - project target framework</note>
+      </trans-unit>
+      <trans-unit id="PackagesLockFile_NullPropertyName">
+        <source>JSON property names cannot be null in packages lock file.</source>
+        <target state="new">JSON property names cannot be null in packages lock file.</target>
+        <note />
       </trans-unit>
       <trans-unit id="PackagesLockFile_PackageReferenceAdded">
         <source>A new package reference was found {0} for the project target framework {1}.</source>
