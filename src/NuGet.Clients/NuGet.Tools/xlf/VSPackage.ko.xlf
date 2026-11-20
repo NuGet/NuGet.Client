@@ -38,8 +38,8 @@
         <note />
       </trans-unit>
       <trans-unit id="117">
-        <source>Configuration Files</source>
-        <target state="translated">구성 파일</target>
+        <source>Configuration files</source>
+        <target state="needs-review-translation">구성 파일</target>
         <note />
       </trans-unit>
       <trans-unit id="2">

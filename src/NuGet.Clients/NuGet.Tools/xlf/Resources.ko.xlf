@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="ko" original="../Resources.resx">
     <body>
       <trans-unit id="BindingRedirects">
-        <source>Binding Redirects</source>
-        <target state="translated">바인딩 리디렉션</target>
+        <source>Binding redirects</source>
+        <target state="needs-review-translation">바인딩 리디렉션</target>
         <note />
       </trans-unit>
       <trans-unit id="CanNotCreateWindow">
@@ -128,8 +128,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageManagement">
-        <source>Package Management</source>
-        <target state="translated">패키지 관리</target>
+        <source>Package management</source>
+        <target state="needs-review-translation">패키지 관리</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReference">
@@ -138,8 +138,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageRestore">
-        <source>Package Restore</source>
-        <target state="translated">패키지 복원</target>
+        <source>Package restore</source>
+        <target state="needs-review-translation">패키지 복원</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreConsent">
@@ -188,8 +188,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_AllowInsecureConnections_Header">
-        <source>Allow Insecure Connections</source>
-        <target state="translated">안전하지 않은 연결 허용</target>
+        <source>Allow insecure connections</source>
+        <target state="needs-review-translation">안전하지 않은 연결 허용</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AuditSources_Checkbox">
@@ -223,8 +223,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_FilePath_Header">
-        <source>File Path</source>
-        <target state="translated">파일 경로</target>
+        <source>File path</source>
+        <target state="needs-review-translation">파일 경로</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HttpSource_Error">

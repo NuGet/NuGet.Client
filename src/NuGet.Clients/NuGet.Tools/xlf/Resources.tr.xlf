@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="tr" original="../Resources.resx">
     <body>
       <trans-unit id="BindingRedirects">
-        <source>Binding Redirects</source>
-        <target state="translated">Bağlama Yeniden Yönlendirmeleri</target>
+        <source>Binding redirects</source>
+        <target state="needs-review-translation">Bağlama Yeniden Yönlendirmeleri</target>
         <note />
       </trans-unit>
       <trans-unit id="CanNotCreateWindow">
@@ -128,8 +128,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageManagement">
-        <source>Package Management</source>
-        <target state="translated">Paket Yönetimi</target>
+        <source>Package management</source>
+        <target state="needs-review-translation">Paket Yönetimi</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReference">
@@ -138,8 +138,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageRestore">
-        <source>Package Restore</source>
-        <target state="translated">Paket Geri Yükleme</target>
+        <source>Package restore</source>
+        <target state="needs-review-translation">Paket Geri Yükleme</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreConsent">
@@ -188,8 +188,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_AllowInsecureConnections_Header">
-        <source>Allow Insecure Connections</source>
-        <target state="translated">Güvenli Olmayan Bağlantılara İzin Ver</target>
+        <source>Allow insecure connections</source>
+        <target state="needs-review-translation">Güvenli Olmayan Bağlantılara İzin Ver</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AuditSources_Checkbox">
@@ -223,8 +223,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_FilePath_Header">
-        <source>File Path</source>
-        <target state="translated">Dosya Yolu</target>
+        <source>File path</source>
+        <target state="needs-review-translation">Dosya Yolu</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HttpSource_Error">

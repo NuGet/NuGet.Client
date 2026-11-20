@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../Resources.resx">
     <body>
       <trans-unit id="BindingRedirects">
-        <source>Binding Redirects</source>
-        <target state="translated">绑定重定向</target>
+        <source>Binding redirects</source>
+        <target state="needs-review-translation">绑定重定向</target>
         <note />
       </trans-unit>
       <trans-unit id="CanNotCreateWindow">
@@ -128,8 +128,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageManagement">
-        <source>Package Management</source>
-        <target state="translated">程序包管理</target>
+        <source>Package management</source>
+        <target state="needs-review-translation">程序包管理</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReference">
@@ -138,8 +138,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageRestore">
-        <source>Package Restore</source>
-        <target state="translated">程序包还原</target>
+        <source>Package restore</source>
+        <target state="needs-review-translation">程序包还原</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreConsent">
@@ -188,8 +188,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_AllowInsecureConnections_Header">
-        <source>Allow Insecure Connections</source>
-        <target state="translated">允许不安全的连接</target>
+        <source>Allow insecure connections</source>
+        <target state="needs-review-translation">允许不安全的连接</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AuditSources_Checkbox">
@@ -223,8 +223,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_FilePath_Header">
-        <source>File Path</source>
-        <target state="translated">文件路径</target>
+        <source>File path</source>
+        <target state="needs-review-translation">文件路径</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HttpSource_Error">

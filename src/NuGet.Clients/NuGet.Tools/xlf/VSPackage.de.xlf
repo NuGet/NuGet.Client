@@ -38,8 +38,8 @@
         <note />
       </trans-unit>
       <trans-unit id="117">
-        <source>Configuration Files</source>
-        <target state="translated">Konfigurationsdateien</target>
+        <source>Configuration files</source>
+        <target state="needs-review-translation">Konfigurationsdateien</target>
         <note />
       </trans-unit>
       <trans-unit id="2">
