@@ -31,7 +31,7 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<CriteriaKey, List<(List<SelectionCriteria>, bool)>> _criteriaSets =
             new();
 
-        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags, int dependencyCount, bool restoreEnableAnalyzerAssets), Lazy<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)>> _lockFileTargetLibraryCache =
+        private readonly ConcurrentDictionary<(CriteriaKey, string path, string aliases, LibraryIncludeFlags, int dependencyCount, bool restoreEnableAnalyzerAssets, PackageDependencyPruningResult pruningResult), Lazy<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)>> _lockFileTargetLibraryCache =
             new();
 
         /// <summary>
@@ -106,17 +106,17 @@ namespace NuGet.Commands
         /// <summary>
         /// Try to get a LockFileTargetLibrary from the cache.
         /// </summary>
-        internal (LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework) GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, string aliases, LibraryIncludeFlags libraryIncludeFlags, List<LibraryDependency> dependencies, bool restoreEnableAnalyzerAssets, Func<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)> valueFactory)
+        internal (LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework) GetLockFileTargetLibrary(RestoreTargetGraph graph, NuGetFramework framework, LocalPackageInfo localPackageInfo, string aliases, LibraryIncludeFlags libraryIncludeFlags, List<LibraryDependency> dependencies, bool restoreEnableAnalyzerAssets, Func<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)> valueFactory, PackageDependencyPruningResult pruningResult = default)
         {
             // Comparing RuntimeGraph for equality is very expensive,
             // so in case of a request where the RuntimeGraph is not empty we avoid using the cache.
-            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
+            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier) || dependencies is null)
                 return valueFactory();
 
             localPackageInfo = localPackageInfo ?? throw new ArgumentNullException(nameof(localPackageInfo));
             var criteriaKey = new CriteriaKey(graph.TargetGraphName, framework);
             var packagePath = localPackageInfo.ExpandedPath;
-            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, packagePath, aliases, libraryIncludeFlags, dependencies.Count, restoreEnableAnalyzerAssets),
+            return _lockFileTargetLibraryCache.GetOrAdd((criteriaKey, packagePath, aliases, libraryIncludeFlags, dependencies.Count, restoreEnableAnalyzerAssets, pruningResult),
                 key => new Lazy<(LockFileTargetLibrary, bool, NuGetFramework, NuGetFramework)>(valueFactory)).Value;
         }
 

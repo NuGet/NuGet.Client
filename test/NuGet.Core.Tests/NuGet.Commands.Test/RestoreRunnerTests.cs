@@ -2000,7 +2000,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreRunner_WithMultipleProjects_AndPackagePruningOnOnlyOne_PrunesCorrectly()
+        public async Task RestoreRunner_WithMultipleProjectsPruningDifferentDependencies_DoesNotReuseCachedTargetLibrary()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -2008,7 +2008,11 @@ namespace NuGet.Commands.Test
             // Setup packages
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
             {
-                Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0")]
+                Dependencies =
+                [
+                    new SimpleTestPackageContext("packageB", "1.0.0"),
+                    new SimpleTestPackageContext("packageC", "1.0.0"),
+                ]
             };
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -2027,7 +2031,7 @@ namespace NuGet.Commands.Test
                         },
                 },
                 ""packagesToPrune"": {
-                    ""packageB"" : ""(,1.0.0]"" 
+                    ""packageB"" : ""(,1.0.0]""
                 }
             }
           }
@@ -2042,6 +2046,9 @@ namespace NuGet.Commands.Test
                             ""version"": ""[1.0.0,)"",
                             ""target"": ""Package"",
                         },
+                },
+                ""packagesToPrune"": {
+                    ""packageC"" : ""(,1.0.0]""
                 }
             }
           }
@@ -2085,16 +2092,21 @@ namespace NuGet.Commands.Test
             var p2AssetsFile = lockFormat.Read(Path.Combine(projectSpec2.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName));
 
             p1AssetsFile.Targets.Should().HaveCount(1);
-            p1AssetsFile.Targets[0].Libraries.Should().HaveCount(1);
+            p1AssetsFile.Targets[0].Libraries.Should().HaveCount(2);
             p1AssetsFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             p1AssetsFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
-            p1AssetsFile.Targets[0].Libraries[0].Dependencies.Should().BeEmpty();
+            p1AssetsFile.Targets[0].Libraries[0].Dependencies.Should().ContainSingle()
+                .Which.Id.Should().Be("packageC");
+            p1AssetsFile.Targets[0].Libraries[1].Name.Should().Be("packageC");
+            p1AssetsFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            p1AssetsFile.Targets[0].Libraries[1].Dependencies.Should().BeEmpty();
 
             p2AssetsFile.Targets.Should().HaveCount(1);
             p2AssetsFile.Targets[0].Libraries.Should().HaveCount(2);
             p2AssetsFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
             p2AssetsFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
-            p2AssetsFile.Targets[0].Libraries[0].Dependencies.Should().HaveCount(1);
+            p2AssetsFile.Targets[0].Libraries[0].Dependencies.Should().ContainSingle()
+                .Which.Id.Should().Be("packageB");
             p2AssetsFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
             p2AssetsFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
             p2AssetsFile.Targets[0].Libraries[1].Dependencies.Should().BeEmpty();

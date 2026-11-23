@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -24,6 +26,233 @@ namespace NuGet.Commands.Test.RestoreCommandTests
     [Collection(nameof(NotThreadSafeResourceCollection))]
     public class LockFileBuilderCacheTest
     {
+        [Theory]
+        [InlineData(64, 0, 1)]
+        [InlineData(65, 0, 64)]
+        public void GetLockFileTargetLibrary_DifferentPruningOutcomes_DoesNotReuseTargetLibrary(int originalDependencyCount, int firstRemovedPosition, int secondRemovedPosition)
+        {
+            // Arrange
+            var framework = NuGetFramework.Parse("net10.0");
+            var graph = RestoreTargetGraph.Create(
+                runtimeGraph: RuntimeGraph.Empty,
+                graphs: [],
+                context: null!,
+                targetAlias: "net10.0",
+                framework: framework,
+                runtimeIdentifier: "");
+            var package = new NuGet.Repositories.LocalPackageInfo(
+                packageId: "A",
+                version: NuGetVersion.Parse("1.0.0"),
+                path: "packageA",
+                manifestPath: "",
+                zipPath: "",
+                sha512Path: "",
+                nuspec: new Lazy<NuspecReader>(() => null!),
+                files: new Lazy<IReadOnlyList<string>>(() => []),
+                sha512: new Lazy<string>(() => ""),
+                runtimeGraph: new Lazy<RuntimeGraph?>(() => RuntimeGraph.Empty));
+            var cache = new LockFileBuilderCache();
+            var firstDependencies = CreatePrunedDependencies(originalDependencyCount, firstRemovedPosition);
+            var secondDependencies = CreatePrunedDependencies(originalDependencyCount, secondRemovedPosition);
+            var firstPruning = CreatePruningResult(originalDependencyCount, firstRemovedPosition);
+            var secondPruning = CreatePruningResult(originalDependencyCount, secondRemovedPosition);
+            var firstExpected = new LockFileTargetLibrary { Name = "First" };
+            var secondExpected = new LockFileTargetLibrary { Name = "Second" };
+
+            // Act
+            (var firstActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: firstDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (firstExpected, false, framework, framework),
+                pruningResult: firstPruning);
+            (var secondActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: secondDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (secondExpected, false, framework, framework),
+                pruningResult: secondPruning);
+
+            // Assert
+            Assert.Equal(firstDependencies.Count, secondDependencies.Count);
+            Assert.Same(firstExpected, firstActual);
+            Assert.Same(secondExpected, secondActual);
+        }
+
+        [Theory]
+        [InlineData(64, 0)]
+        [InlineData(65, 64)]
+        public void GetLockFileTargetLibrary_IdenticalPruningOutcomes_ReusesTargetLibrary(int originalDependencyCount, int removedPosition)
+        {
+            // Arrange
+            var framework = NuGetFramework.Parse("net10.0");
+            var graph = RestoreTargetGraph.Create(
+                runtimeGraph: RuntimeGraph.Empty,
+                graphs: [],
+                context: null!,
+                targetAlias: "net10.0",
+                framework: framework,
+                runtimeIdentifier: "");
+            var package = new NuGet.Repositories.LocalPackageInfo(
+                packageId: "A",
+                version: NuGetVersion.Parse("1.0.0"),
+                path: "packageA",
+                manifestPath: "",
+                zipPath: "",
+                sha512Path: "",
+                nuspec: new Lazy<NuspecReader>(() => null!),
+                files: new Lazy<IReadOnlyList<string>>(() => []),
+                sha512: new Lazy<string>(() => ""),
+                runtimeGraph: new Lazy<RuntimeGraph?>(() => RuntimeGraph.Empty));
+            var cache = new LockFileBuilderCache();
+            var firstDependencies = CreatePrunedDependencies(originalDependencyCount, removedPosition);
+            var secondDependencies = CreatePrunedDependencies(originalDependencyCount, removedPosition);
+            var firstPruning = CreatePruningResult(originalDependencyCount, removedPosition);
+            var secondPruning = CreatePruningResult(originalDependencyCount, removedPosition);
+            var expected = new LockFileTargetLibrary { Name = "First" };
+            var alternative = new LockFileTargetLibrary { Name = "Second" };
+
+            // Act
+            (var firstActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: firstDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (expected, false, framework, framework),
+                pruningResult: firstPruning);
+            (var secondActual, _, _, _) = cache.GetLockFileTargetLibrary(
+                graph: graph,
+                framework: framework,
+                localPackageInfo: package,
+                aliases: "alias",
+                libraryIncludeFlags: LibraryIncludeFlags.All,
+                dependencies: secondDependencies,
+                restoreEnableAnalyzerAssets: false,
+                valueFactory: () => (alternative, false, framework, framework),
+                pruningResult: secondPruning);
+
+            // Assert
+            Assert.Same(expected, firstActual);
+            Assert.Same(expected, secondActual);
+        }
+
+        [Fact]
+        public async Task LockFileBuilderCache_DifferentPruningOutcomesForManyDependencies_PreservesPackageDependencies()
+        {
+            // Arrange
+            using var tmpPath = new SimpleTestPathContext();
+            const int OriginalDependencyCount = 65;
+            var framework = NuGetFramework.Parse("net10.0");
+            var packageA = new SimpleTestPackageContext("PackageA", "1.0.0")
+            {
+                Dependencies = Enumerable.Range(0, OriginalDependencyCount)
+                    .Select(position => new SimpleTestPackageContext($"Dependency{position:D2}", "1.0.0"))
+                    .ToList()
+            };
+            var logger = new TestLogger();
+            var lockFileBuilderCache = new LockFileBuilderCache();
+            var project1Directory = Path.Combine(tmpPath.SolutionRoot, "Library1");
+            var project2Directory = Path.Combine(tmpPath.SolutionRoot, "Library2");
+            Directory.CreateDirectory(project1Directory);
+            Directory.CreateDirectory(project2Directory);
+
+            PackageSpec CreateProjectSpec(string projectName, string projectDirectory, int removedPosition)
+            {
+                string dependencyToPrune = $"Dependency{removedPosition:D2}";
+                return PackageReferenceSpecBuilder.Create(projectName, projectDirectory)
+                    .WithTargetFrameworks(new[]
+                    {
+                        new TargetFrameworkInformation
+                        {
+                            FrameworkName = framework,
+                            TargetAlias = "net10.0",
+                            Dependencies = [
+                                new LibraryDependency
+                                {
+                                    LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"),
+                                        LibraryDependencyTarget.All)
+                                },
+                            ],
+                            PackagesToPrune = new Dictionary<string, PrunePackageReference>
+                            {
+                                [dependencyToPrune] = new PrunePackageReference(dependencyToPrune, VersionRange.Parse("(,1.0.0]"))
+                            }
+                        }
+                    })
+                    .Build();
+            }
+
+            var project1Spec = CreateProjectSpec("Library1", project1Directory, removedPosition: 0);
+            var project2Spec = CreateProjectSpec("Library2", project2Directory, removedPosition: 64);
+            var sources = new[] { new PackageSource(tmpPath.PackageSource) }
+                .Select(source => Repository.Factory.GetCoreV3(source))
+                .ToList();
+            var request1 = new TestRestoreRequest(
+                project1Spec,
+                sources,
+                tmpPath.UserPackagesFolder,
+                new List<string>(),
+                new TestSourceCacheContext(),
+                ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                logger,
+                lockFileBuilderCache
+            )
+            { LockFilePath = Path.Combine(project1Directory, "project.lock.json") };
+            var request2 = new TestRestoreRequest(
+                project2Spec,
+                sources,
+                tmpPath.UserPackagesFolder,
+                new List<string>(),
+                new TestSourceCacheContext(),
+                ClientPolicyContext.GetClientPolicy(NullSettings.Instance, logger),
+                logger,
+                lockFileBuilderCache
+            )
+            { LockFilePath = Path.Combine(project2Directory, "project.lock.json") };
+            await SimpleTestPackageUtility.CreatePackagesAsync(tmpPath.PackageSource, packageA);
+
+            // Act
+            var result1 = await new RestoreCommand(request1).ExecuteAsync();
+            var result2 = await new RestoreCommand(request2).ExecuteAsync();
+
+            // Assert
+            Assert.True(result1.Success, logger.ShowMessages());
+            Assert.True(result2.Success, logger.ShowMessages());
+            var project1Dependencies = result1.LockFile.Targets.Single().Libraries
+                .Single(library => library.Name == "PackageA").Dependencies
+                .Select(dependency => dependency.Id)
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+            var project2Dependencies = result2.LockFile.Targets.Single().Libraries
+                .Single(library => library.Name == "PackageA").Dependencies
+                .Select(dependency => dependency.Id)
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+            var expectedProject1Dependencies = Enumerable.Range(1, OriginalDependencyCount - 1)
+                .Select(position => $"Dependency{position:D2}")
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+            var expectedProject2Dependencies = Enumerable.Range(0, OriginalDependencyCount - 1)
+                .Select(position => $"Dependency{position:D2}")
+                .OrderBy(id => id, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Equal(project1Dependencies.Length, project2Dependencies.Length);
+            Assert.Equal(expectedProject1Dependencies, project1Dependencies);
+            Assert.Equal(expectedProject2Dependencies, project2Dependencies);
+        }
+
         [Theory]
         [InlineData(false, true)]
         [InlineData(true, false)]
@@ -566,6 +795,33 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 Assert.Equal(NuGetVersion.Parse("1.0.0"), lockFile1TargetLibraryA.Version);
                 Assert.Equal(NuGetVersion.Parse(version), lockFile2TargetLibraryA.Version);
             }
+        }
+
+        private static List<LibraryDependency> CreatePrunedDependencies(int originalDependencyCount, int removedPosition)
+        {
+            var dependencies = new List<LibraryDependency>();
+            for (int position = 0; position < originalDependencyCount; position++)
+            {
+                if (position == removedPosition)
+                {
+                    continue;
+                }
+
+                var libraryRange = new LibraryRange("D" + position, VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
+                dependencies.Add(new LibraryDependency(libraryRange));
+            }
+
+            return dependencies;
+        }
+
+        private static PackageDependencyPruningResult CreatePruningResult(int originalDependencyCount, int removedPosition)
+        {
+            if (originalDependencyCount <= 64)
+            {
+                return new PackageDependencyPruningResult(1UL << removedPosition);
+            }
+
+            return new PackageDependencyPruningResult([removedPosition]);
         }
     }
 }
