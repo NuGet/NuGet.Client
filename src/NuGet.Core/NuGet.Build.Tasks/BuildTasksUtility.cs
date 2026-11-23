@@ -49,6 +49,7 @@ namespace NuGet.Build.Tasks
             }
         }
 
+
         public static void CopyPropertyIfExists(ITaskItem item, IDictionary<string, string> properties, string key)
         {
             CopyPropertyIfExists(item, properties, key, key);
@@ -233,7 +234,7 @@ namespace NuGet.Build.Tasks
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        restoreSummaries.AddRange(await RestoreRunner.RunAsync(restoreContext, cancellationToken));
+                        restoreSummaries.AddRange(await RestoreRunner.RunAsync(restoreContext, cancellationToken).ConfigureAwait(false));
                     }
 
                     if (cleanupAssetsForUnsupportedProjects)
@@ -789,4 +790,3 @@ namespace NuGet.Build.Tasks
 
     }
 }
-

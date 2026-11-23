@@ -18,6 +18,10 @@ namespace NuGet.Commands
     /// <summary>
     /// Shared code to run the "restore" command for dotnet restore, nuget.exe, and VS.
     /// </summary>
+    /// <remarks>
+    /// Restore coordination must not capture the caller's synchronization context:
+    /// MSBuild can synchronously wait for restore on the UI thread.
+    /// </remarks>
     public static class RestoreRunner
     {
         /// <summary>
@@ -26,10 +30,10 @@ namespace NuGet.Commands
         public static async Task<IReadOnlyList<RestoreSummary>> RunAsync(RestoreArgs restoreContext, CancellationToken token)
         {
             // Create requests
-            var requests = await GetRequests(restoreContext);
+            var requests = await GetRequests(restoreContext).ConfigureAwait(false);
 
             // Run requests
-            return await RunAsync(requests, restoreContext, token);
+            return await RunAsync(requests, restoreContext, token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -38,7 +42,7 @@ namespace NuGet.Commands
         public static async Task<IReadOnlyList<RestoreSummary>> RunAsync(RestoreArgs restoreContext)
         {
             // Run requests
-            return await RunAsync(restoreContext, CancellationToken.None);
+            return await RunAsync(restoreContext, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -76,7 +80,7 @@ namespace NuGet.Commands
                 // Throttle and wait for a task to finish if we have hit the limit
                 if (restoreTasks.Count == maxTasks)
                 {
-                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                    var restoreSummary = await CompleteTaskAsync(restoreTasks).ConfigureAwait(false);
                     restoreSummaries.Add(restoreSummary);
                 }
 
@@ -89,7 +93,7 @@ namespace NuGet.Commands
             // Wait for all restores to finish
             while (restoreTasks.Count > 0)
             {
-                var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                var restoreSummary = await CompleteTaskAsync(restoreTasks).ConfigureAwait(false);
                 restoreSummaries.Add(restoreSummary);
             }
 
@@ -142,7 +146,7 @@ namespace NuGet.Commands
                 // Throttle and wait for a task to finish if we have hit the limit
                 if (restoreTasks.Count == maxTasks)
                 {
-                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                    var restoreSummary = await CompleteTaskAsync(restoreTasks).ConfigureAwait(false);
                     restoreResults.Add(restoreSummary);
                 }
 
@@ -155,7 +159,7 @@ namespace NuGet.Commands
             // Wait for all restores to finish
             while (restoreTasks.Count > 0)
             {
-                var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                var restoreSummary = await CompleteTaskAsync(restoreTasks).ConfigureAwait(false);
                 restoreResults.Add(restoreSummary);
             }
 
@@ -183,7 +187,7 @@ namespace NuGet.Commands
 
             // Create requests
             // Pre-loaded requests
-            foreach (var request in await CreatePreLoadedRequests(restoreContext))
+            foreach (var request in await CreatePreLoadedRequests(restoreContext).ConfigureAwait(false))
             {
                 // De-dupe requests
                 if (request.Request.LockFilePath == null
@@ -196,7 +200,7 @@ namespace NuGet.Commands
             // Input based requests
             foreach (var input in inputs)
             {
-                var inputRequests = await CreateRequests(input, restoreContext);
+                var inputRequests = await CreateRequests(input, restoreContext).ConfigureAwait(false);
                 if (inputRequests.Count == 0)
                 {
                     // No need to throw here - the situation is harmless, and we want to report all possible
@@ -206,7 +210,7 @@ namespace NuGet.Commands
                             Strings.Error_UnableToLocateRestoreTarget,
                             Path.GetFullPath(input));
 
-                    await restoreContext.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1501, message));
+                    await restoreContext.Log.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1501, message)).ConfigureAwait(false);
                 }
                 foreach (var request in inputRequests)
                 {
@@ -338,17 +342,17 @@ namespace NuGet.Commands
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
         {
-            var doneTask = await Task.WhenAny(restoreTasks);
+            var doneTask = await Task.WhenAny(restoreTasks).ConfigureAwait(false);
             restoreTasks.Remove(doneTask);
-            return await doneTask;
+            return await doneTask.ConfigureAwait(false);
         }
 
         private static async Task<RestoreResultPair>
             CompleteTaskAsync(List<Task<RestoreResultPair>> restoreTasks)
         {
-            var doneTask = await Task.WhenAny(restoreTasks);
+            var doneTask = await Task.WhenAny(restoreTasks).ConfigureAwait(false);
             restoreTasks.Remove(doneTask);
-            return await doneTask;
+            return await doneTask.ConfigureAwait(false);
         }
 
         private static async Task<IReadOnlyList<RestoreSummaryRequest>> CreatePreLoadedRequests(
@@ -358,7 +362,7 @@ namespace NuGet.Commands
 
             foreach (var provider in restoreContext.PreLoadedRequestProviders)
             {
-                var requests = await provider.CreateRequests(restoreContext);
+                var requests = await provider.CreateRequests(restoreContext).ConfigureAwait(false);
                 results.AddRange(requests);
             }
 
@@ -371,11 +375,11 @@ namespace NuGet.Commands
         {
             foreach (var provider in restoreContext.RequestProviders)
             {
-                if (await provider.Supports(input))
+                if (await provider.Supports(input).ConfigureAwait(false))
                 {
                     return await provider.CreateRequests(
                         input,
-                        restoreContext);
+                        restoreContext).ConfigureAwait(false);
                 }
             }
 
