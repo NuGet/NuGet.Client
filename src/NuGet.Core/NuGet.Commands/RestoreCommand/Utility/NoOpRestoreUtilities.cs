@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -251,7 +252,7 @@ namespace NuGet.Commands
 
             var packageFiles = new List<string>(lockFile.Libraries.Count + request.Project.TargetFrameworks.Sum(i => i.DownloadDependencies.Length));
 
-            foreach (var library in lockFile.Libraries)
+            foreach (var library in lockFile.Libraries.Where(e => e.Type == LibraryType.Package))
             {
                 packageFiles.AddRange(GetPackageFiles(request.DependencyProviders.PackageFileCache, library.Name, library.Version, pathResolvers));
             }
