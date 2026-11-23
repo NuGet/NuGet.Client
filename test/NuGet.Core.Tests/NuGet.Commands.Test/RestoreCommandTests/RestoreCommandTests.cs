@@ -5149,7 +5149,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var resolver = new VersionFolderPathResolver(
                 useFallbackFolder ? pathContext.FallbackFolder : pathContext.UserPackagesFolder);
 
-            // Package markers for the project identity expose accidental inclusion of project libraries.
+            // Package markers for the project identity reveal accidental inclusion of project libraries.
             var projectMarker = CreateMarkerFile(projectLibrary.Name, projectLibrary.Version);
             var packageMarker = CreateMarkerFile(packageLibrary.Name, packageLibrary.Version);
             var downloadMarker = CreateMarkerFile(downloadDependency.Name, downloadDependency.VersionRange.MinVersion);
