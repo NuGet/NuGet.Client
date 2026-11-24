@@ -119,9 +119,7 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateWarningStatusOnInstalledTab(int installedVulnerablePackagesCount, int installedDeprecatedPackagesCount)
         {
-            bool hasInstalledVulnerablePackages = installedVulnerablePackagesCount > 0;
-            bool hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
-            bool warningIconShouldBeVisible = hasInstalledVulnerablePackages || hasInstalledDeprecatedPackages;
+            bool warningIconShouldBeVisible = installedVulnerablePackagesCount > 0 || installedDeprecatedPackagesCount > 0;
 
             if (!warningIconShouldBeVisible)
             {
@@ -130,26 +128,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            string warningTooltip = null;
-            if (hasInstalledVulnerablePackages && hasInstalledDeprecatedPackages)
-            {
-                warningTooltip = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Label_Installed_VulnerableAndDeprecatedWarning,
-                    installedVulnerablePackagesCount,
-                    installedDeprecatedPackagesCount);
-            }
-            else if (hasInstalledVulnerablePackages)
-            {
-                warningTooltip = UIUtility.GetInstalledVulnerablePackagesWarningText(installedVulnerablePackagesCount);
-            }
-            else if (hasInstalledDeprecatedPackages)
-            {
-                warningTooltip = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Label_Installed_DeprecatedWarning,
-                    installedDeprecatedPackagesCount);
-            }
+            string warningTooltip = UIUtility.GetInstalledPackagesWarningText(installedVulnerablePackagesCount, installedDeprecatedPackagesCount);
 
             _warningIcon.Visibility = Visibility.Visible;
             _warningIcon.ToolTip = warningTooltip;
