@@ -662,21 +662,6 @@ function Test-RestorePackageAPINoPackage
     Assert-False (Join-Path (Get-ProjectDir $p) packages.config)
 }
 
-function Test-InstallPackageAPIBindingRedirect
-{
-    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
-    param($context)
-
-    # Arrange
-    $p = New-ClassLibrary
-
-    # Act
-    [API.Test.InternalAPITestHook]::InstallPackageApi("TestBindingRedirectA","1.0.0")
-
-    # Assert
-    Assert-BindingRedirect $p app.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
-}
-
 function Test-BatchEventsApi
 {
     param($context)

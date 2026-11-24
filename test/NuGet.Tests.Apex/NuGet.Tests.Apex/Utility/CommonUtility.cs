@@ -504,13 +504,13 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        internal static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService, ITestLogger logger)
+        internal static ProjectTestExtension CreateAndInitProject(ProjectTemplate projectTemplate, SimpleTestPathContext pathContext, SolutionService solutionService, ITestLogger logger, ProjectLanguage projectLanguage = ProjectLanguage.CSharp)
         {
             logger.WriteMessage("Creating solution");
             solutionService.CreateEmptySolution("TestSolution", pathContext.SolutionRoot);
 
             logger.WriteMessage("Adding project");
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, DefaultTargetFramework, "TestProject");
+            var project = solutionService.AddProject(projectLanguage, projectTemplate, DefaultTargetFramework, "TestProject");
 
             logger.WriteMessage("Saving solution");
             solutionService.Save();
