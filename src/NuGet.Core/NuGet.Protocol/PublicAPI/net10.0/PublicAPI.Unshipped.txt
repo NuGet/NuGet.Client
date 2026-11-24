@@ -1,4 +1,25 @@
 #nullable enable
+NuGet.Protocol.PackageStagingArtifact
+NuGet.Protocol.PackageStagingArtifact.Blockers.get -> System.Collections.Generic.IReadOnlyList<NuGet.Protocol.PackageStagingPromotionBlocker!>?
+NuGet.Protocol.PackageStagingArtifact.CanPromote.get -> bool
+NuGet.Protocol.PackageStagingArtifact.Expires.get -> string?
+NuGet.Protocol.PackageStagingArtifact.Group.get -> NuGet.Protocol.PackageStagingGroupReference?
+NuGet.Protocol.PackageStagingArtifact.Id.get -> string!
+NuGet.Protocol.PackageStagingArtifact.Kind.get -> string!
+NuGet.Protocol.PackageStagingArtifact.Listed.get -> bool?
+NuGet.Protocol.PackageStagingArtifact.ManagementUrl.get -> string?
+NuGet.Protocol.PackageStagingArtifact.Owner.get -> string?
+NuGet.Protocol.PackageStagingArtifact.Status.get -> string!
+NuGet.Protocol.PackageStagingArtifact.Uploaded.get -> string?
+NuGet.Protocol.PackageStagingArtifact.Version.get -> string!
+NuGet.Protocol.PackageStagingGroupReference
+NuGet.Protocol.PackageStagingGroupReference.Id.get -> string!
+NuGet.Protocol.PackageStagingGroupReference.Name.get -> string?
+NuGet.Protocol.PackageStagingPromotionBlocker
+NuGet.Protocol.PackageStagingPromotionBlocker.Code.get -> string!
+NuGet.Protocol.PackageStagingPromotionBlocker.Message.get -> string!
+NuGet.Protocol.PackageStagingResourceV3.GetPackageStatusAsync(string! id, NuGet.Versioning.NuGetVersion! version, string? apiKey, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageStagingArtifact?>!
+NuGet.Protocol.PackageStagingResourceV3.GetSymbolsStatusAsync(string! id, NuGet.Versioning.NuGetVersion! version, string? apiKey, NuGet.Common.ILogger! logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.PackageStagingArtifact?>!
 *REMOVED*NuGet.Protocol.Core.Types.FatalProtocolException.FatalProtocolException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
 *REMOVED*NuGet.Protocol.Core.Types.NuGetProtocolException.NuGetProtocolException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
 *REMOVED*NuGet.Protocol.Core.Types.RetriableProtocolException.RetriableProtocolException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void

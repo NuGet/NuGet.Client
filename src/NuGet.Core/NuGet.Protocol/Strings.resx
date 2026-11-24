@@ -561,4 +561,15 @@ The "s" should be localized to the abbreviation for seconds.</comment>
   <data name="Error_UnsupportedPayloadType" xml:space="preserve">
     <value>Unsupported payload type `{0}`.</value>
   </data>
+  <data name="Staging_UnexpectedStatus" xml:space="preserve">
+    <value>The staging service returned HTTP {0}; expected HTTP 200.</value>
+    <comment>0 - HTTP status code</comment>
+  </data>
+  <data name="Staging_InvalidResponse" xml:space="preserve">
+    <value>The staging service returned an invalid artifact response.</value>
+  </data>
+  <data name="Staging_StatusRequiresHttps" xml:space="preserve">
+    <value>The staging status endpoint '{0}' must use HTTPS.</value>
+    <comment>0 - staging service endpoint URL</comment>
+  </data>
 </root>

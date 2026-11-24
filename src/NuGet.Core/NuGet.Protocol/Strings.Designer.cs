@@ -1033,6 +1033,33 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The staging service returned an invalid artifact response..
+        /// </summary>
+        internal static string Staging_InvalidResponse {
+            get {
+                return ResourceManager.GetString("Staging_InvalidResponse", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The staging status endpoint &apos;{0}&apos; must use HTTPS..
+        /// </summary>
+        internal static string Staging_StatusRequiresHttps {
+            get {
+                return ResourceManager.GetString("Staging_StatusRequiresHttps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The staging service returned HTTP {0}; expected HTTP 200..
+        /// </summary>
+        internal static string Staging_UnexpectedStatus {
+            get {
+                return ResourceManager.GetString("Staging_UnexpectedStatus", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
         /// </summary>
         internal static string StringCannotBeNullOrEmpty {
