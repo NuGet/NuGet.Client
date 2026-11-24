@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(LatestNETCoreTargetFramework)</TargetFramework>
+    <TargetFrameworks />
+    <!-- Mirror a consumer that publishes trimmed WITHOUT enabling the
+         NuGet.UseSystemTextJsonDeserialization feature switch and WITHOUT rooting any NuGet
+         assembly via TrimmerRootAssembly. Partial trimming trims exactly the assemblies that
+         declare IsTrimmable, which includes the NuGet.Core assemblies, so this exercises the
+         default experience of a trimmed app consuming NuGet.Protocol. -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <!-- Work around https://github.com/dotnet/sdk/issues/56653 while retaining documentation generation for analyzers. -->
+    <PublishDocumentationFile>false</PublishDocumentationFile>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <!-- IL2026/IL3050: this app intentionally exercises the reflection-based legacy code path under
+         trimming. IL2104/IL3053: ignore the single warn files marked below to suppress their known
+         warnings. -->
+    <NoWarn>$(NoWarn);IL2026;IL3050;IL2104;IL3053</NoWarn>
+  </PropertyGroup>
+
+  <Target Name="ConfigureTrimming"
+          BeforeTargets="PrepareForILLink">
+    <!-- Single warn the following assemblies (produces IL2104 and IL3053), which have known warnings, so the warnings can be suppressed. -->
+    <ItemGroup>
+      <ManagedAssemblyToLink Condition="'%(Filename)' == 'Microsoft.CSharp'">
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+      </ManagedAssemblyToLink>
+      <ManagedAssemblyToLink Condition="'%(Filename)' == 'Newtonsoft.Json'">
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+      </ManagedAssemblyToLink>
+      <ManagedAssemblyToLink Condition="'%(Filename)' == 'System.Linq.Expressions'">
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+      </ManagedAssemblyToLink>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Protocol\NuGet.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>
