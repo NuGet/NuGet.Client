@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Shared;
@@ -38,6 +37,12 @@ namespace NuGet.ProjectModel
         private readonly SortedDictionary<string, PackageSpec> _projects = new(PathUtility.GetStringComparerBasedOnOS());
 
         private const int Version = 1;
+        private static readonly JsonWriterOptions WriterOptions = new()
+        {
+            Indented = true,
+            // The explicit writer controls the complete JSON structure. String escaping remains enabled.
+            SkipValidation = true
+        };
 
         private readonly bool _isReadOnly;
 
@@ -331,6 +336,13 @@ namespace NuGet.ProjectModel
             }
         }
 
+        /// <summary>
+        /// Writes a UTF-8 dependency graph specification, creating or replacing the destination file.
+        /// </summary>
+        /// <param name="path">The destination file path.</param>
+        /// <remarks>
+        /// This method writes directly to the destination file. A writing failure can leave partial output.
+        /// </remarks>
         public void Save(string path)
         {
             using (var fileStream = new FileStream(path, FileMode.Create))
@@ -339,22 +351,41 @@ namespace NuGet.ProjectModel
             }
         }
 
+        /// <summary>
+        /// Writes a UTF-8 dependency graph specification and disposes the destination stream before returning.
+        /// </summary>
+        /// <param name="stream">The destination stream. This method takes ownership of the stream.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+        /// <remarks>
+        /// Uses pooled buffering to write incrementally without buffering the complete document.
+        /// Writing failures can leave partial output in the destination stream.
+        /// The destination stream is disposed even if writing fails after argument validation.
+        /// </remarks>
         public void Save(Stream stream)
         {
-#if NET5_0_OR_GREATER
-            using (var textWriter = new StreamWriter(stream))
-#else
-            using (var textWriter = new NoAllocNewLineStreamWriter(stream))
-#endif
-            using (var jsonWriter = new JsonTextWriter(textWriter))
-            using (var writer = new RuntimeModel.JsonObjectWriter(jsonWriter))
+            if (stream == null)
             {
-                jsonWriter.Formatting = Formatting.Indented;
+                throw new ArgumentNullException(nameof(stream));
+            }
 
-                Write(writer, hashing: false, PackageSpecWriter.Write);
+            using (stream)
+            using (var bufferWriter = new PooledStreamBufferWriter(stream))
+            using (var jsonWriter = new Utf8JsonWriter(bufferWriter, WriterOptions))
+            {
+                var writer = new Utf8JsonObjectWriter(jsonWriter);
+                Write(writer, hashing: false);
+                jsonWriter.Flush();
+                bufferWriter.Flush();
             }
         }
 
+        /// <summary>
+        /// Computes the deterministic dependency graph hash used for restore no-op detection.
+        /// </summary>
+        /// <returns>The Base64-encoded dependency graph hash.</returns>
+        /// <remarks>
+        /// The hash is computed from the canonical dependency graph object structure rather than the formatted file output.
+        /// </remarks>
         public string GetHash()
         {
             // Use the faster FNV hash function for hashing unless the user has specified to use the legacy SHA512 hash function
@@ -370,16 +401,17 @@ namespace NuGet.ProjectModel
 
             using IHashFunction hashFunc = getHashFunction();
             using var writer = new HashObjectWriter(hashFunc);
-            Write(writer, hashing: true, PackageSpecWriter.Write);
+            Write(new HashObjectWriterAdapter(writer), hashing: true);
             return writer.GetHash();
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool, IEnvironmentVariableReader> writeAction)
+        private void Write<TWriter>(TWriter writer, bool hashing)
+            where TWriter : IJsonObjectWriter
         {
             writer.WriteObjectStart();
-            writer.WriteNameValue("format", Version);
+            writer.WriteNameValue(JsonPropertyNames.Format, Version);
 
-            writer.WriteObjectStart("restore");
+            writer.WriteObjectStart(JsonPropertyNames.Restore);
 
             // Preserve default sort order
             foreach (var restoreName in _restore)
@@ -390,16 +422,21 @@ namespace NuGet.ProjectModel
 
             writer.WriteObjectEnd();
 
-            writer.WriteObjectStart("projects");
+            writer.WriteObjectStart(JsonPropertyNames.Projects);
 
-            // Preserve default sort order
-            foreach (var pair in _projects)
+            if (_projects.Count > 0)
             {
-                var project = pair.Value;
+                PackageSpecWriter.WriteContext writeContext = PackageSpecWriter.CreateWriteContext(EnvironmentVariableWrapper.Instance);
 
-                writer.WriteObjectStart(PackageSpecWriter.NormalizePathForHashing(project.RestoreMetadata.ProjectUniqueName, hashing));
-                writeAction.Invoke(project, writer, hashing, EnvironmentVariableWrapper.Instance);
-                writer.WriteObjectEnd();
+                // Preserve default sort order
+                foreach (var pair in _projects)
+                {
+                    var project = pair.Value;
+
+                    writer.WriteObjectStart(PackageSpecWriter.NormalizePathForHashing(project.RestoreMetadata.ProjectUniqueName, hashing));
+                    PackageSpecWriter.Write(project, writer, hashing, writeContext);
+                    writer.WriteObjectEnd();
+                }
             }
 
             writer.WriteObjectEnd();
