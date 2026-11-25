@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="pt-BR" original="../Resources.resx">
     <body>
       <trans-unit id="BindingRedirects">
-        <source>Binding Redirects</source>
-        <target state="translated">Redirecionamentos de Associação</target>
+        <source>Binding redirects</source>
+        <target state="needs-review-translation">Redirecionamentos de Associação</target>
         <note />
       </trans-unit>
       <trans-unit id="CanNotCreateWindow">
@@ -128,8 +128,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageManagement">
-        <source>Package Management</source>
-        <target state="translated">Gerenciamento de Pacotes</target>
+        <source>Package management</source>
+        <target state="needs-review-translation">Gerenciamento de Pacotes</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageReference">
@@ -138,8 +138,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PackageRestore">
-        <source>Package Restore</source>
-        <target state="translated">Restauração de Pacote</target>
+        <source>Package restore</source>
+        <target state="needs-review-translation">Restauração de Pacote</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageRestoreConsent">
@@ -188,8 +188,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_AllowInsecureConnections_Header">
-        <source>Allow Insecure Connections</source>
-        <target state="translated">Permitir Conexões Inseguras</target>
+        <source>Allow insecure connections</source>
+        <target state="needs-review-translation">Permitir Conexões Inseguras</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_AuditSources_Checkbox">
@@ -223,8 +223,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Text_FilePath_Header">
-        <source>File Path</source>
-        <target state="translated">Caminho do Arquivo</target>
+        <source>File path</source>
+        <target state="needs-review-translation">Caminho do Arquivo</target>
         <note />
       </trans-unit>
       <trans-unit id="Text_HttpSource_Error">
