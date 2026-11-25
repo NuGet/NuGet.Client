@@ -27,6 +27,46 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void TopologicalSortUtility_GivenTiedPackagesOrderIsIndependentOfInputOrder()
+        {
+            var packages = new[]
+            {
+                CreateInfo("b"),
+                CreateInfo("a"),
+                CreateInfo("C"),
+            };
+
+            var sorted = TopologicalSortUtility.SortPackagesByDependencyOrder(packages);
+            var reverseSorted = TopologicalSortUtility.SortPackagesByDependencyOrder(packages.Reverse());
+
+            sorted.Select(e => e.Id).Should().ContainInOrder(new[] { "C", "b", "a" });
+            reverseSorted.Select(e => e.Id).Should().Equal(sorted.Select(e => e.Id));
+        }
+
+        [Fact]
+        public void TopologicalSortUtility_GivenEquivalentIdsRetainsFirstPackage()
+        {
+            var first = CreateInfo("package");
+            var duplicate = CreateInfo("PACKAGE");
+
+            var sorted = TopologicalSortUtility.SortPackagesByDependencyOrder(new[] { first, duplicate });
+
+            sorted.Should().ContainSingle().Which.Should().BeSameAs(first);
+        }
+
+        [Fact]
+        public void TopologicalSortUtility_GivenEquivalentIdsUsesFirstPackageDependencies()
+        {
+            var first = CreateInfo("z", "a");
+            var duplicate = CreateInfo("Z");
+            var dependency = CreateInfo("a");
+
+            var sorted = TopologicalSortUtility.SortPackagesByDependencyOrder(new[] { first, duplicate, dependency });
+
+            sorted.Should().Equal(dependency, first);
+        }
+
+        [Fact]
         public void TopologicalSortUtility_GivenUnrelatedPackagesWithMissingDepsVerifySortOrder()
         {
             var packages = new[]
