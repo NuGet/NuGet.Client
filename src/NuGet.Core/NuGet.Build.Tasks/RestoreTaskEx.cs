@@ -5,6 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+#if !NETFRAMEWORK
+using Microsoft.Build.Framework;
+#endif
 using NuGet.Common;
 
 namespace NuGet.Build.Tasks
@@ -12,6 +15,9 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Represents an MSBuild task that performs a command-line based restore.
     /// </summary>
+#if !NETFRAMEWORK
+    [MSBuildMultiThreadableTask]
+#endif
     public sealed class RestoreTaskEx : StaticGraphRestoreTaskBase
     {
         public RestoreTaskEx()

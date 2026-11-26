@@ -13,6 +13,9 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Represents an MSBuild task that performs a command-line based restore.
     /// </summary>
+#if !NETFRAMEWORK
+    [MSBuildMultiThreadableTask]
+#endif
     public sealed class GenerateRestoreGraphFileTask : StaticGraphRestoreTaskBase
     {
         public GenerateRestoreGraphFileTask()
@@ -26,6 +29,11 @@ namespace NuGet.Build.Tasks
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether parallel execution should be disabled.
+        /// </summary>
+        public bool DisableParallel { get; set; }
+
+        /// <summary>
         /// RestoreGraphOutputPath - The location to write the output to.
         /// </summary>
         [Required]
@@ -36,6 +44,11 @@ namespace NuGet.Build.Tasks
         protected override Dictionary<string, string> GetOptions()
         {
             Dictionary<string, string> options = base.GetOptions();
+
+            if (DisableParallel)
+            {
+                options[nameof(DisableParallel)] = bool.TrueString;
+            }
 
             options["GenerateRestoreGraphFile"] = true.ToString(CultureInfo.CurrentCulture);
             options[nameof(RestoreGraphOutputPath)] = RestoreGraphOutputPath;

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Reflection;
 #endif
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Common;
@@ -23,7 +25,15 @@ namespace NuGet.Build.Tasks
     /// Represents a base class for tasks that use the out-of-proc NuGet.Build.Tasks.Console to perform restore operations with MSBuild's static graph.
     /// </summary>
     public abstract class StaticGraphRestoreTaskBase : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
+#if !NETFRAMEWORK
+        , IMultiThreadableTask
+#endif
     {
+#if !NETFRAMEWORK
+        /// <inheritdoc />
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+#endif
+
         internal readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly IEnvironmentVariableReader _environmentVariableReader;
         protected StaticGraphRestoreTaskBase(IEnvironmentVariableReader environmentVariableReader)
@@ -39,6 +49,11 @@ namespace NuGet.Build.Tasks
 
         [Output]
         public ITaskItem[] EmbedInBinlog { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether multithreaded MSBuild target execution is enabled during static graph restore.
+        /// </summary>
+        public string EnableMultiThreaded { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether or not <see cref="SolutionPath" /> contains a value.
@@ -113,111 +128,158 @@ namespace NuGet.Build.Tasks
                 Encoding utf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
                 using (var semaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1))
-                using (var loggingQueue = new TaskLoggingQueue(Log))
-                using (var process = new Process())
                 {
+                    int exitCode = 0;
                     bool errorLogged = false;
-
-                    process.EnableRaisingEvents = true;
-                    process.StartInfo = new ProcessStartInfo
-                    {
-                        Arguments = GetCommandLineArguments(globalProperties),
-                        CreateNoWindow = true,
-                        FileName = GetProcessFileName(ProcessFileName),
-                        RedirectStandardError = true,
-                        RedirectStandardInput = true,
-                        RedirectStandardOutput = true,
-#if !NETFRAMEWORK
-                        StandardInputEncoding = utf8Encoding,
-#endif
-                        UseShellExecute = false,
-                        WorkingDirectory = Environment.CurrentDirectory,
-                    };
-
-                    // Place the output in the queue which handles logging messages coming through on StdOut
-                    process.OutputDataReceived += (sender, args) => loggingQueue.Enqueue(args?.Data);
-
-                    process.ErrorDataReceived += (_, args) =>
-                    {
-                        if (args.Data != null)
-                        {
-                            // Any message on the standard error stream should be logged as an error
-                            Log.LogError(args.Data);
-
-                            errorLogged = true;
-                        }
-                    };
-
-                    process.Exited += (sender, args) => semaphore.Release();
-
-                    Log.LogMessageFromResources(MessageImportance.Low, nameof(Strings.Log_RunningStaticGraphRestoreCommand), process.StartInfo.FileName, process.StartInfo.Arguments);
-
-                    Encoding previousConsoleInputEncoding = Console.InputEncoding;
-
-                    // Set the input encoding to UTF8 without a byte order mark, the spawned process will use this encoding on .NET Framework
-                    Console.InputEncoding = utf8Encoding;
+                    var stdoutEof = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var stderrEof = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var loggingQueue = new TaskLoggingQueue(Log);
 
                     try
                     {
-                        process.Start();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.LogErrorFromResources(nameof(Strings.Error_StaticGraphRestoreFailedToStart), e.Message);
+                        using (var process = new Process())
+                        {
+                            process.EnableRaisingEvents = true;
+#if !NETFRAMEWORK
+                            ProcessStartInfo startInfo = TaskEnvironment.GetProcessStartInfo();
+                            startInfo.StandardInputEncoding = utf8Encoding;
+#else
+                            ProcessStartInfo startInfo = new ProcessStartInfo();
+#endif
+                            startInfo.Arguments = GetCommandLineArguments(globalProperties);
+                            startInfo.CreateNoWindow = true;
+                            startInfo.FileName = GetProcessFileName(ProcessFileName);
+                            startInfo.RedirectStandardError = true;
+                            startInfo.RedirectStandardInput = true;
+                            startInfo.RedirectStandardOutput = true;
+                            startInfo.UseShellExecute = false;
+                            process.StartInfo = startInfo;
 
-                        return false;
+                            // Place the output in the queue which handles logging messages coming through on StdOut
+                            process.OutputDataReceived += (sender, args) =>
+                            {
+                                if (args.Data == null)
+                                {
+                                    stdoutEof.TrySetResult(true);
+                                }
+                                else
+                                {
+                                    loggingQueue.Enqueue(args.Data);
+                                }
+                            };
+
+                            process.ErrorDataReceived += (_, args) =>
+                            {
+                                if (args.Data == null)
+                                {
+                                    stderrEof.TrySetResult(true);
+                                }
+                                else
+                                {
+                                    // Any message on the standard error stream should be logged as an error
+                                    Log.LogError(args.Data);
+
+                                    errorLogged = true;
+                                }
+                            };
+
+                            process.Exited += (sender, args) => semaphore.Release();
+
+                            Log.LogMessageFromResources(MessageImportance.Low, nameof(Strings.Log_RunningStaticGraphRestoreCommand), process.StartInfo.FileName, process.StartInfo.Arguments);
+
+#if NETFRAMEWORK
+                            Encoding previousConsoleInputEncoding = Console.InputEncoding;
+
+                            // Set the input encoding to UTF8 without a byte order mark, the spawned process will use this encoding on .NET Framework
+                            Console.InputEncoding = utf8Encoding;
+#endif
+
+                            try
+                            {
+                                process.Start();
+                            }
+                            catch (Exception e)
+                            {
+                                Log.LogErrorFromResources(nameof(Strings.Error_StaticGraphRestoreFailedToStart), e.Message);
+
+                                return false;
+                            }
+#if NETFRAMEWORK
+                            finally
+                            {
+                                Console.InputEncoding = previousConsoleInputEncoding;
+                            }
+#endif
+
+                            process.BeginOutputReadLine();
+                            process.BeginErrorReadLine();
+
+                            if (SerializeGlobalProperties)
+                            {
+                                using var writer = new BinaryWriter(process.StandardInput.BaseStream, utf8Encoding, leaveOpen: true);
+
+                                WriteGlobalProperties(writer, globalProperties);
+                            }
+
+                            process.StandardInput.Close();
+
+                            try
+                            {
+                                semaphore.Wait(_cancellationTokenSource.Token);
+                            }
+                            catch (Exception e) when (
+                                e is OperationCanceledException
+                                || (e is AggregateException aggregateException && aggregateException.InnerException is OperationCanceledException))
+                            {
+                                // Wait() throws when the cancellation token is triggered, this is expected so ignore the exception
+                            }
+
+                            if (_cancellationTokenSource.IsCancellationRequested)
+                            {
+                                if (!process.HasExited)
+                                {
+                                    try
+                                    {
+                                        // Kill the process in the case of cancellation
+#if !NETFRAMEWORK
+                                        process.Kill(entireProcessTree: true);
+#else
+                                        process.Kill();
+#endif
+                                    }
+                                    catch (Exception e) when (e is InvalidOperationException || e is Win32Exception || e is AggregateException)
+                                    {
+                                        // The process or a child may have already exited or denied termination, ignore in this case
+                                    }
+                                }
+
+                                // Return true so the task "succeeds" in the case of cancellation so the build doesn't appear to fail
+                                return true;
+                            }
+
+                            // Wait briefly for async stdout/stderr EOF so all queued messages and errors are flushed
+                            // without hanging if an inherited pipe handle outlives the child process.
+                            try
+                            {
+                                System.Threading.Tasks.Task.WhenAll(stdoutEof.Task, stderrEof.Task).Wait(millisecondsTimeout: 5000, _cancellationTokenSource.Token);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                return true;
+                            }
+
+                            exitCode = process.ExitCode;
+                        }
                     }
                     finally
                     {
-                        Console.InputEncoding = previousConsoleInputEncoding;
+                        loggingQueue.Dispose();
                     }
 
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-
-                    if (SerializeGlobalProperties)
-                    {
-                        using var writer = new BinaryWriter(process.StandardInput.BaseStream, utf8Encoding, leaveOpen: true);
-
-                        WriteGlobalProperties(writer, globalProperties);
-                    }
-
-                    process.StandardInput.Close();
-
-                    try
-                    {
-                        semaphore.Wait(_cancellationTokenSource.Token);
-                    }
-                    catch (Exception e) when (
-                        e is OperationCanceledException
-                        || (e is AggregateException aggregateException && aggregateException.InnerException is OperationCanceledException))
-                    {
-                        // Wait() throws when the cancellation token is triggered, this is expected so ignore the exception
-                    }
-
-                    if (!process.HasExited)
-                    {
-                        try
-                        {
-                            // Kill the process in the case of cancellation
-                            process.Kill();
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            // The process may have exited, in this case ignore the exception
-                        }
-                    }
-
-                    if (_cancellationTokenSource.IsCancellationRequested)
-                    {
-                        // Return true so the task "succeeds" in the case of cancellation so the build doesn't appear to fail
-                        return true;
-                    }
-
-                    if (process.ExitCode > 0 && !Log.HasLoggedErrors && !errorLogged)
+                    if (exitCode != 0 && !Log.HasLoggedErrors && !errorLogged)
                     {
                         // All non-zero exit codes should have logged an error, if not its unexpected so log an error asking the user to file an issue
-                        Log.LogErrorFromResources(nameof(Strings.Error_StaticGraphNonZeroExitCode), process.ExitCode);
+                        Log.LogErrorFromResources(nameof(Strings.Error_StaticGraphNonZeroExitCode), exitCode);
                     }
 
                     EmbedInBinlog = loggingQueue.FilesToEmbedInBinlog.Select(i => new TaskItem(i)).ToArray();
@@ -350,7 +412,11 @@ namespace NuGet.Build.Tasks
         {
             if (!string.IsNullOrEmpty(processFileName))
             {
+#if !NETFRAMEWORK
+                return Path.GetFullPath(TaskEnvironment.GetAbsolutePath(processFileName));
+#else
                 return Path.GetFullPath(processFileName);
+#endif
             }
 #if IS_CORECLR
             // In .NET Core, the path to dotnet is the file to run
@@ -367,10 +433,47 @@ namespace NuGet.Build.Tasks
 
         protected virtual Dictionary<string, string> GetOptions()
         {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 [nameof(Recursive)] = Recursive.ToString()
             };
+
+            if (TryParseBooleanOption(EnableMultiThreaded, out bool enableMultiThreaded))
+            {
+                options[nameof(EnableMultiThreaded)] = enableMultiThreaded.ToString();
+            }
+
+            return options;
+        }
+
+        internal static bool TryParseBooleanOption(string value, out bool result)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                result = false;
+                return false;
+            }
+
+            string trimmed = value.Trim();
+            if (bool.TryParse(trimmed, out result))
+            {
+                return true;
+            }
+
+            if (string.Equals(trimmed, "1", StringComparison.Ordinal))
+            {
+                result = true;
+                return true;
+            }
+
+            if (string.Equals(trimmed, "0", StringComparison.Ordinal))
+            {
+                result = false;
+                return true;
+            }
+
+            result = false;
+            return false;
         }
 
         /// <summary>

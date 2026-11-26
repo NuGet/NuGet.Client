@@ -46,6 +46,16 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         public const string BinaryLoggerParameterEnvironmentVariable = "RESTORE_TASK_BINLOG_PARAMETERS";
 
+        /// <summary>
+        /// Represents the name of the environment variable that can be set to <c>false</c> or <c>0</c> to disable
+        /// multithreaded MSBuild target execution during static graph restore.
+        /// </summary>
+        internal const string MultiThreadedEnvironmentVariable = "NUGET_RESTORE_STATIC_GRAPH_MULTITHREADED";
+
+        // MSBuild 18.12 is the first release with full multithreaded TaskHost callback support,
+        // sidecar lifetime management, and strict-mode stability alongside migrated SDK/NuGet tasks.
+        private static readonly Version MinimumMultiThreadedMSBuildVersion = new Version(18, 12);
+
         private static readonly Lazy<IMachineWideSettings> MachineWideSettingsLazy = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
         /// <summary>
@@ -64,10 +74,10 @@ namespace NuGet.Build.Tasks.Console
 
         private readonly SettingsLoadingContext _settingsLoadContext = new SettingsLoadingContext();
 
-        public MSBuildStaticGraphRestore(IEnvironmentVariableReader environment = null)
+        public MSBuildStaticGraphRestore(IEnvironmentVariableReader environment = null, TextWriter output = null)
         {
             _environment = environment ?? EnvironmentVariableWrapper.Instance;
-            _loggingQueueLazy = new Lazy<ConsoleLoggingQueue>(() => new ConsoleLoggingQueue(LoggerVerbosity.Normal));
+            _loggingQueueLazy = new Lazy<ConsoleLoggingQueue>(() => new ConsoleLoggingQueue(LoggerVerbosity.Normal, output));
             _msBuildLoggerLazy = new Lazy<MSBuildLogger>(() => new MSBuildLogger(LoggingQueue.TaskLoggingHelper));
         }
 
@@ -106,10 +116,12 @@ namespace NuGet.Build.Tasks.Console
         public async Task<bool> RestoreAsync(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
             bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
+            bool disableParallel = IsOptionTrue(nameof(RestoreTaskEx.DisableParallel), options);
+            bool useMultiThreaded = ShouldUseMultiThreaded(disableParallel, options, _environment);
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            (DependencyGraphSpec dependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance, useMultiThreaded);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -160,7 +172,7 @@ namespace NuGet.Build.Tasks.Console
                     recursive: IsOptionTrue(nameof(RestoreTaskEx.Recursive), options),
                     noCache: IsOptionTrue(nameof(RestoreTaskEx.NoCache), options) || IsOptionTrue(nameof(RestoreTaskEx.NoHttpCache), options),
                     ignoreFailedSources: IsOptionTrue(nameof(RestoreTaskEx.IgnoreFailedSources), options),
-                    disableParallel: IsOptionTrue(nameof(RestoreTaskEx.DisableParallel), options),
+                    disableParallel: disableParallel,
                     force: IsOptionTrue(nameof(RestoreTaskEx.Force), options),
                     forceEvaluate: IsOptionTrue(nameof(RestoreTaskEx.ForceEvaluate), options),
                     hideWarningsAndErrors: IsOptionTrue(nameof(RestoreTaskEx.HideWarningsAndErrors), options),
@@ -196,10 +208,12 @@ namespace NuGet.Build.Tasks.Console
         public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
             bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
+            bool disableParallel = IsOptionTrue(nameof(RestoreTaskEx.DisableParallel), options);
+            bool useMultiThreaded = ShouldUseMultiThreaded(disableParallel, options, _environment);
 
             string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
 
-            (DependencyGraphSpec dependencyGraphSpec, _) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance);
+            (DependencyGraphSpec dependencyGraphSpec, _) = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters, EnvironmentVariableWrapper.Instance, useMultiThreaded);
 
             try
             {
@@ -816,7 +830,7 @@ namespace NuGet.Build.Tasks.Console
 #if NET
         [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
 #endif
-        private (DependencyGraphSpec DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> AdditionalMessages) GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader)
+        private (DependencyGraphSpec DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage> AdditionalMessages) GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters, IEnvironmentVariableReader environmentVariableReader, bool useMultiThreaded)
         {
             var additionalMessages = new ConcurrentBag<IAssetsLogMessage>();
 
@@ -856,7 +870,8 @@ namespace NuGet.Build.Tasks.Console
                             GetRestoreOutputPath(project.OuterBuild, project.Directory),
                             project.Directory,
                             additionalMessages);
-                    });
+                    },
+                    useMultiThreaded: useMultiThreaded);
 
                 return (dgSpec, additionalMessages.ToArray());
             }
@@ -882,7 +897,8 @@ namespace NuGet.Build.Tasks.Console
                             GetRestoreOutputPath(project.OuterProject),
                             project.OuterProject.Directory,
                             additionalMessages);
-                    });
+                    },
+                    useMultiThreaded: useMultiThreaded);
 
                 return (dgSpec, additionalMessages.ToArray());
             }
@@ -958,7 +974,8 @@ namespace NuGet.Build.Tasks.Console
             Func<string, (ProjectInstance, string), TProject> createProjectFactory,
             Func<string, TProject, (ProjectInstance, string), TProject> updateProjectFactory,
             Action<TProject> projectFinalizeDelegate,
-            Func<TProject, PackageSpec> getPackageSpec)
+            Func<TProject, PackageSpec> getPackageSpec,
+            bool useMultiThreaded)
         {
             try
             {
@@ -967,7 +984,7 @@ namespace NuGet.Build.Tasks.Console
                 var entryProjects = GetProjectGraphEntryPoints(entryProjectPath, globalProperties);
 
                 // Load the projects via MSBuild and create an array of them since Parallel.ForEach is optimized for arrays
-                var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters, createProjectFactory, updateProjectFactory, projectFinalizeDelegate);
+                var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters, createProjectFactory, updateProjectFactory, projectFinalizeDelegate, useMultiThreaded);
 
                 // If no projects were loaded, return an empty DependencyGraphSpec
                 if (projects == null || projects.Count == 0)
@@ -1241,6 +1258,97 @@ namespace NuGet.Build.Tasks.Console
             return suppressions?.Count() > 0 ? new HashSet<string>(suppressions) : null;
         }
 
+        internal static bool ShouldUseMultiThreaded(
+            bool disableParallel,
+            IReadOnlyDictionary<string, string> options,
+            IEnvironmentVariableReader environment,
+            Version msbuildVersion = null,
+            int? processorCount = null)
+        {
+            if (disableParallel || (processorCount ?? Environment.ProcessorCount) <= 1)
+            {
+                return false;
+            }
+
+            if (TryParseBooleanFlag(environment?.GetEnvironmentVariable(MultiThreadedEnvironmentVariable), out bool envEnabled))
+            {
+                if (!envEnabled)
+                {
+                    return false;
+                }
+            }
+            else if (options != null &&
+                options.TryGetValue(nameof(StaticGraphRestoreTaskBase.EnableMultiThreaded), out string optionValue) &&
+                TryParseBooleanFlag(optionValue, out bool optionEnabled) &&
+                !optionEnabled)
+            {
+                return false;
+            }
+
+            Version version = msbuildVersion ?? ProjectCollection.Version;
+            return version != null && version >= MinimumMultiThreadedMSBuildVersion;
+
+            static bool TryParseBooleanFlag(string value, out bool result)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    result = false;
+                    return false;
+                }
+
+                string trimmed = value.Trim();
+                if (bool.TryParse(trimmed, out result))
+                {
+                    return true;
+                }
+
+                if (string.Equals(trimmed, "1", StringComparison.Ordinal))
+                {
+                    result = true;
+                    return true;
+                }
+
+                if (string.Equals(trimmed, "0", StringComparison.Ordinal))
+                {
+                    result = false;
+                    return true;
+                }
+
+                result = false;
+                return false;
+            }
+        }
+
+        internal static BuildParameters CreateBuildParameters(
+            ProjectCollection projectCollection,
+            bool logTaskInputs,
+            bool useMultiThreaded,
+            int projectCount)
+        {
+            var buildParameters = new BuildParameters(projectCollection)
+            {
+                // Use the same loggers as the project collection
+                Loggers = projectCollection.Loggers,
+                LogTaskInputs = logTaskInputs
+            };
+
+            if (useMultiThreaded && projectCount > 1)
+            {
+                ConfigureMultiThreadedBuildParameters(buildParameters, Math.Min(Environment.ProcessorCount, projectCount));
+            }
+
+            return buildParameters;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ConfigureMultiThreadedBuildParameters(BuildParameters buildParameters, int maxNodeCount)
+        {
+            buildParameters.MultiThreaded = true;
+            buildParameters.MaxNodeCount = maxNodeCount;
+            buildParameters.EnableNodeReuse = false;
+            buildParameters.ShutdownInProcNodeOnBuildFinish = true;
+        }
+
         /// <summary>
         /// Recursively loads and evaluates MSBuild projects.
         /// </summary>
@@ -1250,6 +1358,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="createProjectFactory">A factory method that creates a project adapter from an MSBuild ProjectInstance.</param>
         /// <param name="updateProjectFactory">A factory method that updates a project adapter with a target framework and MSBuild ProjectInstance.</param>
         /// <param name="projectFinalizeDelegate">An option delegate to finalize a project adapter once all projects have been evaluated.</param>
+        /// <param name="useMultiThreaded"><see langword="true" /> to execute restore targets using MSBuild multithreaded mode, otherwise <see langword="false" />.</param>
         /// <returns>A read-only dictionary containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
 #if NET
         [RequiresUnreferencedCode("In-process MSBuild execution loads task assemblies and loggers via reflection and is not trim-safe.")]
@@ -1260,7 +1369,8 @@ namespace NuGet.Build.Tasks.Console
             string binaryLoggerParameters,
             Func<string, (ProjectInstance, string), TProject> createProjectFactory,
             Func<string, TProject, (ProjectInstance, string), TProject> updateProjectFactory,
-            Action<TProject> projectFinalizeDelegate)
+            Action<TProject> projectFinalizeDelegate,
+            bool useMultiThreaded = false)
         {
             try
             {
@@ -1291,8 +1401,8 @@ namespace NuGet.Build.Tasks.Console
                     loggers: loggers,
                     remoteLoggers: null,
                     toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
-                    // Having more than 1 node spins up multiple msbuild.exe instances to run builds in parallel
-                    // However, these targets complete so quickly that the added overhead makes it take longer
+                    // Keep ProjectCollection at 1 node so fallback (non-multithreaded) builds never spawn out-of-proc msbuild.exe nodes.
+                    // Parallelism for target execution is enabled in-proc via BuildParameters.MultiThreaded below.
                     maxNodeCount: 1,
                     onlyLogCriticalEvents: false,
                     // Loading projects as readonly makes parsing a little faster since comments and whitespace can be ignored
@@ -1320,57 +1430,65 @@ namespace NuGet.Build.Tasks.Console
 
                 int buildCount = 0;
                 int failedBuildSubmissionCount = 0;
+                var nodesToBuild = new List<(ProjectInstance projectInstance, string targetFramework)>(projectGraph.ProjectNodes.Count);
+
+                // Collect supported nodes in topological order (dependencies first) so pre-evaluated ProjectInstances
+                // are registered before dependents can invoke nested <MSBuild> requests against them.
+                foreach (ProjectGraphNode projectGraphItem in projectGraph.ProjectNodesTopologicallySorted)
+                {
+                    ProjectInstance projectInstance = projectGraphItem.ProjectInstance;
+
+                    if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || projectInstance.GlobalProperties == null || projectInstance.GlobalProperties.TryGetValue("TargetFramework", out string targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
+                    {
+                        // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
+                        // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
+                        // with its actual TargetFramework.
+                        var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(projectInstance.FullPath);
+                        MSBuildLogger.Log(message);
+                        continue;
+                    }
+
+                    nodesToBuild.Add((projectInstance, targetFramework));
+                }
+
                 var buildSubmissions =
-                    new List<(BuildSubmission submission, ProjectInstance projectInstance, string targetFramework)>(projectGraph.ProjectNodes.Count);
+                    new List<(BuildSubmission submission, ProjectInstance projectInstance, string targetFramework)>(nodesToBuild.Count);
 
-                var buildParameters = new BuildParameters(projectCollection)
+                if (nodesToBuild.Count > 0)
                 {
-                    // Use the same loggers as the project collection
-                    Loggers = projectCollection.Loggers,
-                    LogTaskInputs = logTaskInputs
-                };
+                    BuildParameters buildParameters = CreateBuildParameters(projectCollection, logTaskInputs, useMultiThreaded, nodesToBuild.Count);
 
-                try
-                {
-                    // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
+                    // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them.
+                    // Keep BeginBuild outside try/finally because MSBuild cleans up internally if BeginBuild throws, and
+                    // calling EndBuild in that case throws "No build in progress" and masks the original failure.
                     BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
 
-                    // Loop through each project and run the targets.  There is no need for this to run in parallel since there is only
-                    // one node in the process to run builds.
-                    foreach (ProjectGraphNode projectGraphItem in projectGraph.ProjectNodes)
+                    try
                     {
-                        ProjectInstance projectInstance = projectGraphItem.ProjectInstance;
-
-                        if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || projectInstance.GlobalProperties == null || projectInstance.GlobalProperties.TryGetValue("TargetFramework", out string targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
+                        // Queue target execution for each supported project. When multithreaded mode is enabled, MSBuild executes
+                        // submissions concurrently across in-proc worker threads (routing non-multithreadable tasks to TaskHost processes).
+                        foreach ((ProjectInstance projectInstance, string targetFramework) in nodesToBuild)
                         {
-                            // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
-                            // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
-                            // with its actual TargetFramework.
-                            var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(projectInstance.FullPath);
-                            MSBuildLogger.Log(message);
-                            continue;
+                            // If the project supports restore, queue up a build of the targets needed for restore
+                            BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
+                                new BuildRequestData(
+                                    projectInstance,
+                                    TargetsToBuild,
+                                    hostServices: null,
+                                    // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
+                                    BuildRequestDataFlags.SkipNonexistentTargets));
+
+                            buildSubmissions.Add((buildSubmission, projectInstance, targetFramework));
+
+                            // Queue the build submission without blocking so the scheduler can dispatch builds across in-proc threads.
+                            buildSubmission.ExecuteAsync(callback: null, context: null);
                         }
-
-                        // If the project supports restore, queue up a build of the targets needed for restore
-                        BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
-                            new BuildRequestData(
-                                projectInstance,
-                                TargetsToBuild,
-                                hostServices: null,
-                                // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
-                                BuildRequestDataFlags.SkipNonexistentTargets));
-
-                        buildSubmissions.Add((buildSubmission, projectInstance, targetFramework));
-
-                        // Queue the build submission but do not wait for each individual build to complete.
-                        // Only 1 build is allowed to run at a time since the BuildManager is configured to only have 1 node, but allows them to be queued up quickly.
-                        buildSubmission.ExecuteAsync(callback: null, context: null);
                     }
-                }
-                finally
-                {
-                    // EndBuild blocks until all builds are complete
-                    BuildManager.DefaultBuildManager.EndBuild();
+                    finally
+                    {
+                        // EndBuild blocks until all builds are complete
+                        BuildManager.DefaultBuildManager.EndBuild();
+                    }
                 }
 
                 foreach ((BuildSubmission submission, ProjectInstance projectInstance, string targetFramework) in buildSubmissions)

@@ -56,6 +56,18 @@ namespace NuGet.Build.Tasks.Console
             set => Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", value);
         }
 
+#if NET
+        /// <summary>
+        /// Gets or sets the full path to the <c>dotnet</c> host executable so MSBuild TaskHost apphost bootstrapping succeeds
+        /// even when <c>NuGet.Build.Tasks.Console</c> is invoked outside the <c>dotnet</c> CLI.
+        /// </summary>
+        public static string DotnetHostPath
+        {
+            get => Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+            set => Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", value);
+        }
+#endif
+
         /// <summary>
         /// Gets or sets a set of regular expressions that MSBuild uses in order to skip the evaluation of items. If any expression
         /// matches the item, its Include is left as a literal string rather than expanding it.  .NET Core SDK ships with default
