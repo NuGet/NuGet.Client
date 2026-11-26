@@ -63,6 +63,7 @@ namespace NuGet.Build.Tasks.Console
 #endif
         internal static async Task<int> MainInternal(string[] args, IEnvironmentVariableReader environmentVariableReader)
         {
+            TextWriter protocolOut = System.Console.Out;
             try
             {
                 if (string.Equals(environmentVariableReader.GetEnvironmentVariable("DEBUG_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
@@ -83,6 +84,17 @@ namespace NuGet.Build.Tasks.Console
                 MSBuildFeatureFlags.EnableCacheFileEnumerations = true;
                 MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
                 MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
+#if NET
+                if (string.IsNullOrEmpty(environmentVariableReader.GetEnvironmentVariable("DOTNET_HOST_PATH")))
+                {
+                    string processPath = Environment.ProcessPath;
+                    if (!string.IsNullOrEmpty(processPath) &&
+                        string.Equals(Path.GetFileNameWithoutExtension(processPath), "dotnet", StringComparison.OrdinalIgnoreCase))
+                    {
+                        MSBuildFeatureFlags.DotnetHostPath = processPath;
+                    }
+                }
+#endif
 #if NETFRAMEWORK
                 if (AppDomain.CurrentDomain.IsDefaultAppDomain())
                 {
@@ -108,19 +120,29 @@ namespace NuGet.Build.Tasks.Console
                 }
 #endif
 
-                // Check whether the ask is to generate the restore graph file.
-                if (MSBuildStaticGraphRestore.IsOptionTrue("GenerateRestoreGraphFile", arguments.Options))
+                // Isolate the JSON IPC stdout channel so tasks or MSBuild TaskHost console forwarding
+                // writing to Console.Out cannot interleave with or corrupt JSON log lines.
+                System.Console.SetOut(TextWriter.Null);
+                try
                 {
-                    using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore())
+                    // Check whether the ask is to generate the restore graph file.
+                    if (MSBuildStaticGraphRestore.IsOptionTrue("GenerateRestoreGraphFile", arguments.Options))
                     {
-                        return dependencyGraphSpecGenerator.WriteDependencyGraphSpec(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
+                        using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(output: protocolOut))
+                        {
+                            return dependencyGraphSpecGenerator.WriteDependencyGraphSpec(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
+                        }
+                    }
+
+                    // Otherwise run restore!
+                    using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(output: protocolOut))
+                    {
+                        return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
                     }
                 }
-
-                // Otherwise run restore!
-                using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore())
+                finally
                 {
-                    return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
+                    System.Console.SetOut(protocolOut);
                 }
             }
             catch (Exception e)
@@ -131,7 +153,7 @@ namespace NuGet.Build.Tasks.Console
                     MessageType = ConsoleOutLogMessageType.Error,
                 };
 
-                System.Console.Out.WriteLine(consoleOutLogMessage.ToJson());
+                protocolOut.WriteLine(consoleOutLogMessage.ToJson());
 
                 return -1;
             }

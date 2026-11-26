@@ -8,6 +8,7 @@ extern alias MicrosoftBuildUtilitiesv4;
 
 using System;
 using System.Collections;
+using System.IO;
 using Microsoft.Build.Framework;
 #if IS_CORECLR
 using Microsoft.Build.Utilities;
@@ -29,6 +30,8 @@ namespace NuGet.Build.Tasks.Console
     {
         private readonly Lazy<TaskLoggingHelper> _taskLoggingHelperLazy;
 
+        private readonly TextWriter _output;
+
         /// <summary>
         /// Gets or sets an <see cref="IEventSource" /> object for subscribing to MSBuild logging events.
         /// </summary>
@@ -48,9 +51,11 @@ namespace NuGet.Build.Tasks.Console
         /// Initializes a new instance of the <see cref="ConsoleLoggingQueue" /> class.
         /// </summary>
         /// <param name="verbosity">The <see cref="LoggerVerbosity" /> to use when logging messages.</param>
-        public ConsoleLoggingQueue(LoggerVerbosity verbosity)
+        /// <param name="output">Optional <see cref="TextWriter" /> for JSON log output; defaults to <see cref="System.Console.Out" />.</param>
+        public ConsoleLoggingQueue(LoggerVerbosity verbosity, TextWriter output = null)
         {
             Verbosity = verbosity;
+            _output = output ?? System.Console.Out;
 
             _taskLoggingHelperLazy = new Lazy<TaskLoggingHelper>(() => new TaskLoggingHelper(this, nameof(MSBuildStaticGraphRestore)));
         }
@@ -148,7 +153,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="message">The <see cref="ConsoleOutLogMessage" /> to log.</param>
         protected override void Process(ConsoleOutLogItem message)
         {
-            System.Console.Out.WriteLine(message.ToJson());
+            _output.WriteLine(message.ToJson());
         }
 
         /// <summary>

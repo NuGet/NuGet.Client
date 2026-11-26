@@ -9,6 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using FluentAssertions;
+#if !NETFRAMEWORK
+using Microsoft.Build.Framework;
+#endif
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -307,6 +310,62 @@ namespace NuGet.Build.Tasks.Test
                 }
             }
         }
+
+        [Theory]
+        [InlineData("false", "EnableMultiThreaded=False")]
+        [InlineData(" 0 ", "EnableMultiThreaded=False")]
+        [InlineData("true", "EnableMultiThreaded=True")]
+        [InlineData("1", "EnableMultiThreaded=True")]
+        [InlineData("invalid;Recursive=False", null)]
+        [InlineData(" ", null)]
+        [InlineData(null, null)]
+        public void GetCommandLineArguments_WhenEnableMultiThreadedSpecified_NormalizesAndOmitsInvalidValues(string enableMultiThreaded, string expectedOption)
+        {
+            using var testDirectory = TestDirectory.Create();
+            string msbuildBinPath = Path.Combine(testDirectory, "MSBuild", "Current", "Bin");
+            string projectPath = Path.Combine(testDirectory, "src", "project1", "project1.csproj");
+            var globalProperties = new Dictionary<string, string>();
+
+            using var task = new RestoreTaskEx
+            {
+                BuildEngine = new TestBuildEngine(globalProperties),
+                EnableMultiThreaded = enableMultiThreaded,
+                MSBuildBinPath = msbuildBinPath,
+                ProjectFullPath = projectPath,
+                MSBuildStartupDirectory = testDirectory,
+            };
+
+            string arguments = task.GetCommandLineArguments(globalProperties);
+
+            if (expectedOption != null)
+            {
+                arguments.Should().Contain(expectedOption);
+            }
+            else
+            {
+                arguments.Should().NotContain("EnableMultiThreaded=");
+                arguments.Should().NotContain("invalid");
+            }
+        }
+
+#if !NETFRAMEWORK
+        [Fact]
+        public void GetProcessFileName_WhenRelativeOverrideSpecified_ResolvesAgainstTaskEnvironmentProjectDirectory()
+        {
+            using var testDirectory = TestDirectory.Create();
+            string projectDir = Path.Combine(testDirectory, "proj");
+            Directory.CreateDirectory(projectDir);
+
+            using var task = new RestoreTaskEx
+            {
+                TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
+                MSBuildBinPath = Path.Combine(testDirectory, "MSBuild", "Current", "Bin"),
+            };
+
+            task.GetProcessFileName(Path.Combine("tools", "custom.exe"))
+                .Should().Be(Path.Combine(projectDir, "tools", "custom.exe"));
+        }
+#endif
 
         [Theory]
         [InlineData("", false)]

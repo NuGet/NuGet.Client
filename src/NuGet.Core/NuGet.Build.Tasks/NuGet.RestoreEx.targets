@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RestoreTaskEx
         CleanupAssetsForUnsupportedProjects="$([MSBuild]::ValueOrDefault('$(RestoreCleanupAssetsForUnsupportedProjects)', 'true'))"
         DisableParallel="$(RestoreDisableParallel)"
+        EnableMultiThreaded="$(RestoreStaticGraphEnableMultiThreaded)"
         Force="$(RestoreForce)"
         ForceEvaluate="$(RestoreForceEvaluate)"
         HideWarningsAndErrors="$(HideWarningsAndErrors)"
@@ -50,6 +51,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GenerateRestoreGraphFile">
     <Error Condition="$(RestoreGraphOutputPath) == ''" Text="Missing RestoreGraphOutputPath property!" />
       <GenerateRestoreGraphFileTask
+        DisableParallel="$(RestoreDisableParallel)"
+        EnableMultiThreaded="$(RestoreStaticGraphEnableMultiThreaded)"
         MSBuildBinPath="$(MSBuildBinPath)"
         ProjectFullPath="$(MSBuildProjectFullPath)"
         Recursive="$([MSBuild]::ValueOrDefault('$(RestoreRecursive)', 'true'))"

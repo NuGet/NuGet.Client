@@ -9,6 +9,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
 using NuGet.Commands;
 using NuGet.Common;
@@ -111,6 +114,329 @@ namespace NuGet.Build.Tasks.Console.Test
             projects.Should().ContainSingle().Which.Key.Should().Be(projectPath);
             projects[projectPath].TargetFrameworks.Keys.Should().BeEquivalentTo(targetFrameworks.Split(';'));
             finalizedCount.Should().Be(1);
+        }
+
+        [Theory]
+        [InlineData(false, null, null, "18.12.0", 4, true)]
+        [InlineData(false, "true", "false", "18.12.2", 8, false)]
+        [InlineData(false, "false", "true", "18.12.2", 8, true)]
+        [InlineData(false, "false", null, "18.12.2", 8, false)]
+        [InlineData(false, "banana", "false", "18.12.2", 8, false)]
+        [InlineData(false, "0", null, "18.12.2", 8, false)]
+        [InlineData(false, null, "false", "18.12.2", 8, false)]
+        [InlineData(false, null, "False", "18.12.2", 8, false)]
+        [InlineData(false, null, "0", "18.12.2", 8, false)]
+        [InlineData(true, "true", "true", "18.12.2", 8, false)]
+        [InlineData(false, null, null, "18.12.2", 1, false)]
+        [InlineData(false, null, null, "18.11.0", 8, false)]
+        [InlineData(false, null, null, "18.6.3", 8, false)]
+        [InlineData(false, null, null, "17.14.0", 8, false)]
+        public void ShouldUseMultiThreaded_RespectsDisableParallelOptionEnvironmentAndMSBuildVersion(
+            bool disableParallel,
+            string optionValue,
+            string envValue,
+            string msbuildVersion,
+            int processorCount,
+            bool expected)
+        {
+            var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (optionValue != null)
+            {
+                options[nameof(StaticGraphRestoreTaskBase.EnableMultiThreaded)] = optionValue;
+            }
+
+            var envVars = new Dictionary<string, string>();
+            if (envValue != null)
+            {
+                envVars[MSBuildStaticGraphRestore.MultiThreadedEnvironmentVariable] = envValue;
+            }
+
+            IEnvironmentVariableReader environment = new TestEnvironmentVariableReader(envVars);
+
+            MSBuildStaticGraphRestore.ShouldUseMultiThreaded(
+                disableParallel,
+                options,
+                environment,
+                Version.Parse(msbuildVersion),
+                processorCount).Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData(false, 4, false)]
+        [InlineData(true, 1, false)]
+        [InlineData(true, 2, true)]
+        [InlineData(true, 64, true)]
+        public void CreateBuildParameters_ConfiguresMultiThreadedAndNodeSettings(bool useMultiThreaded, int projectCount, bool expectedMultiThreaded)
+        {
+            using var projectCollection = new ProjectCollection(
+                globalProperties: null,
+                loggers: null,
+                remoteLoggers: null,
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
+                maxNodeCount: 1,
+                onlyLogCriticalEvents: false,
+                loadProjectsReadOnly: true);
+
+            BuildParameters buildParameters = MSBuildStaticGraphRestore.CreateBuildParameters(
+                projectCollection,
+                logTaskInputs: true,
+                useMultiThreaded: useMultiThreaded,
+                projectCount: projectCount);
+
+            buildParameters.LogTaskInputs.Should().BeTrue();
+            if (expectedMultiThreaded)
+            {
+                buildParameters.MultiThreaded.Should().BeTrue();
+                buildParameters.MaxNodeCount.Should().Be(Math.Min(Environment.ProcessorCount, projectCount));
+                buildParameters.EnableNodeReuse.Should().BeFalse();
+                buildParameters.ShutdownInProcNodeOnBuildFinish.Should().BeTrue();
+            }
+            else
+            {
+                buildParameters.MultiThreaded.Should().BeFalse();
+                buildParameters.MaxNodeCount.Should().Be(1);
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void LoadProjects_MultipleProjectsWithDynamicRestoreInputs_CollectsAllMutations(bool useMultiThreaded)
+        {
+            using var testDirectory = TestDirectory.Create();
+            const int projectCount = 8;
+            var entryPoints = new List<ProjectGraphEntryPoint>(projectCount);
+
+            for (int i = 0; i < projectCount; i++)
+            {
+                string projDir = Path.Combine(testDirectory, $"Proj{i}");
+                Directory.CreateDirectory(projDir);
+                string projPath = Path.Combine(projDir, $"Proj{i}.proj");
+                File.WriteAllText(projPath, $"""
+                    <Project>
+                      <PropertyGroup>
+                        <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+                        <InnerBuildProperty>TargetFramework</InnerBuildProperty>
+                        <InnerBuildPropertyValues>TargetFrameworks</InnerBuildPropertyValues>
+                      </PropertyGroup>
+                      <Target Name="_IsProjectRestoreSupported" />
+                      <Target Name="AddDynamicPackageRef" BeforeTargets="_CollectRestoreInputs">
+                        <ItemGroup>
+                          <PackageReference Include="DynamicPkg.Proj{i}.$(TargetFramework)" Version="1.0.{i}" />
+                        </ItemGroup>
+                      </Target>
+                      <Target Name="_CollectRestoreInputs" />
+                    </Project>
+                    """);
+                entryPoints.Add(new ProjectGraphEntryPoint(projPath));
+            }
+
+            using var output = new StringWriter();
+            using var restore = new MSBuildStaticGraphRestore(output: output);
+
+            var projects = restore.LoadProjects(
+                entryPoints,
+                interactive: false,
+                binaryLoggerParameters: null,
+                createProjectFactory: (path, build) =>
+                {
+                    (var projectInstance, var targetFramework) = build;
+                    var project = new RestoreProjectAdapter(path, projectInstance.GlobalProperties);
+                    project.AddTargetFramework(targetFramework, new TargetFrameworkAdapter(projectInstance));
+                    return project;
+                },
+                updateProjectFactory: (_, project, build) =>
+                {
+                    (var projectInstance, var targetFramework) = build;
+                    project.AddTargetFramework(targetFramework, new TargetFrameworkAdapter(projectInstance));
+                    return project;
+                },
+                projectFinalizeDelegate: project => project.Prepare(),
+                useMultiThreaded: useMultiThreaded);
+
+            projects.Should().NotBeNull();
+            projects.Should().HaveCount(projectCount);
+
+            for (int i = 0; i < projectCount; i++)
+            {
+                string projPath = entryPoints[i].ProjectFile;
+                projects.Should().ContainKey(projPath);
+                var adapter = projects[projPath];
+                adapter.TargetFrameworks.Keys.Should().BeEquivalentTo(new[] { "net9.0", "net10.0" });
+
+                foreach (string tfm in new[] { "net9.0", "net10.0" })
+                {
+                    adapter.TargetFrameworks[tfm].GetItems("PackageReference")
+                        .Select(item => item.Identity)
+                        .Should().ContainSingle($"DynamicPkg.Proj{i}.{tfm}");
+                }
+            }
+        }
+
+        [Fact]
+        public void LoadProjects_WhenOneProjectFailsAmongConcurrentProjects_ReturnsNull()
+        {
+            using var testDirectory = TestDirectory.Create();
+            var entryPoints = new List<ProjectGraphEntryPoint>();
+
+            for (int i = 0; i < 6; i++)
+            {
+                string projPath = Path.Combine(testDirectory, $"Proj{i}.proj");
+                string dependsOn = i == 3 ? "MissingTarget" : string.Empty;
+                File.WriteAllText(projPath, $"""
+                    <Project>
+                      <Target Name="_IsProjectRestoreSupported" />
+                      <Target Name="_CollectRestoreInputs" DependsOnTargets="{dependsOn}" />
+                    </Project>
+                    """);
+                entryPoints.Add(new ProjectGraphEntryPoint(projPath));
+            }
+
+            using var output = new StringWriter();
+            using var restore = new MSBuildStaticGraphRestore(output: output);
+
+            var projects = restore.LoadProjects(
+                entryPoints,
+                interactive: false,
+                binaryLoggerParameters: null,
+                createProjectFactory: (path, _) => path,
+                updateProjectFactory: (_, project, _) => project,
+                projectFinalizeDelegate: null,
+                useMultiThreaded: true);
+
+            projects.Should().BeNull();
+        }
+
+#if !NETFRAMEWORK
+        [MSBuildMultiThreadableTask]
+        public sealed class NestedBuildTestTask : Microsoft.Build.Utilities.Task, IMultiThreadableTask
+        {
+            public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
+            [Required]
+            public string ProjectPath { get; set; }
+
+            [Required]
+            public string TargetName { get; set; }
+
+            [Output]
+            public string OutputValue { get; set; }
+
+            public override bool Execute()
+            {
+                var targetOutputs = new System.Collections.Hashtable();
+                if (!BuildEngine.BuildProjectFile(ProjectPath, new[] { TargetName }, globalProperties: null, targetOutputs))
+                {
+                    return false;
+                }
+
+                if (targetOutputs[TargetName] is ITaskItem[] items && items.Length > 0)
+                {
+                    OutputValue = items[0].ItemSpec;
+                }
+
+                return true;
+            }
+        }
+
+        [Fact]
+        public void LoadProjects_WithProjectReferencesAndNestedMSBuildCallInMultiThreadedMode_PreservesAllRestoreInputs()
+        {
+            using var testDirectory = TestDirectory.Create();
+            string libDir = Path.Combine(testDirectory, "Lib");
+            string appDir = Path.Combine(testDirectory, "App");
+            Directory.CreateDirectory(libDir);
+            Directory.CreateDirectory(appDir);
+
+            string libPath = Path.Combine(libDir, "Lib.proj");
+            string appPath = Path.Combine(appDir, "App.proj");
+            string taskAssembly = typeof(NestedBuildTestTask).Assembly.Location;
+
+            File.WriteAllText(libPath, """
+                <Project>
+                  <PropertyGroup>
+                    <TargetFramework>net10.0</TargetFramework>
+                  </PropertyGroup>
+                  <Target Name="_IsProjectRestoreSupported" />
+                  <Target Name="ComputeRestoreInput" Returns="FromLib">
+                    <PropertyGroup>
+                      <_ComputedByTarget>LibComputed</_ComputedByTarget>
+                    </PropertyGroup>
+                  </Target>
+                  <Target Name="AddLibPkg" BeforeTargets="_CollectRestoreInputs" DependsOnTargets="ComputeRestoreInput">
+                    <ItemGroup>
+                      <PackageReference Include="Pkg.$(_ComputedByTarget)" Version="1.0.0" />
+                    </ItemGroup>
+                  </Target>
+                  <Target Name="_CollectRestoreInputs" />
+                </Project>
+                """);
+
+            File.WriteAllText(appPath, $"""
+                <Project>
+                  <UsingTask TaskName="{typeof(NestedBuildTestTask).FullName}" AssemblyFile="{taskAssembly}" />
+                  <PropertyGroup>
+                    <TargetFramework>net10.0</TargetFramework>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <ProjectReference Include="..\Lib\Lib.proj" />
+                  </ItemGroup>
+                  <Target Name="_IsProjectRestoreSupported" />
+                  <Target Name="QueryDepBeforeRestore" BeforeTargets="_CollectRestoreInputs">
+                    <NestedBuildTestTask ProjectPath="{libPath}" TargetName="ComputeRestoreInput">
+                      <Output TaskParameter="OutputValue" PropertyName="_DepResult" />
+                    </NestedBuildTestTask>
+                    <ItemGroup>
+                      <PackageReference Include="Pkg.App.$(_DepResult)" Version="2.0.0" />
+                    </ItemGroup>
+                  </Target>
+                  <Target Name="_CollectRestoreInputs" />
+                </Project>
+                """);
+
+            using var output = new StringWriter();
+            using var restore = new MSBuildStaticGraphRestore(output: output);
+
+            var projects = restore.LoadProjects(
+                new[] { new ProjectGraphEntryPoint(appPath) },
+                interactive: false,
+                binaryLoggerParameters: null,
+                createProjectFactory: (path, build) =>
+                {
+                    (var projectInstance, var targetFramework) = build;
+                    var project = new RestoreProjectAdapter(path, projectInstance.GlobalProperties);
+                    project.AddTargetFramework(targetFramework, new TargetFrameworkAdapter(projectInstance));
+                    return project;
+                },
+                updateProjectFactory: (_, project, build) =>
+                {
+                    (var projectInstance, var targetFramework) = build;
+                    project.AddTargetFramework(targetFramework, new TargetFrameworkAdapter(projectInstance));
+                    return project;
+                },
+                projectFinalizeDelegate: project => project.Prepare(),
+                useMultiThreaded: true);
+
+            projects.Should().NotBeNull(output.ToString()).And.HaveCount(2);
+            projects[libPath].TargetFrameworks["net10.0"].GetItems("PackageReference")
+                .Select(i => i.Identity).Should().ContainSingle("Pkg.LibComputed");
+            projects[appPath].TargetFrameworks["net10.0"].GetItems("PackageReference")
+                .Select(i => i.Identity).Should().ContainSingle("Pkg.App.FromLib");
+        }
+#endif
+
+        [Fact]
+        public void ConsoleLoggingQueue_WhenOutputProvided_WritesJsonToProvidedWriter()
+        {
+            using var capturedOut = new StringWriter();
+            using (var queue = new ConsoleLoggingQueue(LoggerVerbosity.Normal, capturedOut))
+            {
+                queue.TaskLoggingHelper.LogWarning("isolated-warning");
+            }
+
+            string written = capturedOut.ToString().Trim();
+            written.Should().Contain("isolated-warning");
+            written.Should().StartWith("{").And.EndWith("}");
         }
 
         [Theory]
