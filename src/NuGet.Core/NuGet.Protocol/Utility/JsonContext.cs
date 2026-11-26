@@ -24,6 +24,7 @@ namespace NuGet.Protocol.Utility
     [JsonSerializable(typeof(RegistrationIndex))]
     [JsonSerializable(typeof(RegistrationPage))]
     [JsonSerializable(typeof(PackageDependency))]
+    [JsonSerializable(typeof(PackageStagingArtifact))]
     internal partial class JsonContext : JsonSerializerContext
     {
     }
