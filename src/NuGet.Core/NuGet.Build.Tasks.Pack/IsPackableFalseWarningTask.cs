@@ -6,6 +6,7 @@ using NuGet.Common;
 
 namespace NuGet.Build.Tasks.Pack
 {
+    [Microsoft.Build.Framework.MSBuildMultiThreadableTask]
     public class IsPackableFalseWarningTask : Microsoft.Build.Utilities.Task
     {
         public ILogger Logger => new MSBuildLogger(Log);
