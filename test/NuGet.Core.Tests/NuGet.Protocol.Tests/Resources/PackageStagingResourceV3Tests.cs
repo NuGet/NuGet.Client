@@ -290,10 +290,10 @@ namespace NuGet.Protocol.Tests.Resources
         {
             // Arrange
             var logger = new TestLogger();
-            const string responseBody = """{"error":{"code":"Forbidden","message":"Denied secret"}}""";
+            const string ResponseBody = """{"error":{"code":"Forbidden","message":"Denied secret"}}""";
 
             // Act
-            Exception? exception = await Record.ExceptionAsync(() => GetArtifactStatusAsync(symbols, responseBody, logger, HttpStatusCode.Forbidden));
+            Exception? exception = await Record.ExceptionAsync(() => GetArtifactStatusAsync(symbols, ResponseBody, logger, HttpStatusCode.Forbidden));
 
             // Assert
             exception.Should().BeOfType<HttpRequestException>().Which.Message.Should().Contain("403").And.NotContain("Denied").And.NotContain("secret");
@@ -367,19 +367,19 @@ namespace NuGet.Protocol.Tests.Resources
             ILogger logger,
             HttpStatusCode statusCode = HttpStatusCode.OK)
         {
-            const string endpoint = "https://unit.test/staging/";
+            const string Endpoint = "https://unit.test/staging/";
             string route = symbols ? "symbols" : "package";
             HttpRequestMessage? capturedRequest = null;
             var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
             {
-                [$"{endpoint}{route}/contoso/1.0.0/status"] = request =>
+                [$"{Endpoint}{route}/contoso/1.0.0/status"] = request =>
                 {
                     capturedRequest = request;
                     return Task.FromResult(new HttpResponseMessage(statusCode) { Content = new StringContent(responseBody) });
                 },
             };
-            using var httpSource = new TestHttpSource(new PackageSource(endpoint), responses);
-            var resource = new PackageStagingResourceV3(endpoint: new Uri(endpoint), httpSource: httpSource);
+            using var httpSource = new TestHttpSource(new PackageSource(Endpoint), responses);
+            var resource = new PackageStagingResourceV3(endpoint: new Uri(Endpoint), httpSource: httpSource);
 
             PackageStagingArtifact? result = symbols
                 ? await resource.GetSymbolsStatusAsync(

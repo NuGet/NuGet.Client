@@ -26,7 +26,7 @@ namespace NuGet.Protocol
         private const string SymbolsRoute = "symbols";
         private const string ArtifactStatusPathFormat = "{0}/{1}/{2}/status";
 
-        private static readonly JsonContext _stagingJsonContext = new JsonContext(
+        private static readonly JsonContext StagingJsonContext = new JsonContext(
             new JsonSerializerOptions(JsonContext.Default.Options)
             {
                 PropertyNameCaseInsensitive = false,
@@ -300,7 +300,7 @@ namespace NuGet.Protocol
                 using Stream stream = await ReadResponseStreamAsync(response, cancellationToken);
                 return await JsonSerializer.DeserializeAsync(
                     stream,
-                    _stagingJsonContext.PackageStagingArtifact,
+                    StagingJsonContext.PackageStagingArtifact,
                     cancellationToken)
                     ?? throw new JsonException();
             }
