@@ -99,12 +99,31 @@ namespace NuGetConsole.Host.PowerShell.Test
         }
 
         [Theory]
-        [InlineData("Dep", new[] { "Dependency@1.0.0" })]
-        [InlineData("Root,Dep", new[] { "Root,Dependency@1.0.0" })]
-        [InlineData("Root@1.0.0,Dep", new[] { "Root@1.0.0,Dependency@1.0.0" })]
-        [InlineData("Root@1.0.0,Root,dep", new[] { "Root@1.0.0,Root,Dependency@1.0.0" })]
-        [InlineData("Root,", new[] { "Root,Dependency@1.0.0", "Root,Root@1.0.0" })]
-        [InlineData("Root,Missing", new string[0])]
+        [InlineData("Dep|", new[] { "Dependency@1.0.0" })]
+        [InlineData("Root,Dep|", new[] { "Root,Dependency@1.0.0" })]
+        [InlineData("Root@1.0.0,Dep|", new[] { "Root@1.0.0,Dependency@1.0.0" })]
+        [InlineData("Root@1.0.0,Root,dep|", new[] { "Root@1.0.0,Root,Dependency@1.0.0" })]
+        [InlineData("Root,|", new[] { "Root,Dependency@1.0.0", "Root,Root@1.0.0" })]
+        [InlineData("Root, |", new[] { "Root, Dependency@1.0.0", "Root, Root@1.0.0" })]
+        [InlineData("Root, Missing|", new string[0])]
+        [InlineData("Root,Missing|", new string[0])]
+        [InlineData("Root, Dep|", new[] { "Root, Dependency@1.0.0" })]
+        [InlineData("Root,  dep|", new[] { "Root,  Dependency@1.0.0" })]
+        [InlineData("Root,\tDep|", new[] { "Root,\tDependency@1.0.0" })]
+        [InlineData("Root@1.0.0, Root,Dep|", new[] { "Root@1.0.0, Root,Dependency@1.0.0" })]
+        [InlineData("Root, Dep|,Root", new[] { "Root, Dependency@1.0.0,Root" })]
+        [InlineData("Ro|, Dependency", new[] { "Root@1.0.0, Dependency" })]
+        [InlineData("'Root', Dep|", new[] { "'Root', Dependency@1.0.0" })]
+        [InlineData("\"Root\",Dep|", new[] { "\"Root\",Dependency@1.0.0" })]
+        [InlineData("Root , Dep|", new[] { "Root , Dependency@1.0.0" })]
+        [InlineData("Root ,Dep|", new[] { "Root ,Dependency@1.0.0" })]
+        [InlineData("'Root' , Dep|", new[] { "'Root' , Dependency@1.0.0" })]
+        [InlineData("Root, 'Dep|'", new[] { "Root, 'Dependency@1.0.0'" })]
+        [InlineData("Root,'Dep|',Root", new[] { "Root,'Dependency@1.0.0',Root" })]
+        [InlineData("Root, \"Dep|\"", new[] { "Root, \"Dependency@1.0.0\"" })]
+        [InlineData("'Ro|' , Dependency", new[] { "'Root@1.0.0' , Dependency" })]
+        [InlineData("'Root', 'Dep|", new[] { "'Root', 'Dependency@1.0.0'" })]
+        [InlineData("Root, 'Dep'|", new[] { "Root, 'Dependency@1.0.0'" })]
         public async Task GetPackageInitScript_TabCompletionPreservesPrecedingSelectorsAsync(string selectors, string[] expected)
         {
             using var context = new SimpleTestPathContext();
@@ -113,12 +132,43 @@ namespace NuGetConsole.Host.PowerShell.Test
             var modulePath = Path.Combine(AppContext.BaseDirectory, "Scripts", "nuget.psm1");
             fixture.InvokeScript($"Import-Module '{modulePath.Replace("'", "''")}'");
             fixture.Errors.Should().BeEmpty();
+            var tabExpansion = new Mock<ITabExpansion>();
+            tabExpansion.Setup(expansion => expansion.GetExpansionsAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns((string line, string lastWord, CancellationToken token) =>
+                {
+                    var results = fixture.InvokeScript(
+                        $"NugetTabExpansion '{line.Replace("'", "''")}' '{lastWord.Replace("'", "''")}'");
+                    fixture.Errors.Should().BeEmpty();
+                    if (expected.Length == 0)
+                    {
+                        results.Should().ContainSingle().Which.Should().BeNull();
+                        return Task.FromResult(new string[1]);
+                    }
+                    return Task.FromResult(results.Select(result => (string)result.BaseObject).ToArray());
+                });
+            var commandExpansion = new NuGetConsole.Host.CommandExpansion(tabExpansion.Object);
+            var command = "Get-PackageInitScript -Packages " + selectors;
+            var cursor = command.IndexOf('|');
+            command = command.Replace("|", "");
 
-            var results = fixture.InvokeScript(
-                $"NugetTabExpansion 'Get-PackageInitScript -Packages {selectors}' '{selectors}'");
+            var expansion = await commandExpansion.GetExpansionsAsync(command, cursor, CancellationToken.None);
 
-            fixture.Errors.Should().BeEmpty();
-            results.Select(result => (string)result.BaseObject).Should().Equal(expected);
+            if (expected.Length == 0)
+            {
+                expansion.Should().BeNull();
+                return;
+            }
+
+            expansion.Should().NotBeNull();
+            expansion.Expansions.Select(candidate =>
+                command.Substring(0, expansion.Start) + candidate + command.Substring(expansion.Start + expansion.Length))
+                .Should().Equal(expected.Select(result => "Get-PackageInitScript -Packages " + result));
+            foreach (var result in expected)
+            {
+                fixture.InvokeScript("Get-PackageInitScript -Packages " + result);
+                fixture.Errors.Should().BeEmpty();
+            }
         }
 
         [Theory]

@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,7 +38,7 @@ namespace NuGetConsole.Host
                 // fail to return any results.
                 //
                 char c = line[lastWordEnd];
-                if (char.IsSeparator(c)
+                if (char.IsWhiteSpace(c)
                     || char.IsPunctuation(c))
                 {
                     break;
@@ -46,10 +47,19 @@ namespace NuGetConsole.Host
                 lastWordEnd++;
             }
 
+            // Include the closing quote when replacing a selector inside a quoted string.
+            var tokens = PSParser.Tokenize(line, out _);
+            var quotedToken = tokens.FirstOrDefault(t => t.Type == PSTokenType.String
+                && t.Start < caretIndex && caretIndex <= t.Start + t.Length);
+            if (quotedToken != null)
+            {
+                lastWordEnd = quotedToken.Start + quotedToken.Length;
+            }
+
             // Find begin of lastword
             int lastWordBegin = caretIndex;
             while (lastWordBegin > 0
-                   && !char.IsSeparator(line, lastWordBegin - 1))
+                   && !char.IsWhiteSpace(line, lastWordBegin - 1))
             {
                 lastWordBegin--;
             }

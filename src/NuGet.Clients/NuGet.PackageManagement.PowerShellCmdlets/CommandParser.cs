@@ -123,6 +123,10 @@ namespace NuGetConsole.Host.PowerShell
             while (!Done)
             {
                 sb.Append(ParseUntil(c => c == '\''));
+                if (Done)
+                {
+                    break;
+                }
 
                 if (ParseChar() == '\''
                     && CurrentChar == '\'')
@@ -145,6 +149,10 @@ namespace NuGetConsole.Host.PowerShell
             {
                 // Parse until we see a quote or an escape character
                 sb.Append(ParseUntil(c => c == '"' || c == '`'));
+                if (Done)
+                {
+                    break;
+                }
 
                 if (IsEscapeSequence())
                 {
@@ -175,6 +183,31 @@ namespace NuGetConsole.Host.PowerShell
 
         private string ParseToken()
         {
+            int start = _index;
+            string value = ParseScalarToken();
+            bool isArray = false;
+            while (!Done)
+            {
+                int end = _index;
+                SkipWhitespace();
+                if (CurrentChar != ',')
+                {
+                    _index = end;
+                    break;
+                }
+
+                isArray = true;
+                ParseChar();
+                SkipWhitespace();
+                ParseScalarToken();
+            }
+
+            // Preserve array syntax for completion, but retain unquoting for scalar arguments.
+            return isArray ? _command.Substring(start, _index - start) : value;
+        }
+
+        private string ParseScalarToken()
+        {
             if (CurrentChar == '\'')
             {
                 ParseChar();
@@ -185,7 +218,7 @@ namespace NuGetConsole.Host.PowerShell
                 ParseChar();
                 return ParseDoubleQuotes();
             }
-            return ParseUntil(Char.IsWhiteSpace);
+            return ParseUntil(c => Char.IsWhiteSpace(c) || c == ',');
         }
 
         private string ParseUntil(Func<char, bool> predicate)
