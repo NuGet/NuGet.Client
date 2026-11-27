@@ -289,4 +289,11 @@
     <value>The `-Reinstall` parameter does not apply to PackageReference based projects `{0}'.</value>
     <comment>0 - semicolon separated project list.</comment>
   </data>
+  <data name="InitScript_FeatureDisabled" xml:space="preserve">
+    <value>This feature is not yet enabled.</value>
+  </data>
+  <data name="InitScript_PackageNotFound" xml:space="preserve">
+    <value>No installed tools/init.ps1 script matches package '{0}'. Use Get-PackageInitScript to list available scripts.</value>
+    <comment>{0} is the package selector supplied by the user. Do not localize tools/init.ps1 or Get-PackageInitScript.</comment>
+  </data>
 </root>

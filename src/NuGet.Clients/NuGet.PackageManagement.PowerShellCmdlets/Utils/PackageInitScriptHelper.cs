@@ -1,0 +1,104 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Management.Automation;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
+using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
+using NuGet.VisualStudio;
+using NuGetConsole.Host.PowerShell;
+
+namespace NuGet.PackageManagement.PowerShellCmdlets
+{
+    internal static class PackageInitScriptHelper
+    {
+        internal static void EnsureFeatureEnabled(PSCmdlet cmdlet)
+        {
+            if (!NuGet.Shared.NuGetFeatureFlags.IsControlPowerShellScriptExecutionEnabled())
+            {
+                cmdlet.ThrowTerminatingError(new ErrorRecord(
+                    new NotSupportedException(Resources.InitScript_FeatureDisabled),
+                    "NuGetPackageInitScriptFeatureDisabled",
+                    ErrorCategory.NotImplemented,
+                    null));
+            }
+        }
+
+        internal static IReadOnlyList<PowerShellPackageInitScript> GetScripts(
+            IVsSolutionManager solutionManager,
+            ISettings settings,
+            NuGetPackageManager packageManager,
+            CancellationToken token)
+        {
+            solutionManager.EnsureSolutionIsLoaded();
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await TaskScheduler.Default;
+                var enumerator = new InstalledPackageEnumerator(solutionManager, settings);
+                var packages = await enumerator.EnumeratePackagesAsync(packageManager, token);
+                return packages
+                    .Select(package => new PowerShellPackageInitScript(package.Identity, package.InstallPath))
+                    .Where(script => File.Exists(script.FullName))
+                    .ToList();
+            });
+        }
+
+        internal static IEnumerable<PowerShellPackageInitScript> GetMatchingScripts(
+            IReadOnlyList<PowerShellPackageInitScript> scripts,
+            string[]? packages,
+            Action<ErrorRecord> writeError)
+        {
+            if (packages == null)
+            {
+                return scripts;
+            }
+
+            var selected = new HashSet<PowerShellPackageInitScript>();
+            foreach (var package in packages)
+            {
+                PackageIdentity identity;
+                try
+                {
+                    identity = PackageIdentity.Parse(package);
+                }
+                catch (ArgumentException ex)
+                {
+                    WriteInvalidPackageError(package, ex);
+                    continue;
+                }
+
+                var matches = scripts.Where(script =>
+                    StringComparer.OrdinalIgnoreCase.Equals(script.Id, identity.Id)
+                    && (!identity.HasVersion || script.Version == identity.Version)).ToList();
+
+                if (matches.Count == 0)
+                {
+                    WriteInvalidPackageError(package);
+                }
+                else
+                {
+                    selected.UnionWith(matches);
+                }
+            }
+
+            return scripts.Where(selected.Contains);
+
+            void WriteInvalidPackageError(string package, Exception? innerException = null)
+            {
+                writeError(new ErrorRecord(
+                    new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.InitScript_PackageNotFound, package),
+                        innerException),
+                    NuGetErrorId.PackageInitScriptNotFound, ErrorCategory.ObjectNotFound, package));
+            }
+        }
+    }
+}

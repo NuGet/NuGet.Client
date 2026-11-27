@@ -45,6 +45,31 @@ Register-TabExpansion 'Get-Package' @{
     }
 }
 
+Register-TabExpansion 'Get-PackageInitScript' @{
+    'Packages' = {
+        param($context, $lastWord)
+        $prefixLength = $lastWord.LastIndexOf(',') + 1
+        $prefix = $lastWord.Substring(0, $prefixLength)
+        $selector = $lastWord.Substring($prefixLength)
+        $quote = ''
+        if ($selector.StartsWith("'") -or $selector.StartsWith('"')) {
+            $quote = $selector.Substring(0, 1)
+            $selector = $selector.Substring(1)
+            if ($selector.EndsWith($quote)) {
+                $selector = $selector.Substring(0, $selector.Length - 1)
+            }
+        }
+        Get-PackageInitScript -ErrorAction SilentlyContinue | ForEach-Object {
+            $package = "$($_.Id)@$($_.Version)"
+            if ($package.StartsWith($selector, "OrdinalIgnoreCase")) {
+                [System.Management.Automation.CompletionResult]::new(
+                    "$prefix$quote$package$quote", $package,
+                    [System.Management.Automation.CompletionResultType]::ParameterValue, $package)
+            }
+        }
+    }
+}
+
 Register-TabExpansion 'Install-Package' @{
     'Id' = {
         param($context)
@@ -336,14 +361,19 @@ function NugetTabExpansion($line, $lastWord) {
                    $action) {
                     $context = New-Object PSObject -Property $parsedCommand.Arguments
                     
-                    $results = @(& $action $context)
+                    $results = @(& $action $context $lastWord)
 
                     if($results.Count -eq 0) {
                         return $null
                     }
 
+                    # CompletionResult providers have already filtered and quoted their replacement text.
+                    if ($results[0] -is [System.Management.Automation.CompletionResult]) {
+                        return $results | %{ $_.CompletionText }
+                    }
+
                     # Use the argument value to filter results
-                    $results = $results | %{ $_.ToString() } | Where-Object { $_.StartsWith($argumentValue, "OrdinalIgnoreCase") }
+                    $results = @($results | %{ $_.ToString() } | Where-Object { $_.StartsWith($argumentValue, "OrdinalIgnoreCase") })
 
                     return NormalizeResults $results
                 }
