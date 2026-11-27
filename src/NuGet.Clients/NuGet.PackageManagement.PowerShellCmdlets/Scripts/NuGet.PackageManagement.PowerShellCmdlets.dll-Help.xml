@@ -628,6 +628,10 @@
     <command:syntax>
       <command:syntaxItem>
         <maml:name>Uninstall-Package</maml:name>
+        <command:parameter required="false" position="named">
+          <maml:name>PackageScripts</maml:name>
+          <command:parameterValue required="true">Fail | Run | RunWithInit | Skip</command:parameterValue>
+        </command:parameter>
         <command:parameter required="true" position="1">
           <maml:name>Id</maml:name>
           <command:parameterValue required="true">string</command:parameterValue>
@@ -663,6 +667,16 @@
           string
         </command:parameterValue>
         <dev:defaultValue></dev:defaultValue>
+      </command:parameter>
+      <command:parameter required="false" position="named">
+        <maml:name>PackageScripts</maml:name>
+        <maml:description>
+          <maml:para>Controls uninstall.ps1 for all packages removed by this operation, including dependencies. Applies only to packages.config projects with NuGet.ControlPowerShellScriptExecution enabled.</maml:para>
+          <maml:para>Fail (default) stops before changing projects if uninstall scripts are found, reporting their paths. Skip skips uninstall scripts. Run and RunWithInit run them without init.ps1.</maml:para>
+          <maml:para>If the package archive is missing, uninstall logs a warning and leaves the package reference unchanged. Either run mode requires the applicable uninstall script to exist.</maml:para>
+        </maml:description>
+        <command:parameterValue required="true">Fail | Run | RunWithInit | Skip</command:parameterValue>
+        <dev:defaultValue>Fail</dev:defaultValue>
       </command:parameter>
       <command:parameter required="false" position="named">
         <maml:name>RemoveDependencies</maml:name>

@@ -257,6 +257,11 @@
         <target state="translated">'{0}' paketi '{1}' öğesinde yok</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageFilesMissingForScriptExecution">
+        <source>Cannot run scripts for package '{0}' because required package files are missing. Restore packages before continuing, or use -PackageScripts Skip to continue without running scripts.</source>
+        <target state="new">Cannot run scripts for package '{0}' because required package files are missing. Restore packages before continuing, or use -PackageScripts Skip to continue without running scripts.</target>
+        <note>{0} is the package identity. Applies to install, uninstall, and upgrade operations. {Locked="-PackageScripts Skip"}</note>
+      </trans-unit>
       <trans-unit id="PackageHasDependent">
         <source>Unable to uninstall '{0}' because '{1}' depends on it.</source>
         <target state="translated">'{0}' kaldırılamıyor, çünkü '{1}' buna bağımlı.</target>
@@ -281,6 +286,13 @@
         <source>Package '{0}' is not found on source '{1}'.</source>
         <target state="translated">'{0}' paketi '{1}' kaynağında bulunamadı.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PackageScriptsBlocked">
+        <source>This operation contains PowerShell package scripts and no project files have been changed. Inspect the scripts below, then use -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip in Package Manager Console:
+{0}</source>
+        <target state="new">This operation contains PowerShell package scripts and no project files have been changed. Inspect the scripts below, then use -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip in Package Manager Console:
+{0}</target>
+        <note>{0} is a newline-separated list of absolute script paths. Do not translate -PackageScripts Run, -PackageScripts RunWithInit, or -PackageScripts Skip.</note>
       </trans-unit>
       <trans-unit id="PackageSourceMappingPatternMatchFound">
         <source>Package source mapping matches found for package ID '{0}' are: '{1}'</source>

@@ -461,21 +461,18 @@ namespace NuGet.ProjectManagement
             using var packageReader = new PackageArchiveReader(zipArchive);
 
             // Step-2: Execute powershell script - uninstall.ps1
-            var toolItemGroups = packageReader.GetToolItems();
-            var compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility
-                .GetMostCompatibleGroup(packageTargetFramework, toolItemGroups);
-            compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.Normalize(compatibleToolItemsGroup);
-
-            if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
+            var uninstallPS1RelativePath = PackageScriptExecution.GetScript(
+                packageReader.GetToolItems(), packageTargetFramework, PowerShellScripts.Uninstall);
+            if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
             {
-                var uninstallPS1RelativePath = compatibleToolItemsGroup.Items.FirstOrDefault(
-                    p => p.EndsWith(Path.DirectorySeparatorChar + PowerShellScripts.Uninstall,
-                                    StringComparison.OrdinalIgnoreCase));
-
-                if (!string.IsNullOrEmpty(uninstallPS1RelativePath))
+                var packageInstallPath = FolderNuGetProject.GetInstalledPath(packageIdentity);
+                PackageScriptExecution.ThrowIfUninstallFilesMissing(
+                    nuGetProjectContext, packageIdentity, Path.Combine(packageInstallPath, uninstallPS1RelativePath));
+                PackageScriptExecution.ThrowIfBlocked(nuGetProjectContext,
+                    new[] { Path.Combine(packageInstallPath, uninstallPS1RelativePath) });
+                var scriptBehavior = PackageScriptExecution.GetBehavior(nuGetProjectContext);
+                if (scriptBehavior == PackageScriptBehavior.Run || scriptBehavior == PackageScriptBehavior.RunWithInit)
                 {
-                    var packageInstallPath = FolderNuGetProject.GetInstalledPath(
-                        packageIdentity);
                     await ProjectServices.ScriptService.ExecutePackageScriptAsync(
                         packageIdentity,
                         packageInstallPath,
