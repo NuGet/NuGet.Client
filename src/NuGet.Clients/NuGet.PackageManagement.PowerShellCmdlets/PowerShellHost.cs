@@ -395,19 +395,21 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Task.Run(async () =>
                 {
                     UpdateWorkingDirectory();
-
-                    var retries = 0;
-
-                    while (retries < ExecuteInitScriptsRetriesLimit)
+                    if (!NuGet.Shared.NuGetFeatureFlags.IsControlPowerShellScriptExecutionEnabled())
                     {
-                        if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
-                        {
-                            await ExecuteInitScriptsAsync(solutionSessionId);
-                            break;
-                        }
+                        var retries = 0;
 
-                        await Task.Delay(ExecuteInitScriptsRetryDelay);
-                        retries++;
+                        while (retries < ExecuteInitScriptsRetriesLimit)
+                        {
+                            if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
+                            {
+                                await ExecuteInitScriptsAsync(solutionSessionId);
+                                break;
+                            }
+
+                            await Task.Delay(ExecuteInitScriptsRetryDelay);
+                            retries++;
+                        }
                     }
                 })
                 .ContinueWith(_ => StartAsyncDefaultProjectUpdate(), TaskContinuationOptions.OnlyOnRanToCompletion);
@@ -440,6 +442,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private async Task ExecuteInitScriptsAsync(long solutionSessionId)
         {
+            if (NuGet.Shared.NuGetFeatureFlags.IsControlPowerShellScriptExecutionEnabled())
+            {
+                return;
+            }
+
             // Fix for Bug 1426 Disallow ExecuteInitScripts from being executed concurrently by multiple threads.
 #pragma warning disable RS0030 // Do not used banned APIs
             using (await _initScriptsLock.EnterAsync())
